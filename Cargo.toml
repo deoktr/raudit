@@ -1,0 +1,16 @@
+[package]
+name = "raudit"
+version = "0.16.0"
+edition = "2021"
+authors = ["deoktr"]
+license = "GPLv3"
+description = "Linux security audit tool"
+readme = "README.md"
+homepage = "https://github.com/deoktr/raudit"
+repository = "https://github.com/deoktr/raudit"
+keywords = ["security", "audit", "linux", "cli"]
+categories = ["command-line-utilities"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
