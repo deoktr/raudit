@@ -1186,7 +1186,7 @@ fn checks() {
     check_kernel_param!(checks, "KNP_017", "random.trust_cpu=off"); // TODO: mark as 'paranoid'
 
     // from: kernel-hardening-checker
-    check_kernel_param!(checks, "KNP_000", "hardened_usercopy=1"); // TODO: check
+    check_kernel_param!(checks, "KNP_020", "hardened_usercopy=1"); // TODO: check
 
     // Remount secure
     // https://github.com/Kicksecure/security-misc/blob/master/etc/default/grub.d/40_remount_secure.cfg
@@ -1211,18 +1211,18 @@ fn checks() {
     check_kernel_param!(checks, "KNP_044", "gather_data_sampling=force");
     check_kernel_param!(checks, "KNP_045", "reg_file_data_sampling=on");
     // from: kernel-hardening-checker
-    check_kernel_param!(checks, "KNP_001", "spectre_v2_user=on");
-    check_kernel_param!(checks, "KNP_002", "srbds=auto,nosmt");
+    check_kernel_param!(checks, "KNP_050", "spectre_v2_user=on");
+    check_kernel_param!(checks, "KNP_051", "srbds=auto,nosmt");
 
     // ARM CPU mitigations
-    // check_kernel_param!("KNP_0", "kpti=auto,nosmt");
-    // check_kernel_param!("KNP_0", "ssbd=force-on");
-    // check_kernel_param!("KNP_0", "rodata=full");
+    // check_kernel_param!("KNP_055", "kpti=auto,nosmt");
+    // check_kernel_param!("KNP_056", "ssbd=force-on");
+    // check_kernel_param!("KNP_057", "rodata=full");
 
     // Quiet boot
     // https://github.com/Kicksecure/security-misc/blob/master/etc/default/grub.d/41_quiet_boot.cfg
-    check_kernel_param!(checks, "KNP_001", "loglevel=0");
-    check_kernel_param!(checks, "KNP_001", "quiet");
+    check_kernel_param!(checks, "KNP_060", "loglevel=0");
+    check_kernel_param!(checks, "KNP_061", "quiet");
 
     // check_kconfig_not_set_param!("KNC_38, "EFI");
     // check_kconfig_params!("KNC_039, "CC_IS_GCC"); // since v4.18
@@ -1451,44 +1451,44 @@ fn checks() {
     // GrapheneOS:
     // https://github.com/GrapheneOS/infrastructure/blob/main/modprobe.d/local.conf
     check_modprobe_blacklist!(checks, "MBL_001", "snd_intel8x0");
-    check_modprobe_blacklist!(checks, "MBL_001", "snd_intel8x0m");
-    check_modprobe_blacklist!(checks, "MBL_001", "sr_mod");
+    check_modprobe_blacklist!(checks, "MBL_002", "snd_intel8x0m");
+    check_modprobe_blacklist!(checks, "MBL_003", "sr_mod");
     // disabled instead
-    // check_modprobe_blacklist!(checks, "MBL_001", "joydev");
-    // check_modprobe_blacklist!(checks, "MBL_001", "pcspkr");
-    // check_modprobe_blacklist!(checks, "MBL_092", "floppy");
-    // check_modprobe_disabled!(checks, "MBL_092", "cfg80211");
-    // check_modprobe_blacklist!(checks, "MBL_095", "intel_agp");
-    // check_modprobe_blacklist!(checks, "MBL_095", "ip_tables");
-    // check_modprobe_blacklist!(checks, "MBD_098", "mousedev");
-    // check_modprobe_blacklist!(checks, "MBD_099", "psmouse");
-    // check_modprobe_blacklist!(checks, "MBL_001", "tls");
-    // check_modprobe_blacklist!(checks, "MBL_001", "virtio_balloon");
-    // check_modprobe_blacklist!(checks, "MBL_001", "virtio_console");
+    // check_modprobe_blacklist!(checks, "MBL_004", "joydev");
+    // check_modprobe_blacklist!(checks, "MBL_005", "pcspkr");
+    // check_modprobe_blacklist!(checks, "MBL_006", "floppy");
+    // check_modprobe_disabled!(checks, "MBD_023", "cfg80211");
+    // check_modprobe_blacklist!(checks, "MBL_008", "intel_agp");
+    // check_modprobe_blacklist!(checks, "MBL_009", "ip_tables");
+    // check_modprobe_blacklist!(checks, "MBL_010", "mousedev");
+    // check_modprobe_blacklist!(checks, "MBL_011", "psmouse");
+    // check_modprobe_blacklist!(checks, "MBL_012", "tls");
+    // check_modprobe_blacklist!(checks, "MBL_013", "virtio_balloon");
+    // check_modprobe_blacklist!(checks, "MBL_014", "virtio_console");
 
     // https://github.com/Kicksecure/security-misc/blob/master/etc/modprobe.d/30_security-misc_blacklist.conf
-    check_modprobe_blacklist!(checks, "MBL_001", "cdrom");
-    check_modprobe_blacklist!(checks, "MBL_001", "amd76x_edac");
-    check_modprobe_blacklist!(checks, "MBL_001", "ath_pci");
-    check_modprobe_blacklist!(checks, "MBL_001", "evbug");
-    check_modprobe_blacklist!(checks, "MBL_001", "snd_aw2");
-    check_modprobe_blacklist!(checks, "MBL_001", "snd_pcsp");
-    check_modprobe_blacklist!(checks, "MBL_001", "usbkbd");
-    check_modprobe_blacklist!(checks, "MBL_001", "usbmouse");
+    check_modprobe_blacklist!(checks, "MBL_015", "cdrom");
+    check_modprobe_blacklist!(checks, "MBL_016", "amd76x_edac");
+    check_modprobe_blacklist!(checks, "MBL_017", "ath_pci");
+    check_modprobe_blacklist!(checks, "MBL_018", "evbug");
+    check_modprobe_blacklist!(checks, "MBL_019", "snd_aw2");
+    check_modprobe_blacklist!(checks, "MBL_020", "snd_pcsp");
+    check_modprobe_blacklist!(checks, "MBL_021", "usbkbd");
+    check_modprobe_blacklist!(checks, "MBL_022", "usbmouse");
 
     // Ubuntu: either duplicates, or disabled
     // https://git.launchpad.net/ubuntu/+source/kmod/tree/debian/modprobe.d/blacklist.conf?h=ubuntu/disco
 
     // disabling prohibits kernel modules from starting
     // https://github.com/Kicksecure/security-misc/blob/master/etc/modprobe.d/30_security-misc_disable.conf
-    check_modprobe_disabled!(checks, "MBL_092", "cfg80211");
-    check_modprobe_disabled!(checks, "MBL_095", "intel_agp");
-    check_modprobe_disabled!(checks, "MBL_095", "ip_tables");
+    check_modprobe_disabled!(checks, "MBD_094", "cfg80211");
+    check_modprobe_disabled!(checks, "MBD_095", "intel_agp");
+    check_modprobe_disabled!(checks, "MBD_095", "ip_tables");
     check_modprobe_disabled!(checks, "MBD_098", "mousedev");
     check_modprobe_disabled!(checks, "MBD_099", "psmouse");
-    check_modprobe_disabled!(checks, "MBL_001", "tls");
-    check_modprobe_disabled!(checks, "MBL_001", "virtio_balloon");
-    check_modprobe_disabled!(checks, "MBL_001", "virtio_console");
+    check_modprobe_disabled!(checks, "MBD_001", "tls");
+    check_modprobe_disabled!(checks, "MBD_001", "virtio_balloon");
+    check_modprobe_disabled!(checks, "MBD_001", "virtio_console");
 
     // Network protocols
     check_modprobe_disabled!(checks, "MBD_006", "af_802154");
@@ -1857,44 +1857,44 @@ fn checks() {
     // TODO: check for disabled SFTP
     // TODO: check for configuration file permissions
     // TODO: check ciphers, MACs, and KexAlgorithms
-    check_sshd_config!(checks, "SSH_000", "fingerprinthash", "SHA256");
-    check_sshd_config!(checks, "SSH_001", "syslogfacility", "AUTH");
-    check_sshd_config!(checks, "SSH_002", "loglevel", "VERBOSE"); // CIS
-    check_sshd_config!(checks, "SSH_003", "logingracetime" <= 60); // CIS // TODO: strict: 30, relaxed: 60
-    check_sshd_config!(checks, "SSH_004", "permitrootlogin", "no"); // CIS
-    check_sshd_config!(checks, "SSH_005", "strictmodes", "yes");
-    check_sshd_config!(checks, "SSH_006", "maxauthtries" <= 2); // CIS // TODO: strict: 2, relaxed: 4 (CIS)
-    check_sshd_config!(checks, "SSH_007", "maxsessions" <= 2); // CIS // TODO: strict: 2, relaxed: 10 (CIS)
-    check_sshd_config!(checks, "SSH_008", "hostbasedauthentication", "no"); // CIS
-    check_sshd_config!(checks, "SSH_009", "ignorerhosts", "yes"); // CIS
-    check_sshd_config!(checks, "SSH_010", "ignoreuserknownhosts", "yes");
-    check_sshd_config!(checks, "SSH_011", "pubkeyauthentication", "yes"); // TODO: allow for no ?
-    check_sshd_config!(checks, "SSH_012", "passwordauthentication", "no");
-    check_sshd_config!(checks, "SSH_013", "kbdinteractiveauthentication", "no");
-    check_sshd_config!(checks, "SSH_014", "permitemptypasswords", "no"); // CIS STIG
-    check_sshd_config!(checks, "SSH_015", "kerberosauthentication", "no");
-    check_sshd_config!(checks, "SSH_016", "kerberosorlocalpasswd", "no");
-    check_sshd_config!(checks, "SSH_017", "kerberosticketcleanup", "yes");
-    check_sshd_config!(checks, "SSH_018", "gssapiauthentication", "no"); // CIS
-    check_sshd_config!(checks, "SSH_019", "gssapicleanupcredentials", "yes");
-    check_sshd_config!(checks, "SSH_020", "usepam", "yes"); // CIS STIG
-    check_sshd_config!(checks, "SSH_037", "disableforwarding", "yes"); // CIS
-    check_sshd_config!(checks, "SSH_025", "x11forwarding", "no");
-    check_sshd_config!(checks, "SSH_021", "allowagentforwarding", "no");
-    check_sshd_config!(checks, "SSH_022", "allowstreamlocalforwarding", "no");
-    check_sshd_config!(checks, "SSH_023", "allowtcpforwarding", "no");
-    check_sshd_config!(checks, "SSH_024", "gatewayports", "no");
-    check_sshd_config!(checks, "SSH_026", "x11uselocalhost", "yes");
-    check_sshd_config!(checks, "SSH_027", "printmotd", "no");
-    check_sshd_config!(checks, "SSH_028", "permituserenvironment", "no"); // CIS
-    check_sshd_config!(checks, "SSH_029", "clientaliveinterval" <= 15); // TODO: range ?
-    check_sshd_config!(checks, "SSH_030", "clientalivecountmax", "0");
-    check_sshd_config!(checks, "SSH_031", "tcpkeepalive", "no");
-    check_sshd_config!(checks, "SSH_032", "usedns", "no");
-    check_sshd_config!(checks, "SSH_033", "permittunnel", "no");
-    check_sshd_config!(checks, "SSH_034", "maxstartups", "10:30:60"); // CIS
-    check_sshd_config!(checks, "SSH_035", "printlastlog", "no");
-    check_sshd_config!(checks, "SSH_036", "allowgroups", "sshusers"); // TODO: only check for "not empty"
+    check_sshd_config!(checks, "SSH_001", "fingerprinthash", "SHA256");
+    check_sshd_config!(checks, "SSH_002", "syslogfacility", "AUTH");
+    check_sshd_config!(checks, "SSH_003", "loglevel", "VERBOSE"); // CIS
+    check_sshd_config!(checks, "SSH_004", "logingracetime" <= 60); // CIS // TODO: strict: 30, relaxed: 60
+    check_sshd_config!(checks, "SSH_005", "permitrootlogin", "no"); // CIS
+    check_sshd_config!(checks, "SSH_006", "strictmodes", "yes");
+    check_sshd_config!(checks, "SSH_007", "maxauthtries" <= 2); // CIS // TODO: strict: 2, relaxed: 4 (CIS)
+    check_sshd_config!(checks, "SSH_008", "maxsessions" <= 2); // CIS // TODO: strict: 2, relaxed: 10 (CIS)
+    check_sshd_config!(checks, "SSH_009", "hostbasedauthentication", "no"); // CIS
+    check_sshd_config!(checks, "SSH_010", "ignorerhosts", "yes"); // CIS
+    check_sshd_config!(checks, "SSH_011", "ignoreuserknownhosts", "yes");
+    check_sshd_config!(checks, "SSH_012", "pubkeyauthentication", "yes"); // TODO: allow for no ?
+    check_sshd_config!(checks, "SSH_013", "passwordauthentication", "no");
+    check_sshd_config!(checks, "SSH_014", "kbdinteractiveauthentication", "no");
+    check_sshd_config!(checks, "SSH_015", "permitemptypasswords", "no"); // CIS STIG
+    check_sshd_config!(checks, "SSH_016", "kerberosauthentication", "no");
+    check_sshd_config!(checks, "SSH_017", "kerberosorlocalpasswd", "no");
+    check_sshd_config!(checks, "SSH_018", "kerberosticketcleanup", "yes");
+    check_sshd_config!(checks, "SSH_019", "gssapiauthentication", "no"); // CIS
+    check_sshd_config!(checks, "SSH_020", "gssapicleanupcredentials", "yes");
+    check_sshd_config!(checks, "SSH_037", "usepam", "yes"); // CIS STIG
+    check_sshd_config!(checks, "SSH_025", "disableforwarding", "yes"); // CIS
+    check_sshd_config!(checks, "SSH_021", "x11forwarding", "no");
+    check_sshd_config!(checks, "SSH_022", "allowagentforwarding", "no");
+    check_sshd_config!(checks, "SSH_023", "allowstreamlocalforwarding", "no");
+    check_sshd_config!(checks, "SSH_024", "allowtcpforwarding", "no");
+    check_sshd_config!(checks, "SSH_026", "gatewayports", "no");
+    check_sshd_config!(checks, "SSH_027", "x11uselocalhost", "yes");
+    check_sshd_config!(checks, "SSH_028", "printmotd", "no");
+    check_sshd_config!(checks, "SSH_029", "permituserenvironment", "no"); // CIS
+    check_sshd_config!(checks, "SSH_030", "clientaliveinterval" <= 15); // TODO: range ?
+    check_sshd_config!(checks, "SSH_031", "clientalivecountmax", "0");
+    check_sshd_config!(checks, "SSH_032", "tcpkeepalive", "no");
+    check_sshd_config!(checks, "SSH_033", "usedns", "no");
+    check_sshd_config!(checks, "SSH_034", "permittunnel", "no");
+    check_sshd_config!(checks, "SSH_035", "maxstartups", "10:30:60"); // CIS
+    check_sshd_config!(checks, "SSH_036", "printlastlog", "no");
+    check_sshd_config!(checks, "SSH_037", "allowgroups", "sshusers"); // TODO: only check for "not empty"
 
     check_sudoers_default!(checks, "SUD_001", "noexec");
     check_sudoers_default!(checks, "SUD_002", "requiretty");
@@ -2045,7 +2045,7 @@ fn checks() {
     // PAM sshd faillock
     check_pam_rule!(
         checks,
-        "PAM_015",
+        "PAM_018",
         "sshd",
         "auth",
         "pam_faillock",
@@ -2055,7 +2055,7 @@ fn checks() {
     // TODO: alternatively set inside `/etc/security/faillock.conf`
     check_pam_rule!(
         checks,
-        "PAM_016",
+        "PAM_019",
         "sshd",
         "auth",
         "pam_faillock",
@@ -2063,7 +2063,7 @@ fn checks() {
     );
     check_pam_rule!(
         checks,
-        "PAM_017",
+        "PAM_020",
         "sshd",
         "auth",
         "pam_faillock",
@@ -2071,7 +2071,7 @@ fn checks() {
     );
     check_pam_rule!(
         checks,
-        "PAM_017",
+        "PAM_021",
         "sshd",
         "auth",
         "pam_faillock",
@@ -2079,7 +2079,7 @@ fn checks() {
     );
     check_pam_rule!(
         checks,
-        "PAM_017",
+        "PAM_022",
         "sshd",
         "auth",
         "pam_faillock",
@@ -2087,7 +2087,7 @@ fn checks() {
     );
     check_pam_rule!(
         checks,
-        "PAM_017",
+        "PAM_023",
         "sshd",
         "auth",
         "pam_faillock",
@@ -2098,7 +2098,7 @@ fn checks() {
     // FIXME: on Arch `login` is: `system-login`
     check_pam_rule!(
         checks,
-        "PAM_015",
+        "PAM_024",
         "login",
         "auth",
         "pam_faillock",
@@ -2106,7 +2106,7 @@ fn checks() {
     );
     check_pam_rule!(
         checks,
-        "PAM_016",
+        "PAM_025",
         "login",
         "auth",
         "pam_faillock",
@@ -2114,7 +2114,7 @@ fn checks() {
     );
     check_pam_rule!(
         checks,
-        "PAM_017",
+        "PAM_026",
         "login",
         "auth",
         "pam_faillock",
@@ -2122,7 +2122,7 @@ fn checks() {
     );
     check_pam_rule!(
         checks,
-        "PAM_017",
+        "PAM_027",
         "login",
         "auth",
         "pam_faillock",
@@ -2130,7 +2130,7 @@ fn checks() {
     );
     check_pam_rule!(
         checks,
-        "PAM_017",
+        "PAM_028",
         "login",
         "auth",
         "pam_faillock",
@@ -2138,7 +2138,7 @@ fn checks() {
     );
     check_pam_rule!(
         checks,
-        "PAM_017",
+        "PAM_029",
         "login",
         "auth",
         "pam_faillock",
@@ -2148,7 +2148,7 @@ fn checks() {
     // PAM login faildelay
     check_pam_rule!(
         checks,
-        "PAM_015",
+        "PAM_030",
         "login",
         "auth",
         "pam_faildelay",
@@ -2156,7 +2156,7 @@ fn checks() {
     );
     check_pam_rule!(
         checks,
-        "PAM_016",
+        "PAM_031",
         "login",
         "auth",
         "pam_faildelay",
@@ -2170,163 +2170,163 @@ fn checks() {
 
     // TODO: Ensure /etc/shadow password fields are not empty
 
-    check_audit_config!(checks, "AUD_001", "disk_full_action", "HALT");
+    check_ps_running!(checks, "AUD_001", "auditd");
 
-    check_ps_running!(checks, "AUD_100", "auditd");
+    check_audit_config!(checks, "AUD_010", "disk_full_action", "HALT");
 
     // FIXME: add numbers to AUD_
-    check_audit_rule!(checks, "AUD_001", "-e 2"); // ensure auditd rules are immutable
-    check_audit_rule!(checks, "AUD_001", "-w /var/log/sudo.log -p wa -k log_file");
-    check_audit_rule!(checks, "AUD_001", "-w /etc/group -p wa -k identity");
-    check_audit_rule!(checks, "AUD_001", "-w /etc/passwd -p wa -k identity");
-    check_audit_rule!(checks, "AUD_001", "-w /etc/gshadow -p wa -k identity");
-    check_audit_rule!(checks, "AUD_001", "-w /etc/shadow -p wa -k identity");
+    check_audit_rule!(checks, "AUD_100", "-e 2"); // ensure auditd rules are immutable
+    check_audit_rule!(checks, "AUD_101", "-w /var/log/sudo.log -p wa -k log_file");
+    check_audit_rule!(checks, "AUD_102", "-w /etc/group -p wa -k identity");
+    check_audit_rule!(checks, "AUD_103", "-w /etc/passwd -p wa -k identity");
+    check_audit_rule!(checks, "AUD_104", "-w /etc/gshadow -p wa -k identity");
+    check_audit_rule!(checks, "AUD_105", "-w /etc/shadow -p wa -k identity");
     check_audit_rule!(
         checks,
-        "AUD_001",
+        "AUD_106",
         "-w /etc/security/opasswd -p wa -k identity"
     );
     // 1000 being the min UID
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F arch=b64 -S create_module,init_module,delete_module,query_module,finit_module -F auid>=1000 -F auid!=-1 -F key=kernel_modules");
+    check_audit_rule!(checks, "AUD_107", "-a always,exit -F arch=b64 -S create_module,init_module,delete_module,query_module,finit_module -F auid>=1000 -F auid!=-1 -F key=kernel_modules");
 
     // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258195>
     // check_audit_rule!(checks, "AUD_001", "-a always,exit -F path=/usr/bin/kmod -F perm=x -F auid>=1000 -F auid!=unset -k modules"); // STIG
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F path=/usr/bin/kmod -F perm=x -F auid>=1000 -F auid!=unset -k kernel_modules"); // FIXME: on NixOS change to `/run/current-system/sw/bin/kmod`
-    check_audit_rule!(checks, "AUD_001", "-w /var/log/lastlog -p wa -k login");
-    check_audit_rule!(checks, "AUD_001", "-w /var/run/faillog -p wa -k login"); // FIXME: where is it on NixOS ?
-    check_audit_rule!(checks, "AUD_001", "-w /var/run/faillock -p wa -k login"); // FIXME: where is it on NixOS ?
-    check_audit_rule!(checks, "AUD_001", "-w /etc/apparmor -p wa -k mac_policy");
-    check_audit_rule!(checks, "AUD_001", "-w /etc/apparmor.d -p wa -k mac_policy");
+    check_audit_rule!(checks, "AUD_108", "-a always,exit -F path=/usr/bin/kmod -F perm=x -F auid>=1000 -F auid!=unset -k kernel_modules"); // FIXME: on NixOS change to `/run/current-system/sw/bin/kmod`
+    check_audit_rule!(checks, "AUD_109", "-w /var/log/lastlog -p wa -k login");
+    check_audit_rule!(checks, "AUD_110", "-w /var/run/faillog -p wa -k login"); // FIXME: where is it on NixOS ?
+    check_audit_rule!(checks, "AUD_111", "-w /var/run/faillock -p wa -k login"); // FIXME: where is it on NixOS ?
+    check_audit_rule!(checks, "AUD_112", "-w /etc/apparmor -p wa -k mac_policy");
+    check_audit_rule!(checks, "AUD_113", "-w /etc/apparmor.d -p wa -k mac_policy");
     check_audit_rule!(
         checks,
-        "AUD_001",
+        "AUD_114",
         "-a always,exit -F path=/usr/bin/chcon -F perm=x -F auid>=1000 -F auid!=unset -k perm_chng"
     ); // FIXME: on NixOS change to `/run/current-system/sw/bin/chcon`
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F path=/usr/bin/setfacl -F perm=x -F auid>=1000 -F auid!=unset -k perm_chng");
+    check_audit_rule!(checks, "AUD_115", "-a always,exit -F path=/usr/bin/setfacl -F perm=x -F auid>=1000 -F auid!=unset -k perm_chng");
     check_audit_rule!(
         checks,
-        "AUD_001",
+        "AUD_116",
         "-a always,exit -F path=/usr/bin/chacl -F perm=x -F auid>=1000 -F auid!=unset -k perm_chng"
     ); // FIXME: on NixOS change to `/run/current-system/sw/bin/chacl`
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F path=/sbin/apparmor_parser -F perm=x -F auid>=1000 -F auid!=unset -k perm_chng");
+    check_audit_rule!(checks, "AUD_117", "-a always,exit -F path=/sbin/apparmor_parser -F perm=x -F auid>=1000 -F auid!=unset -k perm_chng");
     check_audit_rule!(
         checks,
-        "AUD_001",
+        "AUD_118",
         "-a always,exit -F path=/usr/bin/newgrp -F perm=x -F auid>=1000 -F auid!=unset -k priv_cmd"
     );
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F path=/usr/bin/sudoedit -F perm=x -F auid>=1000 -F auid!=unset -k priv_cmd");
+    check_audit_rule!(checks, "AUD_119", "-a always,exit -F path=/usr/bin/sudoedit -F perm=x -F auid>=1000 -F auid!=unset -k priv_cmd");
     check_audit_rule!(
         checks,
-        "AUD_001",
+        "AUD_120",
         "-a always,exit -F path=/usr/bin/sudo -F perm=x -F auid>=1000 -F auid!=unset -k priv_cmd"
     );
 
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F arch=b32 -S creat,open,openat,open_by_handle_at,truncate,ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k perm_access");
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F arch=b32 -S creat,open,openat,open_by_handle_at,truncate,ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k perm_access");
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F arch=b64 -S creat,open,openat,open_by_handle_at,truncate,ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k perm_access");
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F arch=b64 -S creat,open,openat,open_by_handle_at,truncate,ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k perm_access");
+    check_audit_rule!(checks, "AUD_121", "-a always,exit -F arch=b32 -S creat,open,openat,open_by_handle_at,truncate,ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k perm_access");
+    check_audit_rule!(checks, "AUD_122", "-a always,exit -F arch=b32 -S creat,open,openat,open_by_handle_at,truncate,ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k perm_access");
+    check_audit_rule!(checks, "AUD_123", "-a always,exit -F arch=b64 -S creat,open,openat,open_by_handle_at,truncate,ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k perm_access");
+    check_audit_rule!(checks, "AUD_124", "-a always,exit -F arch=b64 -S creat,open,openat,open_by_handle_at,truncate,ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k perm_access");
 
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F arch=b32 -S chmod,fchmod,fchmodat -F auid>=1000 -F auid!=4294967295 -k perm_chng");
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F arch=b64 -S chmod,fchmod,fchmodat -F auid>=1000 -F auid!=4294967295 -k perm_chng");
+    check_audit_rule!(checks, "AUD_125", "-a always,exit -F arch=b32 -S chmod,fchmod,fchmodat -F auid>=1000 -F auid!=4294967295 -k perm_chng");
+    check_audit_rule!(checks, "AUD_126", "-a always,exit -F arch=b64 -S chmod,fchmod,fchmodat -F auid>=1000 -F auid!=4294967295 -k perm_chng");
 
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F arch=b32 -S chown,fchown,fchownat,lchown -F auid>=1000 -F auid!=4294967295 -k perm_chng");
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F arch=b64 -S chown,fchown,fchownat,lchown -F auid>=1000 -F auid!=4294967295 -k perm_chng");
+    check_audit_rule!(checks, "AUD_127", "-a always,exit -F arch=b32 -S chown,fchown,fchownat,lchown -F auid>=1000 -F auid!=4294967295 -k perm_chng");
+    check_audit_rule!(checks, "AUD_128", "-a always,exit -F arch=b64 -S chown,fchown,fchownat,lchown -F auid>=1000 -F auid!=4294967295 -k perm_chng");
 
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F arch=b32 -S setxattr,fsetxattr,lsetxattr,removexattr,fremovexattr,lremovexattr -F auid>=1000 -F auid!=4294967295 -k perm_mod");
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F arch=b32 -S setxattr,fsetxattr,lsetxattr,removexattr,fremovexattr,lremovexattr -F auid=0 -k perm_mod");
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F arch=b64 -S setxattr,fsetxattr,lsetxattr,removexattr,fremovexattr,lremovexattr -F auid>=1000 -F auid!=4294967295 -k perm_mod");
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F arch=b64 -S setxattr,fsetxattr,lsetxattr,removexattr,fremovexattr,lremovexattr -F auid=0 -k perm_mod");
+    check_audit_rule!(checks, "AUD_129", "-a always,exit -F arch=b32 -S setxattr,fsetxattr,lsetxattr,removexattr,fremovexattr,lremovexattr -F auid>=1000 -F auid!=4294967295 -k perm_mod");
+    check_audit_rule!(checks, "AUD_130", "-a always,exit -F arch=b32 -S setxattr,fsetxattr,lsetxattr,removexattr,fremovexattr,lremovexattr -F auid=0 -k perm_mod");
+    check_audit_rule!(checks, "AUD_131", "-a always,exit -F arch=b64 -S setxattr,fsetxattr,lsetxattr,removexattr,fremovexattr,lremovexattr -F auid>=1000 -F auid!=4294967295 -k perm_mod");
+    check_audit_rule!(checks, "AUD_132", "-a always,exit -F arch=b64 -S setxattr,fsetxattr,lsetxattr,removexattr,fremovexattr,lremovexattr -F auid=0 -k perm_mod");
 
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F path=/usr/lib/openssh/ssh-keysign -F perm=x -F auid>=1000 -F auid!=unset -k privileged-ssh");
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F path=/usr/bin/ssh-agent -F perm=x -F auid>=1000 -F auid!=unset -k privileged-ssh");
+    check_audit_rule!(checks, "AUD_133", "-a always,exit -F path=/usr/lib/openssh/ssh-keysign -F perm=x -F auid>=1000 -F auid!=unset -k privileged-ssh");
+    check_audit_rule!(checks, "AUD_134", "-a always,exit -F path=/usr/bin/ssh-agent -F perm=x -F auid>=1000 -F auid!=unset -k privileged-ssh");
 
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F path=/usr/bin/umount -F perm=x -F auid>=1000 -F auid!=unset -k privileged-umount");
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F path=/usr/bin/mount -F perm=x -F auid>=1000 -F auid!=unset -k privileged-mount");
+    check_audit_rule!(checks, "AUD_135", "-a always,exit -F path=/usr/bin/umount -F perm=x -F auid>=1000 -F auid!=unset -k privileged-umount");
+    check_audit_rule!(checks, "AUD_136", "-a always,exit -F path=/usr/bin/mount -F perm=x -F auid>=1000 -F auid!=unset -k privileged-mount");
 
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F path=/usr/bin/chfn -F perm=x -F auid>=1000 -F auid!=unset -k privileged-chfn");
+    check_audit_rule!(checks, "AUD_137", "-a always,exit -F path=/usr/bin/chfn -F perm=x -F auid>=1000 -F auid!=unset -k privileged-chfn");
 
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F path=/bin/su -F perm=x -F auid>=1000 -F auid!=unset -k privileged-priv_change");
+    check_audit_rule!(checks, "AUD_138", "-a always,exit -F path=/bin/su -F perm=x -F auid>=1000 -F auid!=unset -k privileged-priv_change");
 
     // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258217>
     // check_audit_rule!(checks, "AUD_001", "-w /etc/sudoers -p wa -k identity"); // STIG
-    check_audit_rule!(checks, "AUD_001", "-w /etc/sudoers -p wa -k scope");
-    check_audit_rule!(checks, "AUD_001", "-w /etc/sudoers.d -p wa -k scope"); // FIXME: not needed on NixOS
-    check_audit_rule!(checks, "AUD_001", "-w /var/run/utmp -p wa -k session");
-    check_audit_rule!(checks, "AUD_001", "-w /var/log/wtmp -p wa -k session");
-    check_audit_rule!(checks, "AUD_001", "-w /var/log/btmp -p wa -k session");
+    check_audit_rule!(checks, "AUD_139", "-w /etc/sudoers -p wa -k scope");
+    check_audit_rule!(checks, "AUD_140", "-w /etc/sudoers.d -p wa -k scope"); // FIXME: not needed on NixOS
+    check_audit_rule!(checks, "AUD_141", "-w /var/run/utmp -p wa -k session");
+    check_audit_rule!(checks, "AUD_142", "-w /var/log/wtmp -p wa -k session");
+    check_audit_rule!(checks, "AUD_143", "-w /var/log/btmp -p wa -k session");
     check_audit_rule!(
         checks,
-        "AUD_001",
+        "AUD_144",
         "-a always,exit -F arch=b64 -S sethostname,setdomainname -F key=system_locale"
     );
     check_audit_rule!(
         checks,
-        "AUD_001",
+        "AUD_145",
         "-a always,exit -F arch=b32 -S sethostname,setdomainname -F key=system_locale"
     );
-    check_audit_rule!(checks, "AUD_001", "-w /etc/issue -p wa -k system_locale");
+    check_audit_rule!(checks, "AUD_146", "-w /etc/issue -p wa -k system_locale");
     check_audit_rule!(
         checks,
-        "AUD_001",
+        "AUD_147",
         "-w /etc/issue.net -p wa -k system_locale"
     ); // FIXME: not needed on NixOS
-    check_audit_rule!(checks, "AUD_001", "-w /etc/hosts -p wa -k system_locale");
-    check_audit_rule!(checks, "AUD_001", "-w /etc/networks -p wa -k system_locale"); // FIXME: not needed on NixOS
-    check_audit_rule!(checks, "AUD_001", "-w /etc/network/ -p wa -k system_locale"); // FIXME: not needed on NixOS
+    check_audit_rule!(checks, "AUD_148", "-w /etc/hosts -p wa -k system_locale");
+    check_audit_rule!(checks, "AUD_149", "-w /etc/networks -p wa -k system_locale"); // FIXME: not needed on NixOS
+    check_audit_rule!(checks, "AUD_150", "-w /etc/network/ -p wa -k system_locale"); // FIXME: not needed on NixOS
     check_audit_rule!(
         checks,
-        "AUD_001",
+        "AUD_151",
         "-a always,exit -F arch=b64 -S adjtimex,settimeofday,clock_settime -F key=time_change"
     );
     check_audit_rule!(
         checks,
-        "AUD_001",
+        "AUD_152",
         "-a always,exit -F arch=b32 -S settimeofday,adjtimex,clock_settime -F key=time_change"
     );
-    check_audit_rule!(checks, "AUD_001", "-w /etc/localtime -p wa -k time_change");
+    check_audit_rule!(checks, "AUD_153", "-w /etc/localtime -p wa -k time_change");
     check_audit_rule!(
         checks,
-        "AUD_001",
+        "AUD_154",
         "-a always,exit -F arch=b64 -S execve -C euid!=uid -F auid!=-1 -F key=user_emulation"
     );
     check_audit_rule!(
         checks,
-        "AUD_001",
+        "AUD_155",
         "-a always,exit -F arch=b32 -S execve -C euid!=uid -F auid!=-1 -F key=user_emulation"
     );
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F path=/usr/sbin/usermod -F perm=x -F auid>=1000 -F auid!=unset -k usermod");
+    check_audit_rule!(checks, "AUD_156", "-a always,exit -F path=/usr/sbin/usermod -F perm=x -F auid>=1000 -F auid!=unset -k usermod");
 
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F path=/usr/bin/passwd -F perm=x -F auid>=1000 -F auid!=unset -k privileged-passwd");
+    check_audit_rule!(checks, "AUD_157", "-a always,exit -F path=/usr/bin/passwd -F perm=x -F auid>=1000 -F auid!=unset -k privileged-passwd");
 
     // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258194>
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F path=/usr/bin/gpasswd -F perm=x -F auid>=1000 -F auid!=unset -k privileged-gpasswd"); // STIG
+    check_audit_rule!(checks, "AUD_158", "-a always,exit -F path=/usr/bin/gpasswd -F perm=x -F auid>=1000 -F auid!=unset -k privileged-gpasswd"); // STIG
 
     // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258192>
     check_audit_rule!(
         checks,
-        "AUD_001",
+        "AUD_159",
         "-a always,exit -F path=/usr/bin/chsh -F perm=x -F auid>=1000 -F auid!=unset -k priv_cmd"
     ); // STIG
 
     // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258193>
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F path=/usr/bin/crontab -F perm=x -F auid>=1000 -F auid!=unset -k privileged-crontab"); // STIG
+    check_audit_rule!(checks, "AUD_160", "-a always,exit -F path=/usr/bin/crontab -F perm=x -F auid>=1000 -F auid!=unset -k privileged-crontab"); // STIG
 
     // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258190>
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F arch=b32 -S init_module,finit_module -F auid>=1000 -F auid!=unset -k module_chng"); // STIG
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F arch=b64 -S init_module,finit_module -F auid>=1000 -F auid!=unset -k module_chng"); // STIG
+    check_audit_rule!(checks, "AUD_161", "-a always,exit -F arch=b32 -S init_module,finit_module -F auid>=1000 -F auid!=unset -k module_chng"); // STIG
+    check_audit_rule!(checks, "AUD_162", "-a always,exit -F arch=b64 -S init_module,finit_module -F auid>=1000 -F auid!=unset -k module_chng"); // STIG
 
     // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258191>
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F path=/usr/bin/chage -F perm=x -F auid>=1000 -F auid!=unset -k privileged-chage"); // STIG
+    check_audit_rule!(checks, "AUD_163", "-a always,exit -F path=/usr/bin/chage -F perm=x -F auid>=1000 -F auid!=unset -k privileged-chage"); // STIG
 
     // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258215>
     check_audit_rule!(
         checks,
-        "AUD_001",
+        "AUD_164",
         "-a always,exit -F arch=b32 -S umount -F auid>=1000 -F auid!=unset -k privileged-umount"
     ); // STIG
 
     // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258214>
-    check_audit_rule!(checks, "AUD_001", "-a always,exit -F path=/usr/sbin/shutdown -F perm=x -F auid>=1000 -F auid!=unset -k privileged-shutdown"); // STIG
+    check_audit_rule!(checks, "AUD_165", "-a always,exit -F path=/usr/sbin/shutdown -F perm=x -F auid>=1000 -F auid!=unset -k privileged-shutdown"); // STIG
 
     // TODO: ensure Grub is configured to load audit
 
