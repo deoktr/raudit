@@ -871,7 +871,7 @@ macro_rules! check_password_in_passwd {
             $id,
             "Ensure accounts in /etc/passwd use shadowed passwords",
             PASSWD_CONFIG,
-            users::password_in_passwd,
+            users::no_password_in_passwd,
             "password found in passwd"
         );
     };

@@ -168,8 +168,8 @@ pub fn init_shadow() -> Result<ShadowConfig, std::io::Error> {
 }
 
 /// Verify if any user has a password in passwd (not equal to `x`).
-pub fn password_in_passwd(passwd: &PasswdConfig) -> bool {
-    passwd.iter().any(|user| user.password != "x".to_string())
+pub fn no_password_in_passwd(passwd: &PasswdConfig) -> bool {
+    !passwd.iter().any(|user| user.password != "x".to_string())
 }
 
 /// Verify that only root has UID 0.
