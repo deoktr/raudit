@@ -19,6 +19,8 @@
 use std::collections::HashMap;
 use std::fs;
 
+const LOGIN_DEFS_PATH: &str = "/etc/login.defs";
+
 /// Login.defs configuration.
 pub type LoginDefsConfig = HashMap<String, String>;
 
@@ -38,7 +40,7 @@ fn parse_login_defs(login_defs: String) -> LoginDefsConfig {
 
 /// Get login.defs configuration by reading `/etc/login.defs`.
 pub fn init_login_defs() -> Result<LoginDefsConfig, std::io::Error> {
-    let login_defs = fs::read_to_string("/etc/login.defs")?;
+    let login_defs = fs::read_to_string(LOGIN_DEFS_PATH)?;
     Ok(parse_login_defs(login_defs))
 }
 

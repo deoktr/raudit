@@ -21,6 +21,12 @@ use crate::utils::run;
 use std::collections::HashMap;
 use std::fs;
 
+const KOSTYPE_PATH: &str = "/proc/sys/kernel/ostype";
+
+const KOSRELEASE_PATH: &str = "/proc/sys/kernel/osrelease";
+
+const OS_RELEASE_PATH: &str = "/etc/os-release";
+
 /// OS.
 #[derive(Debug)]
 pub struct OS {
@@ -35,13 +41,13 @@ pub type OSRelease = HashMap<String, String>;
 
 /// Init system OS type by reading `/proc/sys/kernel/ostype`.
 pub fn init_kernel_os_type() -> Result<String, std::io::Error> {
-    let content = fs::read_to_string("/proc/sys/kernel/ostype")?;
+    let content = fs::read_to_string(KOSTYPE_PATH)?;
     Ok(content.trim_end().to_string())
 }
 
 /// Init system OS release by reading `/proc/sys/kernel/osrelease`.
 pub fn init_kernel_os_release() -> Result<String, std::io::Error> {
-    let content = fs::read_to_string("/proc/sys/kernel/osrelease")?;
+    let content = fs::read_to_string(KOSRELEASE_PATH)?;
     Ok(content.trim_end().to_string())
 }
 
@@ -63,7 +69,7 @@ fn parse_os_release(content: String) -> OSRelease {
 
 /// Get OS release info from `/etc/os-release`.
 pub fn init_os_release() -> Result<OSRelease, std::io::Error> {
-    let content = fs::read_to_string("/etc/os-release")?;
+    let content = fs::read_to_string(OS_RELEASE_PATH)?;
     Ok(parse_os_release(content))
 }
 

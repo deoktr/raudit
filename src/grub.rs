@@ -18,12 +18,14 @@
 
 use std::fs;
 
+const GRUB_CFG_PATH: &str = "/boot/grub/grub.cfg";
+
 /// Raw grub config from `/boot/grub/grub.cfg`.
 pub type GrubCfg = String;
 
 /// Get the system's grub config from `/boot/grub/grub.cfg`.
 pub fn init_grub_cfg() -> Result<GrubCfg, std::io::Error> {
-    let grub_cfg = fs::read_to_string("/boot/grub/grub.cfg")?;
+    let grub_cfg = fs::read_to_string(GRUB_CFG_PATH)?;
     Ok(grub_cfg)
 }
 

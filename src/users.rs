@@ -18,6 +18,12 @@
 
 use std::fs;
 
+const PASSWD_PATH: &str = "/etc/passwd";
+
+const SHADOW_PATH: &str = "/etc/shadow";
+
+const SECURETTY_PATH: &str = "/etc/securetty";
+
 /// Passwd configuration from `/etc/passwd`.
 pub type PasswdConfig = Vec<Passwd>;
 
@@ -86,7 +92,7 @@ pub fn parse_passwd(content: String) -> PasswdConfig {
 
 /// Get the system's users from `/etc/passwd`.
 pub fn init_passwd() -> Result<PasswdConfig, std::io::Error> {
-    let passwd = fs::read_to_string("/etc/passwd")?;
+    let passwd = fs::read_to_string(PASSWD_PATH)?;
     Ok(parse_passwd(passwd))
 }
 
@@ -163,7 +169,7 @@ pub fn parse_shadow(content: String) -> ShadowConfig {
 
 /// Get the system's users from `/etc/shadow`.
 pub fn init_shadow() -> Result<ShadowConfig, std::io::Error> {
-    let shadow = fs::read_to_string("/etc/shadow")?;
+    let shadow = fs::read_to_string(SHADOW_PATH)?;
     Ok(parse_shadow(shadow))
 }
 
@@ -218,7 +224,7 @@ pub fn no_dup_username(passwd: &PasswdConfig) -> bool {
 /// from. This file should be kept empty so that nobody can do so from a
 /// terminal.
 pub fn empty_securetty() -> Result<bool, std::io::Error> {
-    match fs::metadata("/etc/securetty") {
+    match fs::metadata(SECURETTY_PATH) {
         Ok(m) => Ok(m.len() == 0),
         Err(e) => match e.kind() {
             std::io::ErrorKind::NotFound => Ok(true),

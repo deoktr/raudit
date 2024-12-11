@@ -4,17 +4,9 @@ rAudit is a security audit tool to help you create your own security audit check
 
 Goals:
 
-- Very fast audit
+- Fast audit
 - Make it easy to extend and create your own checks
-- No package dependancies, just Rust std libs
 - Output to JSON
-
-Why Rust and not Bash:
-
-- Better parsing
-- Easier output formating (like JSON, or colored and formatted text)
-- Better performance
-- No dependancies, just a single executable to run
 
 What it is NOT:
 
@@ -83,6 +75,7 @@ Benchmark 1: ./target/release/raudit
 - Config file to skip checks
 - Add a "criticity", "hardening level" value linked to a check
 - Add tags to checks and the ability to filter them
+- Add JSON output format
 
 ## License
 

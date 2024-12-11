@@ -19,6 +19,8 @@
 use std::fs;
 use std::path::Path;
 
+const CMDLINE_PATH: &str = "/proc/cmdline";
+
 /// Kenel params from `/proc/cmdline`.
 pub type KernelParams = Vec<String>;
 
@@ -34,7 +36,7 @@ fn parse_kernel_params(cmdline: String) -> KernelParams {
 
 /// Get kernel params by reading from `/proc/cmdline`.
 pub fn init_kernel_params() -> Result<KernelParams, std::io::Error> {
-    let cmdline = fs::read_to_string("/proc/cmdline")?;
+    let cmdline = fs::read_to_string(CMDLINE_PATH)?;
     Ok(parse_kernel_params(cmdline))
 }
 

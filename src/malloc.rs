@@ -18,6 +18,9 @@
 
 use std::fs;
 
+// FIXME: on NixOS the file is `/etc/ld-nix.so.preload`
+const LD_SO_PRELOAD_PATH: &str = "/etc/ld.so.preload";
+
 /// LD preload configuration from `/etc/ld.so.preload`.
 pub type LdSoPreload = String;
 
@@ -26,12 +29,7 @@ pub fn init_ld_so_preload() -> Result<LdSoPreload, std::io::Error> {
     // TODO: error errors if it doesn't exist, since it would just mean it's not
     // configured properly
 
-    // FIXME: on NixOS the file is `ld-nix.so.preload`, add a way to detect the
-    // OS and change it here based on that
-    let ls_so_preload = match fs::read_to_string("/etc/ld-nix.so.preload") {
-        Ok(content) => content,
-        Err(_) => fs::read_to_string("/etc/ld.so.preload")?,
-    };
+    let ls_so_preload = fs::read_to_string(LD_SO_PRELOAD_PATH)?;
 
     // let ls_so_preload = fs::read_to_string("/etc/ld.so.preload")?;
     Ok(ls_so_preload)

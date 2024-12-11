@@ -18,6 +18,8 @@
 
 use std::fs;
 
+const PROC_MOUNTS_PATH: &str = "/proc/mounts";
+
 /// List of mount configurations.
 pub type MountConfig = Vec<Mount>;
 
@@ -55,7 +57,7 @@ fn parse_mounts(mounts: String) -> MountConfig {
 
 /// Get mounts configuration by reading `/proc/mounts`.
 pub fn init_mounts() -> Result<MountConfig, std::io::Error> {
-    let mounts = fs::read_to_string("/proc/mounts")?;
+    let mounts = fs::read_to_string(PROC_MOUNTS_PATH)?;
     Ok(parse_mounts(mounts))
 }
 

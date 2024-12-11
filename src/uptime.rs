@@ -19,11 +19,13 @@
 use std::fs;
 use std::sync::OnceLock;
 
+const UPTIME_PATH: &str = "/proc/uptime";
+
 pub static UPTIME: OnceLock<u64> = OnceLock::new();
 
 /// Init system uptime by reading `/proc/uptime`.
 pub fn init_uptime() -> Result<(), std::io::Error> {
-    let content = fs::read_to_string("/proc/uptime")?;
+    let content = fs::read_to_string(UPTIME_PATH)?;
     match content.split_once(" ") {
         Some((uptime, _idle)) => {
             // remove the decimals before parsing to u64

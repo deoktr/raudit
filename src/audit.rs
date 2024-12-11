@@ -21,7 +21,9 @@ use std::fs;
 use std::process;
 use std::process::Stdio;
 
-/// HashMap of audit config.
+const AUDIT_CFG_PATH: &str = "/etc/audit/auditd.conf";
+
+/// Audit configuration from `/etc/audit/auditd.conf`.
 pub type AuditConfig = HashMap<String, String>;
 
 /// List of audit rules.
@@ -64,7 +66,7 @@ fn parse_audit_config(login_defs: String) -> AuditConfig {
 
 /// Get audit configuration by reading `/etc/audit/auditd.conf`.
 pub fn init_audit_config() -> Result<AuditConfig, std::io::Error> {
-    let auditd_conf = fs::read_to_string("/etc/audit/auditd.conf")?;
+    let auditd_conf = fs::read_to_string(AUDIT_CFG_PATH)?;
     Ok(parse_audit_config(auditd_conf))
 }
 

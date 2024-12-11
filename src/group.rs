@@ -18,6 +18,9 @@
 
 use std::fs;
 
+const GROUP_PATH: &str = "/etc/group";
+const SHADOW_PATH: &str = "/etc/gshadow";
+
 /// Group configuration from `/etc/group`.
 pub type GroupConfig = Vec<Group>;
 
@@ -64,7 +67,7 @@ pub fn parse_group(content: String) -> GroupConfig {
 
 /// Get the system's groups from `/etc/group`.
 pub fn init_group() -> Result<GroupConfig, std::io::Error> {
-    let gc = fs::read_to_string("/etc/group")?;
+    let gc = fs::read_to_string(GROUP_PATH)?;
     Ok(parse_group(gc))
 }
 
@@ -72,7 +75,7 @@ pub fn init_group() -> Result<GroupConfig, std::io::Error> {
 ///
 /// File `/etc/gshadow` must either be empty or missing.
 pub fn empty_gshadow() -> Result<bool, std::io::Error> {
-    match fs::metadata("/etc/gshadow") {
+    match fs::metadata(SHADOW_PATH) {
         Ok(m) => Ok(m.len() == 0),
         Err(e) => match e.kind() {
             std::io::ErrorKind::NotFound => Ok(true),

@@ -19,6 +19,8 @@
 use std::collections::HashMap;
 use std::fs;
 
+const SYSTEMD_CONF_PATH: &str = "/etc/systemd/system.conf";
+
 /// Systemd configuration.
 pub type SystemdConfig = HashMap<String, String>;
 
@@ -40,7 +42,7 @@ fn parse_systemd_config(systemd_config: String) -> SystemdConfig {
 
 /// Get systemd configuration by reading `/etc/systemd/system.conf`.
 pub fn init_systemd_config() -> Result<SystemdConfig, std::io::Error> {
-    let cfg = fs::read_to_string("/etc/systemd/system.conf")?;
+    let cfg = fs::read_to_string(SYSTEMD_CONF_PATH)?;
     Ok(parse_systemd_config(cfg))
 }
 

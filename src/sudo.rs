@@ -19,6 +19,8 @@
 use std::fs;
 use std::path::PathBuf;
 
+const SUDOERS_PATH: &str = "/etc/sudoers";
+
 /// List of sudo configuration.
 pub type SudoConfig = Vec<String>;
 
@@ -41,7 +43,7 @@ pub fn init_sudoer() -> Result<SudoConfig, std::io::Error> {
     // configurations, we could try to read the content of `/etc/sudoers` and
     // search for `@includes`
 
-    let mut paths: Vec<PathBuf> = vec![PathBuf::from("/etc/sudoers")];
+    let mut paths: Vec<PathBuf> = vec![PathBuf::from(SUDOERS_PATH)];
 
     // get all sudoers configuration file paths
     match fs::read_dir("/etc/sudoers.d/") {

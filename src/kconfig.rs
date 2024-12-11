@@ -20,6 +20,8 @@ use std::collections::HashMap;
 use std::process;
 use std::process::Stdio;
 
+const KCOMP_CFG_PATH: &str = "/proc/config.gz";
+
 /// Kenel compilation config from `/proc/config.gz`.
 pub type KcompilConfig = HashMap<String, String>;
 
@@ -57,7 +59,7 @@ pub fn init_kcompile_config() -> Result<KcompilConfig, std::io::Error> {
 
     let mut cmd = process::Command::new("zcat");
     cmd.stdin(Stdio::null());
-    cmd.args(vec!["/proc/config.gz"]);
+    cmd.args(vec![KCOMP_CFG_PATH]);
 
     let output = cmd.output()?;
 
