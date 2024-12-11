@@ -87,6 +87,7 @@ impl CheckListStats {
 pub enum CheckState {
     Valid,
     Invalid,
+    #[allow(dead_code)]
     Skipped,
     Error,
     Waiting,

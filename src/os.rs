@@ -28,7 +28,7 @@ const KOSRELEASE_PATH: &str = "/proc/sys/kernel/osrelease";
 const OS_RELEASE_PATH: &str = "/etc/os-release";
 
 /// OS.
-#[derive(Debug)]
+#[allow(dead_code)]
 pub struct OS {
     os: String,
     name: String,
@@ -73,6 +73,7 @@ pub fn init_os_release() -> Result<OSRelease, std::io::Error> {
     Ok(parse_os_release(content))
 }
 
+#[allow(dead_code)]
 pub fn detect_os() -> Result<OS, std::io::Error> {
     let uname = run!("uname");
 

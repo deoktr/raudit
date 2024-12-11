@@ -646,8 +646,7 @@ macro_rules! check_pam_rule {
             format!(
                 "Ensure that {} PAM control is configured correctly with {} {} set to {}",
                 $service, $rule_type, $module, $control
-            ),
-{
+            ), {
         match get_pam_rule($service, $rule_type, $module) {
             Ok(res) => match res {
                 Some(rule) => {
@@ -954,13 +953,6 @@ macro_rules! check_reboot_required {
 }
 
 fn main() {
-    // let o = os::detect_os();
-    // println!("{:?}", o);
-
-    // check::run_check();
-
-    // return;
-
     println!("{} {}", env!("CARGO_PKG_NAME"), VERSION);
 
     let now = Instant::now();
