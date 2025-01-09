@@ -28,6 +28,5 @@ const GDM_CFG_PATH: &str = "/etc/gdm/custom.conf";
 pub fn no_gdm_auto_logon() -> Result<bool, std::io::Error> {
     let cfg = fs::read_to_string(GDM_CFG_PATH)?;
     // TODO: ensure that this is under `[daemon]`
-    // TODO: also ensure that `AutomaticLoginEnable = true` is not present
     Ok(cfg.lines().any(|l| l == "AutomaticLoginEnable=false"))
 }

@@ -16,22 +16,21 @@ What it is NOT:
 What is supported:
 
 - Mounts including options
-- Audit rules and configuration
 - Kenel params
 - Kernel compilation params
 - Sysctl params
 - Login.defs configuration
 - Modprobe including blacklisted and disabled modules
 - PAM rules
-- OpenSSH configuration
+- OpenSSH server configuration
 - Sudo configuration
 - Users and groups
 - Uptime
-- Systemd
-- Process
-- Audit(d) rules and configuration
-- Grub
-- GDM
+- Systemd configuration
+- Processes
+- Audit rules and configuration
+- Grub configuration
+- GDM configuration
 
 ## Usage
 
