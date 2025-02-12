@@ -180,7 +180,7 @@ proxy_set_header        X-Forwarded-Server $host;
 "##
             .to_string(),
         );
-        assert_eq!(lines.len(), 95);
+        assert_eq!(lines.len(), 97);
         assert!(lines.get(0).is_some());
     }
 }
