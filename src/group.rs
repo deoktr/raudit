@@ -1,6 +1,6 @@
 /*
  * rAudit, a Linux security auditing toolkit
- * Copyright (C) 2024  deoktr
+ * Copyright (C) 2024 - 2025  deoktr
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,11 @@
 
 use std::fs;
 
+// use crate::base::empty_or_missing_file;
+use crate::base::empty_or_missing_file;
+
 const GROUP_PATH: &str = "/etc/group";
+
 const SHADOW_PATH: &str = "/etc/gshadow";
 
 /// Group configuration from `/etc/group`.
@@ -75,13 +79,7 @@ pub fn init_group() -> Result<GroupConfig, std::io::Error> {
 ///
 /// File `/etc/gshadow` must either be empty or missing.
 pub fn empty_gshadow() -> Result<bool, std::io::Error> {
-    match fs::metadata(SHADOW_PATH) {
-        Ok(m) => Ok(m.len() == 0),
-        Err(e) => match e.kind() {
-            std::io::ErrorKind::NotFound => Ok(true),
-            _ => Err(e),
-        },
-    }
+    empty_or_missing_file(SHADOW_PATH)
 }
 
 /// Ensure that only root has GID 0.

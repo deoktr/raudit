@@ -16,17 +16,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// TODO: file permission check
+// TODO: file owner check
+// TODO: file content regex
+
 use std::fs;
 
-// FIXME: On Ubuntu it is in:
-// "/etc/gdm3/custom.conf"
-const GDM_CFG_PATH: &str = "/etc/gdm/custom.conf";
+/// Check if file exist and is empty.
+pub fn empty_file(path: &str) -> Result<bool, std::io::Error> {
+    Ok(fs::metadata(path)?.len() == 0)
+}
 
-/// Ensure no automatic logon to the system via a GUI is possible.
-///
-/// <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258018>
-pub fn no_gdm_auto_logon() -> Result<bool, std::io::Error> {
-    let cfg = fs::read_to_string(GDM_CFG_PATH)?;
-    // TODO: ensure that this is under `[daemon]`
-    Ok(cfg.lines().any(|l| l == "AutomaticLoginEnable=false"))
+/// Check if file is either empty or not present.
+pub fn empty_or_missing_file(path: &str) -> Result<bool, std::io::Error> {
+    empty_file(path).or_else(|e| match e.kind() {
+        std::io::ErrorKind::NotFound => Ok(true),
+        _ => Err(e),
+    })
 }

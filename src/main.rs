@@ -1,6 +1,6 @@
 /*
  * rAudit, a Linux security auditing toolkit
- * Copyright (C) 2024  deoktr
+ * Copyright (C) 2024 - 2025  deoktr
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+mod apparmor;
 mod audit;
+mod base;
 mod check;
 mod gdm;
 mod group;
@@ -27,6 +29,7 @@ mod login_defs;
 mod malloc;
 mod modprobe;
 mod mount;
+mod nginx;
 mod os;
 mod pam;
 mod ps;
@@ -41,11 +44,11 @@ mod utils;
 use std::sync::OnceLock;
 use std::time::Instant;
 
+use clap::Parser;
+
 // TODO: only run checks if they are not ignored
 // TODO: add a way to automatically generate checks ID
 // TODO: only load configurations if they are needed on a check
-
-const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 // the `OnceLock` wrapper allows for an easy single initialization of the
 // configuration of checked apps for performance ans simplicity
@@ -59,6 +62,7 @@ static SSHD_CONFIG: OnceLock<sshd::SshdConfig> = OnceLock::new();
 static KERNEL_PARAMS: OnceLock<kernel::KernelParams> = OnceLock::new();
 static LOGIN_DEFS: OnceLock<login_defs::LoginDefsConfig> = OnceLock::new();
 static MOUNTS: OnceLock<mount::MountConfig> = OnceLock::new();
+static NGINX_CONF: OnceLock<nginx::NginxConfig> = OnceLock::new();
 static MODPROBE_CONFIG: OnceLock<modprobe::ModprobeConfig> = OnceLock::new();
 static MODPROBE_BLACKLIST: OnceLock<modprobe::ModprobeBlacklist> = OnceLock::new();
 static MODPROBE_DISABLED: OnceLock<modprobe::ModprobeDisabled> = OnceLock::new();
@@ -74,6 +78,27 @@ static AUDIT_CONFIG: OnceLock<audit::AuditConfig> = OnceLock::new();
 static GRUB_CFG: OnceLock<grub::GrubCfg> = OnceLock::new();
 static LD_SO_PRELOAD: OnceLock<malloc::LdSoPreload> = OnceLock::new();
 static KCOMPILE_CONFIG: OnceLock<kconfig::KcompilConfig> = OnceLock::new();
+
+/// Audit Linux systems security configurations
+#[derive(Debug, Parser)]
+#[command(version)]
+struct Cli {
+    // /// Importance level to filter checks
+    // #[structopt(short = 'n')]
+    // level: Option<usize>,
+    //
+    /// Disable print individual checks
+    #[arg(long, action = clap::ArgAction::SetTrue)]
+    disable_print_checks: bool,
+
+    /// Disable print stats
+    #[arg(long, action = clap::ArgAction::SetTrue)]
+    disable_print_stats: bool,
+    //
+    // /// Disable colored output
+    // #[arg(long, action = clap::ArgAction::SetTrue)]
+    // disable_colors: bool,
+}
 
 macro_rules! check {
     ($checks:tt, $id:tt, $title:expr, $blk:expr) => {
@@ -952,8 +977,20 @@ macro_rules! check_reboot_required {
     };
 }
 
+macro_rules! check_apparmor_enabled {
+    ($checks:tt, $id:tt) => {
+        check_bool!(
+            $checks,
+            $id,
+            "Ensure AppArmor is enabled",
+            apparmor::apparmor_enabled,
+            "AppArmor not enabled"
+        );
+    };
+}
+
 fn main() {
-    println!("{} {}", env!("CARGO_PKG_NAME"), VERSION);
+    let args = Cli::parse();
 
     let now = Instant::now();
 
@@ -961,13 +998,13 @@ fn main() {
     init();
 
     // do the checks
-    checks();
+    checks(args);
 
-    println!("\nin: {}ms", now.elapsed().as_millis());
+    println!("\ntook: {}ms", now.elapsed().as_millis());
 }
 
 /// Run checks.
-fn checks() {
+fn checks(args: Cli) {
     let mut checks = check::CheckList { checks: Vec::new() };
 
     check_sysctl!(checks, "SYS_001", "kernel.kptr_restrict" == 2);
@@ -985,7 +1022,7 @@ fn checks() {
     check_sysctl!(checks, "SYS_013", "kernel.panic_on_oops" == 1);
     check_sysctl!(checks, "SYS_014", "kernel.panic", "-1");
     check_sysctl!(checks, "SYS_015", "kernel.modules_disabled" == 1);
-    check_sysctl!(checks, "SYS_016", "kernel.unprivileged_userns_clone" == 0);
+    check_sysctl!(checks, "SYS_016", "kernel.unprivileged_userns_clone" == 0); // TODO: only available on Debian
     check_sysctl!(checks, "SYS_017", "kernel.yama.ptrace_scope" >= 1); // 2 or 3, CIS recommends 1
     check_sysctl!(checks, "SYS_018", "kernel.io_uring_disabled" == 2);
     check_sysctl!(checks, "SYS_019", "kernel.core_pattern", "|/bin/false");
@@ -1003,7 +1040,7 @@ fn checks() {
     check_sysctl!(checks, "SYS_031", "fs.protected_regular" == 2);
     check_sysctl!(checks, "SYS_032", "fs.protected_symlinks" == 1);
     check_sysctl!(checks, "SYS_033", "fs.protected_hardlinks" == 1);
-    check_sysctl!(checks, "SYS_034", "fs.binfmt_misc.status" == 0);
+    check_sysctl!(checks, "SYS_034", "fs.binfmt_misc.status" == 0); // TODO: ignore if not present
     check_sysctl!(checks, "SYS_035", "net.ipv4.ip_forward" == 0); // CIS
     check_sysctl!(
         checks,
@@ -1178,7 +1215,8 @@ fn checks() {
     check_kernel_param!(checks, "KNP_017", "random.trust_cpu=off"); // TODO: mark as 'paranoid'
 
     // from: kernel-hardening-checker
-    check_kernel_param!(checks, "KNP_020", "hardened_usercopy=1"); // TODO: check
+    // https://lwn.net/Articles/695991/
+    check_kernel_param!(checks, "KNP_020", "hardened_usercopy=1");
 
     // Remount secure
     // https://github.com/Kicksecure/security-misc/blob/master/etc/default/grub.d/40_remount_secure.cfg
@@ -1186,19 +1224,24 @@ fn checks() {
 
     // X86 64 and 32 CPU mitigations
     // https://github.com/Kicksecure/security-misc/blob/master/etc/default/grub.d/40_cpu_mitigations.cfg
-    check_kernel_param!(checks, "KNP_030", "mitigations=auto,nosmt");
-    check_kernel_param!(checks, "KNP_031", "nosmt=force");
+    check_kernel_param!(checks, "KNP_030", "mitigations=auto");
+    check_kernel_param!(checks, "KNP_030", "mitigations=auto,nosmt"); // TODO: paranoid
+    check_kernel_param!(checks, "KNP_031", "nosmt=force"); // TODO: paranoid
     check_kernel_param!(checks, "KNP_032", "spectre_v2=on");
     check_kernel_param!(checks, "KNP_033", "spectre_bhi=on");
     check_kernel_param!(checks, "KNP_034", "spec_store_bypass_disable=on");
     check_kernel_param!(checks, "KNP_035", "l1tf=full,force");
-    check_kernel_param!(checks, "KNP_036", "mds=full,nosm");
+    check_kernel_param!(checks, "KNP_036", "mds=full");
+    check_kernel_param!(checks, "KNP_036", "mds=full,nosm"); // TODO: paranoid
     check_kernel_param!(checks, "KNP_037", "tsx=off");
-    check_kernel_param!(checks, "KNP_038", "tsx_async_abort=full,nosmt");
+    check_kernel_param!(checks, "KNP_038", "tsx_async_abort=full");
+    check_kernel_param!(checks, "KNP_038", "tsx_async_abort=full,nosmt"); // TODO: paranoid
     check_kernel_param!(checks, "KNP_039", "kvm.nx_huge_pages=force");
     check_kernel_param!(checks, "KNP_040", "l1d_flush=on");
-    check_kernel_param!(checks, "KNP_041", "mmio_stale_data=full,nosmt");
-    check_kernel_param!(checks, "KNP_042", "retbleed=auto,nosmt");
+    check_kernel_param!(checks, "KNP_041", "mmio_stale_data=full");
+    check_kernel_param!(checks, "KNP_041", "mmio_stale_data=full,nosmt"); // TODO: paranoid
+    check_kernel_param!(checks, "KNP_042", "retbleed=auto");
+    check_kernel_param!(checks, "KNP_042", "retbleed=auto,nosmt"); // TODO: paranoid
     check_kernel_param!(checks, "KNP_043", "spec_rstack_overflow=safe-ret");
     check_kernel_param!(checks, "KNP_044", "gather_data_sampling=force");
     check_kernel_param!(checks, "KNP_045", "reg_file_data_sampling=on");
@@ -1226,7 +1269,6 @@ fn checks() {
     check_kconfig_not_set_param!(checks, "KNC_045", "DEVMEM");
     check_kconfig_not_set_param!(checks, "KNC_046", "BPF_SYSCALL");
     check_kconfig_params!(checks, "KNC_047", "BUG");
-    check_kconfig_params!(checks, "KNC_048", "SLUB_DEBUG");
     check_kconfig_params!(checks, "KNC_049", "THREAD_INFO_IN_TASK");
     check_kconfig_params!(checks, "KNC_050", "IOMMU_SUPPORT");
     check_kconfig_params!(checks, "KNC_051", "RANDOMIZE_BASE");
@@ -1240,9 +1282,6 @@ fn checks() {
     check_kconfig_params!(checks, "KNC_059", "SLAB_FREELIST_RANDOM");
     check_kconfig_params!(checks, "KNC_060", "SHUFFLE_PAGE_ALLOCATOR");
     check_kconfig_params!(checks, "KNC_061", "FORTIFY_SOURCE");
-    check_kconfig_params!(checks, "KNC_062", "DEBUG_LIST");
-    check_kconfig_params!(checks, "KNC_063", "DEBUG_VIRTUAL");
-    check_kconfig_params!(checks, "KNC_064", "DEBUG_SG");
     check_kconfig_params!(checks, "KNC_065", "INIT_ON_ALLOC_DEFAULT_ON");
     check_kconfig_params!(checks, "KNC_066", "STATIC_USERMODEHELPER");
     check_kconfig_params!(checks, "KNC_067", "SCHED_CORE");
@@ -1255,7 +1294,7 @@ fn checks() {
     check_kconfig_params!(checks, "KNC_074", "SECURITY_YAMA");
     check_kconfig_params!(checks, "KNC_075", "SECURITY_LANDLOCK");
     check_kconfig_not_set_param!(checks, "KNC_076", "SECURITY_SELINUX_DISABLE");
-    check_kconfig_not_set_param!(checks, "KNC_077", "SECURITY_SELINUX_BOOTPARAM");
+    check_kconfig_not_set_param!(checks, "KNC_077", "SECURITY_SELINUX_BOOTPARAM"); // TODO: set N
     check_kconfig_not_set_param!(checks, "KNC_078", "SECURITY_SELINUX_DEVELOP");
     check_kconfig_not_set_param!(checks, "KNC_079", "SECURITY_WRITABLE_HOOKS");
     check_kconfig_not_set_param!(checks, "KNC_080", "SECURITY_SELINUX_DEBUG");
@@ -1361,7 +1400,6 @@ fn checks() {
     check_kconfig_not_set_param!(checks, "KNC_181", "MAGIC_SYSRQ");
     check_kconfig_not_set_param!(checks, "KNC_182", "MAGIC_SYSRQ_DEFAULT_ENABLE");
     check_kconfig_not_set_param!(checks, "KNC_183", "MAGIC_SYSRQ_SERIAL");
-    check_kconfig_not_set_param!(checks, "KNC_184", "MAGIC_SYSRQ_DEFAULT_ENABLE");
 
     // grapheneos
     check_kconfig_not_set_param!(checks, "KNC_187", "EFI_TEST");
@@ -2348,6 +2386,8 @@ fn checks() {
 
     check_reboot_required!(checks, "SYS_001");
 
+    check_apparmor_enabled!(checks, "AAR_001");
+
     // TODO: `/var/log` 0755 or less permissive - STIG
     // TODO: Ensure that library files have mode 755 or less permissive - STIG
     // TODO: systemd coredump <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-257812>
@@ -2356,9 +2396,13 @@ fn checks() {
 
     checks.run();
 
-    checks.print();
+    if !args.disable_print_checks {
+        checks.print();
+    }
 
-    checks.print_stats();
+    if !args.disable_print_stats {
+        checks.print_stats();
+    }
 }
 
 macro_rules! init_or_log {
@@ -2388,6 +2432,7 @@ fn init() {
     init_or_log!(kconfig::init_kcompile_config, KCOMPILE_CONFIG);
     init_or_log!(login_defs::init_login_defs, LOGIN_DEFS);
     init_or_log!(mount::init_mounts, MOUNTS);
+    init_or_log!(nginx::init_nginx_config, NGINX_CONF);
     init_or_log!(modprobe::init_modprobe, MODPROBE_CONFIG);
     init_modprobe_blacklist();
     init_modprobe_disabled();

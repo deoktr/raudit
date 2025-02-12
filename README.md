@@ -32,6 +32,23 @@ What is supported:
 - Grub configuration
 - GDM configuration
 
+Support planned:
+
+- AppArmor
+- SELinux
+- ip and nftables
+- systemd units
+- nginx
+- Apache
+- Redis
+- MySQL
+- Squid
+- Traefik
+- Caddy
+- PostgreSQL
+- ProFTPD
+- firejail
+
 ## Usage
 
 Build:
@@ -71,10 +88,33 @@ Benchmark 1: ./target/release/raudit
 
 ## TODO
 
-- Config file to skip checks
+- Skip checks
 - Add a "criticity", "hardening level" value linked to a check
 - Add tags to checks and the ability to filter them
 - Add JSON output format
+- Add flag to disable colors
+- Generate linux audit logs
+- Add AppArmor profile
+- Create custom parsers for complex configurations (sudo, nginx, etc.)
+- Give the user's the ability to specify config paths, with globing
+- Get configuration from file
+- Check permissions on startup (root or not) and warn user if needed
+- Add flag to only print failed checks
+- Add firejail rules
+- Add firejail profile for raudit
+- Ensure localhost is resolved on `127.0.0.1` in `/etc/hosts`
+- Run `systemd-analyze security ...` on all systemd services and raise errors based on results
+- Ensure DNS supports DNSSEC and is secured with DoT DoH or DNSCRYPT
+- Ensure NTP is configured with NTS
+- Ensure logrotate is used
+- Ensure rsyslog is used
+- Ensure secure boot and TPM are setup
+- Ensure LSM is configured at boot with either AppArmor or SELiinux
+- Ensure AppArmor profiles are used for some processes
+- Ensure firejail is used for some processes
+- Ensure `/tmp` is managed by systemd `tmp.mount` unit, and is cleaned on shutdown
+- Ensure systemd services are hardened (with sandboxing options) `systemctl cat`
+- Ensure cron is disabled if not needed
 
 ## License
 
