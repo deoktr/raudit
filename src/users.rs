@@ -18,11 +18,16 @@
 
 use std::fs;
 
+use crate::base::empty_or_missing_file;
+
 const PASSWD_PATH: &str = "/etc/passwd";
 
 const SHADOW_PATH: &str = "/etc/shadow";
 
 const SECURETTY_PATH: &str = "/etc/securetty";
+
+/// UID_MIN as defined in `/etc/login.defs`.
+const UID_MIN: u32 = 1000;
 
 /// Passwd configuration from `/etc/passwd`.
 pub type PasswdConfig = Vec<Passwd>;
@@ -192,7 +197,7 @@ pub fn no_uid_zero(passwd: &PasswdConfig) -> bool {
 
 // TODO: Ensure all groups in /etc/passwd exist in /etc/group
 // TODO: Ensure no duplicate GIDs exist
-// TODO: Ensure that root account is locked (paranoid)
+// TODO: Ensure that root account is locked
 
 /// Ensure no duplicate UIDs exist.
 ///
@@ -216,7 +221,16 @@ pub fn no_dup_username(passwd: &PasswdConfig) -> bool {
     })
 }
 
-// TODO: Ensure no login is available on account with UID < 1000 ?
+/// Ensure no login is available on system accounts
+///
+/// Ensure that all system users (UID < 1000) can't login with a shell, either
+/// have `nologin`, or `false` as shell.
+pub fn no_login_sys_users(passwd: &PasswdConfig) -> bool {
+    !passwd.iter().any(|user| {
+        (user.uid > 0 && user.uid < UID_MIN)
+            && !(user.shell.ends_with("/nologin") || user.shell.ends_with("/false"))
+    })
+}
 
 /// Ensure `/etc/securetty` is kept empty or missing.
 ///
@@ -224,13 +238,7 @@ pub fn no_dup_username(passwd: &PasswdConfig) -> bool {
 /// from. This file should be kept empty so that nobody can do so from a
 /// terminal.
 pub fn empty_securetty() -> Result<bool, std::io::Error> {
-    match fs::metadata(SECURETTY_PATH) {
-        Ok(m) => Ok(m.len() == 0),
-        Err(e) => match e.kind() {
-            std::io::ErrorKind::NotFound => Ok(true),
-            _ => Err(e),
-        },
-    }
+    empty_or_missing_file(SECURETTY_PATH)
 }
 
 #[cfg(test)]
@@ -443,6 +451,92 @@ proxy:*:19837:0:99999:7:::
             },
         ];
         let r = no_dup_username(&passwd_dup);
+        assert!(!r);
+    }
+
+    #[test]
+    fn test_no_login_sys_users() {
+        let passwd: PasswdConfig = vec![
+            Passwd {
+                username: "root".to_string(),
+                password: "x".to_string(),
+                uid: 0,
+                gid: 0,
+                gecos: "root".to_string(),
+                home: "/root".to_string(),
+                shell: "/usr/bin/bash".to_string(),
+            },
+            Passwd {
+                username: "daemon".to_string(),
+                password: "x".to_string(),
+                uid: 1,
+                gid: 1,
+                gecos: "".to_string(),
+                home: "/nonexistent".to_string(),
+                shell: "/usr/bin/false".to_string(),
+            },
+            Passwd {
+                username: "avahi".to_string(),
+                password: "x".to_string(),
+                uid: 2,
+                gid: 2,
+                gecos: "".to_string(),
+                home: "/run/avahi-daemon".to_string(),
+                shell: "/usr/sbin/nologin".to_string(),
+            },
+            Passwd {
+                username: "systemd-oom".to_string(),
+                password: "x".to_string(),
+                uid: 998,
+                gid: 998,
+                gecos: "".to_string(),
+                home: "/nonexistent".to_string(),
+                shell: "/bin/false".to_string(),
+            },
+            Passwd {
+                username: "polkitd".to_string(),
+                password: "x".to_string(),
+                uid: 999,
+                gid: 999,
+                gecos: "".to_string(),
+                home: "/nonexistent".to_string(),
+                shell: "/usr/bin/nologin".to_string(),
+            },
+            Passwd {
+                username: "baz".to_string(),
+                password: "x".to_string(),
+                uid: 1000,
+                gid: 1000,
+                gecos: "foo".to_string(),
+                home: "/home/foo".to_string(),
+                shell: "/usr/bin/bash".to_string(),
+            },
+        ];
+        let r = no_login_sys_users(&passwd);
+        assert!(r);
+
+        let passwd: PasswdConfig = vec![Passwd {
+            username: "foo".to_string(),
+            password: "x".to_string(),
+            uid: 999,
+            gid: 999,
+            gecos: "".to_string(),
+            home: "".to_string(),
+            shell: "/usr/bin/bash".to_string(),
+        }];
+        let r = no_login_sys_users(&passwd);
+        assert!(!r);
+
+        let passwd: PasswdConfig = vec![Passwd {
+            username: "foo".to_string(),
+            password: "x".to_string(),
+            uid: 1,
+            gid: 1,
+            gecos: "".to_string(),
+            home: "".to_string(),
+            shell: "/usr/bin/zsh".to_string(),
+        }];
+        let r = no_login_sys_users(&passwd);
         assert!(!r);
     }
 }

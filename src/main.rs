@@ -864,6 +864,19 @@ macro_rules! check_hardened_malloc {
     };
 }
 
+macro_rules! check_no_login_sys_users {
+    ($checks:tt, $id:tt) => {
+        check_bool!(
+            $checks,
+            $id,
+            "Ensure no login is available on system accounts",
+            PASSWD_CONFIG,
+            users::no_login_sys_users,
+            "system account found with shell"
+        );
+    };
+}
+
 macro_rules! check_empty_securetty {
     ($checks:tt, $id:tt) => {
         check_bool_error!(
@@ -2374,6 +2387,7 @@ fn checks(args: Cli) {
     check_no_dup_username!(checks, "USR_002");
     check_no_dup_uid!(checks, "USR_003");
     check_empty_securetty!(checks, "USR_004");
+    check_no_login_sys_users!(checks, "USR_005");
 
     check_empty_gshadow!(checks, "GRP_001");
     check_one_gid_zero!(checks, "GRP_002");
