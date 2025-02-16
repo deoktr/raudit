@@ -19,6 +19,7 @@ What is supported:
 - Kenel params
 - Kernel compilation params
 - Sysctl params
+- Docker/Podman containers
 - Login.defs configuration
 - Modprobe including blacklisted and disabled modules
 - PAM rules

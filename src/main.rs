@@ -20,6 +20,7 @@ mod apparmor;
 mod audit;
 mod base;
 mod check;
+mod docker;
 mod gdm;
 mod group;
 mod grub;
@@ -998,6 +999,30 @@ macro_rules! check_apparmor_enabled {
             "Ensure AppArmor is enabled",
             apparmor::apparmor_enabled,
             "AppArmor not enabled"
+        );
+    };
+}
+
+macro_rules! check_docker_not_privileged {
+    ($checks:tt, $id:tt) => {
+        check_bool_error!(
+            $checks,
+            $id,
+            "Ensure containers are not started with `--privileged` flag",
+            docker::docker_not_privileged,
+            "containers running with `--privileged`"
+        );
+    };
+}
+
+macro_rules! check_docker_cap_drop {
+    ($checks:tt, $id:tt) => {
+        check_bool_error!(
+            $checks,
+            $id,
+            "Ensure containers capabilities are dopped",
+            docker::docker_cap_drop,
+            "caps not dropped"
         );
     };
 }
@@ -2219,157 +2244,159 @@ fn checks(args: Cli) {
 
     // FIXME: add numbers to AUD_
     check_audit_rule!(checks, "AUD_100", "-e 2"); // ensure auditd rules are immutable
-    check_audit_rule!(checks, "AUD_101", "-w /var/log/sudo.log -p wa -k log_file");
-    check_audit_rule!(checks, "AUD_102", "-w /etc/group -p wa -k identity");
-    check_audit_rule!(checks, "AUD_103", "-w /etc/passwd -p wa -k identity");
-    check_audit_rule!(checks, "AUD_104", "-w /etc/gshadow -p wa -k identity");
-    check_audit_rule!(checks, "AUD_105", "-w /etc/shadow -p wa -k identity");
-    check_audit_rule!(
-        checks,
-        "AUD_106",
-        "-w /etc/security/opasswd -p wa -k identity"
-    );
-    // 1000 being the min UID
-    check_audit_rule!(checks, "AUD_107", "-a always,exit -F arch=b64 -S create_module,init_module,delete_module,query_module,finit_module -F auid>=1000 -F auid!=-1 -F key=kernel_modules");
 
-    // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258195>
-    // check_audit_rule!(checks, "AUD_001", "-a always,exit -F path=/usr/bin/kmod -F perm=x -F auid>=1000 -F auid!=unset -k modules"); // STIG
-    check_audit_rule!(checks, "AUD_108", "-a always,exit -F path=/usr/bin/kmod -F perm=x -F auid>=1000 -F auid!=unset -k kernel_modules"); // FIXME: on NixOS change to `/run/current-system/sw/bin/kmod`
-    check_audit_rule!(checks, "AUD_109", "-w /var/log/lastlog -p wa -k login");
-    check_audit_rule!(checks, "AUD_110", "-w /var/run/faillog -p wa -k login"); // FIXME: where is it on NixOS ?
-    check_audit_rule!(checks, "AUD_111", "-w /var/run/faillock -p wa -k login"); // FIXME: where is it on NixOS ?
-    check_audit_rule!(checks, "AUD_112", "-w /etc/apparmor -p wa -k mac_policy");
-    check_audit_rule!(checks, "AUD_113", "-w /etc/apparmor.d -p wa -k mac_policy");
-    check_audit_rule!(
-        checks,
-        "AUD_114",
-        "-a always,exit -F path=/usr/bin/chcon -F perm=x -F auid>=1000 -F auid!=unset -k perm_chng"
-    ); // FIXME: on NixOS change to `/run/current-system/sw/bin/chcon`
-    check_audit_rule!(checks, "AUD_115", "-a always,exit -F path=/usr/bin/setfacl -F perm=x -F auid>=1000 -F auid!=unset -k perm_chng");
-    check_audit_rule!(
-        checks,
-        "AUD_116",
-        "-a always,exit -F path=/usr/bin/chacl -F perm=x -F auid>=1000 -F auid!=unset -k perm_chng"
-    ); // FIXME: on NixOS change to `/run/current-system/sw/bin/chacl`
-    check_audit_rule!(checks, "AUD_117", "-a always,exit -F path=/sbin/apparmor_parser -F perm=x -F auid>=1000 -F auid!=unset -k perm_chng");
-    check_audit_rule!(
-        checks,
-        "AUD_118",
-        "-a always,exit -F path=/usr/bin/newgrp -F perm=x -F auid>=1000 -F auid!=unset -k priv_cmd"
-    );
-    check_audit_rule!(checks, "AUD_119", "-a always,exit -F path=/usr/bin/sudoedit -F perm=x -F auid>=1000 -F auid!=unset -k priv_cmd");
-    check_audit_rule!(
-        checks,
-        "AUD_120",
-        "-a always,exit -F path=/usr/bin/sudo -F perm=x -F auid>=1000 -F auid!=unset -k priv_cmd"
-    );
-
-    check_audit_rule!(checks, "AUD_121", "-a always,exit -F arch=b32 -S creat,open,openat,open_by_handle_at,truncate,ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k perm_access");
-    check_audit_rule!(checks, "AUD_122", "-a always,exit -F arch=b32 -S creat,open,openat,open_by_handle_at,truncate,ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k perm_access");
-    check_audit_rule!(checks, "AUD_123", "-a always,exit -F arch=b64 -S creat,open,openat,open_by_handle_at,truncate,ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k perm_access");
-    check_audit_rule!(checks, "AUD_124", "-a always,exit -F arch=b64 -S creat,open,openat,open_by_handle_at,truncate,ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k perm_access");
-
-    check_audit_rule!(checks, "AUD_125", "-a always,exit -F arch=b32 -S chmod,fchmod,fchmodat -F auid>=1000 -F auid!=4294967295 -k perm_chng");
-    check_audit_rule!(checks, "AUD_126", "-a always,exit -F arch=b64 -S chmod,fchmod,fchmodat -F auid>=1000 -F auid!=4294967295 -k perm_chng");
-
-    check_audit_rule!(checks, "AUD_127", "-a always,exit -F arch=b32 -S chown,fchown,fchownat,lchown -F auid>=1000 -F auid!=4294967295 -k perm_chng");
-    check_audit_rule!(checks, "AUD_128", "-a always,exit -F arch=b64 -S chown,fchown,fchownat,lchown -F auid>=1000 -F auid!=4294967295 -k perm_chng");
-
-    check_audit_rule!(checks, "AUD_129", "-a always,exit -F arch=b32 -S setxattr,fsetxattr,lsetxattr,removexattr,fremovexattr,lremovexattr -F auid>=1000 -F auid!=4294967295 -k perm_mod");
-    check_audit_rule!(checks, "AUD_130", "-a always,exit -F arch=b32 -S setxattr,fsetxattr,lsetxattr,removexattr,fremovexattr,lremovexattr -F auid=0 -k perm_mod");
-    check_audit_rule!(checks, "AUD_131", "-a always,exit -F arch=b64 -S setxattr,fsetxattr,lsetxattr,removexattr,fremovexattr,lremovexattr -F auid>=1000 -F auid!=4294967295 -k perm_mod");
-    check_audit_rule!(checks, "AUD_132", "-a always,exit -F arch=b64 -S setxattr,fsetxattr,lsetxattr,removexattr,fremovexattr,lremovexattr -F auid=0 -k perm_mod");
-
-    check_audit_rule!(checks, "AUD_133", "-a always,exit -F path=/usr/lib/openssh/ssh-keysign -F perm=x -F auid>=1000 -F auid!=unset -k privileged-ssh");
-    check_audit_rule!(checks, "AUD_134", "-a always,exit -F path=/usr/bin/ssh-agent -F perm=x -F auid>=1000 -F auid!=unset -k privileged-ssh");
-
-    check_audit_rule!(checks, "AUD_135", "-a always,exit -F path=/usr/bin/umount -F perm=x -F auid>=1000 -F auid!=unset -k privileged-umount");
-    check_audit_rule!(checks, "AUD_136", "-a always,exit -F path=/usr/bin/mount -F perm=x -F auid>=1000 -F auid!=unset -k privileged-mount");
-
-    check_audit_rule!(checks, "AUD_137", "-a always,exit -F path=/usr/bin/chfn -F perm=x -F auid>=1000 -F auid!=unset -k privileged-chfn");
-
-    check_audit_rule!(checks, "AUD_138", "-a always,exit -F path=/bin/su -F perm=x -F auid>=1000 -F auid!=unset -k privileged-priv_change");
-
-    // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258217>
-    // check_audit_rule!(checks, "AUD_001", "-w /etc/sudoers -p wa -k identity"); // STIG
-    check_audit_rule!(checks, "AUD_139", "-w /etc/sudoers -p wa -k scope");
-    check_audit_rule!(checks, "AUD_140", "-w /etc/sudoers.d -p wa -k scope"); // FIXME: not needed on NixOS
-    check_audit_rule!(checks, "AUD_141", "-w /var/run/utmp -p wa -k session");
-    check_audit_rule!(checks, "AUD_142", "-w /var/log/wtmp -p wa -k session");
-    check_audit_rule!(checks, "AUD_143", "-w /var/log/btmp -p wa -k session");
-    check_audit_rule!(
-        checks,
-        "AUD_144",
-        "-a always,exit -F arch=b64 -S sethostname,setdomainname -F key=system_locale"
-    );
-    check_audit_rule!(
-        checks,
-        "AUD_145",
-        "-a always,exit -F arch=b32 -S sethostname,setdomainname -F key=system_locale"
-    );
-    check_audit_rule!(checks, "AUD_146", "-w /etc/issue -p wa -k system_locale");
-    check_audit_rule!(
-        checks,
-        "AUD_147",
-        "-w /etc/issue.net -p wa -k system_locale"
-    ); // FIXME: not needed on NixOS
-    check_audit_rule!(checks, "AUD_148", "-w /etc/hosts -p wa -k system_locale");
-    check_audit_rule!(checks, "AUD_149", "-w /etc/networks -p wa -k system_locale"); // FIXME: not needed on NixOS
-    check_audit_rule!(checks, "AUD_150", "-w /etc/network/ -p wa -k system_locale"); // FIXME: not needed on NixOS
-    check_audit_rule!(
-        checks,
-        "AUD_151",
-        "-a always,exit -F arch=b64 -S adjtimex,settimeofday,clock_settime -F key=time_change"
-    );
-    check_audit_rule!(
-        checks,
-        "AUD_152",
-        "-a always,exit -F arch=b32 -S settimeofday,adjtimex,clock_settime -F key=time_change"
-    );
-    check_audit_rule!(checks, "AUD_153", "-w /etc/localtime -p wa -k time_change");
-    check_audit_rule!(
-        checks,
-        "AUD_154",
-        "-a always,exit -F arch=b64 -S execve -C euid!=uid -F auid!=-1 -F key=user_emulation"
-    );
-    check_audit_rule!(
-        checks,
-        "AUD_155",
-        "-a always,exit -F arch=b32 -S execve -C euid!=uid -F auid!=-1 -F key=user_emulation"
-    );
-    check_audit_rule!(checks, "AUD_156", "-a always,exit -F path=/usr/sbin/usermod -F perm=x -F auid>=1000 -F auid!=unset -k usermod");
-
-    check_audit_rule!(checks, "AUD_157", "-a always,exit -F path=/usr/bin/passwd -F perm=x -F auid>=1000 -F auid!=unset -k privileged-passwd");
-
-    // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258194>
-    check_audit_rule!(checks, "AUD_158", "-a always,exit -F path=/usr/bin/gpasswd -F perm=x -F auid>=1000 -F auid!=unset -k privileged-gpasswd"); // STIG
-
-    // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258192>
-    check_audit_rule!(
-        checks,
-        "AUD_159",
-        "-a always,exit -F path=/usr/bin/chsh -F perm=x -F auid>=1000 -F auid!=unset -k priv_cmd"
-    ); // STIG
-
-    // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258193>
-    check_audit_rule!(checks, "AUD_160", "-a always,exit -F path=/usr/bin/crontab -F perm=x -F auid>=1000 -F auid!=unset -k privileged-crontab"); // STIG
-
-    // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258190>
-    check_audit_rule!(checks, "AUD_161", "-a always,exit -F arch=b32 -S init_module,finit_module -F auid>=1000 -F auid!=unset -k module_chng"); // STIG
-    check_audit_rule!(checks, "AUD_162", "-a always,exit -F arch=b64 -S init_module,finit_module -F auid>=1000 -F auid!=unset -k module_chng"); // STIG
-
-    // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258191>
-    check_audit_rule!(checks, "AUD_163", "-a always,exit -F path=/usr/bin/chage -F perm=x -F auid>=1000 -F auid!=unset -k privileged-chage"); // STIG
-
-    // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258215>
-    check_audit_rule!(
-        checks,
-        "AUD_164",
-        "-a always,exit -F arch=b32 -S umount -F auid>=1000 -F auid!=unset -k privileged-umount"
-    ); // STIG
-
-    // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258214>
-    check_audit_rule!(checks, "AUD_165", "-a always,exit -F path=/usr/sbin/shutdown -F perm=x -F auid>=1000 -F auid!=unset -k privileged-shutdown"); // STIG
+    // temp remove audit rules, since they are so context dependant
+    // check_audit_rule!(checks, "AUD_101", "-w /var/log/sudo.log -p wa -k log_file");
+    // check_audit_rule!(checks, "AUD_102", "-w /etc/group -p wa -k identity");
+    // check_audit_rule!(checks, "AUD_103", "-w /etc/passwd -p wa -k identity");
+    // check_audit_rule!(checks, "AUD_104", "-w /etc/gshadow -p wa -k identity");
+    // check_audit_rule!(checks, "AUD_105", "-w /etc/shadow -p wa -k identity");
+    // check_audit_rule!(
+    //     checks,
+    //     "AUD_106",
+    //     "-w /etc/security/opasswd -p wa -k identity"
+    // );
+    // // 1000 being the min UID
+    // check_audit_rule!(checks, "AUD_107", "-a always,exit -F arch=b64 -S create_module,init_module,delete_module,query_module,finit_module -F auid>=1000 -F auid!=-1 -F key=kernel_modules");
+    //
+    // // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258195>
+    // // check_audit_rule!(checks, "AUD_001", "-a always,exit -F path=/usr/bin/kmod -F perm=x -F auid>=1000 -F auid!=unset -k modules"); // STIG
+    // check_audit_rule!(checks, "AUD_108", "-a always,exit -F path=/usr/bin/kmod -F perm=x -F auid>=1000 -F auid!=unset -k kernel_modules"); // FIXME: on NixOS change to `/run/current-system/sw/bin/kmod`
+    // check_audit_rule!(checks, "AUD_109", "-w /var/log/lastlog -p wa -k login");
+    // check_audit_rule!(checks, "AUD_110", "-w /var/run/faillog -p wa -k login"); // FIXME: where is it on NixOS ?
+    // check_audit_rule!(checks, "AUD_111", "-w /var/run/faillock -p wa -k login"); // FIXME: where is it on NixOS ?
+    // check_audit_rule!(checks, "AUD_112", "-w /etc/apparmor -p wa -k mac_policy");
+    // check_audit_rule!(checks, "AUD_113", "-w /etc/apparmor.d -p wa -k mac_policy");
+    // check_audit_rule!(
+    //     checks,
+    //     "AUD_114",
+    //     "-a always,exit -F path=/usr/bin/chcon -F perm=x -F auid>=1000 -F auid!=unset -k perm_chng"
+    // ); // FIXME: on NixOS change to `/run/current-system/sw/bin/chcon`
+    // check_audit_rule!(checks, "AUD_115", "-a always,exit -F path=/usr/bin/setfacl -F perm=x -F auid>=1000 -F auid!=unset -k perm_chng");
+    // check_audit_rule!(
+    //     checks,
+    //     "AUD_116",
+    //     "-a always,exit -F path=/usr/bin/chacl -F perm=x -F auid>=1000 -F auid!=unset -k perm_chng"
+    // ); // FIXME: on NixOS change to `/run/current-system/sw/bin/chacl`
+    // check_audit_rule!(checks, "AUD_117", "-a always,exit -F path=/sbin/apparmor_parser -F perm=x -F auid>=1000 -F auid!=unset -k perm_chng");
+    // check_audit_rule!(
+    //     checks,
+    //     "AUD_118",
+    //     "-a always,exit -F path=/usr/bin/newgrp -F perm=x -F auid>=1000 -F auid!=unset -k priv_cmd"
+    // );
+    // check_audit_rule!(checks, "AUD_119", "-a always,exit -F path=/usr/bin/sudoedit -F perm=x -F auid>=1000 -F auid!=unset -k priv_cmd");
+    // check_audit_rule!(
+    //     checks,
+    //     "AUD_120",
+    //     "-a always,exit -F path=/usr/bin/sudo -F perm=x -F auid>=1000 -F auid!=unset -k priv_cmd"
+    // );
+    //
+    // check_audit_rule!(checks, "AUD_121", "-a always,exit -F arch=b32 -S creat,open,openat,open_by_handle_at,truncate,ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k perm_access");
+    // check_audit_rule!(checks, "AUD_122", "-a always,exit -F arch=b32 -S creat,open,openat,open_by_handle_at,truncate,ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k perm_access");
+    // check_audit_rule!(checks, "AUD_123", "-a always,exit -F arch=b64 -S creat,open,openat,open_by_handle_at,truncate,ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k perm_access");
+    // check_audit_rule!(checks, "AUD_124", "-a always,exit -F arch=b64 -S creat,open,openat,open_by_handle_at,truncate,ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k perm_access");
+    //
+    // check_audit_rule!(checks, "AUD_125", "-a always,exit -F arch=b32 -S chmod,fchmod,fchmodat -F auid>=1000 -F auid!=4294967295 -k perm_chng");
+    // check_audit_rule!(checks, "AUD_126", "-a always,exit -F arch=b64 -S chmod,fchmod,fchmodat -F auid>=1000 -F auid!=4294967295 -k perm_chng");
+    //
+    // check_audit_rule!(checks, "AUD_127", "-a always,exit -F arch=b32 -S chown,fchown,fchownat,lchown -F auid>=1000 -F auid!=4294967295 -k perm_chng");
+    // check_audit_rule!(checks, "AUD_128", "-a always,exit -F arch=b64 -S chown,fchown,fchownat,lchown -F auid>=1000 -F auid!=4294967295 -k perm_chng");
+    //
+    // check_audit_rule!(checks, "AUD_129", "-a always,exit -F arch=b32 -S setxattr,fsetxattr,lsetxattr,removexattr,fremovexattr,lremovexattr -F auid>=1000 -F auid!=4294967295 -k perm_mod");
+    // check_audit_rule!(checks, "AUD_130", "-a always,exit -F arch=b32 -S setxattr,fsetxattr,lsetxattr,removexattr,fremovexattr,lremovexattr -F auid=0 -k perm_mod");
+    // check_audit_rule!(checks, "AUD_131", "-a always,exit -F arch=b64 -S setxattr,fsetxattr,lsetxattr,removexattr,fremovexattr,lremovexattr -F auid>=1000 -F auid!=4294967295 -k perm_mod");
+    // check_audit_rule!(checks, "AUD_132", "-a always,exit -F arch=b64 -S setxattr,fsetxattr,lsetxattr,removexattr,fremovexattr,lremovexattr -F auid=0 -k perm_mod");
+    //
+    // check_audit_rule!(checks, "AUD_133", "-a always,exit -F path=/usr/lib/openssh/ssh-keysign -F perm=x -F auid>=1000 -F auid!=unset -k privileged-ssh");
+    // check_audit_rule!(checks, "AUD_134", "-a always,exit -F path=/usr/bin/ssh-agent -F perm=x -F auid>=1000 -F auid!=unset -k privileged-ssh");
+    //
+    // check_audit_rule!(checks, "AUD_135", "-a always,exit -F path=/usr/bin/umount -F perm=x -F auid>=1000 -F auid!=unset -k privileged-umount");
+    // check_audit_rule!(checks, "AUD_136", "-a always,exit -F path=/usr/bin/mount -F perm=x -F auid>=1000 -F auid!=unset -k privileged-mount");
+    //
+    // check_audit_rule!(checks, "AUD_137", "-a always,exit -F path=/usr/bin/chfn -F perm=x -F auid>=1000 -F auid!=unset -k privileged-chfn");
+    //
+    // check_audit_rule!(checks, "AUD_138", "-a always,exit -F path=/bin/su -F perm=x -F auid>=1000 -F auid!=unset -k privileged-priv_change");
+    //
+    // // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258217>
+    // // check_audit_rule!(checks, "AUD_001", "-w /etc/sudoers -p wa -k identity"); // STIG
+    // check_audit_rule!(checks, "AUD_139", "-w /etc/sudoers -p wa -k scope");
+    // check_audit_rule!(checks, "AUD_140", "-w /etc/sudoers.d -p wa -k scope"); // FIXME: not needed on NixOS
+    // check_audit_rule!(checks, "AUD_141", "-w /var/run/utmp -p wa -k session");
+    // check_audit_rule!(checks, "AUD_142", "-w /var/log/wtmp -p wa -k session");
+    // check_audit_rule!(checks, "AUD_143", "-w /var/log/btmp -p wa -k session");
+    // check_audit_rule!(
+    //     checks,
+    //     "AUD_144",
+    //     "-a always,exit -F arch=b64 -S sethostname,setdomainname -F key=system_locale"
+    // );
+    // check_audit_rule!(
+    //     checks,
+    //     "AUD_145",
+    //     "-a always,exit -F arch=b32 -S sethostname,setdomainname -F key=system_locale"
+    // );
+    // check_audit_rule!(checks, "AUD_146", "-w /etc/issue -p wa -k system_locale");
+    // check_audit_rule!(
+    //     checks,
+    //     "AUD_147",
+    //     "-w /etc/issue.net -p wa -k system_locale"
+    // ); // FIXME: not needed on NixOS
+    // check_audit_rule!(checks, "AUD_148", "-w /etc/hosts -p wa -k system_locale");
+    // check_audit_rule!(checks, "AUD_149", "-w /etc/networks -p wa -k system_locale"); // FIXME: not needed on NixOS
+    // check_audit_rule!(checks, "AUD_150", "-w /etc/network/ -p wa -k system_locale"); // FIXME: not needed on NixOS
+    // check_audit_rule!(
+    //     checks,
+    //     "AUD_151",
+    //     "-a always,exit -F arch=b64 -S adjtimex,settimeofday,clock_settime -F key=time_change"
+    // );
+    // check_audit_rule!(
+    //     checks,
+    //     "AUD_152",
+    //     "-a always,exit -F arch=b32 -S settimeofday,adjtimex,clock_settime -F key=time_change"
+    // );
+    // check_audit_rule!(checks, "AUD_153", "-w /etc/localtime -p wa -k time_change");
+    // check_audit_rule!(
+    //     checks,
+    //     "AUD_154",
+    //     "-a always,exit -F arch=b64 -S execve -C euid!=uid -F auid!=-1 -F key=user_emulation"
+    // );
+    // check_audit_rule!(
+    //     checks,
+    //     "AUD_155",
+    //     "-a always,exit -F arch=b32 -S execve -C euid!=uid -F auid!=-1 -F key=user_emulation"
+    // );
+    // check_audit_rule!(checks, "AUD_156", "-a always,exit -F path=/usr/sbin/usermod -F perm=x -F auid>=1000 -F auid!=unset -k usermod");
+    //
+    // check_audit_rule!(checks, "AUD_157", "-a always,exit -F path=/usr/bin/passwd -F perm=x -F auid>=1000 -F auid!=unset -k privileged-passwd");
+    //
+    // // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258194>
+    // check_audit_rule!(checks, "AUD_158", "-a always,exit -F path=/usr/bin/gpasswd -F perm=x -F auid>=1000 -F auid!=unset -k privileged-gpasswd"); // STIG
+    //
+    // // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258192>
+    // check_audit_rule!(
+    //     checks,
+    //     "AUD_159",
+    //     "-a always,exit -F path=/usr/bin/chsh -F perm=x -F auid>=1000 -F auid!=unset -k priv_cmd"
+    // ); // STIG
+    //
+    // // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258193>
+    // check_audit_rule!(checks, "AUD_160", "-a always,exit -F path=/usr/bin/crontab -F perm=x -F auid>=1000 -F auid!=unset -k privileged-crontab"); // STIG
+    //
+    // // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258190>
+    // check_audit_rule!(checks, "AUD_161", "-a always,exit -F arch=b32 -S init_module,finit_module -F auid>=1000 -F auid!=unset -k module_chng"); // STIG
+    // check_audit_rule!(checks, "AUD_162", "-a always,exit -F arch=b64 -S init_module,finit_module -F auid>=1000 -F auid!=unset -k module_chng"); // STIG
+    //
+    // // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258191>
+    // check_audit_rule!(checks, "AUD_163", "-a always,exit -F path=/usr/bin/chage -F perm=x -F auid>=1000 -F auid!=unset -k privileged-chage"); // STIG
+    //
+    // // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258215>
+    // check_audit_rule!(
+    //     checks,
+    //     "AUD_164",
+    //     "-a always,exit -F arch=b32 -S umount -F auid>=1000 -F auid!=unset -k privileged-umount"
+    // ); // STIG
+    //
+    // // <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258214>
+    // check_audit_rule!(checks, "AUD_165", "-a always,exit -F path=/usr/sbin/shutdown -F perm=x -F auid>=1000 -F auid!=unset -k privileged-shutdown"); // STIG
 
     // TODO: ensure Grub is configured to load audit
 
@@ -2401,6 +2428,9 @@ fn checks(args: Cli) {
     check_reboot_required!(checks, "SYS_001");
 
     check_apparmor_enabled!(checks, "AAR_001");
+
+    check_docker_cap_drop!(checks, "CNT_001");
+    check_docker_not_privileged!(checks, "CNT_002");
 
     // TODO: `/var/log` 0755 or less permissive - STIG
     // TODO: Ensure that library files have mode 755 or less permissive - STIG
