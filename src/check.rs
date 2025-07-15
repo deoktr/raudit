@@ -34,6 +34,12 @@ impl CheckList<'_> {
         }
     }
 
+    /// Filter checks by id prefix.
+    pub fn filter_id(&mut self, prefixes: Vec<String>) {
+        self.checks
+            .retain(|check| prefixes.iter().any(|prefix| check.id.starts_with(prefix)));
+    }
+
     pub fn print(&mut self) {
         for check in &mut self.checks {
             check.print();

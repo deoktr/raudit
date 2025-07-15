@@ -20,6 +20,7 @@ mod apparmor;
 mod audit;
 mod base;
 mod check;
+mod clamav;
 mod docker;
 mod gdm;
 mod group;
@@ -99,6 +100,10 @@ struct Cli {
     // /// Disable colored output
     // #[arg(long, action = clap::ArgAction::SetTrue)]
     // disable_colors: bool,
+    //
+    /// Comma-separated list of ID prefixes to filter
+    #[arg(long, value_delimiter = ',')]
+    filters: Vec<String>,
 }
 
 macro_rules! check {
@@ -2451,6 +2456,8 @@ fn checks(args: Cli) {
     // TODO: systemd coredump <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-257812>
     // TODO: coredumps <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-257813>
     // TODO: shost <https://www.stigviewer.com/stig/oracle_linux_8/2024-06-04/finding/V-248598>
+
+    checks.filter_id(args.filters);
 
     checks.run();
 
