@@ -38,11 +38,13 @@ pub struct Group {
 }
 
 /// Parse the content of `/etc/group`.
+///
+/// Parsed group following the format: `group_name:password:GID:user_list`.
 pub fn parse_group(content: String) -> GroupConfig {
     content
         .lines()
         .map(|line| {
-            let mut kvs = line.splitn(9, ":");
+            let mut kvs = line.splitn(4, ":");
             let name = kvs.next().unwrap_or_default().to_string();
             let password = kvs.next().unwrap_or_default().to_string();
             let gid = kvs
@@ -80,6 +82,11 @@ pub fn init_group() -> Result<GroupConfig, std::io::Error> {
 /// File `/etc/gshadow` must either be empty or missing.
 pub fn empty_gshadow() -> Result<bool, std::io::Error> {
     empty_or_missing_file(SHADOW_PATH)
+}
+
+/// Verify if any group has a password set (not equal to `x`).
+pub fn no_password_in_group(groups: &GroupConfig) -> bool {
+    !groups.iter().any(|group| group.password != "x".to_string())
 }
 
 /// Ensure that only root has GID 0.

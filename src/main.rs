@@ -902,6 +902,19 @@ macro_rules! check_empty_gshadow {
     };
 }
 
+macro_rules! check_no_password_in_group {
+    ($checks:tt, $id:tt) => {
+        check_bool!(
+            $checks,
+            $id,
+            "Ensure that no password is present in `/etc/group`",
+            GROUP_CONFIG,
+            group::no_password_in_group,
+            "password found"
+        );
+    };
+}
+
 macro_rules! check_password_in_passwd {
     ($checks:tt, $id:tt) => {
         check_bool!(
@@ -2420,6 +2433,7 @@ fn checks(args: Cli) {
     check_one_gid_zero!(checks, "GRP_002");
     check_no_dup_gid!(checks, "GRP_003");
     check_no_dup_group_name!(checks, "GRP_004");
+    check_no_password_in_group!(checks, "GRP_005");
 
     check_no_gdm_auto_logon!(checks, "GDM_001");
 
