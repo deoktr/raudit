@@ -43,10 +43,10 @@ use std::process::Stdio;
 ///
 /// Don't start containers with `--privileged`.
 /// Check manually with:
-/// podman container inspect -l --format '{{.Id}}={{.Config.CreateCommand}}'
+/// docker container inspect -l --format '{{.Id}}={{.Config.CreateCommand}}'
 pub fn docker_not_privileged() -> Result<bool, std::io::Error> {
     // can be docker or podman
-    let mut cmd = process::Command::new("podman");
+    let mut cmd = process::Command::new("docker");
     cmd.stdin(Stdio::null());
     cmd.args(vec![
         "container",
@@ -90,10 +90,10 @@ pub fn docker_not_privileged() -> Result<bool, std::io::Error> {
 ///
 /// Start containers with `--cap-drop=all` to remove all capabilities.
 /// check manually with:
-/// podman container inspect -l --format '{{.Id}}={{.Config.CreateCommand}}'
+/// docker container inspect -l --format '{{.Id}}={{.Config.CreateCommand}}'
 pub fn docker_cap_drop() -> Result<bool, std::io::Error> {
     // can be docker or podman
-    let mut cmd = process::Command::new("podman");
+    let mut cmd = process::Command::new("docker");
     cmd.stdin(Stdio::null());
     cmd.args(vec![
         "container",

@@ -17,8 +17,9 @@
  */
 
 use std::fs;
+use std::time::{SystemTime, UNIX_EPOCH};
 
-use crate::base::empty_or_missing_file;
+use crate::base::{directory_exist, empty_or_missing_file};
 
 const PASSWD_PATH: &str = "/etc/passwd";
 
@@ -38,27 +39,43 @@ pub type ShadowConfig = Vec<Shadow>;
 /// Passwd entry.
 #[allow(dead_code)]
 pub struct Passwd {
+    /// login name
     username: String,
+    /// optional encrypted password
     password: String,
+    /// numerical user ID
     uid: u32,
+    /// numerical group ID
     gid: u32,
+    /// user name or comment field
     gecos: String,
+    /// user home directory
     home: String,
+    /// optional user command interpreter
     shell: String,
 }
 
 /// Shadow entry.
 #[allow(dead_code)]
 pub struct Shadow {
+    /// login name
     username: String,
+    /// encrypted password
     password: String,
+    /// date of last password change
     last_change: u64,
+    /// minimum password age
     min_age: u32,
+    /// maximum password age
     max_age: u32,
+    /// password warning period
     warn_period: u32,
+    /// password inactivity period
     inactivity_period: Option<u32>,
+    /// account expiration date
     expiration_date: Option<u32>,
-    unused: String,
+    /// reserved field
+    reserved: String,
 }
 
 /// Parse the content of passwd.
@@ -156,7 +173,7 @@ pub fn parse_shadow(content: String) -> ShadowConfig {
                 }
                 None => None,
             };
-            let unused = kvs.next().unwrap_or_default().to_string();
+            let reserved = kvs.next().unwrap_or_default().to_string();
             Shadow {
                 username,
                 password,
@@ -166,7 +183,7 @@ pub fn parse_shadow(content: String) -> ShadowConfig {
                 warn_period,
                 inactivity_period,
                 expiration_date,
-                unused,
+                reserved,
             }
         })
         .collect()
@@ -188,15 +205,51 @@ pub fn no_uid_zero(passwd: &PasswdConfig) -> bool {
     passwd.iter().filter(|user| user.uid == 0).count() == 1
 }
 
-// TODO:
-/// Ensure no accounts are locked, delete them.
-// pub fn locked_account(passwd: &PasswdConfig) -> bool { }
+/// Ensure all passwords are hashed with yescrypt.
+pub fn yescrypt_hashes(shadow: &ShadowConfig) -> bool {
+    // the full yescrypt format is:
+    // \$y\$[./A-Za-z0-9]+\$[./A-Za-z0-9]{,86}\$[./A-Za-z0-9]{43}
+    shadow
+        .iter()
+        .all(|user| user.password.starts_with("$y$") || user.password == "!")
+}
 
-// TODO:
+/// Ensure no accounts are locked, delete them.
+///
+/// Return true if NO account is locked.
+pub fn no_locked_account(shadow: &ShadowConfig) -> bool {
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("Time went backwards");
+
+    let days_since_epoch = now.as_secs() / 86400;
+
+    !shadow.iter().any(|user| match user.expiration_date {
+        Some(expiration_date) => u64::from(expiration_date) <= days_since_epoch,
+        None => false,
+    })
+}
+
 /// Ensure that all home directories exist.
+pub fn no_missing_home(passwd: &PasswdConfig) -> bool {
+    for user in passwd.iter() {
+        if (user.uid > 0 && user.uid < UID_MIN)
+            || user.shell.ends_with("/nologin")
+            || user.shell.ends_with("/false")
+        {
+            continue;
+        }
+
+        if !directory_exist(&user.home) {
+            return false;
+        }
+    }
+    return true;
+}
 
 // TODO: Ensure all groups in /etc/passwd exist in /etc/group
-// TODO: Ensure no duplicate GIDs exist
+// pub fn no_missing_passwd_groups(passwd: &PasswdConfig, group: &GroupConfig) -> bool { }
+
 // TODO: Ensure that root account is locked
 
 /// Ensure no duplicate UIDs exist.
@@ -228,11 +281,30 @@ pub fn no_dup_username(passwd: &PasswdConfig) -> bool {
 pub fn no_login_sys_users(passwd: &PasswdConfig) -> bool {
     !passwd.iter().any(|user| {
         (user.uid > 0 && user.uid < UID_MIN)
-            && !(user.shell.ends_with("/nologin") || user.shell.ends_with("/false"))
+            && !(user.shell.ends_with("/nologin")
+                || user.shell.ends_with("/false")
+                // on some distro user `sync` as `/bin/sync` shell
+                || user.shell.ends_with("/sync"))
     })
 }
 
-/// Ensure `/etc/securetty` is kept empty or missing.
+/// Ensure /etc/shadow password fields are not empty.
+///
+/// An account with an empty password field means that anybody may log in as
+/// that user without providing a password.
+pub fn no_empty_shadow_password(shadow: &ShadowConfig) -> bool {
+    !shadow.iter().any(|user| user.password == "")
+}
+
+/// Ensure /etc/passwd password fields are not empty.
+///
+/// An account with an empty password field means that anybody may log in as
+/// that user without providing a password.
+pub fn no_empty_passwd_password(passwd: &PasswdConfig) -> bool {
+    !passwd.iter().any(|user| user.password == "")
+}
+
+/// Ensure `/etc/securetty` is empty or missing.
 ///
 /// The file, `/etc/securetty` specifies where you are allowed to login as root
 /// from. This file should be kept empty so that nobody can do so from a
@@ -332,7 +404,7 @@ systemd-timesync:x:996:996:systemd Time Synchronization:/:/usr/sbin/nologin
         assert_eq!(line.warn_period, 7);
         assert_eq!(line.inactivity_period, Some(14));
         assert_eq!(line.expiration_date, None);
-        assert_eq!(line.unused, "".to_string());
+        assert_eq!(line.reserved, "".to_string());
 
         let lines = parse_shadow(
             "daemon:*:19837:0:99999:7:::
@@ -360,7 +432,7 @@ proxy:*:19837:0:99999:7:::
         assert_eq!(line.warn_period, 7);
         assert_eq!(line.inactivity_period, None);
         assert_eq!(line.expiration_date, None);
-        assert_eq!(line.unused, "".to_string());
+        assert_eq!(line.reserved, "".to_string());
 
         assert!(lines.get(1).is_some());
         let line = lines.get(1).unwrap();
@@ -372,7 +444,7 @@ proxy:*:19837:0:99999:7:::
         assert_eq!(line.warn_period, 7);
         assert_eq!(line.inactivity_period, None);
         assert_eq!(line.expiration_date, None);
-        assert_eq!(line.unused, "".to_string());
+        assert_eq!(line.reserved, "".to_string());
 
         assert!(lines.get(10).is_some());
         let line = lines.get(10).unwrap();
@@ -384,7 +456,7 @@ proxy:*:19837:0:99999:7:::
         assert_eq!(line.warn_period, 7);
         assert_eq!(line.inactivity_period, None);
         assert_eq!(line.expiration_date, None);
-        assert_eq!(line.unused, "".to_string());
+        assert_eq!(line.reserved, "".to_string());
     }
 
     #[test]
@@ -485,6 +557,15 @@ proxy:*:19837:0:99999:7:::
                 shell: "/usr/sbin/nologin".to_string(),
             },
             Passwd {
+                username: "sync".to_string(),
+                password: "x".to_string(),
+                uid: 4,
+                gid: 65534,
+                gecos: "".to_string(),
+                home: "/bin".to_string(),
+                shell: "/bin/sync".to_string(),
+            },
+            Passwd {
                 username: "systemd-oom".to_string(),
                 password: "x".to_string(),
                 uid: 998,
@@ -537,6 +618,64 @@ proxy:*:19837:0:99999:7:::
             shell: "/usr/bin/zsh".to_string(),
         }];
         let r = no_login_sys_users(&passwd);
+        assert!(!r);
+    }
+
+    #[test]
+    fn test_no_empty_shadow_password() {
+        let shadow: ShadowConfig = vec![Shadow {
+            username: "foo".to_string(),
+            password: "x".to_string(),
+            last_change: 0,
+            min_age: 0,
+            max_age: 0,
+            warn_period: 0,
+            inactivity_period: None,
+            expiration_date: None,
+            reserved: "".to_string(),
+        }];
+        let r = no_empty_shadow_password(&shadow);
+        assert!(r);
+
+        let shadow: ShadowConfig = vec![Shadow {
+            username: "foo".to_string(),
+            password: "".to_string(),
+            last_change: 0,
+            min_age: 0,
+            max_age: 0,
+            warn_period: 0,
+            inactivity_period: None,
+            expiration_date: None,
+            reserved: "".to_string(),
+        }];
+        let r = no_empty_shadow_password(&shadow);
+        assert!(!r);
+    }
+
+    #[test]
+    fn test_no_empty_passwd_password() {
+        let passwd: PasswdConfig = vec![Passwd {
+            username: "foo".to_string(),
+            password: "x".to_string(),
+            uid: 1,
+            gid: 1,
+            gecos: "".to_string(),
+            home: "".to_string(),
+            shell: "/usr/bin/zsh".to_string(),
+        }];
+        let r = no_empty_passwd_password(&passwd);
+        assert!(r);
+
+        let passwd: PasswdConfig = vec![Passwd {
+            username: "foo".to_string(),
+            password: "".to_string(),
+            uid: 1,
+            gid: 1,
+            gecos: "".to_string(),
+            home: "".to_string(),
+            shell: "/usr/bin/zsh".to_string(),
+        }];
+        let r = no_empty_passwd_password(&passwd);
         assert!(!r);
     }
 }

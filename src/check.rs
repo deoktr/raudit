@@ -16,13 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use crate::config;
+
 // static mut CHECKS: Vec<Check> = Vec::new();
 
 pub struct CheckList<'a> {
     pub checks: Vec<&'a mut Check<'a>>,
 }
 
-// TODO: add ability to filter out some checks, by marking them as skipped
 impl CheckList<'_> {
     pub fn run(&mut self) {
         for check in &mut self.checks {
@@ -36,6 +37,10 @@ impl CheckList<'_> {
 
     /// Filter checks by id prefix.
     pub fn filter_id(&mut self, prefixes: Vec<String>) {
+        if prefixes.len() == 0 {
+            return;
+        }
+
         self.checks
             .retain(|check| prefixes.iter().any(|prefix| check.id.starts_with(prefix)));
     }
@@ -80,12 +85,21 @@ pub struct CheckListStats {
 
 impl CheckListStats {
     pub fn print(self) {
-        println!("\nResult:");
-        println!("\x1b[32m  VALID:   {}/{}\x1b[39m", self.valid, self.total);
-        println!("\x1b[31m  INVALID: {}/{}\x1b[39m", self.invalid, self.total);
-        println!("\x1b[34m  SKIPPED: {}/{}\x1b[39m", self.skipped, self.total);
-        println!("\x1b[36m  ERROR:   {}/{}\x1b[39m", self.error, self.total);
-        println!("\x1b[36m  WAITING: {}/{}\x1b[39m", self.waiting, self.total);
+        if config::is_colored_output_enabled() {
+            println!("\nResult:");
+            println!("\x1b[32m  VALID:   {}/{}\x1b[39m", self.valid, self.total);
+            println!("\x1b[31m  INVALID: {}/{}\x1b[39m", self.invalid, self.total);
+            println!("\x1b[34m  SKIPPED: {}/{}\x1b[39m", self.skipped, self.total);
+            println!("\x1b[36m  ERROR:   {}/{}\x1b[39m", self.error, self.total);
+            println!("\x1b[36m  WAITING: {}/{}\x1b[39m", self.waiting, self.total);
+        } else {
+            println!("\nResult:");
+            println!("  VALID:   {}/{}", self.valid, self.total);
+            println!("  INVALID: {}/{}", self.invalid, self.total);
+            println!("  SKIPPED: {}/{}", self.skipped, self.total);
+            println!("  ERROR:   {}/{}", self.error, self.total);
+            println!("  WAITING: {}/{}", self.waiting, self.total);
+        }
     }
 }
 
@@ -139,12 +153,19 @@ impl Check<'_> {
         if !self.message.is_empty() {
             out = format!("{}: ({})", out, self.message);
         }
-        match self.state {
-            CheckState::Valid => println!("\x1b[32m{}\x1b[39m", out),
-            CheckState::Invalid => println!("\x1b[31m{}\x1b[39m", out),
-            CheckState::Skipped => println!("\x1b[34m{}\x1b[39m", out),
-            CheckState::Error => println!("\x1b[36m{}\x1b[39m", out),
-            CheckState::Waiting => println!("\x1b[36m{} NOT RAN!\x1b[39m", out),
+        if config::is_colored_output_enabled() {
+            match self.state {
+                CheckState::Valid => println!("\x1b[32m{}\x1b[39m", out),
+                CheckState::Invalid => println!("\x1b[31m{}\x1b[39m", out),
+                CheckState::Skipped => println!("\x1b[34m{}\x1b[39m", out),
+                CheckState::Error => println!("\x1b[36m{}\x1b[39m", out),
+                CheckState::Waiting => println!("\x1b[36m{} NOT RAN!\x1b[39m", out),
+            }
+        } else {
+            match self.state {
+                CheckState::Waiting => println!("{} NOT RAN!", out),
+                _ => println!("{}", out),
+            }
         }
     }
 }

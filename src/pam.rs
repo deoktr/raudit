@@ -29,19 +29,19 @@ pub type PamConfig = HashMap<String, Vec<PamRule>>;
 /// A single PAM rule (line).
 #[derive(Debug)]
 pub struct PamRule {
-    // ex: `session`
+    /// rule interface, `auth|account|password|session`
     pub rule_type: String,
 
-    // ex: `required`
-    // NOTE: pam control cannot be an enum since it can have complicated valid
-    // syntax such as: `[value1=action1 value2=action2 ...]`
+    /// control flag, `required|requisite|sufficient|optional|include`
+    /// it can also have complicated valid syntax such as:
+    /// `[value1=action1 value2=action2 ...]`
     pub control: String,
 
-    // ex: `pam_[...]` (without the `.so` at the end)
+    /// PAM module name, without the `.so` at the end
     pub module: String,
 
-    // library parameters the key and the value are separated by `=`
-    // if it has no value (is just a flag) then the value is empty
+    /// library parameters the key and the value are separated by `=`
+    /// if it has no value (is just a flag) then the value is empty
     pub settings: HashMap<String, String>,
 }
 

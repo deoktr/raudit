@@ -20,6 +20,7 @@
 
 use crate::utils::run;
 
+/// Ensure ClamAV is installed.
 pub fn clamav_installed() -> bool {
     run!("clamscan", "--version") != ""
 }

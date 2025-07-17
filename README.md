@@ -89,11 +89,10 @@ Benchmark 1: ./target/release/raudit
 
 ## TODO
 
-- Skip checks
+- Give much more detailed logs of the error
 - Add a "criticity", "hardening level" value linked to a check
 - Add tags to checks and the ability to filter them
 - Add JSON output format
-- Add flag to disable colors
 - Generate linux audit logs
 - Add AppArmor profile
 - Create custom parsers for complex configurations (sudo, nginx, etc.)

@@ -18,7 +18,6 @@
 
 use std::fs;
 
-// use crate::base::empty_or_missing_file;
 use crate::base::empty_or_missing_file;
 
 const GROUP_PATH: &str = "/etc/group";
@@ -31,10 +30,14 @@ pub type GroupConfig = Vec<Group>;
 /// Group entry found in `/etc/group`.
 #[allow(dead_code)]
 pub struct Group {
+    /// group name
     name: String,
+    /// optional encrypted password
     password: String,
+    /// numeric group ID
     gid: u32,
-    list: Vec<String>,
+    /// user list
+    user_list: Vec<String>,
 }
 
 /// Parse the content of `/etc/group`.
@@ -53,7 +56,7 @@ pub fn parse_group(content: String) -> GroupConfig {
                 .parse::<u32>()
                 .unwrap_or_default();
 
-            let list = kvs
+            let user_list = kvs
                 .next()
                 .unwrap_or_default()
                 .split(",")
@@ -65,7 +68,7 @@ pub fn parse_group(content: String) -> GroupConfig {
                 name,
                 password,
                 gid,
-                list,
+                user_list,
             }
         })
         .collect()
@@ -91,8 +94,8 @@ pub fn no_password_in_group(groups: &GroupConfig) -> bool {
 
 /// Ensure that only root has GID 0.
 pub fn one_gid_zero(gc: &GroupConfig) -> bool {
-    // FIXME: also verify the name of the group to be `root`
     gc.iter().filter(|g| g.gid == 0).count() == 1
+        && gc.iter().filter(|g| g.gid == 0 && g.name == "root").count() == 1
 }
 
 /// Ensure no duplicate GIDs exist.
@@ -126,7 +129,7 @@ mod tests {
         assert_eq!(line.name, "wheel".to_string());
         assert_eq!(line.password, "x".to_string());
         assert_eq!(line.gid, 1);
-        assert_eq!(line.list, vec!["ping".to_string()]);
+        assert_eq!(line.user_list, vec!["ping".to_string()]);
 
         let lines = parse_group(
             "qemu-libvirtd:x:301:
@@ -152,20 +155,74 @@ avahi:x:999:
         assert_eq!(line.name, "qemu-libvirtd".to_string());
         assert_eq!(line.password, "x".to_string());
         assert_eq!(line.gid, 301);
-        assert_eq!(line.list, Vec::<String>::new());
+        assert_eq!(line.user_list, Vec::<String>::new());
 
         assert!(lines.get(1).is_some());
         let line = lines.get(1).unwrap();
         assert_eq!(line.name, "kvm".to_string());
         assert_eq!(line.password, "x".to_string());
         assert_eq!(line.gid, 302);
-        assert_eq!(line.list, Vec::<String>::new());
+        assert_eq!(line.user_list, Vec::<String>::new());
 
         assert!(lines.get(13).is_some());
         let line = lines.get(13).unwrap();
         assert_eq!(line.name, "avahi".to_string());
         assert_eq!(line.password, "x".to_string());
         assert_eq!(line.gid, 999);
-        assert_eq!(line.list, Vec::<String>::new());
+        assert_eq!(line.user_list, Vec::<String>::new());
+    }
+
+    #[test]
+    fn test_one_gid_zero() {
+        let groups: GroupConfig = vec![
+            Group {
+                name: "root".to_string(),
+                password: "x".to_string(),
+                gid: 0,
+                user_list: vec![],
+            },
+            Group {
+                name: "daemon".to_string(),
+                password: "x".to_string(),
+                gid: 1,
+                user_list: vec![],
+            },
+        ];
+        let r = one_gid_zero(&groups);
+        assert!(r);
+
+        let groups: GroupConfig = vec![
+            Group {
+                name: "root".to_string(),
+                password: "x".to_string(),
+                gid: 0,
+                user_list: vec![],
+            },
+            Group {
+                name: "daemon".to_string(),
+                password: "x".to_string(),
+                gid: 0,
+                user_list: vec![],
+            },
+        ];
+        let r = one_gid_zero(&groups);
+        assert!(!r);
+
+        let groups: GroupConfig = vec![
+            Group {
+                name: "foo".to_string(),
+                password: "x".to_string(),
+                gid: 0,
+                user_list: vec![],
+            },
+            Group {
+                name: "daemon".to_string(),
+                password: "x".to_string(),
+                gid: 1,
+                user_list: vec![],
+            },
+        ];
+        let r = one_gid_zero(&groups);
+        assert!(!r);
     }
 }

@@ -30,8 +30,8 @@ fn parse_kcompile_config(cmdline: String) -> KcompilConfig {
     cmdline
         .lines()
         .filter(|line| !line.is_empty())
-        // come comments are usefull and gives informations about what flags
-        // where not set, ex: `# CONFIG_EARLY_PRINTK_USB_XDBC is not set`
+        // comments are usefull and gives informations about what flags where
+        // not set, ex: `# CONFIG_EARLY_PRINTK_USB_XDBC is not set`
         .filter(|line| {
             !(line.starts_with("#")
                 && !(line.starts_with("# CONFIG_") && line.ends_with(" is not set")))
@@ -75,7 +75,7 @@ pub fn init_kcompile_config() -> Result<KcompilConfig, std::io::Error> {
 }
 
 /// Get kernel compilation flag from a collected configuration.
-pub fn get_kcompile_config(config: &'static KcompilConfig, flag: String) -> Result<String, String> {
+pub fn get_kcompile_config(config: &KcompilConfig, flag: String) -> Result<String, String> {
     match config.get(&flag) {
         Some(val) => {
             if *val == "is not set".to_string() {
@@ -89,10 +89,7 @@ pub fn get_kcompile_config(config: &'static KcompilConfig, flag: String) -> Resu
 }
 
 /// Check if kernel compilation flag is not set.
-pub fn get_kcompile_not_set_config(
-    config: &'static KcompilConfig,
-    flag: String,
-) -> Result<bool, String> {
+pub fn get_kcompile_not_set_config(config: &KcompilConfig, flag: String) -> Result<bool, String> {
     match config.get(&flag) {
         Some(val) => Ok(*val == "is not set".to_string()),
         None => Err("flag not present".to_string()),

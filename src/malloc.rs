@@ -28,10 +28,7 @@ pub type LdSoPreload = String;
 pub fn init_ld_so_preload() -> Result<LdSoPreload, std::io::Error> {
     // TODO: error errors if it doesn't exist, since it would just mean it's not
     // configured properly
-
     let ls_so_preload = fs::read_to_string(LD_SO_PRELOAD_PATH)?;
-
-    // let ls_so_preload = fs::read_to_string("/etc/ld.so.preload")?;
     Ok(ls_so_preload)
 }
 

@@ -20,6 +20,7 @@
 
 use crate::utils::run;
 
+/// Ensure AppArmor is enabled.
 pub fn apparmor_enabled() -> bool {
     run!("aa-enabled") == "Yes"
 }

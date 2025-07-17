@@ -16,28 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// TODO: file permission check
-// TODO: file owner check
-// TODO: file content regex
+use std::sync::atomic::{AtomicBool, Ordering};
 
-use std::fs;
-use std::path::Path;
+static COLORED_OUTPUT: AtomicBool = AtomicBool::new(true);
 
-/// Check if file exist and is empty.
-pub fn empty_file(path: &str) -> Result<bool, std::io::Error> {
-    Ok(fs::metadata(path)?.len() == 0)
+pub fn set_colored_output(val: bool) {
+    COLORED_OUTPUT.store(val, Ordering::Relaxed);
 }
 
-/// Check if file is either empty or not present.
-pub fn empty_or_missing_file(path: &str) -> Result<bool, std::io::Error> {
-    empty_file(path).or_else(|e| match e.kind() {
-        std::io::ErrorKind::NotFound => Ok(true),
-        _ => Err(e),
-    })
-}
-
-/// Check if a directory exist.
-pub fn directory_exist(path: &str) -> bool {
-    let p = Path::new(path);
-    p.exists() && p.is_dir()
+pub fn is_colored_output_enabled() -> bool {
+    COLORED_OUTPUT.load(Ordering::Relaxed)
 }

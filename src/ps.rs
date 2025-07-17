@@ -65,7 +65,7 @@ pub fn init_proc() -> Result<HashMap<String, String>, std::io::Error> {
 }
 
 /// Get the list of PID with this name.
-pub fn get_pids(config: &'static Proc, name: String) -> Option<Vec<String>> {
+pub fn get_pids(config: &Proc, name: String) -> Option<Vec<String>> {
     let mut procs: Vec<String> = Vec::new();
     for (k, v) in config {
         if *v != name {
@@ -82,7 +82,7 @@ pub fn get_pids(config: &'static Proc, name: String) -> Option<Vec<String>> {
 }
 
 /// Check if a process is running from it's name.
-pub fn is_running(config: &'static Proc, name: String) -> bool {
+pub fn is_running(config: &Proc, name: String) -> bool {
     match get_pids(config, name) {
         Some(_) => true,
         None => false,

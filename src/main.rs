@@ -21,6 +21,7 @@ mod audit;
 mod base;
 mod check;
 mod clamav;
+mod config;
 mod docker;
 mod gdm;
 mod group;
@@ -48,8 +49,6 @@ use std::time::Instant;
 
 use clap::Parser;
 
-// TODO: only run checks if they are not ignored
-// TODO: add a way to automatically generate checks ID
 // TODO: only load configurations if they are needed on a check
 
 // the `OnceLock` wrapper allows for an easy single initialization of the
@@ -96,14 +95,14 @@ struct Cli {
     /// Disable print stats
     #[arg(long, action = clap::ArgAction::SetTrue)]
     disable_print_stats: bool,
-    //
-    // /// Disable colored output
-    // #[arg(long, action = clap::ArgAction::SetTrue)]
-    // disable_colors: bool,
-    //
+
     /// Comma-separated list of ID prefixes to filter
     #[arg(long, value_delimiter = ',')]
     filters: Vec<String>,
+
+    /// Disable colored output
+    #[arg(long, action = clap::ArgAction::SetTrue)]
+    disable_colors: bool,
 }
 
 macro_rules! check {
@@ -883,6 +882,32 @@ macro_rules! check_no_login_sys_users {
     };
 }
 
+macro_rules! check_no_empty_passwd_password {
+    ($checks:tt, $id:tt) => {
+        check_bool!(
+            $checks,
+            $id,
+            "Ensure /etc/passwd password fields are not empty",
+            PASSWD_CONFIG,
+            users::no_empty_passwd_password,
+            ""
+        );
+    };
+}
+
+macro_rules! check_no_empty_shadow_password {
+    ($checks:tt, $id:tt) => {
+        check_bool!(
+            $checks,
+            $id,
+            "Ensure /etc/shadow password fields are not empty",
+            SHADOW_CONFIG,
+            users::no_empty_shadow_password,
+            ""
+        );
+    };
+}
+
 macro_rules! check_empty_securetty {
     ($checks:tt, $id:tt) => {
         check_bool_error!(
@@ -942,6 +967,45 @@ macro_rules! check_no_uid_zero {
             PASSWD_CONFIG,
             users::no_uid_zero,
             ""
+        );
+    };
+}
+
+macro_rules! check_yescrypt_hashes {
+    ($checks:tt, $id:tt) => {
+        check_bool!(
+            $checks,
+            $id,
+            "Ensure all passwords are hashed with yescrypt",
+            SHADOW_CONFIG,
+            users::yescrypt_hashes,
+            "found password not using yescrypt"
+        );
+    };
+}
+
+macro_rules! check_no_locked_account {
+    ($checks:tt, $id:tt) => {
+        check_bool!(
+            $checks,
+            $id,
+            "Ensure no accounts are locked, delete them",
+            SHADOW_CONFIG,
+            users::no_locked_account,
+            "found expired accounts"
+        );
+    };
+}
+
+macro_rules! check_no_missing_home {
+    ($checks:tt, $id:tt) => {
+        check_bool!(
+            $checks,
+            $id,
+            "Ensure that all home directories exist",
+            PASSWD_CONFIG,
+            users::no_missing_home,
+            "missing home"
         );
     };
 }
@@ -1045,6 +1109,18 @@ macro_rules! check_docker_cap_drop {
     };
 }
 
+macro_rules! check_clamav_installed {
+    ($checks:tt, $id:tt) => {
+        check_bool!(
+            $checks,
+            $id,
+            "Ensure ClamAV is installed",
+            clamav::clamav_installed,
+            ""
+        );
+    };
+}
+
 fn main() {
     let args = Cli::parse();
 
@@ -1061,6 +1137,8 @@ fn main() {
 
 /// Run checks.
 fn checks(args: Cli) {
+    config::set_colored_output(!args.disable_colors);
+
     let mut checks = check::CheckList { checks: Vec::new() };
 
     check_sysctl!(checks, "SYS_001", "kernel.kptr_restrict" == 2);
@@ -2254,8 +2332,6 @@ fn checks(args: Cli) {
 
     check_password_in_passwd!(checks, "USR_001");
 
-    // TODO: Ensure /etc/shadow password fields are not empty
-
     check_ps_running!(checks, "AUD_001", "auditd");
 
     check_audit_config!(checks, "AUD_010", "disk_full_action", "HALT");
@@ -2433,6 +2509,11 @@ fn checks(args: Cli) {
     check_no_dup_uid!(checks, "USR_003");
     check_empty_securetty!(checks, "USR_004");
     check_no_login_sys_users!(checks, "USR_005");
+    check_yescrypt_hashes!(checks, "USR_006");
+    check_no_locked_account!(checks, "USR_007");
+    check_no_missing_home!(checks, "USR_008");
+    check_no_empty_shadow_password!(checks, "USR_009");
+    check_no_empty_passwd_password!(checks, "USR_010");
 
     check_empty_gshadow!(checks, "GRP_001");
     check_one_gid_zero!(checks, "GRP_002");
@@ -2451,8 +2532,13 @@ fn checks(args: Cli) {
     check_docker_cap_drop!(checks, "CNT_001");
     check_docker_not_privileged!(checks, "CNT_002");
 
+    check_clamav_installed!(checks, "CAV_001");
+
     // TODO: `/var/log` 0755 or less permissive - STIG
+
     // TODO: Ensure that library files have mode 755 or less permissive - STIG
+    // sudo find -L /lib /lib64 /usr/lib /usr/lib64 -perm /022 -type f -exec ls -l {} \;
+
     // TODO: systemd coredump <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-257812>
     // TODO: coredumps <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-257813>
     // TODO: shost <https://www.stigviewer.com/stig/oracle_linux_8/2024-06-04/finding/V-248598>
