@@ -18,8 +18,13 @@
 
 use std::collections::HashMap;
 use std::fs;
+use std::sync::OnceLock;
+
+use crate::check;
 
 const SYSTEMD_CONF_PATH: &str = "/etc/systemd/system.conf";
+
+static SYSTEMD_CONFIG: OnceLock<SystemdConfig> = OnceLock::new();
 
 /// Systemd configuration.
 pub type SystemdConfig = HashMap<String, String>;
@@ -41,18 +46,39 @@ fn parse_systemd_config(systemd_config: String) -> SystemdConfig {
 }
 
 /// Get systemd configuration by reading `/etc/systemd/system.conf`.
-pub fn init_systemd_config() -> Result<SystemdConfig, std::io::Error> {
-    let cfg = fs::read_to_string(SYSTEMD_CONF_PATH)?;
-    Ok(parse_systemd_config(cfg))
+pub fn init_systemd_config() {
+    if SYSTEMD_CONFIG.get().is_some() {
+        return;
+    }
+
+    match fs::read_to_string(SYSTEMD_CONF_PATH) {
+        Ok(cfg) => {
+            SYSTEMD_CONFIG.get_or_init(|| parse_systemd_config(cfg));
+        }
+        Err(err) => println!("Failed to initialize groups: {}", err),
+    };
 }
 
 /// Get systemd value from a collected configuration.
-pub fn get_systemd_config(
-    config: &'static SystemdConfig,
-    key: &str,
-) -> Result<&'static str, String> {
-    match config.get(key) {
-        Some(val) => Ok(val),
-        None => Err("not present".to_string()),
+pub fn get_systemd_config(key: &str, expected: &str) -> check::CheckReturn {
+    match SYSTEMD_CONFIG
+        .get()
+        .expect("systemd config not initialized")
+        .get(key)
+    {
+        Some(val) => {
+            if val == expected {
+                (check::CheckState::Success, None)
+            } else {
+                (
+                    check::CheckState::Failure,
+                    Some(format!("{:?} != {:?}", val, expected)),
+                )
+            }
+        }
+        None => (
+            check::CheckState::Failure,
+            Some(format!("missing key {:?}", key)),
+        ),
     }
 }

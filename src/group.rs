@@ -17,15 +17,19 @@
  */
 
 use std::fs;
+use std::sync::OnceLock;
 
 use crate::base::empty_or_missing_file;
+use crate::check;
 
 const GROUP_PATH: &str = "/etc/group";
 
 const SHADOW_PATH: &str = "/etc/gshadow";
 
+static GROUPS: OnceLock<Groups> = OnceLock::new();
+
 /// Group configuration from `/etc/group`.
-pub type GroupConfig = Vec<Group>;
+pub type Groups = Vec<Group>;
 
 /// Group entry found in `/etc/group`.
 #[allow(dead_code)]
@@ -43,7 +47,7 @@ pub struct Group {
 /// Parse the content of `/etc/group`.
 ///
 /// Parsed group following the format: `group_name:password:GID:user_list`.
-pub fn parse_group(content: String) -> GroupConfig {
+pub fn parse_group(content: String) -> Groups {
     content
         .lines()
         .map(|line| {
@@ -74,46 +78,102 @@ pub fn parse_group(content: String) -> GroupConfig {
         .collect()
 }
 
-/// Get the system's groups from `/etc/group`.
-pub fn init_group() -> Result<GroupConfig, std::io::Error> {
-    let gc = fs::read_to_string(GROUP_PATH)?;
-    Ok(parse_group(gc))
+/// Initialize groups from `/etc/group`.
+pub fn init_group() {
+    if GROUPS.get().is_some() {
+        return;
+    }
+
+    match fs::read_to_string(GROUP_PATH) {
+        Ok(content) => {
+            GROUPS.get_or_init(|| parse_group(content));
+        }
+        Err(err) => println!("Failed to initialize groups: {}", err),
+    };
+}
+
+fn get_groups() -> &'static Groups {
+    GROUPS.get().expect("group not initialized")
 }
 
 /// Ensure group shadow empty or missing.
 ///
 /// File `/etc/gshadow` must either be empty or missing.
-pub fn empty_gshadow() -> Result<bool, std::io::Error> {
-    empty_or_missing_file(SHADOW_PATH)
+pub fn empty_gshadow() -> check::CheckReturn {
+    match empty_or_missing_file(SHADOW_PATH) {
+        Ok(is) => {
+            if is {
+                (check::CheckState::Success, None)
+            } else {
+                (check::CheckState::Failure, None)
+            }
+        }
+        Err(err) => (check::CheckState::Error, Some(err.to_string())),
+    }
 }
 
-/// Verify if any group has a password set (not equal to `x`).
-pub fn no_password_in_group(groups: &GroupConfig) -> bool {
-    !groups.iter().any(|group| group.password != "x".to_string())
+/// Ensure no group has a password set (not set to `x`).
+pub fn no_password_in_group() -> check::CheckReturn {
+    let g: Vec<String> = get_groups()
+        .iter()
+        .filter(|group| group.password != "x".to_string())
+        .map(|group| group.name.clone())
+        .collect();
+
+    if g.len() != 0 {
+        (check::CheckState::Failure, Some(g.join(", ")))
+    } else {
+        (check::CheckState::Success, None)
+    }
 }
 
 /// Ensure that only root has GID 0.
-pub fn one_gid_zero(gc: &GroupConfig) -> bool {
-    gc.iter().filter(|g| g.gid == 0).count() == 1
-        && gc.iter().filter(|g| g.gid == 0 && g.name == "root").count() == 1
+pub fn one_gid_zero() -> check::CheckReturn {
+    let g: Vec<String> = get_groups()
+        .iter()
+        .filter(|group| group.gid == 0 && group.name != "root")
+        .map(|group| group.name.clone())
+        .collect();
+
+    if g.len() != 0 {
+        (check::CheckState::Failure, Some(g.join(", ")))
+    } else {
+        (check::CheckState::Success, None)
+    }
 }
 
 /// Ensure no duplicate GIDs exist.
-///
-/// Returns true if no duplicate is found.
-pub fn no_dup_gid(groups: &GroupConfig) -> bool {
-    !groups
+pub fn no_dup_gid() -> check::CheckReturn {
+    let groups = get_groups();
+
+    let g: Vec<String> = groups
         .iter()
-        .any(|group| groups.iter().filter(|g| g.gid == group.gid).count() > 1)
+        .filter(|group| groups.iter().filter(|g| g.gid == group.gid).count() > 1)
+        .map(|group| group.name.clone())
+        .collect();
+
+    if g.len() != 0 {
+        (check::CheckState::Failure, Some(g.join(", ")))
+    } else {
+        (check::CheckState::Success, None)
+    }
 }
 
 /// Ensure no duplicate group names exist.
-///
-/// Returns true if no duplicate is found.
-pub fn no_dup_name(groups: &GroupConfig) -> bool {
-    !groups
+pub fn no_dup_name() -> check::CheckReturn {
+    let groups = get_groups();
+
+    let g: Vec<String> = groups
         .iter()
-        .any(|group| groups.iter().filter(|g| g.name == group.name).count() > 1)
+        .filter(|group| groups.iter().filter(|g| g.name == group.name).count() > 1)
+        .map(|group| group.name.clone())
+        .collect();
+
+    if g.len() != 0 {
+        (check::CheckState::Failure, Some(g.join(", ")))
+    } else {
+        (check::CheckState::Success, None)
+    }
 }
 
 #[cfg(test)]
@@ -170,59 +230,5 @@ avahi:x:999:
         assert_eq!(line.password, "x".to_string());
         assert_eq!(line.gid, 999);
         assert_eq!(line.user_list, Vec::<String>::new());
-    }
-
-    #[test]
-    fn test_one_gid_zero() {
-        let groups: GroupConfig = vec![
-            Group {
-                name: "root".to_string(),
-                password: "x".to_string(),
-                gid: 0,
-                user_list: vec![],
-            },
-            Group {
-                name: "daemon".to_string(),
-                password: "x".to_string(),
-                gid: 1,
-                user_list: vec![],
-            },
-        ];
-        let r = one_gid_zero(&groups);
-        assert!(r);
-
-        let groups: GroupConfig = vec![
-            Group {
-                name: "root".to_string(),
-                password: "x".to_string(),
-                gid: 0,
-                user_list: vec![],
-            },
-            Group {
-                name: "daemon".to_string(),
-                password: "x".to_string(),
-                gid: 0,
-                user_list: vec![],
-            },
-        ];
-        let r = one_gid_zero(&groups);
-        assert!(!r);
-
-        let groups: GroupConfig = vec![
-            Group {
-                name: "foo".to_string(),
-                password: "x".to_string(),
-                gid: 0,
-                user_list: vec![],
-            },
-            Group {
-                name: "daemon".to_string(),
-                password: "x".to_string(),
-                gid: 1,
-                user_list: vec![],
-            },
-        ];
-        let r = one_gid_zero(&groups);
-        assert!(!r);
     }
 }

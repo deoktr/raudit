@@ -19,6 +19,11 @@
 use std::collections::HashMap;
 use std::process;
 use std::process::Stdio;
+use std::sync::OnceLock;
+
+use crate::check;
+
+static SYSCTL_CONFIG: OnceLock<SysctlConfig> = OnceLock::new();
 
 /// Kenel params configuration from sysctl.
 pub type SysctlConfig = HashMap<String, String>;
@@ -35,32 +40,125 @@ fn parse_sysctl_config(stdout: String) -> SysctlConfig {
         .collect()
 }
 
-/// Get the system's sysctl configuration by running `sysctl --all`.
-pub fn init_sysctl_config() -> Result<SysctlConfig, std::io::Error> {
+/// Initialize sysctl configuration by running `sysctl --all`.
+pub fn init_sysctl_config() {
+    if SYSCTL_CONFIG.get().is_some() {
+        return;
+    }
+
     let mut cmd = process::Command::new("sysctl");
     cmd.stdin(Stdio::null());
     cmd.args(vec!["--all"]);
 
-    let output = cmd.output()?;
-
-    // TODO: error if not 0
-    // match output.status.code() {
-    //     Some(c) => c,
-    //     None => 0,
-    // }
-
-    Ok(parse_sysctl_config(
-        String::from_utf8_lossy(&output.stdout).to_string(),
-    ))
+    match cmd.output() {
+        Ok(output) => {
+            let config = parse_sysctl_config(String::from_utf8_lossy(&output.stdout).to_string());
+            SYSCTL_CONFIG.get_or_init(|| config);
+        }
+        // TODO: colored logger
+        Err(err) => println!("Failed to initialize sysctl configuration: {}", err),
+    };
 }
 
-/// Get sysctl value from a collected configuration.
-pub fn get_ssyctl(config: &'static SysctlConfig, key: &str) -> Result<&'static str, String> {
-    match config.get(key) {
-        Some(val) => Ok(val),
-        None => Err("error getting sysctl value".to_string()),
+pub trait SysctlValue {
+    fn check_sysctl(&self, key: &str) -> check::CheckReturn;
+}
+
+impl SysctlValue for &str {
+    /// Get sysctl value from a collected configuration and compare it to &str.
+    fn check_sysctl(&self, key: &str) -> check::CheckReturn {
+        match SYSCTL_CONFIG
+            .get()
+            .expect("sysctl not initialized")
+            .get(key)
+        {
+            Some(value) => {
+                if value == self {
+                    (check::CheckState::Success, None)
+                } else {
+                    (
+                        check::CheckState::Failure,
+                        Some(format!("{:?} != {:?}", value, self)),
+                    )
+                }
+            }
+            None => (
+                check::CheckState::Error,
+                Some(format!("missing sysctl {:?} key", key)),
+            ),
+        }
     }
 }
+
+impl SysctlValue for i32 {
+    /// Get sysctl value from a collected configuration and compare it to i32.
+    fn check_sysctl(&self, key: &str) -> check::CheckReturn {
+        match SYSCTL_CONFIG
+            .get()
+            .expect("sysctl not initialized")
+            .get(key)
+        {
+            Some(value) => match value.parse::<i32>() {
+                Ok(val) => {
+                    if val == *self {
+                        (check::CheckState::Success, None)
+                    } else {
+                        (
+                            check::CheckState::Failure,
+                            Some(format!("{:?} != {:?}", val, self)),
+                        )
+                    }
+                }
+                Err(error) => (
+                    check::CheckState::Error,
+                    Some(format!(
+                        "failed to convert {:?} to i32: {}",
+                        value,
+                        error.to_string()
+                    )),
+                ),
+            },
+            None => (
+                check::CheckState::Error,
+                Some(format!("missing sysctl {:?} key", key)),
+            ),
+        }
+    }
+}
+
+pub fn check_sysctl<T: SysctlValue>(key: &str, expected: T) -> check::CheckReturn {
+    expected.check_sysctl(key)
+}
+
+pub fn get_sysctl_i32_value(key: &str) -> Result<i32, String> {
+    match SYSCTL_CONFIG
+        .get()
+        .expect("sysctl not initialized")
+        .get(key)
+    {
+        Some(value) => match value.parse::<i32>() {
+            Ok(val) => {
+                return Ok(val);
+            }
+            Err(error) => Err(error.to_string()),
+        },
+        None => Err(format!("missing sysctl {:?} key", key)),
+    }
+}
+
+macro_rules! add_sysctl_check {
+    ($id:tt, $tags:expr, $key:tt, $val:tt) => {
+        check::add_check(
+            $id,
+            format!("Ensure sysctl {:?} = {:?}", $key, $val).as_str(),
+            $tags,
+            || sysctl::check_sysctl($key, $val),
+            vec![sysctl::init_sysctl_config],
+        );
+    };
+}
+
+pub(crate) use add_sysctl_check;
 
 #[cfg(test)]
 mod tests {

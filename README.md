@@ -90,8 +90,8 @@ Benchmark 1: ./target/release/raudit
 ## TODO
 
 - Give much more detailed logs of the error
+- Support tag negation with `!` this could be used if a setting changed based on a tag, for example `paranoid` could have stricter rules compared to `!paranoid` for the same config
 - Add a "criticity", "hardening level" value linked to a check
-- Add tags to checks and the ability to filter them
 - Add JSON output format
 - Generate linux audit logs
 - Add AppArmor profile
@@ -99,7 +99,6 @@ Benchmark 1: ./target/release/raudit
 - Give the user's the ability to specify config paths, with globing
 - Get configuration from file
 - Check permissions on startup (root or not) and warn user if needed
-- Add flag to only print failed checks
 - Add firejail rules
 - Add firejail profile for raudit
 - Ensure localhost is resolved on `127.0.0.1` in `/etc/hosts`
