@@ -100,16 +100,7 @@ fn get_groups() -> &'static Groups {
 ///
 /// File `/etc/gshadow` must either be empty or missing.
 pub fn empty_gshadow() -> check::CheckReturn {
-    match empty_or_missing_file(SHADOW_PATH) {
-        Ok(is) => {
-            if is {
-                (check::CheckState::Success, None)
-            } else {
-                (check::CheckState::Failure, None)
-            }
-        }
-        Err(err) => (check::CheckState::Error, Some(err.to_string())),
-    }
+    empty_or_missing_file(SHADOW_PATH)
 }
 
 /// Ensure no group has a password set (not set to `x`).

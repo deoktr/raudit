@@ -211,17 +211,6 @@ pub fn add_check(
     });
 }
 
-/// Helper to get an empty check dependencies vec.
-#[allow(unused_macros)]
-macro_rules! empty_deps {
-    () => {
-        vec![] as Vec<fn() -> ()>
-    };
-}
-
-#[allow(unused_imports)]
-pub(crate) use empty_deps;
-
 pub fn get_stats() -> CheckListStats {
     let checks = CHECKS.lock().unwrap();
 

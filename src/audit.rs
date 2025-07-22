@@ -16,14 +16,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// TODO: fix rules collection
 // TODO: parse individual audit rules into struct
 
+use core::str;
 use std::collections::HashMap;
 use std::fs;
 use std::process;
 use std::process::Stdio;
+use std::sync::OnceLock;
+
+use crate::check;
 
 const AUDIT_CFG_PATH: &str = "/etc/audit/auditd.conf";
+
+static AUDIT_CONFIG: OnceLock<AuditConfig> = OnceLock::new();
+static AUDIT_RULES: OnceLock<AuditRules> = OnceLock::new();
 
 /// Audit configuration from `/etc/audit/auditd.conf`.
 pub type AuditConfig = HashMap<String, String>;
@@ -37,19 +45,42 @@ pub type AuditConfig = HashMap<String, String>;
 /// output.
 pub type AuditRules = Vec<String>;
 
-/// Get the system's audit rules by running `auditctl -l`.
-pub fn init_audit_rules() -> Result<AuditRules, std::io::Error> {
+/// Initialize audit rules by running `auditctl -l`.
+pub fn init_audit_rules() {
+    if AUDIT_RULES.get().is_some() {
+        return;
+    }
+
+    // FIXME: running `auditctl -l` is not enought to gather all audit rules!
+    // for example `-e 2` is missing from the output
+    // also note that some command are defined differently from the rule file
+    // for example rule `-k foo` converts to `-F key=foo`
     let mut cmd = process::Command::new("auditctl");
     cmd.stdin(Stdio::null());
     cmd.args(vec!["-l"]);
 
-    let output = cmd.output()?;
+    match cmd.output() {
+        Ok(output) => {
+            match str::from_utf8(&output.stderr) {
+                Ok(stderr) => {
+                    if stderr == "You must be root to run this program.\n" {
+                        println!("Failed to initialize audit rules, root required");
+                        return;
+                    }
+                }
+                Err(_) => (),
+            };
 
-    // one line is one rule, no need for parsing
-    Ok(String::from_utf8_lossy(&output.stdout)
-        .lines()
-        .map(|x| x.to_string())
-        .collect())
+            AUDIT_RULES.get_or_init(|| {
+                // one line is one rule, no need for parsing
+                String::from_utf8_lossy(&output.stdout)
+                    .lines()
+                    .map(|x| x.to_string())
+                    .collect()
+            });
+        }
+        Err(err) => println!("Failed to initialize audit rules: {}", err),
+    };
 }
 
 /// Parse content of `/etc/audit/auditd.conf`.
@@ -66,16 +97,50 @@ fn parse_audit_config(login_defs: String) -> AuditConfig {
         .collect()
 }
 
-/// Get audit configuration by reading `/etc/audit/auditd.conf`.
-pub fn init_audit_config() -> Result<AuditConfig, std::io::Error> {
-    let auditd_conf = fs::read_to_string(AUDIT_CFG_PATH)?;
-    Ok(parse_audit_config(auditd_conf))
+/// Initialize audit configuration by reading `/etc/audit/auditd.conf`.
+pub fn init_audit_config() {
+    if AUDIT_CONFIG.get().is_some() {
+        return;
+    }
+
+    match fs::read_to_string(AUDIT_CFG_PATH) {
+        Ok(content) => {
+            AUDIT_CONFIG.get_or_init(|| parse_audit_config(content));
+        }
+        Err(err) => println!("Failed to initialize audit configuration: {}", err),
+    };
 }
 
-/// Get audit configuration value.
-pub fn get_audit_config(config: &'static AuditConfig, key: String) -> Result<String, String> {
-    match config.get(&key) {
-        Some(val) => Ok(val.to_string()),
-        None => Err("key not present".to_string()),
+/// Check audit rule.
+pub fn check_audit_rule(rule: &str) -> check::CheckReturn {
+    if AUDIT_RULES
+        .get()
+        .expect("audit rules not initialized")
+        .contains(&rule.to_string())
+    {
+        (check::CheckState::Success, None)
+    } else {
+        (check::CheckState::Failure, Some("not present".to_string()))
+    }
+}
+
+/// Check audit configuration value.
+pub fn check_audit_config(key: &str, expected: &str) -> check::CheckReturn {
+    match AUDIT_CONFIG
+        .get()
+        .expect("audit configuration not initialized")
+        .get(key)
+    {
+        Some(val) => {
+            if val == expected {
+                (check::CheckState::Success, None)
+            } else {
+                (check::CheckState::Failure, Some(format!("found: {}", val)))
+            }
+        }
+        None => (
+            check::CheckState::Failure,
+            Some(format!("key {:?} not present", key)),
+        ),
     }
 }

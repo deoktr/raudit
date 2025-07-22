@@ -18,9 +18,13 @@
 
 // TODO: parse apparmor profiles
 
-use crate::utils::run;
+use crate::{check, utils::run};
 
 /// Ensure AppArmor is enabled.
-pub fn apparmor_enabled() -> bool {
-    run!("aa-enabled") == "Yes"
+pub fn apparmor_enabled() -> check::CheckReturn {
+    if run!("aa-enabled") == "Yes" {
+        (check::CheckState::Success, None)
+    } else {
+        (check::CheckState::Failure, None)
+    }
 }

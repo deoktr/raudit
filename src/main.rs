@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+mod apparmor;
+mod audit;
 mod base;
 mod check;
 mod config;
@@ -23,6 +25,7 @@ mod consts;
 mod group;
 mod sysctl;
 mod systemd;
+mod utils;
 
 use clap::Parser;
 use std::time::Instant;
@@ -104,14 +107,7 @@ fn main() {
     }
 
     if !args.no_time {
-        let elapsed = now.elapsed();
-        if elapsed.as_secs() >= 1 {
-            println!("\ntook: {}s", elapsed.as_secs());
-        } else if elapsed.as_millis() >= 1 {
-            println!("\ntook: {}ms", elapsed.as_millis());
-        } else {
-            println!("\ntook: {}μs", now.elapsed().as_micros());
-        }
+        println!("\ntook: {}", utils::format_duration(now.elapsed()));
     }
 }
 
@@ -648,7 +644,7 @@ fn add_all_checks() {
         "Ensure group shadow empty or missing",
         vec!["group"],
         group::empty_gshadow,
-        vec![group::init_group],
+        vec![],
     );
     check::add_check(
         "GRP_002",
@@ -685,5 +681,35 @@ fn add_all_checks() {
         vec!["systemd"],
         || systemd::get_systemd_config("CtrlAltDelBurstAction", "none"),
         vec![systemd::init_systemd_config],
+    );
+
+    // check::add_check(
+    //     "AUD_010",
+    //     "Ensure that audit is configured with \"disk_full_action\" = \"HALT\"",
+    //     vec!["apparmor"],
+    //     || audit::check_audit_config("disk_full_action", "HALT"),
+    //     vec![audit::init_audit_config],
+    // );
+    // check::add_check(
+    //     "AUD_100",
+    //     "Ensure audit rules are immutable",
+    //     vec!["audit", "STIG"],
+    //     || audit::check_audit_rule("-e 2"),
+    //     vec![audit::init_audit_rules],
+    // );
+    // check::add_check(
+    //     "AUD_101",
+    //     "Ensure audit rule for sudo log file is present",
+    //     vec!["audit"],
+    //     || audit::check_audit_rule("-w /var/log/sudo.log -p wa -k log_file"),
+    //     vec![audit::init_audit_rules],
+    // );
+
+    check::add_check(
+        "AAR_001",
+        "Ensure AppArmor is enabled",
+        vec!["apparmor"],
+        apparmor::apparmor_enabled,
+        vec![],
     );
 }

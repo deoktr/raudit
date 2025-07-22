@@ -23,17 +23,43 @@
 use std::fs;
 use std::path::Path;
 
-/// Check if file exist and is empty.
-pub fn empty_file(path: &str) -> Result<bool, std::io::Error> {
-    Ok(fs::metadata(path)?.len() == 0)
-}
+use crate::check;
 
 /// Check if file is either empty or not present.
-pub fn empty_or_missing_file(path: &str) -> Result<bool, std::io::Error> {
-    empty_file(path).or_else(|e| match e.kind() {
-        std::io::ErrorKind::NotFound => Ok(true),
-        _ => Err(e),
-    })
+pub fn empty_or_missing_file(path: &str) -> check::CheckReturn {
+    match fs::metadata(path) {
+        Ok(meta) => {
+            if meta.len() == 0 {
+                (check::CheckState::Success, None)
+            } else {
+                (
+                    check::CheckState::Failure,
+                    Some("file not empty".to_string()),
+                )
+            }
+        }
+        Err(err) => match err.kind() {
+            std::io::ErrorKind::NotFound => (check::CheckState::Success, None),
+            _ => (check::CheckState::Error, Some(err.to_string())),
+        },
+    }
+}
+
+/// Check if file exist and is empty.
+pub fn empty_file(path: &str) -> check::CheckReturn {
+    match fs::metadata(path) {
+        Ok(meta) => {
+            if meta.len() == 0 {
+                (check::CheckState::Success, None)
+            } else {
+                (
+                    check::CheckState::Failure,
+                    Some("file not empty".to_string()),
+                )
+            }
+        }
+        Err(err) => (check::CheckState::Error, Some(err.to_string())),
+    }
 }
 
 /// Check if a directory exist.

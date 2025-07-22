@@ -16,6 +16,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use std::time::Duration;
+
+pub fn format_duration(dur: Duration) -> String {
+    let secs = dur.as_secs();
+    if secs >= 60 {
+        format!("{}m", secs / 60)
+    } else if secs >= 1 {
+        format!("{}s", secs)
+    } else if dur.as_millis() >= 1 {
+        format!("{}ms", dur.as_millis())
+    } else {
+        format!("{}μs", dur.as_micros())
+    }
+}
+
 /// Run a command without failling.
 macro_rules! run {
     ($bin:tt) => {
