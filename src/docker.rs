@@ -39,12 +39,14 @@
 use std::process;
 use std::process::Stdio;
 
+use crate::check;
+
 /// Ensure containers are not started with `--privileged` flag.
 ///
 /// Don't start containers with `--privileged`.
 /// Check manually with:
 /// docker container inspect -l --format '{{.Id}}={{.Config.CreateCommand}}'
-pub fn docker_not_privileged() -> Result<bool, std::io::Error> {
+pub fn docker_not_privileged() -> check::CheckReturn {
     // can be docker or podman
     let mut cmd = process::Command::new("docker");
     cmd.stdin(Stdio::null());
@@ -56,7 +58,10 @@ pub fn docker_not_privileged() -> Result<bool, std::io::Error> {
         "{{.Id}}\t{{.Config.CreateCommand}}",
     ]);
 
-    let output = cmd.output()?;
+    let output = match cmd.output() {
+        Ok(output) => output,
+        Err(err) => return (check::CheckState::Failure, Some(err.to_string())),
+    };
 
     let ids: Vec<String> = String::from_utf8_lossy(&output.stdout)
         .lines()
@@ -83,7 +88,11 @@ pub fn docker_not_privileged() -> Result<bool, std::io::Error> {
     // debug
     // println!("Containers running with `--privileged`: {:?}", ids);
 
-    Ok(ids.len() == 0)
+    if ids.len() == 0 {
+        (check::CheckState::Success, None)
+    } else {
+        (check::CheckState::Failure, Some(ids.join(", ")))
+    }
 }
 
 /// Ensure containers capabilities are dopped.
@@ -91,7 +100,7 @@ pub fn docker_not_privileged() -> Result<bool, std::io::Error> {
 /// Start containers with `--cap-drop=all` to remove all capabilities.
 /// check manually with:
 /// docker container inspect -l --format '{{.Id}}={{.Config.CreateCommand}}'
-pub fn docker_cap_drop() -> Result<bool, std::io::Error> {
+pub fn docker_cap_drop() -> check::CheckReturn {
     // can be docker or podman
     let mut cmd = process::Command::new("docker");
     cmd.stdin(Stdio::null());
@@ -103,7 +112,10 @@ pub fn docker_cap_drop() -> Result<bool, std::io::Error> {
         "{{.Id}}\t{{.HostConfig.CapDrop}}",
     ]);
 
-    let output = cmd.output()?;
+    let output = match cmd.output() {
+        Ok(output) => output,
+        Err(err) => return (check::CheckState::Failure, Some(err.to_string())),
+    };
 
     let ids: Vec<String> = String::from_utf8_lossy(&output.stdout)
         .lines()
@@ -130,5 +142,9 @@ pub fn docker_cap_drop() -> Result<bool, std::io::Error> {
     // debug
     // println!("Missing cap drop on containers: {:?}", ids);
 
-    Ok(ids.len() == 0)
+    if ids.len() == 0 {
+        (check::CheckState::Success, None)
+    } else {
+        (check::CheckState::Failure, Some(ids.join(", ")))
+    }
 }

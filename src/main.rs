@@ -20,11 +20,18 @@ mod apparmor;
 mod audit;
 mod base;
 mod check;
+mod clamav;
 mod config;
 mod consts;
+mod docker;
+mod gdm;
 mod group;
+mod grub;
+mod kernel;
+mod sshd;
 mod sysctl;
 mod systemd;
+mod users;
 mod utils;
 
 use clap::Parser;
@@ -147,7 +154,7 @@ fn add_all_checks() {
                         (check::CheckState::Success, Some(format!("{}", value)))
                     } else {
                         (
-                            check::CheckState::Error,
+                            check::CheckState::Failure,
                             Some(format!("{} > {}", value, EXPECTED)),
                         )
                     }
@@ -202,7 +209,7 @@ fn add_all_checks() {
                         (check::CheckState::Success, Some(format!("{}", value)))
                     } else {
                         (
-                            check::CheckState::Error,
+                            check::CheckState::Failure,
                             Some(format!("{} > {}", value, EXPECTED)),
                         )
                     }
@@ -369,7 +376,7 @@ fn add_all_checks() {
                         (check::CheckState::Success, Some(format!("{}", value)))
                     } else {
                         (
-                            check::CheckState::Error,
+                            check::CheckState::Failure,
                             Some(format!("{} > {}", value, EXPECTED)),
                         )
                     }
@@ -584,7 +591,7 @@ fn add_all_checks() {
                         (check::CheckState::Success, Some(format!("{}", value)))
                     } else {
                         (
-                            check::CheckState::Error,
+                            check::CheckState::Failure,
                             Some(format!("{} > {}", value, EXPECTED)),
                         )
                     }
@@ -606,7 +613,7 @@ fn add_all_checks() {
                         (check::CheckState::Success, Some(format!("{}", value)))
                     } else {
                         (
-                            check::CheckState::Error,
+                            check::CheckState::Failure,
                             Some(format!("{} > {}", value, EXPECTED)),
                         )
                     }
@@ -628,7 +635,7 @@ fn add_all_checks() {
                         (check::CheckState::Success, Some(format!("{}", value)))
                     } else {
                         (
-                            check::CheckState::Error,
+                            check::CheckState::Failure,
                             Some(format!("{} > {}", value, EXPECTED)),
                         )
                     }
@@ -712,4 +719,881 @@ fn add_all_checks() {
         apparmor::apparmor_enabled,
         vec![],
     );
+
+    check::add_check(
+        "CAV_001",
+        "Ensure ClamAV is installed",
+        vec!["clamav"],
+        clamav::clamav_installed,
+        vec![],
+    );
+
+    check::add_check(
+        "CNT_001",
+        "Ensure containers are not started with \"--privileged\" flag",
+        vec!["container", "docker"],
+        docker::docker_not_privileged,
+        vec![],
+    );
+    check::add_check(
+        "CNT_002",
+        "Ensure containers capabilities are dopped",
+        vec!["container", "docker"],
+        docker::docker_cap_drop,
+        vec![],
+    );
+
+    check::add_check(
+        "SYS_001",
+        "Ensure no reboot is required",
+        vec!["system"],
+        kernel::check_reboot_required,
+        vec![],
+    );
+
+    // https://github.com/Kicksecure/security-misc/blob/master/etc/default/grub.d/40_kernel_hardening.cfg
+    check::add_check(
+        "KNP_001",
+        "Ensure that kernel flag \"slab_nomerge\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("slab_nomerge"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_002",
+        "Ensure that kernel flag \"slab_debug=FZ\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("slab_debug=FZ"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_003",
+        "Ensure that kernel flag \"page_poison=1\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("page_poison=1"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_004",
+        "Ensure that kernel flag \"page_alloc.shuffle=1\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("page_alloc.shuffle=1"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_005",
+        "Ensure that kernel flag \"init_on_alloc=1\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("init_on_alloc=1"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_006",
+        "Ensure that kernel flag \"init_on_free=1\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("init_on_free=1"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_007",
+        "Ensure that kernel flag \"pti=on\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("pti=on"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_008",
+        "Ensure that kernel flag \"randomize_kstack_offset=on\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("randomize_kstack_offset=on"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_009",
+        "Ensure that kernel flag \"vsyscall=none\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("vsyscall=none"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_010",
+        "Ensure that kernel flag \"debugfs=off\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("debugfs=off"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_011",
+        "Ensure that kernel flag \"oops=panic\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("oops=panic"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_012",
+        "Ensure that kernel flag \"module.sig_enforce=1\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("module.sig_enforce=1"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_013",
+        "Ensure that kernel flag \"lockdown=confidentiality\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("lockdown=confidentiality"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_014",
+        "Ensure that kernel flag \"mce=0\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("mce=0"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_016",
+        "Ensure that kernel flag \"kfence.sample_interval=100\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("kfence.sample_interval=100"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_017",
+        "Ensure that kernel flag \"vdso32=0\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("vdso32=0"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_018",
+        "Ensure that kernel flag \"amd_iommu=force_isolation\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("amd_iommu=force_isolation"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_019",
+        "Ensure that kernel flag \"intel_iommu=on\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("intel_iommu=on"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_020",
+        "Ensure that kernel flag \"iommu=force\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("iommu=force"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_021",
+        "Ensure that kernel flag \"iommu.passthrough=0\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("iommu.passthrough=0"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_022",
+        "Ensure that kernel flag \"iommu.strict=1\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("iommu.strict=1"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_023",
+        "Ensure that kernel flag \"efi=disable_early_pci_dma\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("efi=disable_early_pci_dma"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_024",
+        "Ensure that kernel flag \"random.trust_bootloader=off\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("random.trust_bootloader=off"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_025",
+        "Ensure that kernel flag \"random.trust_cpu=off\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("random.trust_cpu=off"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_026",
+        "Ensure that kernel flag \"extra_latent_entropy\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("extra_latent_entropy"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_028",
+        "Ensure that kernel flag \"ipv6.disable=1\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("ipv6.disable=1"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_029",
+        "Ensure that kernel flag \"ia32_emulation=0\" is present",
+        vec!["kernel", "paranoid"],
+        || kernel::check_kernel_params("ia32_emulation=0"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_016",
+        "Ensure that kernel flag \"cfi=kcfi\" is present",
+        vec!["kernel", "paranoid"],
+        || kernel::check_kernel_params("cfi=kcfi"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_017",
+        "Ensure that kernel flag \"random.trust_cpu=off\" is present",
+        vec!["kernel", "paranoid"],
+        || kernel::check_kernel_params("random.trust_cpu=off"),
+        vec![kernel::init_kernel_params],
+    );
+
+    // from: kernel-hardening-checker
+    // https://lwn.net/Articles/695991/
+    check::add_check(
+        "KNP_020",
+        "Ensure that kernel flag \"hardened_usercopy=1\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("hardened_usercopy=1"),
+        vec![kernel::init_kernel_params],
+    );
+
+    // Remount secure
+    // https://github.com/Kicksecure/security-misc/blob/master/etc/default/grub.d/40_remount_secure.cfg
+    check::add_check(
+        "KNP_027",
+        "Ensure that kernel flag \"remountsecure=3\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("remountsecure=3"),
+        vec![kernel::init_kernel_params],
+    );
+
+    // X86 64 and 32 CPU mitigations
+    // https://github.com/Kicksecure/security-misc/blob/master/etc/default/grub.d/40_cpu_mitigations.cfg
+    check::add_check(
+        "KNP_030",
+        "Ensure that kernel flag \"mitigations=auto\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("mitigations=auto"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_030",
+        "Ensure that kernel flag \"mitigations=auto,nosmt\" is present",
+        vec!["kernel", "paranoid"],
+        || kernel::check_kernel_params("mitigations=auto,nosmt"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_031",
+        "Ensure that kernel flag \"nosmt=force\" is present",
+        vec!["kernel", "paranoid"],
+        || kernel::check_kernel_params("nosmt=force"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_032",
+        "Ensure that kernel flag \"spectre_v2=on\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("spectre_v2=on"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_033",
+        "Ensure that kernel flag \"spectre_bhi=on\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("spectre_bhi=on"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_034",
+        "Ensure that kernel flag \"spec_store_bypass_disable=on\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("spec_store_bypass_disable=on"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_035",
+        "Ensure that kernel flag \"l1tf=full,force\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("l1tf=full,force"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_036",
+        "Ensure that kernel flag \"mds=full\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("mds=full"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_036",
+        "Ensure that kernel flag \"mds=full,nosm\" is present",
+        vec!["kernel", "paranoid"],
+        || kernel::check_kernel_params("mds=full,nosm"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_037",
+        "Ensure that kernel flag \"tsx=off\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("tsx=off"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_038",
+        "Ensure that kernel flag \"tsx_async_abort=full\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("tsx_async_abort=full"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_038",
+        "Ensure that kernel flag \"tsx_async_abort=full,nosmt\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("tsx_async_abort=full,nosmt"),
+        vec![kernel::init_kernel_params],
+    ); // TODO: paranoid
+    check::add_check(
+        "KNP_039",
+        "Ensure that kernel flag \"kvm.nx_huge_pages=force\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("kvm.nx_huge_pages=force"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_040",
+        "Ensure that kernel flag \"l1d_flush=on\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("l1d_flush=on"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_041",
+        "Ensure that kernel flag \"mmio_stale_data=full\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("mmio_stale_data=full"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_041",
+        "Ensure that kernel flag \"mmio_stale_data=full,nosmt\" is present",
+        vec!["kernel", "paranoid"],
+        || kernel::check_kernel_params("mmio_stale_data=full,nosmt"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_042",
+        "Ensure that kernel flag \"retbleed=auto\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("retbleed=auto"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_042",
+        "Ensure that kernel flag \"retbleed=auto,nosmt\" is present",
+        vec!["kernel", "paranoid"],
+        || kernel::check_kernel_params("retbleed=auto,nosmt"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_043",
+        "Ensure that kernel flag \"spec_rstack_overflow=safe-ret\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("spec_rstack_overflow=safe-ret"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_044",
+        "Ensure that kernel flag \"gather_data_sampling=force\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("gather_data_sampling=force"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_045",
+        "Ensure that kernel flag \"reg_file_data_sampling=on\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("reg_file_data_sampling=on"),
+        vec![kernel::init_kernel_params],
+    );
+    // from: kernel-hardening-checker
+    check::add_check(
+        "KNP_050",
+        "Ensure that kernel flag \"spectre_v2_user=on\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("spectre_v2_user=on"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_051",
+        "Ensure that kernel flag \"srbds=auto,nosmt\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("srbds=auto,nosmt"),
+        vec![kernel::init_kernel_params],
+    );
+
+    // ARM CPU mitigations
+    // "kpti=auto,nosmt");
+    // "ssbd=force-on");
+    // "rodata=full");
+
+    // Quiet boot
+    // https://github.com/Kicksecure/security-misc/blob/master/etc/default/grub.d/41_quiet_boot.cfg
+    check::add_check(
+        "KNP_060",
+        "Ensure that kernel flag \"loglevel=0\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("loglevel=0"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_061",
+        "Ensure that kernel flag \"quiet\" is present",
+        vec!["kernel"],
+        || kernel::check_kernel_params("quiet"),
+        vec![kernel::init_kernel_params],
+    );
+
+    check::add_check(
+        "GDM_001",
+        "Ensure no automatic logon to the system via a GUI is possible",
+        vec!["gdm"],
+        gdm::no_gdm_auto_logon,
+        vec![],
+    );
+
+    check::add_check(
+        "GRB_001",
+        "Ensure that bootloader password is set",
+        vec!["grub"],
+        grub::password_is_set,
+        vec![grub::init_grub_cfg],
+    );
+
+    check::add_check(
+        "USR_001",
+        "Ensure that root is the only user with UID 0",
+        vec!["user", "passwd"],
+        users::no_uid_zero,
+        vec![users::init_passwd],
+    );
+    check::add_check(
+        "USR_002",
+        "Ensure no duplicate user names exist",
+        vec!["user", "passwd"],
+        users::no_dup_username,
+        vec![users::init_passwd],
+    );
+    check::add_check(
+        "USR_003",
+        "Ensure no duplicate UIDs exist",
+        vec!["user", "passwd"],
+        users::no_dup_uid,
+        vec![users::init_passwd],
+    );
+    check::add_check(
+        "USR_004",
+        "Ensure that \"/etc/securetty\" is empty",
+        vec!["user"],
+        users::empty_securetty,
+        vec![],
+    );
+    check::add_check(
+        "USR_005",
+        "Ensure no login is available on system accounts",
+        vec!["user", "passwd"],
+        users::no_login_sys_users,
+        vec![users::init_passwd],
+    );
+    // check::add_check(
+    //     "USR_006",
+    //     "Ensure all passwords are hashed with yescrypt",
+    //     vec!["user", "shadow"],
+    //     users::yescrypt_hashes,
+    //     vec![users::init_shadow],
+    // );
+    // check::add_check(
+    //     "USR_007",
+    //     "Ensure no accounts are locked, delete them",
+    //     vec!["user", "shadow"],
+    //     users::no_locked_account,
+    //     vec![users::init_shadow],
+    // );
+    check::add_check(
+        "USR_008",
+        "Ensure that all home directories exist",
+        vec!["user", "passwd"],
+        users::no_missing_home,
+        vec![users::init_passwd],
+    );
+    // check::add_check(
+    //     "USR_009",
+    //     "Ensure \"/etc/shadow\" password fields are not empty",
+    //     vec!["user", "shadow"],
+    //     users::no_empty_shadow_password,
+    //     vec![users::init_shadow],
+    // );
+    check::add_check(
+        "USR_010",
+        "Ensure \"/etc/passwd\" password fields are not empty",
+        vec!["user", "passwd"],
+        users::no_empty_passwd_password,
+        vec![users::init_shadow],
+    );
+    check::add_check(
+        "USR_011",
+        "Ensure accounts in \"/etc/passwd\" use shadowed passwords",
+        vec!["user", "passwd"],
+        users::no_password_in_passwd,
+        vec![users::init_passwd],
+    );
+
+    // check::add_check(
+    //     "SSH_001",
+    //     "Ensure that sshd is configured with \"fingerprinthash\" = \"SHA256\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("fingerprinthash", "SHA256"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_002",
+    //     "Ensure that sshd is configured with \"syslogfacility\" = \"AUTH\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("syslogfacility", "AUTH"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_003",
+    //     "Ensure that sshd is configured with \"loglevel\" = \"VERBOSE\"",
+    //     vec!["sshd", "CIS"],
+    //     || sshd::check_sshd_config("loglevel", "VERBOSE"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_004",
+    //     "Ensure that sshd is configured with \"logingracetime\" <= 60",
+    //     vec!["sshd", "CIS"],
+    //     || {
+    //         const EXPECTED: i32 = 60;
+    //         match sshd::get_sshd_config("logingracetime") {
+    //             Ok(str_value) => match str_value.parse::<i32>() {
+    //                 Ok(value) => {
+    //                     if value <= EXPECTED {
+    //                         (check::CheckState::Success, Some(format!("{}", value)))
+    //                     } else {
+    //                         (
+    //                             check::CheckState::Failure,
+    //                             Some(format!("{} > {}", value, EXPECTED)),
+    //                         )
+    //                     }
+    //                 }
+    //                 Err(error) => (check::CheckState::Error, Some(error.to_string())),
+    //             },
+    //             Err(error) => (check::CheckState::Error, Some(error)),
+    //         }
+    //     },
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_005",
+    //     "Ensure that sshd is configured with \"permitrootlogin\" = \"no\"",
+    //     vec!["sshd", "CIS"],
+    //     || sshd::check_sshd_config("permitrootlogin", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_006",
+    //     "Ensure that sshd is configured with \"strictmodes\" = \"yes\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("strictmodes", "yes"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_007",
+    //     "Ensure that sshd is configured with \"maxauthtries\" <= 2",
+    //     vec!["sshd", "CIS"],
+    //     || {
+    //         const EXPECTED: i32 = 2;
+    //         match sshd::get_sshd_config("maxauthtries") {
+    //             Ok(str_value) => match str_value.parse::<i32>() {
+    //                 Ok(value) => {
+    //                     if value <= EXPECTED {
+    //                         (check::CheckState::Success, Some(format!("{}", value)))
+    //                     } else {
+    //                         (
+    //                             check::CheckState::Failure,
+    //                             Some(format!("{} > {}", value, EXPECTED)),
+    //                         )
+    //                     }
+    //                 }
+    //                 Err(error) => (check::CheckState::Error, Some(error.to_string())),
+    //             },
+    //             Err(error) => (check::CheckState::Error, Some(error)),
+    //         }
+    //     },
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_008",
+    //     "Ensure that sshd is configured with \"maxsessions\" <= 2",
+    //     vec!["sshd", "CIS"],
+    //     || {
+    //         const EXPECTED: i32 = 2;
+    //         match sshd::get_sshd_config("maxauthtries") {
+    //             Ok(str_value) => match str_value.parse::<i32>() {
+    //                 Ok(value) => {
+    //                     if value <= EXPECTED {
+    //                         (check::CheckState::Success, Some(format!("{}", value)))
+    //                     } else {
+    //                         (
+    //                             check::CheckState::Failure,
+    //                             Some(format!("{} > {}", value, EXPECTED)),
+    //                         )
+    //                     }
+    //                 }
+    //                 Err(error) => (check::CheckState::Error, Some(error.to_string())),
+    //             },
+    //             Err(error) => (check::CheckState::Error, Some(error)),
+    //         }
+    //     },
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_009",
+    //     "Ensure that sshd is configured with \"hostbasedauthentication\" = \"no\"",
+    //     vec!["sshd", "CIS"],
+    //     || sshd::check_sshd_config("hostbasedauthentication", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_010",
+    //     "Ensure that sshd is configured with \"ignorerhosts\" = \"yes\"",
+    //     vec!["sshd", "CIS"],
+    //     || sshd::check_sshd_config("ignorerhosts", "yes"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_011",
+    //     "Ensure that sshd is configured with \"ignoreuserknownhosts\" = \"yes\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("", ""),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_012",
+    //     "Ensure that sshd is configured with \"pubkeyauthentication\" = \"yes\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("pubkeyauthentication", "yes"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_013",
+    //     "Ensure that sshd is configured with \"passwordauthentication\" = \"no\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("passwordauthentication", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_014",
+    //     "Ensure that sshd is configured with \"kbdinteractiveauthentication\" = \"no\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("kbdinteractiveauthentication", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_015",
+    //     "Ensure that sshd is configured with \"permitemptypasswords\" = \"no\"",
+    //     vec!["sshd", "CIS", "STIG"],
+    //     || sshd::check_sshd_config("permitemptypasswords", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_016",
+    //     "Ensure that sshd is configured with \"kerberosauthentication\" = \"no\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("kerberosauthentication", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_017",
+    //     "Ensure that sshd is configured with \"kerberosorlocalpasswd\" = \"no\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("kerberosorlocalpasswd", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_018",
+    //     "Ensure that sshd is configured with \"kerberosticketcleanup\" = \"yes\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("kerberosticketcleanup", "yes"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_019",
+    //     "Ensure that sshd is configured with \"gssapiauthentication\" = \"no\"",
+    //     vec!["sshd", "CIS"],
+    //     || sshd::check_sshd_config("gssapiauthentication", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_020",
+    //     "Ensure that sshd is configured with \"gssapicleanupcredentials\" = \"yes\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("gssapicleanupcredentials", "yes"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_037",
+    //     "Ensure that sshd is configured with \"usepam\" = \"yes\"",
+    //     vec!["sshd", "CIS", "STIG"],
+    //     || sshd::check_sshd_config("usepam", "yes"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_025",
+    //     "Ensure that sshd is configured with \"disableforwarding\" = \"yes\"",
+    //     vec!["sshd", "CIS"],
+    //     || sshd::check_sshd_config("disableforwarding", "yes"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_021",
+    //     "Ensure that sshd is configured with \"x11forwarding\" = \"no\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("x11forwarding", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_022",
+    //     "Ensure that sshd is configured with \"allowagentforwarding\" = \"no\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("allowagentforwarding", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_023",
+    //     "Ensure that sshd is configured with \"allowstreamlocalforwarding\" = \"no\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("allowstreamlocalforwarding", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_024",
+    //     "Ensure that sshd is configured with \"allowtcpforwarding\" = \"no\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("allowtcpforwarding", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_026",
+    //     "Ensure that sshd is configured with \"gatewayports\" = \"no\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("gatewayports", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_027",
+    //     "Ensure that sshd is configured with \"x11uselocalhost\" = \"yes\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("x11uselocalhost", "yes"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_028",
+    //     "Ensure that sshd is configured with \"printmotd\" = \"no\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("printmotd", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_029",
+    //     "Ensure that sshd is configured with \"permituserenvironment\" = \"no\"",
+    //     vec!["sshd", "CIS"],
+    //     || sshd::check_sshd_config("permituserenvironment", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_030",
+    //     "Ensure that sshd is configured with \"clientaliveinterval\" <= 15",
+    //     vec!["sshd", "CIS"],
+    //     || {
+    //         const EXPECTED: i32 = 15;
+    //         match sshd::get_sshd_config("maxauthtries") {
+    //             Ok(str_value) => match str_value.parse::<i32>() {
+    //                 Ok(value) => {
+    //                     if value <= EXPECTED {
+    //                         (check::CheckState::Success, Some(format!("{}", value)))
+    //                     } else {
+    //                         (
+    //                             check::CheckState::Failure,
+    //                             Some(format!("{} > {}", value, EXPECTED)),
+    //                         )
+    //                     }
+    //                 }
+    //                 Err(error) => (check::CheckState::Error, Some(error.to_string())),
+    //             },
+    //             Err(error) => (check::CheckState::Error, Some(error)),
+    //         }
+    //     },
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_031",
+    //     "Ensure that sshd is configured with \"clientalivecountmax\" = \"0\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("clientalivecountmax", "0"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_032",
+    //     "Ensure that sshd is configured with \"tcpkeepalive\" = \"no\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("tcpkeepalive", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_033",
+    //     "Ensure that sshd is configured with \"usedns\" = \"no\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("usedns", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_034",
+    //     "Ensure that sshd is configured with \"permittunnel\" = \"no\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("permittunnel", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_035",
+    //     "Ensure that sshd is configured with \"maxstartups\" = \"10:30:60\"",
+    //     vec!["sshd", "CIS"],
+    //     || sshd::check_sshd_config("maxstartups", "10:30:60"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_036",
+    //     "Ensure that sshd is configured with \"printlastlog\" = \"no\"",
+    //     vec!["sshd"],
+    //     || sshd::check_sshd_config("printlastlog", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_037",
+    //     "Ensure that sshd is configured with \"allowgroups\" = \"sshusers\"",
+    //     vec!["sshd"],
+    //     // TODO: ensure the group also exist
+    //     || sshd::check_sshd_config("allowgroups", "sshusers"),
+    //     vec![sshd::init_sshd_config],
+    // );
 }

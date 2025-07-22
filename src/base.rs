@@ -63,7 +63,11 @@ pub fn empty_file(path: &str) -> check::CheckReturn {
 }
 
 /// Check if a directory exist.
-pub fn directory_exist(path: &str) -> bool {
+pub fn directory_exist(path: &str) -> check::CheckReturn {
     let p = Path::new(path);
-    p.exists() && p.is_dir()
+    if p.exists() && p.is_dir() {
+        (check::CheckState::Success, None)
+    } else {
+        (check::CheckState::Failure, None)
+    }
 }

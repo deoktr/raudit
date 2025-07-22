@@ -18,6 +18,8 @@
 
 use std::fs;
 
+use crate::check;
+
 // FIXME: On Ubuntu it is in:
 // "/etc/gdm3/custom.conf"
 const GDM_CFG_PATH: &str = "/etc/gdm/custom.conf";
@@ -25,8 +27,22 @@ const GDM_CFG_PATH: &str = "/etc/gdm/custom.conf";
 /// Ensure no automatic logon to the system via a GUI is possible.
 ///
 /// <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258018>
-pub fn no_gdm_auto_logon() -> Result<bool, std::io::Error> {
-    let cfg = fs::read_to_string(GDM_CFG_PATH)?;
+pub fn no_gdm_auto_logon() -> check::CheckReturn {
     // TODO: ensure that this is under `[daemon]`
-    Ok(cfg.lines().any(|l| l == "AutomaticLoginEnable=false"))
+    match fs::read_to_string(GDM_CFG_PATH) {
+        Ok(cfg) => {
+            if cfg.lines().any(|l| l == "AutomaticLoginEnable=false") {
+                (check::CheckState::Success, None)
+            } else {
+                (
+                    check::CheckState::Failure,
+                    Some("missing AutomaticLoginEnable=false".to_string()),
+                )
+            }
+        }
+        Err(err) => (
+            check::CheckState::Error,
+            Some(format!("failed to read gdm configuration: {}", err)),
+        ),
+    }
 }

@@ -17,21 +17,41 @@
  */
 
 use std::fs;
+use std::sync::OnceLock;
+
+use crate::check;
 
 const GRUB_CFG_PATH: &str = "/boot/grub/grub.cfg";
+
+static GRUB_CFG: OnceLock<GrubCfg> = OnceLock::new();
 
 /// Raw grub config from `/boot/grub/grub.cfg`.
 pub type GrubCfg = String;
 
 /// Get the system's grub config from `/boot/grub/grub.cfg`.
-pub fn init_grub_cfg() -> Result<GrubCfg, std::io::Error> {
-    let grub_cfg = fs::read_to_string(GRUB_CFG_PATH)?;
-    Ok(grub_cfg)
+pub fn init_grub_cfg() {
+    if GRUB_CFG.get().is_some() {
+        return;
+    }
+
+    match fs::read_to_string(GRUB_CFG_PATH) {
+        Ok(content) => {
+            GRUB_CFG.get_or_init(|| content);
+        }
+        Err(err) => println!("Failed to initialize grub configuration: {}", err),
+    };
 }
 
 /// Verify that grub is configured with a password.
-pub fn password_is_set(grub_cfg: &'static GrubCfg) -> bool {
+pub fn password_is_set() -> check::CheckReturn {
+    let grub_cfg = GRUB_CFG.get().expect("grub configuration not initialized");
+
     // NOTE: "\n" is to ensure they are not commented out
-    grub_cfg.contains(&"\nset superusers".to_string())
+    if grub_cfg.contains(&"\nset superusers".to_string())
         && grub_cfg.contains(&"\npassword".to_string())
+    {
+        (check::CheckState::Success, None)
+    } else {
+        (check::CheckState::Failure, None)
+    }
 }

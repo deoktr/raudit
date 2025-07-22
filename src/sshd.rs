@@ -19,6 +19,11 @@
 use std::collections::HashMap;
 use std::process;
 use std::process::Stdio;
+use std::sync::OnceLock;
+
+use crate::check;
+
+static SSHD_CONFIG: OnceLock<SshdConfig> = OnceLock::new();
 
 /// OpenSSH (sshd) configuration.
 pub type SshdConfig = HashMap<String, String>;
@@ -36,28 +41,61 @@ fn parse_sshd_config(sshd_t: String) -> SshdConfig {
 }
 
 /// Get the sshd (OpenSSH) configuration by running `sshd -T`.
-pub fn init_sshd_config() -> Result<SshdConfig, std::io::Error> {
+pub fn init_sshd_config() {
+    if SSHD_CONFIG.get().is_some() {
+        return;
+    }
+
     let mut cmd = process::Command::new("sshd");
     cmd.stdin(Stdio::null());
     cmd.args(vec!["-T"]);
 
-    let output = cmd.output()?;
+    match cmd.output() {
+        Ok(output) => {
+            match output.status.code() {
+                Some(status) => {
+                    if status != 0 {
+                        println!("Failed to get sshd configuration, got status code {} while running \"sshd -T\"", status);
+                        return;
+                    }
+                }
+                None => (),
+            };
 
-    // TODO: error if not 0
-    // match output.status.code() {
-    //     Some(c) => c,
-    //     None => 0,
-    // }
-
-    Ok(parse_sshd_config(
-        String::from_utf8_lossy(&output.stdout).to_string(),
-    ))
+            SSHD_CONFIG.get_or_init(|| {
+                parse_sshd_config(String::from_utf8_lossy(&output.stdout).to_string())
+            });
+        }
+        Err(err) => println!("Failed to initialize groups: {}", err),
+    };
 }
 
 /// Get sshd configuration value from a collected configuration.
-pub fn get_sshd_config(config: &'static SshdConfig, key: &str) -> Result<&'static str, String> {
-    match config.get(key) {
-        Some(val) => Ok(val),
-        None => Err("error getting sshd config value".to_string()),
+pub fn get_sshd_config(key: &str) -> Result<String, String> {
+    match SSHD_CONFIG
+        .get()
+        .expect("sshd configuration not initialized")
+        .get(key)
+    {
+        Some(val) => Ok(val.to_string()),
+        None => Err(format!("{:?} not found in sshd configuration", key)),
+    }
+}
+
+/// Get sshd configuration value from a collected configuration.
+pub fn check_sshd_config(key: &str, value: &str) -> check::CheckReturn {
+    match SSHD_CONFIG
+        .get()
+        .expect("sshd configuration not initialized")
+        .get(key)
+    {
+        Some(val) => {
+            if val == value {
+                (check::CheckState::Success, None)
+            } else {
+                (check::CheckState::Failure, Some(val.to_string()))
+            }
+        }
+        None => (check::CheckState::Failure, None),
     }
 }

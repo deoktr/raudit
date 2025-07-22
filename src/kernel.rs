@@ -18,8 +18,13 @@
 
 use std::fs;
 use std::path::Path;
+use std::sync::OnceLock;
+
+use crate::check;
 
 const CMDLINE_PATH: &str = "/proc/cmdline";
+
+static KERNEL_PARAMS: OnceLock<KernelParams> = OnceLock::new();
 
 /// Kenel params from `/proc/cmdline`.
 pub type KernelParams = Vec<String>;
@@ -35,18 +40,41 @@ fn parse_kernel_params(cmdline: String) -> KernelParams {
 }
 
 /// Get kernel params by reading from `/proc/cmdline`.
-pub fn init_kernel_params() -> Result<KernelParams, std::io::Error> {
-    let cmdline = fs::read_to_string(CMDLINE_PATH)?;
-    Ok(parse_kernel_params(cmdline))
+pub fn init_kernel_params() {
+    if KERNEL_PARAMS.get().is_some() {
+        return;
+    }
+
+    match fs::read_to_string(CMDLINE_PATH) {
+        Ok(cmdline) => {
+            KERNEL_PARAMS.get_or_init(|| parse_kernel_params(cmdline));
+        }
+        Err(err) => println!("Failed to initialize kernel params: {}", err),
+    }
 }
 
 /// Get kernel params presence from a collected configuration.
-pub fn get_kernel_params(config: &KernelParams, variable: String) -> bool {
-    config.contains(&variable)
+pub fn check_kernel_params(variable: &str) -> check::CheckReturn {
+    if KERNEL_PARAMS
+        .get()
+        .expect("kernel params not initialized")
+        .contains(&variable.to_string())
+    {
+        (check::CheckState::Success, None)
+    } else {
+        (check::CheckState::Failure, None)
+    }
 }
 
 /// Check if system needs a reboot.
-pub fn check_reboot_required() -> bool {
-    !(Path::new("/var/run/reboot-required.pkgs").exists()
+pub fn check_reboot_required() -> check::CheckReturn {
+    // TODO: on RHEL use `needs-restarting -r` command, status 0 no reboot
+    // required, 1 if it is
+    if !(Path::new("/var/run/reboot-required.pkgs").exists()
         || Path::new("/var/run/needs_restarting").exists())
+    {
+        (check::CheckState::Success, None)
+    } else {
+        (check::CheckState::Failure, None)
+    }
 }

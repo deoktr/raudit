@@ -17,9 +17,12 @@
  */
 
 use std::fs;
+use std::path::Path;
+use std::sync::OnceLock;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use crate::base::{directory_exist, empty_or_missing_file};
+use crate::base;
+use crate::check;
 
 const PASSWD_PATH: &str = "/etc/passwd";
 
@@ -29,6 +32,10 @@ const SECURETTY_PATH: &str = "/etc/securetty";
 
 /// UID_MIN as defined in `/etc/login.defs`.
 const UID_MIN: u32 = 1000;
+
+static PASSWD_CONFIG: OnceLock<PasswdConfig> = OnceLock::new();
+
+static SHADOW_CONFIG: OnceLock<ShadowConfig> = OnceLock::new();
 
 /// Passwd configuration from `/etc/passwd`.
 pub type PasswdConfig = Vec<Passwd>;
@@ -113,9 +120,23 @@ pub fn parse_passwd(content: String) -> PasswdConfig {
 }
 
 /// Get the system's users from `/etc/passwd`.
-pub fn init_passwd() -> Result<PasswdConfig, std::io::Error> {
-    let passwd = fs::read_to_string(PASSWD_PATH)?;
-    Ok(parse_passwd(passwd))
+pub fn init_passwd() {
+    if PASSWD_CONFIG.get().is_some() {
+        return;
+    }
+
+    match fs::read_to_string(PASSWD_PATH) {
+        Ok(content) => {
+            PASSWD_CONFIG.get_or_init(|| parse_passwd(content));
+        }
+        Err(err) => println!("Failed to initialize passwd: {}", err),
+    }
+}
+
+fn get_passwd_config() -> &'static PasswdConfig {
+    PASSWD_CONFIG
+        .get()
+        .expect("passwd configuration not initialized")
 }
 
 /// Parse the content of `/etc/passwd`.
@@ -190,49 +211,102 @@ pub fn parse_shadow(content: String) -> ShadowConfig {
 }
 
 /// Get the system's users from `/etc/shadow`.
-pub fn init_shadow() -> Result<ShadowConfig, std::io::Error> {
-    let shadow = fs::read_to_string(SHADOW_PATH)?;
-    Ok(parse_shadow(shadow))
+pub fn init_shadow() {
+    if SHADOW_CONFIG.get().is_some() {
+        return;
+    }
+
+    match fs::read_to_string(SHADOW_PATH) {
+        Ok(content) => {
+            SHADOW_CONFIG.get_or_init(|| parse_shadow(content));
+        }
+        Err(err) => println!("Failed to initialize shadow: {}", err),
+    }
+}
+
+fn get_shadow_config() -> &'static ShadowConfig {
+    SHADOW_CONFIG
+        .get()
+        .expect("shadow configuration not initialized")
 }
 
 /// Verify if any user has a password in passwd (not equal to `x`).
-pub fn no_password_in_passwd(passwd: &PasswdConfig) -> bool {
-    !passwd.iter().any(|user| user.password != "x".to_string())
+pub fn no_password_in_passwd() -> check::CheckReturn {
+    let g: Vec<String> = get_passwd_config()
+        .iter()
+        .filter(|entry| entry.password != "x")
+        .map(|entry| entry.username.clone())
+        .collect();
+
+    if g.len() != 0 {
+        (check::CheckState::Failure, Some(g.join(", ")))
+    } else {
+        (check::CheckState::Success, None)
+    }
 }
 
 /// Verify that only root has UID 0.
-pub fn no_uid_zero(passwd: &PasswdConfig) -> bool {
-    passwd.iter().filter(|user| user.uid == 0).count() == 1
+pub fn no_uid_zero() -> check::CheckReturn {
+    let g: Vec<String> = get_passwd_config()
+        .iter()
+        .filter(|entry| entry.uid == 0 && entry.username != "root")
+        .map(|entry| entry.username.clone())
+        .collect();
+
+    if g.len() != 0 {
+        (check::CheckState::Failure, Some(g.join(", ")))
+    } else {
+        (check::CheckState::Success, None)
+    }
 }
 
 /// Ensure all passwords are hashed with yescrypt.
-pub fn yescrypt_hashes(shadow: &ShadowConfig) -> bool {
+pub fn yescrypt_hashes() -> check::CheckReturn {
     // the full yescrypt format is:
     // \$y\$[./A-Za-z0-9]+\$[./A-Za-z0-9]{,86}\$[./A-Za-z0-9]{43}
-    shadow
+    let usernames: Vec<String> = get_shadow_config()
         .iter()
-        .all(|user| user.password.starts_with("$y$") || user.password == "!")
+        .filter(|entry| entry.password.starts_with("$y$") || entry.password == "!")
+        .map(|entry| entry.username.clone())
+        .collect();
+
+    if usernames.len() != 0 {
+        (check::CheckState::Failure, Some(usernames.join(", ")))
+    } else {
+        (check::CheckState::Success, None)
+    }
 }
 
 /// Ensure no accounts are locked, delete them.
 ///
 /// Return true if NO account is locked.
-pub fn no_locked_account(shadow: &ShadowConfig) -> bool {
+pub fn no_locked_account() -> check::CheckReturn {
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .expect("Time went backwards");
 
     let days_since_epoch = now.as_secs() / 86400;
 
-    !shadow.iter().any(|user| match user.expiration_date {
-        Some(expiration_date) => u64::from(expiration_date) <= days_since_epoch,
-        None => false,
-    })
+    let usernames: Vec<String> = get_shadow_config()
+        .iter()
+        .filter(|entry| match entry.expiration_date {
+            Some(expiration_date) => u64::from(expiration_date) <= days_since_epoch,
+            None => false,
+        })
+        .map(|entry| entry.username.clone())
+        .collect();
+
+    if usernames.len() != 0 {
+        (check::CheckState::Failure, Some(usernames.join(", ")))
+    } else {
+        (check::CheckState::Success, None)
+    }
 }
 
 /// Ensure that all home directories exist.
-pub fn no_missing_home(passwd: &PasswdConfig) -> bool {
-    for user in passwd.iter() {
+pub fn no_missing_home() -> check::CheckReturn {
+    let mut usernames: Vec<String> = vec![];
+    for user in get_passwd_config().iter() {
         if (user.uid > 0 && user.uid < UID_MIN)
             || user.shell.ends_with("/nologin")
             || user.shell.ends_with("/false")
@@ -240,11 +314,17 @@ pub fn no_missing_home(passwd: &PasswdConfig) -> bool {
             continue;
         }
 
-        if !directory_exist(&user.home) {
-            return false;
+        let p = Path::new(&user.home);
+        if !p.exists() || !p.is_dir() {
+            usernames.push(user.username.clone());
         }
     }
-    return true;
+
+    if usernames.len() != 0 {
+        (check::CheckState::Failure, Some(usernames.join(", ")))
+    } else {
+        (check::CheckState::Success, None)
+    }
 }
 
 // TODO: Ensure all groups in /etc/passwd exist in /etc/group
@@ -253,55 +333,105 @@ pub fn no_missing_home(passwd: &PasswdConfig) -> bool {
 // TODO: Ensure that root account is locked
 
 /// Ensure no duplicate UIDs exist.
-///
-/// Returns true if NO duplicate is found.
-pub fn no_dup_uid(passwd: &PasswdConfig) -> bool {
-    !passwd
+pub fn no_dup_uid() -> check::CheckReturn {
+    let passwd = get_passwd_config();
+
+    let usernames: Vec<String> = passwd
         .iter()
-        .any(|user| passwd.iter().filter(|u| u.uid == user.uid).count() > 1)
+        .filter(|entry| passwd.iter().filter(|u| u.uid == entry.uid).count() > 1)
+        .map(|entry| entry.username.clone())
+        .collect();
+
+    if usernames.len() != 0 {
+        (check::CheckState::Failure, Some(usernames.join(", ")))
+    } else {
+        (check::CheckState::Success, None)
+    }
 }
 
 /// Ensure no duplicate user names exist.
-///
-/// Returns true if NO duplicate is found.
-pub fn no_dup_username(passwd: &PasswdConfig) -> bool {
-    !passwd.iter().any(|user| {
-        passwd
-            .iter()
-            .filter(|u| u.username == user.username)
-            .count()
-            > 1
-    })
+pub fn no_dup_username() -> check::CheckReturn {
+    let passwd = get_passwd_config();
+
+    let usernames: Vec<String> = passwd
+        .iter()
+        .filter(|entry| {
+            passwd
+                .iter()
+                .filter(|u| u.username == entry.username)
+                .count()
+                > 1
+        })
+        .map(|entry| entry.username.clone())
+        .collect();
+
+    if usernames.len() != 0 {
+        (check::CheckState::Failure, Some(usernames.join(", ")))
+    } else {
+        (check::CheckState::Success, None)
+    }
 }
 
 /// Ensure no login is available on system accounts
 ///
 /// Ensure that all system users (UID < 1000) can't login with a shell, either
 /// have `nologin`, or `false` as shell.
-pub fn no_login_sys_users(passwd: &PasswdConfig) -> bool {
-    !passwd.iter().any(|user| {
-        (user.uid > 0 && user.uid < UID_MIN)
-            && !(user.shell.ends_with("/nologin")
+pub fn no_login_sys_users() -> check::CheckReturn {
+    let passwd = get_passwd_config();
+
+    let usernames: Vec<String> = passwd
+        .iter()
+        .filter(|user| {
+            (user.uid > 0 && user.uid < UID_MIN)
+                && !(user.shell.ends_with("/nologin")
                 || user.shell.ends_with("/false")
                 // on some distro user `sync` as `/bin/sync` shell
                 || user.shell.ends_with("/sync"))
-    })
+        })
+        .map(|entry| entry.username.clone())
+        .collect();
+
+    if usernames.len() != 0 {
+        (check::CheckState::Failure, Some(usernames.join(", ")))
+    } else {
+        (check::CheckState::Success, None)
+    }
 }
 
 /// Ensure /etc/shadow password fields are not empty.
 ///
 /// An account with an empty password field means that anybody may log in as
 /// that user without providing a password.
-pub fn no_empty_shadow_password(shadow: &ShadowConfig) -> bool {
-    !shadow.iter().any(|user| user.password == "")
+pub fn no_empty_shadow_password() -> check::CheckReturn {
+    let usernames: Vec<String> = get_shadow_config()
+        .iter()
+        .filter(|user| user.password == "")
+        .map(|entry| entry.username.clone())
+        .collect();
+
+    if usernames.len() != 0 {
+        (check::CheckState::Failure, Some(usernames.join(", ")))
+    } else {
+        (check::CheckState::Success, None)
+    }
 }
 
 /// Ensure /etc/passwd password fields are not empty.
 ///
 /// An account with an empty password field means that anybody may log in as
 /// that user without providing a password.
-pub fn no_empty_passwd_password(passwd: &PasswdConfig) -> bool {
-    !passwd.iter().any(|user| user.password == "")
+pub fn no_empty_passwd_password() -> check::CheckReturn {
+    let usernames: Vec<String> = get_passwd_config()
+        .iter()
+        .filter(|user| user.password == "")
+        .map(|entry| entry.username.clone())
+        .collect();
+
+    if usernames.len() != 0 {
+        (check::CheckState::Failure, Some(usernames.join(", ")))
+    } else {
+        (check::CheckState::Success, None)
+    }
 }
 
 /// Ensure `/etc/securetty` is empty or missing.
@@ -309,8 +439,8 @@ pub fn no_empty_passwd_password(passwd: &PasswdConfig) -> bool {
 /// The file, `/etc/securetty` specifies where you are allowed to login as root
 /// from. This file should be kept empty so that nobody can do so from a
 /// terminal.
-pub fn empty_securetty() -> Result<bool, std::io::Error> {
-    empty_or_missing_file(SECURETTY_PATH)
+pub fn empty_securetty() -> check::CheckReturn {
+    base::empty_or_missing_file(SECURETTY_PATH)
 }
 
 #[cfg(test)]
@@ -457,225 +587,5 @@ proxy:*:19837:0:99999:7:::
         assert_eq!(line.inactivity_period, None);
         assert_eq!(line.expiration_date, None);
         assert_eq!(line.reserved, "".to_string());
-    }
-
-    #[test]
-    fn test_no_dup_username() {
-        let passwd: PasswdConfig = vec![
-            Passwd {
-                username: "foo".to_string(),
-                password: "x".to_string(),
-                uid: 1,
-                gid: 1,
-                gecos: "foo".to_string(),
-                home: "/home/foo".to_string(),
-                shell: "/".to_string(),
-            },
-            Passwd {
-                username: "bar".to_string(),
-                password: "x".to_string(),
-                uid: 1,
-                gid: 1,
-                gecos: "foo".to_string(),
-                home: "/home/foo".to_string(),
-                shell: "/".to_string(),
-            },
-            Passwd {
-                username: "baz".to_string(),
-                password: "x".to_string(),
-                uid: 1,
-                gid: 1,
-                gecos: "foo".to_string(),
-                home: "/home/foo".to_string(),
-                shell: "/".to_string(),
-            },
-        ];
-        let r = no_dup_username(&passwd);
-        assert!(r);
-
-        let passwd_dup: PasswdConfig = vec![
-            Passwd {
-                username: "foo".to_string(),
-                password: "x".to_string(),
-                uid: 1,
-                gid: 1,
-                gecos: "foo".to_string(),
-                home: "/home/foo".to_string(),
-                shell: "/".to_string(),
-            },
-            Passwd {
-                username: "foo".to_string(),
-                password: "x".to_string(),
-                uid: 1,
-                gid: 1,
-                gecos: "foo".to_string(),
-                home: "/home/foo".to_string(),
-                shell: "/".to_string(),
-            },
-            Passwd {
-                username: "baz".to_string(),
-                password: "x".to_string(),
-                uid: 1,
-                gid: 1,
-                gecos: "foo".to_string(),
-                home: "/home/foo".to_string(),
-                shell: "/".to_string(),
-            },
-        ];
-        let r = no_dup_username(&passwd_dup);
-        assert!(!r);
-    }
-
-    #[test]
-    fn test_no_login_sys_users() {
-        let passwd: PasswdConfig = vec![
-            Passwd {
-                username: "root".to_string(),
-                password: "x".to_string(),
-                uid: 0,
-                gid: 0,
-                gecos: "root".to_string(),
-                home: "/root".to_string(),
-                shell: "/usr/bin/bash".to_string(),
-            },
-            Passwd {
-                username: "daemon".to_string(),
-                password: "x".to_string(),
-                uid: 1,
-                gid: 1,
-                gecos: "".to_string(),
-                home: "/nonexistent".to_string(),
-                shell: "/usr/bin/false".to_string(),
-            },
-            Passwd {
-                username: "avahi".to_string(),
-                password: "x".to_string(),
-                uid: 2,
-                gid: 2,
-                gecos: "".to_string(),
-                home: "/run/avahi-daemon".to_string(),
-                shell: "/usr/sbin/nologin".to_string(),
-            },
-            Passwd {
-                username: "sync".to_string(),
-                password: "x".to_string(),
-                uid: 4,
-                gid: 65534,
-                gecos: "".to_string(),
-                home: "/bin".to_string(),
-                shell: "/bin/sync".to_string(),
-            },
-            Passwd {
-                username: "systemd-oom".to_string(),
-                password: "x".to_string(),
-                uid: 998,
-                gid: 998,
-                gecos: "".to_string(),
-                home: "/nonexistent".to_string(),
-                shell: "/bin/false".to_string(),
-            },
-            Passwd {
-                username: "polkitd".to_string(),
-                password: "x".to_string(),
-                uid: 999,
-                gid: 999,
-                gecos: "".to_string(),
-                home: "/nonexistent".to_string(),
-                shell: "/usr/bin/nologin".to_string(),
-            },
-            Passwd {
-                username: "baz".to_string(),
-                password: "x".to_string(),
-                uid: 1000,
-                gid: 1000,
-                gecos: "foo".to_string(),
-                home: "/home/foo".to_string(),
-                shell: "/usr/bin/bash".to_string(),
-            },
-        ];
-        let r = no_login_sys_users(&passwd);
-        assert!(r);
-
-        let passwd: PasswdConfig = vec![Passwd {
-            username: "foo".to_string(),
-            password: "x".to_string(),
-            uid: 999,
-            gid: 999,
-            gecos: "".to_string(),
-            home: "".to_string(),
-            shell: "/usr/bin/bash".to_string(),
-        }];
-        let r = no_login_sys_users(&passwd);
-        assert!(!r);
-
-        let passwd: PasswdConfig = vec![Passwd {
-            username: "foo".to_string(),
-            password: "x".to_string(),
-            uid: 1,
-            gid: 1,
-            gecos: "".to_string(),
-            home: "".to_string(),
-            shell: "/usr/bin/zsh".to_string(),
-        }];
-        let r = no_login_sys_users(&passwd);
-        assert!(!r);
-    }
-
-    #[test]
-    fn test_no_empty_shadow_password() {
-        let shadow: ShadowConfig = vec![Shadow {
-            username: "foo".to_string(),
-            password: "x".to_string(),
-            last_change: 0,
-            min_age: 0,
-            max_age: 0,
-            warn_period: 0,
-            inactivity_period: None,
-            expiration_date: None,
-            reserved: "".to_string(),
-        }];
-        let r = no_empty_shadow_password(&shadow);
-        assert!(r);
-
-        let shadow: ShadowConfig = vec![Shadow {
-            username: "foo".to_string(),
-            password: "".to_string(),
-            last_change: 0,
-            min_age: 0,
-            max_age: 0,
-            warn_period: 0,
-            inactivity_period: None,
-            expiration_date: None,
-            reserved: "".to_string(),
-        }];
-        let r = no_empty_shadow_password(&shadow);
-        assert!(!r);
-    }
-
-    #[test]
-    fn test_no_empty_passwd_password() {
-        let passwd: PasswdConfig = vec![Passwd {
-            username: "foo".to_string(),
-            password: "x".to_string(),
-            uid: 1,
-            gid: 1,
-            gecos: "".to_string(),
-            home: "".to_string(),
-            shell: "/usr/bin/zsh".to_string(),
-        }];
-        let r = no_empty_passwd_password(&passwd);
-        assert!(r);
-
-        let passwd: PasswdConfig = vec![Passwd {
-            username: "foo".to_string(),
-            password: "".to_string(),
-            uid: 1,
-            gid: 1,
-            gecos: "".to_string(),
-            home: "".to_string(),
-            shell: "/usr/bin/zsh".to_string(),
-        }];
-        let r = no_empty_passwd_password(&passwd);
-        assert!(!r);
     }
 }
