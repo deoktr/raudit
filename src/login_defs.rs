@@ -18,8 +18,13 @@
 
 use std::collections::HashMap;
 use std::fs;
+use std::sync::OnceLock;
+
+use crate::check;
 
 const LOGIN_DEFS_PATH: &str = "/etc/login.defs";
+
+static LOGIN_DEFS_CONFIG: OnceLock<LoginDefsConfig> = OnceLock::new();
 
 /// Login.defs configuration.
 pub type LoginDefsConfig = HashMap<String, String>;
@@ -38,17 +43,43 @@ fn parse_login_defs(login_defs: String) -> LoginDefsConfig {
         .collect()
 }
 
-/// Get login.defs configuration by reading `/etc/login.defs`.
-pub fn init_login_defs() -> Result<LoginDefsConfig, std::io::Error> {
-    let login_defs = fs::read_to_string(LOGIN_DEFS_PATH)?;
-    Ok(parse_login_defs(login_defs))
+/// Initialized login.defs configuration by reading `/etc/login.defs`.
+pub fn init_login_defs() {
+    if LOGIN_DEFS_CONFIG.get().is_some() {
+        return;
+    }
+
+    match fs::read_to_string(LOGIN_DEFS_PATH) {
+        Ok(login_defs) => {
+            LOGIN_DEFS_CONFIG.get_or_init(|| parse_login_defs(login_defs));
+        }
+        Err(err) => println!("Failed to initialize login defs: {}", err),
+    };
 }
 
-/// Get login.defs value from a collected configuration.
-pub fn get_login_defs(config: &'static LoginDefsConfig, key: &str) -> Result<&'static str, String> {
-    match config.get(key) {
+/// Check login.defs value from a collected configuration.
+pub fn get_login_defs(key: &str) -> Result<&str, String> {
+    match LOGIN_DEFS_CONFIG
+        .get()
+        .expect("login defs not initialized")
+        .get(key)
+    {
         Some(val) => Ok(val),
         None => Err(format!("error getting login.defs value for {}", key)),
+    }
+}
+
+/// Check login.defs value from a collected configuration.
+pub fn check_login_defs(key: &str, expected: &str) -> check::CheckReturn {
+    match get_login_defs(key) {
+        Ok(val) => {
+            if val == expected {
+                (check::CheckState::Success, None)
+            } else {
+                (check::CheckState::Success, None)
+            }
+        }
+        Err(err) => (check::CheckState::Failure, Some(err.to_string())),
     }
 }
 
