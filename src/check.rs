@@ -244,36 +244,46 @@ pub struct CheckListStats {
 
 impl CheckListStats {
     pub fn print(self) {
+        println!("");
+        println!("\tResult:");
+
+        let success = format!(
+            "\tSUCCESS: {}/{} ({:.2}%)",
+            self.success,
+            self.total,
+            (self.success as f32 / self.total as f32) * 100.0,
+        );
+        let failure = format!(
+            "\tFAILURE: {}/{} ({:.2}%)",
+            self.failure,
+            self.total,
+            (self.failure as f32 / self.total as f32) * 100.0,
+        );
+        let error = format!(
+            "\tERROR:   {}/{} ({:.2}%)",
+            self.error,
+            self.total,
+            (self.error as f32 / self.total as f32) * 100.0
+        );
+
         if config::is_colored_output_enabled() {
-            println!("");
-            println!("\tResult:");
             println!(
-                "{}\tSUCCESS: {}/{}{}",
+                "{}{}{}",
                 consts::SUCCESS_COLOR,
-                self.success,
-                self.total,
+                success,
                 consts::RESET_COLOR
             );
             println!(
-                "{}\tFAILURE: {}/{}{}",
+                "{}{}{}",
                 consts::FAILURE_COLOR,
-                self.failure,
-                self.total,
+                failure,
                 consts::RESET_COLOR
             );
-            println!(
-                "{}\tERROR:   {}/{}{}",
-                consts::ERROR_COLOR,
-                self.error,
-                self.total,
-                consts::RESET_COLOR
-            );
+            println!("{}{}{}", consts::ERROR_COLOR, error, consts::RESET_COLOR);
         } else {
-            println!("");
-            println!("\tResult:");
-            println!("\tSUCCESS: {}/{}", self.success, self.total);
-            println!("\tFAILURE: {}/{}", self.failure, self.total);
-            println!("\tERROR:   {}/{}", self.error, self.total);
+            println!("{}", success);
+            println!("{}", failure);
+            println!("{}", error);
         }
     }
 }
