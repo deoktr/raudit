@@ -20,6 +20,14 @@ use std::fs;
 use std::path::PathBuf;
 use std::process;
 use std::process::Stdio;
+use std::sync::OnceLock;
+
+use crate::check;
+
+static MODPROBE_CONFIG: OnceLock<ModprobeConfig> = OnceLock::new();
+static MODPROBE_BLACKLIST: OnceLock<ModprobeBlacklist> = OnceLock::new();
+static MODPROBE_DISABLED: OnceLock<ModprobeDisabled> = OnceLock::new();
+static LOADED_MODULES: OnceLock<LoadedModules> = OnceLock::new();
 
 /// Modprobe configuration.
 pub type ModprobeConfig = Vec<String>;
@@ -34,6 +42,9 @@ pub type ModprobeBlacklist = Vec<String>;
 /// List of disabled kernel modules.
 pub type ModprobeDisabled = Vec<String>;
 
+/// List of loaded kernel modules.
+pub type LoadedModules = Vec<String>;
+
 /// Parse en content of a modprobe configuration file.
 fn parse_modprobe(content: String) -> ModprobeConfig {
     content
@@ -44,8 +55,12 @@ fn parse_modprobe(content: String) -> ModprobeConfig {
         .collect()
 }
 
-/// Get modprobe configuration by reading files.
-pub fn init_modprobe() -> Result<ModprobeConfig, std::io::Error> {
+/// Initialize modprobe configuration by reading files.
+fn init_modprobe_config() {
+    if MODPROBE_CONFIG.get().is_some() {
+        return;
+    }
+
     // get all modprob configuration file paths
     let paths: Vec<PathBuf> = vec![
         fs::read_dir("/lib/modprobe.d/"),
@@ -78,40 +93,56 @@ pub fn init_modprobe() -> Result<ModprobeConfig, std::io::Error> {
         .flatten()
         .collect();
 
-    Ok(config)
+    MODPROBE_CONFIG.get_or_init(|| config);
 }
 
-/// Get modprobe blacklisted modules from modprobe config.
-pub fn init_modprobe_blacklist(modprobe: &ModprobeConfig) -> ModprobeBlacklist {
-    modprobe
-        .into_iter()
-        .filter(|line| {
-            // `blacklist mod_name`
-            line.starts_with("blacklist")
-        })
-        .filter_map(|line| line.split_whitespace().nth(1))
-        .map(|line| line.to_string())
-        .collect()
+/// Initialize modprobe blacklisted modules from modprobe config.
+fn init_modprobe_blacklist() {
+    if MODPROBE_BLACKLIST.get().is_some() {
+        return;
+    }
+
+    MODPROBE_BLACKLIST.get_or_init(|| {
+        MODPROBE_CONFIG
+            .get()
+            .expect("modprobe not initialized")
+            .into_iter()
+            .filter(|line| {
+                // `blacklist mod_name`
+                line.starts_with("blacklist")
+            })
+            .filter_map(|line| line.split_whitespace().nth(1))
+            .map(|line| line.to_string())
+            .collect()
+    });
 }
 
-/// Get modprobe disabled modules from modprobe config.
-pub fn init_modprobe_disabled(modprobe: &ModprobeConfig) -> ModprobeDisabled {
-    modprobe
-        .into_iter()
-        .filter(|line| {
-            // `install mod_name /bin/false`
-            // OR
-            // `install mod_name /bin/true`
-            // NOTE: technically it can be any other executable other then the
-            // actuall module
-            // You could for example add a custom executable to log every
-            // loading attempts
-            line.starts_with("install")
-                && (line.ends_with("/bin/false") || line.ends_with("/bin/true"))
-        })
-        .filter_map(|line| line.split_whitespace().nth(1))
-        .map(|line| line.to_string())
-        .collect()
+/// Initialize modprobe disabled modules from modprobe config.
+fn init_modprobe_disabled() {
+    if MODPROBE_DISABLED.get().is_some() {
+        return;
+    }
+
+    MODPROBE_DISABLED.get_or_init(|| {
+        MODPROBE_CONFIG
+            .get()
+            .expect("modprobe not initialized")
+            .into_iter()
+            .filter(|line| {
+                // `install mod_name /bin/false`
+                // OR
+                // `install mod_name /bin/true`
+                // NOTE: technically it can be any other executable other then the
+                // actuall module
+                // You could for example add a custom executable to log every
+                // loading attempts
+                line.starts_with("install")
+                    && (line.ends_with("/bin/false") || line.ends_with("/bin/true"))
+            })
+            .filter_map(|line| line.split_whitespace().nth(1))
+            .map(|line| line.to_string())
+            .collect()
+    });
 }
 
 /// Parse the output of `lsmod` to extract modules.
@@ -129,21 +160,141 @@ fn parse_lsmod_modules(lsmod: String) -> Vec<String> {
         .collect()
 }
 
-/// Get currently loaded kernel modules by running `lsmod`.
-pub fn init_loaded_modules() -> Result<Vec<String>, std::io::Error> {
+/// Initialize currently loaded kernel modules by running `lsmod`.
+fn init_loaded_modules() {
+    if LOADED_MODULES.get().is_some() {
+        return;
+    }
+
     // TODO: read from `/proc/modules` instead of using `lsmod`
     let mut cmd = process::Command::new("lsmod");
     cmd.stdin(Stdio::null());
 
-    let output = cmd.output()?;
+    match cmd.output() {
+        Ok(output) => {
+            match output.status.code() {
+                Some(status) => {
+                    if status != 0 {
+                        println!("failed to initialize loaded kernel modules, exit code {} while running \"lsmod\"", status);
+                        return;
+                    }
+                }
+                None => (),
+            };
 
-    // TODO: error if not 0
-    // match output.status.code() {
-    //     Some(c) => c,
-    //     None => 0,
-    // }
-
-    Ok(parse_lsmod_modules(
-        String::from_utf8_lossy(&output.stdout).to_string(),
-    ))
+            LOADED_MODULES.get_or_init(|| {
+                parse_lsmod_modules(String::from_utf8_lossy(&output.stdout).to_string())
+            });
+        }
+        Err(err) => {
+            println!("failed to initialize loaded kernel modules: {}", err);
+            return;
+        }
+    };
 }
+
+/// Initialize modprobe configuration, disabled and blacklist.
+pub fn init_modprobe() {
+    init_modprobe_config();
+    init_modprobe_disabled();
+    init_modprobe_blacklist();
+    init_loaded_modules();
+}
+
+fn is_module_blacklist(module: &str) -> bool {
+    return MODPROBE_BLACKLIST
+        .get()
+        .expect("modprobe blacklist not initialized")
+        .contains(&module.to_string());
+}
+
+fn is_module_disabled(module: &str) -> bool {
+    return MODPROBE_DISABLED
+        .get()
+        .expect("modprobe disabled not initialized")
+        .contains(&module.to_string());
+}
+
+fn is_module_loaded(module: &str) -> bool {
+    return LOADED_MODULES
+        .get()
+        .expect("loaded modules not initialized")
+        .contains(&module.to_string());
+}
+
+/// Ensure that kernel module is blacklisted.
+pub fn check_module_blacklist(module: &str) -> check::CheckReturn {
+    if is_module_blacklist(module) {
+        if !is_module_loaded(module) {
+            (check::CheckState::Success, None)
+        } else {
+            (
+                check::CheckState::Failure,
+                Some("module blacklisted but loaded".to_string()),
+            )
+        }
+    } else {
+        (
+            check::CheckState::Failure,
+            Some("module not blacklisted".to_string()),
+        )
+    }
+}
+
+/// Ensure that kernel module is disabled.
+pub fn check_module_disabled(module: &str) -> check::CheckReturn {
+    if is_module_disabled(module) {
+        // TODO: should we even care about it being loaded since it's disabled
+        if !is_module_loaded(module) {
+            (check::CheckState::Success, None)
+        } else {
+            (
+                check::CheckState::Failure,
+                Some("module disabled but loaded".to_string()),
+            )
+        }
+    } else {
+        (
+            check::CheckState::Failure,
+            Some("module not disabled".to_string()),
+        )
+    }
+}
+
+/// Add checks from a list of modules.
+macro_rules! add_module_blacklisted_check_list {
+    ($($module:expr),* $(,)?) => {
+        let mut __i_add_module_blacklisted_check_list = 0;
+        $(
+            $crate::check::add_check(
+                format!("KMD_{:03}", __i_add_module_blacklisted_check_list).as_str(),
+                format!("Ensure that kernel module \"{}\" is blacklisted", $module).as_str(),
+                vec!["modprobe"],
+                || $crate::modprobe::check_module_blacklist($module),
+                vec![$crate::modprobe::init_modprobe],
+            );
+            __i_add_module_blacklisted_check_list += 1;
+        )*
+    };
+}
+
+pub(crate) use add_module_blacklisted_check_list;
+
+/// Add checks from a list of modules.
+macro_rules! add_module_disabled_check_list {
+    ($($module:expr),* $(,)?) => {
+        let mut __i_add_module_disabled_check_list = 1;
+        $(
+            $crate::check::add_check(
+                format!("KMD_{:03}", __i_add_module_disabled_check_list).as_str(),
+                format!("Ensure that kernel module \"{}\" is disabled", $module).as_str(),
+                vec!["modprobe"],
+                || $crate::modprobe::check_module_disabled($module),
+                vec![$crate::modprobe::init_modprobe],
+            );
+            __i_add_module_disabled_check_list += 1;
+        )*
+    };
+}
+
+pub(crate) use add_module_disabled_check_list;

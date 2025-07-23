@@ -28,7 +28,12 @@ mod gdm;
 mod group;
 mod grub;
 mod kernel;
+mod modprobe;
+mod mount;
+mod pam;
+mod ps;
 mod sshd;
+mod sudo;
 mod sysctl;
 mod systemd;
 mod users;
@@ -690,10 +695,17 @@ fn add_all_checks() {
         vec![systemd::init_systemd_config],
     );
 
+    check::add_check(
+        "AUD_001",
+        "Ensure \"auditd\" is running",
+        vec!["audit"],
+        || ps::is_running("auditd"),
+        vec![ps::init_proc],
+    );
     // check::add_check(
     //     "AUD_010",
     //     "Ensure that audit is configured with \"disk_full_action\" = \"HALT\"",
-    //     vec!["apparmor"],
+    //     vec!["audit"],
     //     || audit::check_audit_config("disk_full_action", "HALT"),
     //     vec![audit::init_audit_config],
     // );
@@ -1171,13 +1183,13 @@ fn add_all_checks() {
         vec![],
     );
 
-    check::add_check(
-        "GRB_001",
-        "Ensure that bootloader password is set",
-        vec!["grub"],
-        grub::password_is_set,
-        vec![grub::init_grub_cfg],
-    );
+    // check::add_check(
+    //     "GRB_001",
+    //     "Ensure that bootloader password is set",
+    //     vec!["grub"],
+    //     grub::password_is_set,
+    //     vec![grub::init_grub_cfg],
+    // );
 
     check::add_check(
         "USR_001",
@@ -1257,6 +1269,796 @@ fn add_all_checks() {
         vec![users::init_passwd],
     );
 
+    // mounts
+    check::add_check(
+        "MNT_001",
+        "Ensure mount point \"/boot\" exist",
+        vec!["mount"],
+        || mount::check_mount_present("/boot"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_002",
+        "Ensure mount point \"/tmp\" exist",
+        vec!["mount", "CIS"],
+        || mount::check_mount_present("/tmp"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_003",
+        "Ensure mount point \"/home\" exist",
+        vec!["mount", "CIS"],
+        || mount::check_mount_present("/home"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_004",
+        "Ensure mount point \"/var\" exist",
+        vec!["mount", "CIS"],
+        || mount::check_mount_present("/var"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_005",
+        "Ensure mount point \"/var/log\" exist",
+        vec!["mount", "CIS"],
+        || mount::check_mount_present("/var/log"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_006",
+        "Ensure mount point \"/var/log/audit\" exist",
+        vec!["mount", "CIS"],
+        || mount::check_mount_present("/var/log/audit"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_007",
+        "Ensure mount point \"/var/tmp\" exist",
+        vec!["mount", "CIS"],
+        || mount::check_mount_present("/var/tmp"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_008",
+        "Ensure mount point \"/dev/shm\" exist",
+        vec!["mount", "CIS"],
+        || mount::check_mount_present("/dev/shm"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_020",
+        "Ensure mount option \"nodev\" is set for \"/dev/shm\"",
+        vec!["mount", "mount_option"],
+        || mount::check_mount_option("/dev/shm", "nodev"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_001",
+        "Ensure mount option \"errors=remount-ro\" is set for \"/\"",
+        vec!["mount", "mount_option"],
+        || mount::check_mount_option("/", "errors=remount-ro"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_002",
+        "Ensure mount option \"nodev\" is set for \"/boot\"",
+        vec!["mount", "mount_option"],
+        || mount::check_mount_option("/boot", "nodev"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_003",
+        "Ensure mount option \"nosuid\" is set for \"/boot\"",
+        vec!["mount", "mount_option"],
+        || mount::check_mount_option("/boot", "nosuid"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_004",
+        "Ensure mount option \"noexec\" is set for \"/boot\"",
+        vec!["mount", "mount_option"],
+        || mount::check_mount_option("/boot", "noexec"),
+        vec![mount::init_mounts],
+    );
+    // TODO: optional
+    check::add_check(
+        "MNT_005",
+        "Ensure mount option \"noauto\" is set for \"/boot\"",
+        vec!["mount", "mount_option"],
+        || mount::check_mount_option("/boot", "noauto"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_006",
+        "Ensure mount option \"nodev\" is set for \"/home\"",
+        vec!["mount", "mount_option", "CIS"],
+        || mount::check_mount_option("/home", "nodev"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_007",
+        "Ensure mount option \"nosuid\" is set for \"/home\"",
+        vec!["mount", "mount_option", "CIS"],
+        || mount::check_mount_option("/home", "nosuid"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_008",
+        "Ensure mount option \"noexec\" is set for \"/home\"",
+        vec!["mount", "mount_option"],
+        || mount::check_mount_option("/home", "noexec"),
+        vec![mount::init_mounts],
+    ); // TODO: optional
+    check::add_check(
+        "MNT_009",
+        "Ensure mount option \"nodev\" is set for \"/tmp\"",
+        vec!["mount", "mount_option", "CIS"],
+        || mount::check_mount_option("/tmp", "nodev"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_010",
+        "Ensure mount option \"nosuid\" is set for \"/tmp\"",
+        vec!["mount", "mount_option", "CIS"],
+        || mount::check_mount_option("/tmp", "nosuid"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_011",
+        "Ensure mount option \"noexec\" is set for \"/tmp\"",
+        vec!["mount", "mount_option", "CIS"],
+        || mount::check_mount_option("/tmp", "noexec"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_012",
+        "Ensure mount option \"nodev\" is set for \"/var\"",
+        vec!["mount", "mount_option", "CIS"],
+        || mount::check_mount_option("/var", "nodev"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_013",
+        "Ensure mount option \"nosuid\" is set for \"/var\"",
+        vec!["mount", "mount_option", "CIS"],
+        || mount::check_mount_option("/var", "nosuid"),
+        vec![mount::init_mounts],
+    );
+    // TODO: optional
+    check::add_check(
+        "MNT_014",
+        "Ensure mount option \"noexec\" is set for \"/var\"",
+        vec!["mount", "mount_option"],
+        || mount::check_mount_option("/var", "noexec"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_015",
+        "Ensure mount option \"nodev\" is set for \"/var/log\"",
+        vec!["mount", "mount_option", "CIS"],
+        || mount::check_mount_option("/var/log", "nodev"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_016",
+        "Ensure mount option \"nosuid\" is set for \"/var/log\"",
+        vec!["mount", "mount_option", "CIS"],
+        || mount::check_mount_option("/var/log", "nosuid"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_017",
+        "Ensure mount option \"noexec\" is set for \"/var/log\"",
+        vec!["mount", "mount_option", "CIS"],
+        || mount::check_mount_option("/var/log", "noexec"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_018",
+        "Ensure mount option \"nodev\" is set for \"/var/log/audit\"",
+        vec!["mount", "mount_option", "CIS"],
+        || mount::check_mount_option("/var/log/audit", "nodev"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_019",
+        "Ensure mount option \"nosuid\" is set for \"/var/log/audit\"",
+        vec!["mount", "mount_option", "CIS"],
+        || mount::check_mount_option("/var/log/audit", "nosuid"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_010",
+        "Ensure mount option \"noexec\" is set for \"/var/log/audit\"",
+        vec!["mount", "mount_option", "CIS"],
+        || mount::check_mount_option("/var/log/audit", "noexec"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_011",
+        "Ensure mount option \"nodev\" is set for \"/var/tmp\"",
+        vec!["mount", "mount_option", "CIS"],
+        || mount::check_mount_option("/var/tmp", "nodev"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_012",
+        "Ensure mount option \"nosuid\" is set for \"/var/tmp\"",
+        vec!["mount", "mount_option", "CIS"],
+        || mount::check_mount_option("/var/tmp", "nosuid"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_013",
+        "Ensure mount option \"noexec\" is set for \"/var/tmp\"",
+        vec!["mount", "mount_option", "CIS"],
+        || mount::check_mount_option("/var/tmp", "noexec"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_014",
+        "Ensure mount option \"nodev\" is set for \"/proc\"",
+        vec!["mount", "mount_option"],
+        || mount::check_mount_option("/proc", "nodev"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_015",
+        "Ensure mount option \"nosuid\" is set for \"/proc\"",
+        vec!["mount", "mount_option"],
+        || mount::check_mount_option("/proc", "nosuid"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_016",
+        "Ensure mount option \"noexec\" is set for \"/proc\"",
+        vec!["mount", "mount_option"],
+        || mount::check_mount_option("/proc", "noexec"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_017",
+        "Ensure mount option \"hidepid=invisible\" is set for \"/proc\"",
+        vec!["mount", "mount_option"],
+        || mount::check_mount_option("/proc", "hidepid=invisible"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_018",
+        "Ensure mount option \"nosuid\" is set for \"/dev\"",
+        vec!["mount", "mount_option"],
+        || mount::check_mount_option("/dev", "nosuid"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_019",
+        "Ensure mount option \"noexec\" is set for \"/dev\"",
+        vec!["mount", "mount_option"],
+        || mount::check_mount_option("/dev", "noexec"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_020",
+        "Ensure mount option \"nodev\" is set for \"/dev/shm\"",
+        vec!["mount", "mount_option", "CIS"],
+        || mount::check_mount_option("/dev/shm", "nodev"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_021",
+        "Ensure mount option \"nosuid\" is set for \"/dev/shm\"",
+        vec!["mount", "mount_option", "CIS"],
+        || mount::check_mount_option("/dev/shm", "nosuid"),
+        vec![mount::init_mounts],
+    );
+    check::add_check(
+        "MNT_022",
+        "Ensure mount option \"noexec\" is set for \"/dev/shm\"",
+        vec!["mount", "mount_option", "CIS"],
+        || mount::check_mount_option("/dev/shm", "noexec"),
+        vec![mount::init_mounts],
+    );
+
+    // TODO: have two lists, one for servers and one for workstations
+    modprobe::add_module_blacklisted_check_list!(
+        // GrapheneOS:
+        // https://github.com/GrapheneOS/infrastructure/blob/86e765944fc1a1b69e9ccf27de5c8693405fe46d/etc/modprobe.d/local.conf
+        "snd_intel8x0",
+        "sr_mod",
+        "snd_intel8x0m",
+        // https://github.com/Kicksecure/security-misc/blob/master/etc/modprobe.d/30_security-misc_blacklist.conf
+        "cdrom",
+        "amd76x_edac",
+        "ath_pci",
+        "evbug",
+        "snd_aw2",
+        "snd_pcsp",
+        "usbkbd",
+        "usbmouse",
+    );
+
+    // TODO: have two lists, one for servers and one for workstations
+    modprobe::add_module_disabled_check_list!(
+        // Ubuntu: either duplicates, or disabled
+        // https://git.launchpad.net/ubuntu/+source/kmod/tree/debian/modprobe.d/blacklist.conf?h=ubuntu/disco
+
+        // disabling prohibits kernel modules from starting
+        // https://github.com/Kicksecure/security-misc/blob/master/etc/modprobe.d/30_security-misc_disable.conf
+        "cfg80211",
+        "intel_agp",
+        "ip_tables",
+        "mousedev",
+        "psmouse",
+        "tls",
+        "virtio_balloon",
+        "virtio_console",
+        // Network protocols
+        "af_802154",
+        "appletalk",
+        "dccp",
+        "netrom",
+        "rose",
+        "n_hdlc",
+        "ax25",
+        // "brcm80211",
+        "x25",
+        "decnet",
+        "econet",
+        "ipx",
+        "psnap",
+        "p8023",
+        "p8022",
+        "eepro100",
+        "eth1394",
+        // Asynchronous Transfer Mode (ATM)
+        "atm",
+        "ueagle_atm",
+        "usbatm",
+        "xusbatm",
+        "n_hdlc",
+        // Controller Area Network (CAN) Protocol
+        "c_can",
+        "c_can_pci",
+        "c_can_platform",
+        "can",
+        "can_bcm",
+        "can_dev",
+        "can_gw",
+        "can_isotp",
+        "can_raw",
+        "can_j1939",
+        "can327",
+        "ifi_canfd",
+        "janz_ican3",
+        "m_can",
+        "m_can_pci",
+        "m_can_platform",
+        "phy_can_transceiver",
+        "slcan",
+        "ucan",
+        "vxcan",
+        "vcan",
+        // Transparent Inter Process Communication (TIPC)
+        "tipc",
+        "tipc_diag",
+        // Reliable Datagram Sockets (RDS)
+        "rds",
+        "rds_rdma",
+        "rds_tcp",
+        // Stream Control Transmission Protocol (SCTP)
+        "sctp",
+        "sctp_diag",
+        "adfs",
+        "affs",
+        "bfs",
+        "befs",
+        "cramfs",
+        "efs",
+        "erofs",
+        "exofs",
+        "freevxfs",
+        "f2fs",
+        "hfs",
+        "hfsplus",
+        "squashfs",
+        "hpfs",
+        "jfs",
+        "jffs2",
+        "minix",
+        "nilfs2",
+        "ntfs",
+        "omfs",
+        "qnx4",
+        "qnx6",
+        "sysv",
+        "ufs",
+        "udf",
+        "reiserfs",
+        // Network File Systems
+        "ksmbd",
+        "gfs2",
+        // Common Internet File System (CIFS)
+        "cifs",
+        "cifs_arc4",
+        "cifs_md4",
+        // Network File System (NFS)
+        "nfs",
+        "nfs_acl",
+        "nfs_layout_nfsv41_files",
+        "nfs_layout_flexfiles",
+        "nfsd",
+        "nfsv2",
+        "nfsv3",
+        "nfsv4",
+        "usb_storage",
+        "vivid",
+        "floppy",
+        "joydev",
+        // bluetooth
+        // disable Bluetooth to reduce attack surface due to extended history of
+        // security vulnerabilities
+        "bluetooth",
+        "bluetooth_6lowpan",
+        "bt3c_cs",
+        "btbcm",
+        "btintel",
+        "btmrvl",
+        "btmrvl_sdio",
+        "btmtk",
+        "btmtksdio",
+        "btmtkuart",
+        "btnxpuart",
+        "btqca",
+        "btrsi",
+        "btrtl",
+        "btsdio",
+        "btusb",
+        "virtio_bt",
+        // firewire (IEEE 1394)
+        "dv1394",
+        "firewire_core",
+        "firewire_ohci",
+        "firewire_net",
+        "firewire_sbp2",
+        "ohci1394",
+        "raw1394",
+        "sbp2",
+        "video1394",
+        // GPS
+        "garmin_gps",
+        "gnss",
+        "gnss_mtk",
+        "gnss_serial",
+        "gnss_sirf",
+        "gnss_ubx",
+        "gnss_usb",
+        // Intel Management Engine (ME)
+        // disabling may lead to breakages in numerous places without clear
+        // debugging/error messages, may cause issues with firmware updates,
+        // security, power management, display, and DRM.
+        // "mei",
+        // "mei_gsc",
+        // "mei_gsc_proxy",
+        // "mei_hdcp",
+        // "mei_me",
+        // "mei_phy",
+        // "mei_pxp",
+        // "mei_txe",
+        // "mei_vsc",
+        // "mei_vsc_hw",
+        // "mei_wdt",
+        // "microread_mei",
+
+        // Intel Platform Monitoring Technology (PMT) Telemetry
+        "pmt_class",
+        "pmt_crashlog",
+        "pmt_telemetry",
+        // Thunderbolt
+        "intel_wmi_thunderbolt",
+        "thunderbolt",
+        "thunderbolt_net",
+        // Miscellaneous
+        "hamradio",
+        // "msr",
+
+        // Framebuffer (fbdev)
+        // video drivers are known to be buggy, cause kernel panics, and are
+        // generally only used by legacy devices
+        "aty128fb",
+        "atyfb",
+        "cirrusfb",
+        "cyber2000fb",
+        "cyblafb",
+        "gx1fb",
+        "hgafb",
+        "i810fb",
+        "intelfb",
+        "kyrofb",
+        "lxfb",
+        "matroxfb_bases",
+        "neofb",
+        "nvidiafb",
+        "pm2fb",
+        "radeonfb",
+        "rivafb",
+        "s1d13xxxfb",
+        "savagefb",
+        "sisfb",
+        "sstfb",
+        "tdfxfb",
+        "tridentfb",
+        "vesafb",
+        "vfb",
+        "viafb",
+        "vt8623fb",
+        "udlfb",
+        // replaced modules
+        "asus_acpi",
+        "bcm43xx",
+        "de4x5",
+        "prism54",
+        // USB Video Device Class
+        "uvcvideo",
+        // Ubuntu
+        "arkfb",
+        "matroxfb_base",
+        "mb862xxfb",
+        "pm3fb",
+        "s3fb",
+        "snd_mixer_oss",
+        "acquirewdt",
+        "advantech_ec_wdt",
+        "advantechwdt",
+        "alim1535_wdt",
+        "cadence_wdt",
+        "cpu5wdt",
+        "da9055_wdt",
+        "da9063_wdt",
+        "dw_wdt",
+        "eurotechwdt",
+        "f71808e_wdt",
+        "i6300esb",
+        "iTCO_wdt",
+        "ibmasr",
+        "it8712f_wdt",
+        "kempld_wdt",
+        "max63xx_wdt",
+        "mena21_wdt",
+        "menz69_wdt",
+        "ni903x_wdt",
+        "nv_tco",
+        "pc87413_wdt",
+        "pcwd_usb",
+        "rave_sp_wdt",
+        "sbc60xxwdt",
+        "sbc_fitpc2_wdt",
+        "sch311x_wdt",
+        "smsc37b787_wdt",
+        "sp5100_tco",
+        "twl4030_wdt",
+        "w83627hf_wdt",
+        "w83977f_wdt",
+        "wdat_wdt",
+        "wm831x_wdt",
+        "xen_wdt",
+        "snd_pcm_oss",
+        "alim7101_wdt",
+        "da9052_wdt",
+        "da9062_wdt",
+        "ebc_c384_wdt",
+        "exar_wdt",
+        "hpwdt",
+        "iTCO_vendor_support",
+        "ib700wdt",
+        "ie6xx_wdt",
+        "it87_wdt",
+        "machzwd",
+        "mei_wdt",
+        "menf21bmc_wdt",
+        "mlx_wdt",
+        "nic7018_wdt",
+        "of_xilinx_wdt",
+        "pcwd_pci",
+        "pretimeout_panic",
+        "retu_wdt",
+        "sbc_epx_c3",
+        "sc1200wdt",
+        "simatic_ipc_wdt",
+        "softdog",
+        "tqmx86_wdt",
+        "via_wdt",
+        "w83877f_wdt",
+        "wafer5823wdt",
+        "wdt_pci",
+        "wm8350_wdt",
+        "ziirave_wdt",
+        "pcspkr",
+        "ac97",
+        "ac97_codec",
+        "ac97_plugin_ad1980",
+        "ad1848",
+        "ad1889",
+        "adlib_card",
+        "aedsp16",
+        "ali5455",
+        "btaudio",
+        "cmpci",
+        "cs4232",
+        "cs4281",
+        "cs461x",
+        "cs46xx",
+        "emu10k1",
+        "es1370",
+        "es1371",
+        "esssolo1",
+        "forte",
+        "gus",
+        "i810_audio",
+        "kahlua",
+        "mad16",
+        "maestro",
+        "maestro3",
+        "maui",
+        "mpu401",
+        "nm256_audio",
+        "opl3",
+        "opl3sa",
+        "opl3sa2",
+        "pas2",
+        "pss",
+        "rme96xx",
+        "sb",
+        "sb_lib",
+        "sgalaxy",
+        "sonicvibes",
+        "sound",
+        "sscape",
+        "trident",
+        "trix",
+        "uart401",
+        "uart6850",
+        "via82cxxx_audio",
+        "v_midi",
+        "wavefront",
+        "ymfpci",
+        "ac97_plugin_wm97xx",
+        "ad1816",
+        "audio",
+        "awe_wave",
+        "dmasound_core",
+        "dmasound_pmac",
+        "harmony",
+        "sequencer",
+        "soundcard",
+        "usb_midi",
+        "microcode",
+    );
+
+    // check::add_check(
+    //     "PAM_001",
+    //     "Ensure password quality is checked",
+    //     vec!["pam"],
+    //     || pam::check_rule("passwd", "password", "requisite", "pam_pwquality"),
+    //     vec![pam::init_pam],
+    // );
+
+    // TODO: only run checks if sudo is installed
+    // check::add_check(
+    //     "SUD_001",
+    //     "Ensure that sudo default config \"noexec\" is set",
+    //     vec!["sudo"],
+    //     || sudo::check_sudo_defaults("noexec"),
+    //     vec![sudo::init_sudo],
+    // );
+    // check::add_check(
+    //     "SUD_002",
+    //     "Ensure that sudo default config \"requiretty\" is set",
+    //     vec!["sudo"],
+    //     || sudo::check_sudo_defaults("requiretty"),
+    //     vec![sudo::init_sudo],
+    // );
+    // check::add_check(
+    //     "SUD_003",
+    //     "Ensure that sudo default config \"use_pty\" is set",
+    //     vec!["sudo", "CIS"],
+    //     || sudo::check_sudo_defaults("use_pty"),
+    //     vec![sudo::init_sudo],
+    // );
+    // check::add_check(
+    //     "SUD_004",
+    //     "Ensure that sudo default config \"umask=0027\" is set",
+    //     vec!["sudo"],
+    //     || sudo::check_sudo_defaults("umask=0027"),
+    //     vec![sudo::init_sudo],
+    // );
+    // check::add_check(
+    //     "SUD_005",
+    //     "Ensure that sudo default config \"ignore_dot\" is set",
+    //     vec!["sudo"],
+    //     || sudo::check_sudo_defaults("ignore_dot"),
+    //     vec![sudo::init_sudo],
+    // );
+    // check::add_check(
+    //     "SUD_006",
+    //     "Ensure that sudo default config \"passwd_timeout=1\" is set",
+    //     vec!["sudo"],
+    //     || sudo::check_sudo_defaults("passwd_timeout=1"),
+    //     vec![sudo::init_sudo],
+    // );
+    // check::add_check(
+    //     "SUD_007",
+    //     "Ensure that sudo default config \"env_reset, timestamp_timeout=15\" is set",
+    //     vec!["sudo"],
+    //     || sudo::check_sudo_defaults("env_reset, timestamp_timeout=15"),
+    //     vec![sudo::init_sudo],
+    // );
+    // check::add_check(
+    //     "SUD_008",
+    //     "Ensure that sudo default config \"timestamp_timeout=15\" is set",
+    //     vec!["sudo"],
+    //     || sudo::check_sudo_defaults("timestamp_timeout=15"),
+    //     vec![sudo::init_sudo],
+    // );
+    // check::add_check(
+    //     "SUD_009",
+    //     "Ensure that sudo default config \"env_reset\" is set",
+    //     vec!["sudo"],
+    //     || sudo::check_sudo_defaults("env_reset"),
+    //     vec![sudo::init_sudo],
+    // );
+    // check::add_check(
+    //     "SUD_010",
+    //     "Ensure that sudo default config \"mail_badpass\" is set",
+    //     vec!["sudo"],
+    //     || sudo::check_sudo_defaults("mail_badpass"),
+    //     vec![sudo::init_sudo],
+    // );
+    // check::add_check(
+    //     "SUD_011",
+    //     "Ensure that sudo default config \"logfile=\"/var/log/sudo.log\"\" is set",
+    //     vec!["sudo", "CIS"],
+    //     || sudo::check_sudo_defaults("logfile=\"/var/log/sudo.log\""),
+    //     vec![sudo::init_sudo],
+    // );
+    // check::add_check(
+    //     "SUD_012",
+    //     "Ensure that sudo default config \":%sudo !noexec\" is set",
+    //     vec!["sudo"],
+    //     || sudo::check_sudo_defaults(":%sudo !noexec"),
+    //     vec![sudo::init_sudo],
+    // );
+    // check::add_check(
+    //     "SUD_013",
+    //     "Ensure that sudo default config \"lecture=\"always\"\" is set",
+    //     vec!["sudo"],
+    //     || sudo::check_sudo_defaults("lecture=\"always\""),
+    //     vec![sudo::init_sudo],
+    // );
+    // check::add_check(
+    //     "SUD_014",
+    //     "Ensure that sudo default config \"lecture_file=\"/usr/share/doc/sudo_lecture.txt\"\" is set",
+    //     vec!["sudo"],
+    //     // TODO: should also check the content of the file
+    //     // TODO: get the file path from the value
+    //     || sudo::check_sudo_defaults("lecture_file=\"/usr/share/doc/sudo_lecture.txt\""),
+    //     vec![sudo::init_sudo],
+    // );
+    // check::add_check(
+    //     "SUD_015",
+    //     "Ensure that sudoers config does not contain \"NOPASSWD\"",
+    //     vec!["sudo", "CIS"],
+    //     sudo::check_has_no_nopaswd,
+    //     vec![sudo::init_sudo],
+    // );
+    // check::add_check(
+    //     "SUD_016",
+    //     "Ensure that sudoers re authentication is not disabled",
+    //     vec!["sudo"],
+    //     sudo::check_re_authentication_not_disabled,
+    //     vec![sudo::init_sudo],
+    // );
+
     // check::add_check(
     //     "SSH_001",
     //     "Ensure that sshd is configured with \"fingerprinthash\" = \"SHA256\"",
@@ -1274,7 +2076,7 @@ fn add_all_checks() {
     // check::add_check(
     //     "SSH_003",
     //     "Ensure that sshd is configured with \"loglevel\" = \"VERBOSE\"",
-    //     vec!["sshd", "CIS"],
+    //     vec!["sshd", "CIS", "mozilla"],
     //     || sshd::check_sshd_config("loglevel", "VERBOSE"),
     //     vec![sshd::init_sshd_config],
     // );
@@ -1306,7 +2108,7 @@ fn add_all_checks() {
     // check::add_check(
     //     "SSH_005",
     //     "Ensure that sshd is configured with \"permitrootlogin\" = \"no\"",
-    //     vec!["sshd", "CIS"],
+    //     vec!["sshd", "CIS", "mozilla"],
     //     || sshd::check_sshd_config("permitrootlogin", "no"),
     //     vec![sshd::init_sshd_config],
     // );
@@ -1596,4 +2398,42 @@ fn add_all_checks() {
     //     || sshd::check_sshd_config("allowgroups", "sshusers"),
     //     vec![sshd::init_sshd_config],
     // );
+    // TODO: make skip it depending based on version, OpenSSH 6.7+
+    // check::add_check(
+    //     "SSH_038",
+    //     "Ensure that sshd is configured with \"kexalgorithms\" = \"curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256\"",
+    //     vec!["sshd", "mozilla"],
+    //     || sshd::check_sshd_config("kexalgorithms", "curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_039",
+    //     "Ensure that sshd is configured with \"ciphers\" = \"chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr\"",
+    //     vec!["sshd", "mozilla"],
+    //     || sshd::check_sshd_config("ciphers", "chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_040",
+    //     "Ensure that sshd is configured with \"macs\" = \"hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com\"",
+    //     vec!["sshd", "mozilla"],
+    //     || sshd::check_sshd_config("macs", "hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_041",
+    //     "Ensure that sshd is configured with \"authenticationmethods\" = \"publickey\"",
+    //     vec!["sshd", "mozilla"],
+    //     || sshd::check_sshd_config("authenticationmethods", "publickey"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // check::add_check(
+    //     "SSH_042",
+    //     "Ensure that sshd is configured with \"subsystem\" = \"sftp /usr/lib/ssh/sftp-server -f AUTHPRIV -l INFO\"",
+    //     vec!["sshd", "mozilla"],
+    //     || sshd::check_sshd_config("subsystem", "sftp /usr/lib/ssh/sftp-server -f AUTHPRIV -l INFO"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // TODO: check the content of File: /etc/ssh/moduli from: https://infosec.mozilla.org/guidelines/openssh
+    // TODO: add OpenSSH client rules: https://infosec.mozilla.org/guidelines/openssh#openssh-client
 }

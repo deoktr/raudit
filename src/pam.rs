@@ -19,6 +19,11 @@
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
+use std::sync::OnceLock;
+
+use crate::check;
+
+static PAM_CONFIG: OnceLock<PamConfig> = OnceLock::new();
 
 /// PAM configuration.
 ///
@@ -119,6 +124,7 @@ fn parse_pam(content: String) -> Vec<PamRule> {
         .lines()
         .filter(|line| !line.starts_with("#"))
         // ignore includes (`@include ...`)
+        // FIXME: resolve include to add the rules to the service
         .filter(|line| !line.starts_with("@"))
         .filter(|line| !line.is_empty())
         .filter_map(|line| {
@@ -136,7 +142,7 @@ fn parse_pam(content: String) -> Vec<PamRule> {
 }
 
 /// Get PAM configuration by reading files in `/etc/pam.d/`.
-pub fn init_pam() -> Result<PamConfig, std::io::Error> {
+fn get_pam() -> Result<PamConfig, std::io::Error> {
     let paths: Vec<PathBuf> = fs::read_dir("/etc/pam.d/")?
         .filter_map(|dentry| dentry.ok())
         .map(|dentry| dentry.path())
@@ -172,35 +178,82 @@ pub fn init_pam() -> Result<PamConfig, std::io::Error> {
     Ok(config)
 }
 
+/// Initialize pam rules.
+pub fn init_pam() {
+    if PAM_CONFIG.get().is_some() {
+        return;
+    }
+
+    match get_pam() {
+        Ok(pam_config) => {
+            PAM_CONFIG.get_or_init(|| pam_config);
+        }
+        Err(err) => println!("Failed to initialize pam configuration: {}", err),
+    };
+}
+
 /// Get PAM rule from a collected configuration.
 ///
 /// The `service` being the name of the file containing the rule, ex: `su`.
 /// The `rule_type` being the PAM type, ex: `session` or `auth`.
 /// The `module` being lib (.so), ex: `pam_limits`.
-pub fn get_pam_rule<'a>(
-    config: &'a PamConfig,
-    service: &'a str,
-    rule_type: &'a str,
-    module: &'a str,
-) -> Result<Option<&'a PamRule>, String> {
+fn get_pam_rule(
+    config: &'static PamConfig,
+    service: &str,
+    rule_type: &str,
+    control: &str,
+    module: &str,
+) -> Result<(), String> {
     // TODO: add tests
 
     if !config.contains_key(service) {
         return Err("services not configured with pam".to_string());
     }
-    for rule in config.get(service).unwrap() {
-        // if rule.module == module && rule.rule_type == rule_type {
-        // NOTE: on NixOS external lib have a full path, ex:
-        // `/nix/store/.../lib/security/pam_....so` that's why we only
-        // check the end of the module (it's name) and not the whole
-        // thing
-        // TODO: this is still not perfect, since a malicious
-        // configuration could point to an attacker controled PAM module
-        if rule.module.ends_with(module) && rule.rule_type == rule_type {
-            return Ok(Some(rule));
+
+    match config.get(service) {
+        Some(service) => {
+            let rules: Vec<&PamRule> = service
+                .into_iter()
+                .filter(|rule| {
+                    rule.rule_type == rule_type 
+                    && rule.control == control 
+
+                    // NOTE: on NixOS external lib have a full path, ex:
+                    // `/nix/store/.../lib/security/pam_....so` that's why we 
+                    // only check the end of the module (it's name) and not the 
+                    // whole thing
+                    // TODO: this is far from perfect
+                    // && rule.module == module
+                    && rule.module.ends_with(module)
+                })
+                .collect();
+
+            if rules.len() == 0 {
+                return Err("zero rule found".to_string());
+            } else if rules.len() > 1 {
+                return Err("more than one found".to_string());
+            }
+
+            Ok(())
         }
+        None => Err("services not configured with pam".to_string()),
     }
-    return Err("rule not found for service".to_string());
+}
+
+// TODO: check order of PAM modules
+
+pub fn check_rule(
+    service: &str,
+    rule_type: &str,
+    control: &str,
+    module: &str,
+) -> check::CheckReturn {
+    let config = PAM_CONFIG.get().expect("pam configuration not initialized");
+
+    match get_pam_rule(config, service, rule_type, control, module) {
+        Ok(()) => (check::CheckState::Success, None),
+        Err(err) => (check::CheckState::Failure, Some(err.to_string())),
+    }
 }
 
 #[cfg(test)]

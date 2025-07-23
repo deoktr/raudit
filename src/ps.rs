@@ -18,17 +18,34 @@
 
 use std::collections::HashMap;
 use std::fs;
+use std::sync::OnceLock;
+
+use crate::check;
 
 /// List of running process.
 ///
 /// Collected by reading the content of the `/proc/` dir.
 pub type Proc = HashMap<String, String>;
 
+static PROCESSES: OnceLock<Proc> = OnceLock::new();
+
 // out: HashMap<Pid, Name>
-pub fn init_proc() -> Result<HashMap<String, String>, std::io::Error> {
+pub fn init_proc() {
+    if PROCESSES.get().is_some() {
+        return;
+    }
+
     let mut output = Proc::new();
 
-    for entry in fs::read_dir("/proc/")? {
+    let entries = match fs::read_dir("/proc/") {
+        Ok(e) => e,
+        Err(err) => {
+            println!("failed to read \"/proc/\": {}", err);
+            return;
+        }
+    };
+
+    for entry in entries {
         if let Ok(entry) = entry {
             let path = entry.path();
 
@@ -61,11 +78,12 @@ pub fn init_proc() -> Result<HashMap<String, String>, std::io::Error> {
             output.insert(pid, name);
         }
     }
-    Ok(output)
+
+    PROCESSES.get_or_init(|| output);
 }
 
 /// Get the list of PID with this name.
-pub fn get_pids(config: &Proc, name: String) -> Option<Vec<String>> {
+pub fn get_pids(config: &Proc, name: &str) -> Option<Vec<String>> {
     let mut procs: Vec<String> = Vec::new();
     for (k, v) in config {
         if *v != name {
@@ -82,9 +100,11 @@ pub fn get_pids(config: &Proc, name: String) -> Option<Vec<String>> {
 }
 
 /// Check if a process is running from it's name.
-pub fn is_running(config: &Proc, name: String) -> bool {
-    match get_pids(config, name) {
-        Some(_) => true,
-        None => false,
+pub fn is_running(name: &str) -> check::CheckReturn {
+    let procs = PROCESSES.get().expect("group not initialized");
+
+    match get_pids(procs, name) {
+        Some(pids) => (check::CheckState::Success, Some(pids.join(", "))),
+        None => (check::CheckState::Failure, None),
     }
 }

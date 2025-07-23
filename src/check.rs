@@ -204,9 +204,9 @@ pub fn add_check(
         id: id.to_string(),
         title: title.to_string(),
         state: CheckState::Waiting,
-        check: check,
+        check,
         message: None,
-        dependencies: dependencies,
+        dependencies,
         tags: tags.iter().map(|t| t.to_string()).collect(),
     });
 }

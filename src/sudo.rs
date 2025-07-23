@@ -18,8 +18,14 @@
 
 use std::fs;
 use std::path::PathBuf;
+use std::sync::OnceLock;
+
+use crate::check;
 
 const SUDOERS_PATH: &str = "/etc/sudoers";
+
+static SUDO_CONFIG: OnceLock<SudoConfig> = OnceLock::new();
+static SUDO_CONFIG_DEFAULTS: OnceLock<SudoConfigDefaults> = OnceLock::new();
 
 /// List of sudo configuration.
 pub type SudoConfig = Vec<String>;
@@ -37,11 +43,21 @@ fn parse_sudoer(content: String) -> SudoConfig {
         .collect()
 }
 
-/// Get the sudoers configuration by reading it's config files.
-pub fn init_sudoer() -> Result<SudoConfig, std::io::Error> {
+pub fn init_sudo() {
+    init_sudoer();
+    init_sudoer_defaults();
+}
+
+/// Initialize the sudoers configuration by reading it's config files.
+// FIXME: if not file could be red, print an error, and don't initialize sudo
+// configuration
+pub fn init_sudoer() {
     // TODO: there is an infinite amount of potential location for sudoers
     // configurations, we could try to read the content of `/etc/sudoers` and
     // search for `@includes`
+    if SUDO_CONFIG.get().is_some() {
+        return;
+    }
 
     let mut paths: Vec<PathBuf> = vec![PathBuf::from(SUDOERS_PATH)];
 
@@ -51,7 +67,8 @@ pub fn init_sudoer() -> Result<SudoConfig, std::io::Error> {
             path.filter_map(|dentry| dentry.ok())
                 .map(|dentry| dentry.path())
                 .filter(|path| !path.is_dir())
-                // files ending with `~` or containing `.` are ignored
+                // files ending with `~` or containing `.` are ignored, as per
+                // the sudo documentation
                 .filter(|path| {
                     !path
                         .file_name()
@@ -70,15 +87,14 @@ pub fn init_sudoer() -> Result<SudoConfig, std::io::Error> {
         Err(_) => (),
     };
 
-    // get the configuration from all config paths
-    let config: SudoConfig = paths
+    let mut valid_paths = paths
         .into_iter()
         .filter_map(|path| {
-            match fs::read_to_string(path.clone()) {
+            match fs::read_to_string(&path) {
                 Ok(p) => Ok(p),
                 Err(error) => {
                     println!(
-                        "Error opening {}: {}",
+                        "Error opening {:?}: {}",
                         path.to_string_lossy(),
                         error.to_string()
                     );
@@ -87,46 +103,104 @@ pub fn init_sudoer() -> Result<SudoConfig, std::io::Error> {
             }
             .ok()
         })
+        .peekable();
+
+    // check if the list of valid sudo file to parse is empty
+    if !valid_paths.peek().is_some() {
+        println!("no sudo file to read");
+        return;
+    }
+
+    // get the configuration from all config paths
+    let config: SudoConfig = valid_paths
+        .into_iter()
         .map(|content| parse_sudoer(content))
         .flatten()
         .collect();
 
-    Ok(config)
+    SUDO_CONFIG.get_or_init(|| config);
 }
 
-/// Get the sudoers `Defaults` configuration.
-pub fn init_sudoer_defaults(config: &SudoConfig) -> SudoConfigDefaults {
-    config
-        .into_iter()
-        .filter(|config| config.starts_with("Defaults"))
-        .map(|config| {
-            config
-                // NOTE: we need to remove `Defaults` because some config
-                // can be `Defaults:%sudo !noexec` for example, in that case
-                // we would only consider `:%sudo !noexec` and store it as
-                // `:%sudo!noexec`
-                .replacen("Defaults", "", 1)
-                // this is an effort to make the result consistent, by
-                // removing whitespaces
-                // TODO: this may be annoying to work with, maybe match with
-                // regex instead, the current rules should be slightly
-                // updated but nothing to serious
-                .split_whitespace()
-                .collect::<Vec<&str>>()
-                .join(" ")
-        })
-        .map(|config| config.to_string())
-        .collect()
+/// Initialize the sudoers `Defaults` configuration.
+pub fn init_sudoer_defaults() {
+    if SUDO_CONFIG_DEFAULTS.get().is_some() {
+        return;
+    }
+
+    SUDO_CONFIG_DEFAULTS.get_or_init(|| {
+        SUDO_CONFIG
+            .get()
+            .expect("group not initialized")
+            .into_iter()
+            .filter(|config| config.starts_with("Defaults"))
+            .map(|config| {
+                config
+                    // NOTE: we need to remove `Defaults` because some config
+                    // can be `Defaults:%sudo !noexec` for example, in that case
+                    // we would only consider `:%sudo !noexec` and store it as
+                    // `:%sudo!noexec`
+                    .replacen("Defaults", "", 1)
+                    // this is an effort to make the result consistent, by
+                    // removing whitespaces
+                    // TODO: this may be annoying to work with, maybe match with
+                    // regex instead, the current rules should be slightly
+                    // updated but nothing to serious
+                    .split_whitespace()
+                    .collect::<Vec<&str>>()
+                    .join(" ")
+            })
+            .map(|config| config.to_string())
+            .collect()
+    });
+}
+
+fn get_sudo_config() -> &'static SudoConfig {
+    SUDO_CONFIG
+        .get()
+        .expect("sudo configuration not initialized")
+}
+
+fn get_sudo_defaults() -> &'static SudoConfigDefaults {
+    SUDO_CONFIG_DEFAULTS
+        .get()
+        .expect("sudo config defaults configuration not initialized")
+}
+
+/// Check if sudoers default is present
+pub fn check_sudo_defaults(defaults: &str) -> check::CheckReturn {
+    if get_sudo_defaults().contains(&defaults.to_string()) {
+        (check::CheckState::Success, None)
+    } else {
+        (check::CheckState::Failure, None)
+    }
 }
 
 /// Check that no sudo rules contain `NOPASSWD`.
-pub fn has_no_nopaswd(config: &SudoConfig) -> bool {
-    !config.into_iter().any(|config| config.contains("NOPASSWD"))
+pub fn check_has_no_nopaswd() -> check::CheckReturn {
+    let g: Vec<String> = get_sudo_config()
+        .iter()
+        .filter(|config| config.contains("NOPASSWD"))
+        .map(|config| config.clone())
+        .collect();
+
+    if g.len() != 0 {
+        (check::CheckState::Failure, Some(g.join(", ")))
+    } else {
+        (check::CheckState::Success, None)
+    }
 }
 
 /// Ensure re-authentication for privilege escalation is not disabled globally.
-pub fn re_authentication_not_disabled(config: &SudoConfig) -> bool {
-    !config
-        .into_iter()
-        .any(|config| config.contains("!authenticate"))
+pub fn check_re_authentication_not_disabled() -> check::CheckReturn {
+    let g: Vec<String> = get_sudo_config()
+        .iter()
+        .filter(|config| config.contains("!authenticate"))
+        .map(|config| config.clone())
+        .collect();
+
+    if g.len() != 0 {
+        (check::CheckState::Failure, Some(g.join(", ")))
+    } else {
+        (check::CheckState::Success, None)
+    }
 }

@@ -17,8 +17,13 @@
  */
 
 use std::fs;
+use std::sync::OnceLock;
+
+use crate::check;
 
 const PROC_MOUNTS_PATH: &str = "/proc/mounts";
+
+static MOUNT_CONFIG: OnceLock<MountConfig> = OnceLock::new();
 
 /// List of mount configurations.
 pub type MountConfig = Vec<Mount>;
@@ -32,7 +37,7 @@ pub struct Mount {
     source: String,
     target: String,
     fs_type: String,
-    options: Vec<String>,
+    options: MountOptions,
 }
 
 /// Parse the content for `/proc/mounts`.
@@ -55,36 +60,70 @@ fn parse_mounts(mounts: String) -> MountConfig {
         .collect()
 }
 
-/// Get mounts configuration by reading `/proc/mounts`.
-pub fn init_mounts() -> Result<MountConfig, std::io::Error> {
-    let mounts = fs::read_to_string(PROC_MOUNTS_PATH)?;
-    Ok(parse_mounts(mounts))
+/// Initialize mounts configuration by reading `/proc/mounts`.
+pub fn init_mounts() {
+    if MOUNT_CONFIG.get().is_some() {
+        return;
+    }
+
+    match fs::read_to_string(PROC_MOUNTS_PATH) {
+        Ok(mounts) => {
+            MOUNT_CONFIG.get_or_init(|| parse_mounts(mounts));
+        }
+        Err(err) => println!("Failed to initialize mount config: {}", err),
+    };
 }
 
 /// Get mount from a collected configuration.
-pub fn get_mount(
-    mounts: &'static MountConfig,
-    target: &str,
-) -> Result<Option<&'static Mount>, String> {
-    // TODO: is it possible to remove the lifetime?
+fn get_mount(mounts: &'static MountConfig, target: &str) -> Option<&'static Mount> {
     for mount in mounts {
         if mount.target == target {
-            return Ok(Some(mount));
+            return Some(mount);
         }
     }
-    return Ok(None);
+    return None;
+}
+
+/// Ensure that mount exist.
+pub fn check_mount_present(target: &str) -> check::CheckReturn {
+    let mounts = MOUNT_CONFIG
+        .get()
+        .expect("mount configuration not initialized");
+
+    match get_mount(mounts, target) {
+        Some(_) => (check::CheckState::Success, None),
+        None => (check::CheckState::Failure, None),
+    }
 }
 
 /// Get mount options from a collected configuration.
-pub fn get_mount_options(
-    mounts: &'static MountConfig,
-    target: &str,
-) -> Result<MountOptions, String> {
+fn get_mount_options(mounts: &'static MountConfig, target: &str) -> Option<MountOptions> {
     match get_mount(mounts, target) {
-        Ok(res) => match res {
-            Some(mount) => Ok(mount.options.clone()),
-            None => Err("mount does not exist".to_string()),
-        },
-        Err(error) => Err(error),
+        Some(mount) => Some(mount.options.clone()),
+        None => None,
+    }
+}
+
+/// Ensure that option is set on mount target.
+pub fn check_mount_option(target: &str, option: &str) -> check::CheckReturn {
+    let mounts = MOUNT_CONFIG
+        .get()
+        .expect("mount configuration not initialized");
+
+    match get_mount_options(mounts, target) {
+        Some(options) => {
+            if options.contains(&option.to_string()) {
+                (check::CheckState::Success, None)
+            } else {
+                (
+                    check::CheckState::Failure,
+                    Some("missing option".to_string()),
+                )
+            }
+        }
+        None => (
+            check::CheckState::Failure,
+            Some("not a mount point".to_string()),
+        ),
     }
 }

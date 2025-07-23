@@ -148,12 +148,12 @@ pub fn get_sysctl_i32_value(key: &str) -> Result<i32, String> {
 
 macro_rules! add_sysctl_check {
     ($id:tt, $tags:expr, $key:tt, $val:tt) => {
-        check::add_check(
+        $crate::check::add_check(
             $id,
             format!("Ensure sysctl {:?} = {:?}", $key, $val).as_str(),
             $tags,
-            || sysctl::check_sysctl($key, $val),
-            vec![sysctl::init_sysctl_config],
+            || $crate::sysctl::check_sysctl($key, $val),
+            vec![$crate::sysctl::init_sysctl_config],
         );
     };
 }
