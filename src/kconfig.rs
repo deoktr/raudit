@@ -16,17 +16,30 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use std::collections::HashMap;
-use std::process;
-use std::process::Stdio;
+use std::sync::OnceLock;
+use std::{collections::HashMap, path::PathBuf};
+use std::{fs, io};
 
-const KCOMP_CFG_PATH: &str = "/proc/config.gz";
+use crate::{check, log_error};
 
-/// Kenel compilation config from `/proc/config.gz`.
-pub type KcompilConfig = HashMap<String, String>;
+static KERNEL_BUILD_CONFIG: OnceLock<KernelBuildConfig> = OnceLock::new();
 
-/// Parse content for `/proc/config.gz`.
-fn parse_kcompile_config(cmdline: String) -> KcompilConfig {
+/// Kernel build configuration from `/lib/modules/$(uname -r)/build/.config`.
+pub type KernelBuildConfig = HashMap<String, String>;
+
+/// Get path `/lib/modules/$(uname -r)/build/.config`.
+fn get_kernel_build_config_path() -> Result<PathBuf, io::Error> {
+    let kernel_version = fs::read_to_string("/proc/sys/kernel/osrelease")?
+        .trim()
+        .to_string();
+
+    Ok(PathBuf::from("/lib/modules")
+        .join(kernel_version)
+        .join("build/.config"))
+}
+
+/// Parse content of `/lib/modules/$(uname -r)/build/.config`.
+fn parse_kernel_build_config(cmdline: String) -> KernelBuildConfig {
     cmdline
         .lines()
         .filter(|line| !line.is_empty())
@@ -49,87 +62,96 @@ fn parse_kcompile_config(cmdline: String) -> KcompilConfig {
         .collect()
 }
 
-/// Get kernel compilation config by reading from `/proc/config.gz`.
+/// Get kernel build configuration by reading
+/// `/lib/modules/$(uname -r)/build/.config`.
 ///
 /// The file may not exist, it is only present if the kernel was compiled with
-/// `CONFIG_IKCONFIG_PROC=y`
-pub fn init_kcompile_config() -> Result<KcompilConfig, std::io::Error> {
-    // TODO: decompress first, would require a dependancy, so maybe not?
-    // let kconfig = fs::read_to_string("/proc/config.gz")?;
+/// `CONFIG_IKCONFIG_PROC=y`.
+pub fn init_kernel_build_config() {
+    if KERNEL_BUILD_CONFIG.get().is_some() {
+        return;
+    }
 
-    let mut cmd = process::Command::new("zcat");
-    cmd.stdin(Stdio::null());
-    cmd.args(vec![KCOMP_CFG_PATH]);
+    let kernel_build_config_path = match get_kernel_build_config_path() {
+        Ok(p) => p,
+        Err(err) => {
+            log_error!(
+                "Failed to initialize kernel build config, error while building path: {}",
+                err.to_string()
+            );
+            return;
+        }
+    };
 
-    let output = cmd.output()?;
-
-    // TODO: error if not 0
-    // match output.status.code() {
-    //     Some(c) => c,
-    //     None => 0,
-    // }
-
-    Ok(parse_kcompile_config(
-        String::from_utf8_lossy(&output.stdout).to_string(),
-    ))
+    match fs::read_to_string(&kernel_build_config_path) {
+        Ok(content) => KERNEL_BUILD_CONFIG.get_or_init(|| parse_kernel_build_config(content)),
+        Err(err) => {
+            log_error!(
+                "Failed to initialize kernel build config, error while reading {}: {}",
+                kernel_build_config_path.to_string_lossy(),
+                err.to_string()
+            );
+            return;
+        }
+    };
 }
 
-/// Get kernel compilation flag from a collected configuration.
-pub fn get_kcompile_config(config: &KcompilConfig, flag: String) -> Result<String, String> {
-    match config.get(&flag) {
+/// Ensure kernel build parameter is set.
+pub fn check_option_is_set(param: &str) -> check::CheckReturn {
+    let config = match KERNEL_BUILD_CONFIG.get() {
+        Some(config) => config,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("kcompile config not initialized".to_string()),
+            )
+        }
+    };
+
+    match config.get(param) {
         Some(val) => {
-            if *val == "is not set".to_string() {
-                Err("flag is not set".to_string())
+            if *val != "is not set".to_string() {
+                (check::CheckState::Success, None)
             } else {
-                Ok(val.to_string())
+                (
+                    check::CheckState::Failure,
+                    Some("param not set".to_string()),
+                )
             }
         }
-        None => Err("flag not present".to_string()),
+        None => (
+            check::CheckState::Error,
+            Some("param not present".to_string()),
+        ),
     }
 }
 
-/// Check if kernel compilation flag is not set.
-pub fn get_kcompile_not_set_config(config: &KcompilConfig, flag: String) -> Result<bool, String> {
-    match config.get(&flag) {
-        Some(val) => Ok(*val == "is not set".to_string()),
-        None => Err("flag not present".to_string()),
+/// Ensure kernel parameter is not set.
+pub fn check_option_is_not_set(param: &str) -> check::CheckReturn {
+    let config = match KERNEL_BUILD_CONFIG.get() {
+        Some(config) => config,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("kcompile config not initialized".to_string()),
+            )
+        }
+    };
+
+    match config.get(param) {
+        Some(val) => {
+            if *val == "is not set".to_string() {
+                (check::CheckState::Success, None)
+            } else {
+                (check::CheckState::Failure, Some("param set".to_string()))
+            }
+        }
+        None => (
+            check::CheckState::Error,
+            Some("param not present".to_string()),
+        ),
     }
 }
-
-// /// Check if any stack protector flag is activated.
-// pub fn has_stack_protector(config: &'static KcompilConfig) -> bool {
-//     vec![
-//         get_kcompile_config(config, "CONFIG_STACKPROTECTOR".to_string()),
-//         get_kcompile_config(config, "CONFIG_CC_STACKPROTECTOR".to_string()),
-//         get_kcompile_config(config, "CONFIG_CC_STACKPROTECTOR_REGULAR".to_string()),
-//         get_kcompile_config(config, "CONFIG_CC_STACKPROTECTOR_AUTO".to_string()),
-//         get_kcompile_config(config, "CONFIG_CC_STACKPROTECTOR_STRONG".to_string()),
-//     ]
-//     .into_iter()
-//     .filter(|r| r.is_err())
-//     .any(|r| r.unwrap() == "y".to_string())
-// }
-//
-// /// Check if any stack protector strong flag is activated.
-// pub fn has_stack_protector_strong(config: &'static KcompilConfig) -> bool {
-//     vec![
-//         get_kcompile_config(config, "STACKPROTECTOR_STRONG".to_string()),
-//         get_kcompile_config(config, "CC_STACKPROTECTOR_STRONG".to_string()),
-//     ]
-//     .into_iter()
-//     .filter(|r| r.is_err())
-//     .any(|r| r.unwrap() == "y".to_string())
-// }
-//
-// pub fn has_strict_kernel_rwx(config: &'static KcompilConfig) -> bool {
-//     vec![
-//         get_kcompile_config(config, "STRICT_KERNEL_RWX".to_string()),
-//         get_kcompile_config(config, "DEBUG_RODATA".to_string()),
-//     ]
-//     .into_iter()
-//     .filter(|r| r.is_err())
-//     .any(|r| r.unwrap() == "y".to_string())
-// }
 
 #[cfg(test)]
 mod tests {
@@ -137,7 +159,7 @@ mod tests {
 
     #[test]
     fn test_parse_pam_rule() {
-        let r = parse_kcompile_config(
+        let r = parse_kernel_build_config(
             "#
 # x86 Debugging
 #

@@ -19,7 +19,7 @@
 use std::fs;
 use std::sync::OnceLock;
 
-use crate::check;
+use crate::{check, log_error};
 
 const PROC_MOUNTS_PATH: &str = "/proc/mounts";
 
@@ -70,7 +70,7 @@ pub fn init_mounts() {
         Ok(mounts) => {
             MOUNT_CONFIG.get_or_init(|| parse_mounts(mounts));
         }
-        Err(err) => println!("Failed to initialize mount config: {}", err),
+        Err(err) => log_error!("Failed to initialize mount config: {}", err),
     };
 }
 
@@ -86,9 +86,15 @@ fn get_mount(mounts: &'static MountConfig, target: &str) -> Option<&'static Moun
 
 /// Ensure that mount exist.
 pub fn check_mount_present(target: &str) -> check::CheckReturn {
-    let mounts = MOUNT_CONFIG
-        .get()
-        .expect("mount configuration not initialized");
+    let mounts = match MOUNT_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("mount configuration not initialized".to_string()),
+            )
+        }
+    };
 
     match get_mount(mounts, target) {
         Some(_) => (check::CheckState::Success, None),
@@ -106,9 +112,15 @@ fn get_mount_options(mounts: &'static MountConfig, target: &str) -> Option<Mount
 
 /// Ensure that option is set on mount target.
 pub fn check_mount_option(target: &str, option: &str) -> check::CheckReturn {
-    let mounts = MOUNT_CONFIG
-        .get()
-        .expect("mount configuration not initialized");
+    let mounts = match MOUNT_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("mount configuration not initialized".to_string()),
+            )
+        }
+    };
 
     match get_mount_options(mounts, target) {
         Some(options) => {

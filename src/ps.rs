@@ -20,7 +20,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::sync::OnceLock;
 
-use crate::check;
+use crate::{check, log_error};
 
 /// List of running process.
 ///
@@ -40,7 +40,7 @@ pub fn init_proc() {
     let entries = match fs::read_dir("/proc/") {
         Ok(e) => e,
         Err(err) => {
-            println!("failed to read \"/proc/\": {}", err);
+            log_error!("failed to read \"/proc/\": {}", err);
             return;
         }
     };
@@ -101,7 +101,15 @@ pub fn get_pids(config: &Proc, name: &str) -> Option<Vec<String>> {
 
 /// Check if a process is running from it's name.
 pub fn is_running(name: &str) -> check::CheckReturn {
-    let procs = PROCESSES.get().expect("group not initialized");
+    let procs = match PROCESSES.get() {
+        Some(kparams) => kparams,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("processes not initialized".to_string()),
+            )
+        }
+    };
 
     match get_pids(procs, name) {
         Some(pids) => (check::CheckState::Success, Some(pids.join(", "))),

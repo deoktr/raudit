@@ -115,6 +115,7 @@ Benchmark 1: ./target/release/raudit
 - Ensure systemd services are hardened (with sandboxing options) `systemctl cat`
 - Ensure cron is disabled if not needed
 - Use [OPA](https://www.openpolicyagent.org/) to define rules?
+- Add CLI flag to list out all available tags
 
 ## License
 

@@ -21,7 +21,7 @@ use std::process;
 use std::process::Stdio;
 use std::sync::OnceLock;
 
-use crate::check;
+use crate::{check, log_error};
 
 static SYSCTL_CONFIG: OnceLock<SysctlConfig> = OnceLock::new();
 
@@ -55,8 +55,7 @@ pub fn init_sysctl_config() {
             let config = parse_sysctl_config(String::from_utf8_lossy(&output.stdout).to_string());
             SYSCTL_CONFIG.get_or_init(|| config);
         }
-        // TODO: colored logger
-        Err(err) => println!("Failed to initialize sysctl configuration: {}", err),
+        Err(err) => log_error!("Failed to initialize sysctl configuration: {}", err),
     };
 }
 
@@ -67,11 +66,17 @@ pub trait SysctlValue {
 impl SysctlValue for &str {
     /// Get sysctl value from a collected configuration and compare it to &str.
     fn check_sysctl(&self, key: &str) -> check::CheckReturn {
-        match SYSCTL_CONFIG
-            .get()
-            .expect("sysctl not initialized")
-            .get(key)
-        {
+        let config = match SYSCTL_CONFIG.get() {
+            Some(c) => c,
+            None => {
+                return (
+                    check::CheckState::Error,
+                    Some("sysctl configuration not initialized".to_string()),
+                )
+            }
+        };
+
+        match config.get(key) {
             Some(value) => {
                 if value == self {
                     (check::CheckState::Success, None)
@@ -93,11 +98,17 @@ impl SysctlValue for &str {
 impl SysctlValue for i32 {
     /// Get sysctl value from a collected configuration and compare it to i32.
     fn check_sysctl(&self, key: &str) -> check::CheckReturn {
-        match SYSCTL_CONFIG
-            .get()
-            .expect("sysctl not initialized")
-            .get(key)
-        {
+        let config = match SYSCTL_CONFIG.get() {
+            Some(c) => c,
+            None => {
+                return (
+                    check::CheckState::Error,
+                    Some("sysctl configuration not initialized".to_string()),
+                )
+            }
+        };
+
+        match config.get(key) {
             Some(value) => match value.parse::<i32>() {
                 Ok(val) => {
                     if val == *self {
@@ -131,11 +142,12 @@ pub fn check_sysctl<T: SysctlValue>(key: &str, expected: T) -> check::CheckRetur
 }
 
 pub fn get_sysctl_i32_value(key: &str) -> Result<i32, String> {
-    match SYSCTL_CONFIG
-        .get()
-        .expect("sysctl not initialized")
-        .get(key)
-    {
+    let config = match SYSCTL_CONFIG.get() {
+        Some(c) => c,
+        None => return Err("sysctl configuration not initialized".to_string()),
+    };
+
+    match config.get(key) {
         Some(value) => match value.parse::<i32>() {
             Ok(val) => {
                 return Ok(val);

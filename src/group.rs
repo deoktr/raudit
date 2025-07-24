@@ -20,7 +20,7 @@ use std::fs;
 use std::sync::OnceLock;
 
 use crate::base::empty_or_missing_file;
-use crate::check;
+use crate::{check, log_error};
 
 const GROUP_PATH: &str = "/etc/group";
 
@@ -88,12 +88,8 @@ pub fn init_group() {
         Ok(content) => {
             GROUPS.get_or_init(|| parse_group(content));
         }
-        Err(err) => println!("Failed to initialize groups: {}", err),
+        Err(err) => log_error!("Failed to initialize groups: {}", err),
     };
-}
-
-fn get_groups() -> &'static Groups {
-    GROUPS.get().expect("group not initialized")
 }
 
 /// Ensure group shadow empty or missing.
@@ -105,7 +101,17 @@ pub fn empty_gshadow() -> check::CheckReturn {
 
 /// Ensure no group has a password set (not set to `x`).
 pub fn no_password_in_group() -> check::CheckReturn {
-    let g: Vec<String> = get_groups()
+    let groups = match GROUPS.get() {
+        Some(group) => group,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("group not initialized".to_string()),
+            )
+        }
+    };
+
+    let g: Vec<String> = groups
         .iter()
         .filter(|group| group.password != "x".to_string())
         .map(|group| group.name.clone())
@@ -120,7 +126,17 @@ pub fn no_password_in_group() -> check::CheckReturn {
 
 /// Ensure that only root has GID 0.
 pub fn one_gid_zero() -> check::CheckReturn {
-    let g: Vec<String> = get_groups()
+    let groups = match GROUPS.get() {
+        Some(group) => group,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("group not initialized".to_string()),
+            )
+        }
+    };
+
+    let g: Vec<String> = groups
         .iter()
         .filter(|group| group.gid == 0 && group.name != "root")
         .map(|group| group.name.clone())
@@ -135,7 +151,15 @@ pub fn one_gid_zero() -> check::CheckReturn {
 
 /// Ensure no duplicate GIDs exist.
 pub fn no_dup_gid() -> check::CheckReturn {
-    let groups = get_groups();
+    let groups = match GROUPS.get() {
+        Some(group) => group,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("group not initialized".to_string()),
+            )
+        }
+    };
 
     let g: Vec<String> = groups
         .iter()
@@ -152,7 +176,15 @@ pub fn no_dup_gid() -> check::CheckReturn {
 
 /// Ensure no duplicate group names exist.
 pub fn no_dup_name() -> check::CheckReturn {
-    let groups = get_groups();
+    let groups = match GROUPS.get() {
+        Some(group) => group,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("group not initialized".to_string()),
+            )
+        }
+    };
 
     let g: Vec<String> = groups
         .iter()

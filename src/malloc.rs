@@ -17,40 +17,69 @@
  */
 
 use std::fs;
+use std::sync::OnceLock;
+
+use crate::check;
 
 // FIXME: on NixOS the file is `/etc/ld-nix.so.preload`
 const LD_SO_PRELOAD_PATH: &str = "/etc/ld.so.preload";
+
+static LD_SO_PRELOAD: OnceLock<LdSoPreload> = OnceLock::new();
 
 /// LD preload configuration from `/etc/ld.so.preload`.
 pub type LdSoPreload = String;
 
 /// Get login.defs configuration by reading `/etc/ld.so.preload`.
-pub fn init_ld_so_preload() -> Result<LdSoPreload, std::io::Error> {
-    // TODO: error errors if it doesn't exist, since it would just mean it's not
-    // configured properly
-    let ls_so_preload = fs::read_to_string(LD_SO_PRELOAD_PATH)?;
-    Ok(ls_so_preload)
-}
+pub fn init_ld_so_preload() {
+    if LD_SO_PRELOAD.get().is_some() {
+        return;
+    }
 
-/// Uses [libhardened_malloc](https://github.com/GrapheneOS/hardened_malloc/).
-///
-/// `hardened_malloc` is a hardened memory allocator that provides substantial
-/// protection from heap memory corruption vulnerabilities. It is heavily based
-/// on OpenBSD's malloc design but with numerous improvements.
-pub fn has_libhardened_malloc(config: &'static LdSoPreload) -> bool {
-    config.contains("libhardened_malloc")
+    LD_SO_PRELOAD.get_or_init(|| match fs::read_to_string(LD_SO_PRELOAD_PATH) {
+        Ok(content) => content,
+        // TODO: check error type, if the file does not exist then set LD_SO to
+        // an empty string, otherwise log error
+        Err(_) => "".to_owned(),
+    });
 }
 
 /// Uses [scudo](https://llvm.org/docs/ScudoHardenedAllocator.html).
 ///
 /// Scudo Hardened Allocator is a user-mode allocator, originally based on LLVM
 /// Sanitizers’ `CombinedAllocator`.
-pub fn has_scudo_malloc(config: &'static LdSoPreload) -> bool {
-    config.contains("scudo")
+pub fn has_scudo_malloc() -> check::CheckReturn {
+    match LD_SO_PRELOAD.get() {
+        Some(config) => {
+            if config.contains("scudo") {
+                (check::CheckState::Success, None)
+            } else {
+                (check::CheckState::Failure, None)
+            }
+        }
+        None => (
+            check::CheckState::Error,
+            Some("ld.so.preload not initialized".to_string()),
+        ),
+    }
 }
 
-/// Ensure that an hardened malloc is used. It can either be `scudo` or
-/// `libhardened_malloc`.
-pub fn has_hardened_malloc(config: &'static LdSoPreload) -> bool {
-    return has_libhardened_malloc(config) || has_scudo_malloc(config);
-}
+// /// Uses [libhardened_malloc](https://github.com/GrapheneOS/hardened_malloc/).
+// ///
+// /// `hardened_malloc` is a hardened memory allocator that provides substantial
+// /// protection from heap memory corruption vulnerabilities. It is heavily based
+// /// on OpenBSD's malloc design but with numerous improvements.
+// pub fn has_libhardened_malloc() -> check::CheckReturn {
+//     match LD_SO_PRELOAD.get() {
+//         Some(config) => {
+//             if config.contains("libhardened_malloc") {
+//                 (check::CheckState::Success, None)
+//             } else {
+//                 (check::CheckState::Failure, None)
+//             }
+//         }
+//         None => (
+//             check::CheckState::Error,
+//             Some("ld.so.preload not initialized".to_string()),
+//         ),
+//     }
+// }

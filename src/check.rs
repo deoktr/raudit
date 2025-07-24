@@ -63,6 +63,7 @@ pub struct Check {
     dependencies: Vec<DependencyFunc>,
 }
 
+/// Print list of checks, with option to skip successful checks.
 pub fn print_checks(skip_success: bool) {
     let checks = CHECKS.lock().unwrap();
     for check in checks.iter() {
@@ -71,6 +72,38 @@ pub fn print_checks(skip_success: bool) {
         }
         println!("{}", check);
     }
+}
+
+/// Print list of available tags.
+pub fn print_tags() {
+    let checks = CHECKS.lock().unwrap();
+    let mut tags: Vec<String> = vec![];
+    for check in checks.iter() {
+        for tag in check.tags.iter() {
+            if tags.contains(&tag) {
+                continue;
+            }
+            tags.push(tag.clone());
+        }
+    }
+    println!("Available tags: {}.", tags.join(", "));
+}
+
+/// Print list of available ID prefixes.
+pub fn print_id_prefixes() {
+    let checks = CHECKS.lock().unwrap();
+    let mut prefixes: Vec<String> = vec![];
+    for check in checks.iter() {
+        let prefix = match check.id.split_once("_") {
+            Some((prefix, _)) => prefix.to_string(),
+            None => continue,
+        };
+        if prefixes.contains(&prefix) {
+            continue;
+        }
+        prefixes.push(prefix.clone());
+    }
+    println!("Available prefixes: {}.", prefixes.join(", "));
 }
 
 /// Run checks in sequence.
@@ -211,6 +244,15 @@ pub fn add_check(
     });
 }
 
+#[derive(Default)]
+pub struct CheckListStats {
+    total: i32,
+    success: i32,
+    failure: i32,
+    error: i32,
+    waiting: i32,
+}
+
 pub fn get_stats() -> CheckListStats {
     let checks = CHECKS.lock().unwrap();
 
@@ -233,57 +275,51 @@ pub fn print_stats() {
     stats.print();
 }
 
-#[derive(Default)]
-pub struct CheckListStats {
-    total: i32,
-    success: i32,
-    failure: i32,
-    error: i32,
-    waiting: i32,
+fn format_percent(val: i32, tot: i32) -> String {
+    let mut purcent = (val as f32 / tot as f32) * 100.0;
+    if purcent.is_nan() {
+        purcent = 0.0;
+    }
+    format!("({:.2}%)", purcent)
 }
 
 impl CheckListStats {
     pub fn print(self) {
-        println!("");
-        println!("\tResult:");
-
-        let success = format!(
-            "\tSUCCESS: {}/{} ({:.2}%)",
+        let mut success = format!(
+            "\tSUCCESS: {:4}/{} {:>9}",
             self.success,
             self.total,
-            (self.success as f32 / self.total as f32) * 100.0,
+            format_percent(self.success, self.total),
         );
-        let failure = format!(
-            "\tFAILURE: {}/{} ({:.2}%)",
+        let mut failure = format!(
+            "\tFAILURE: {:4}/{} {:>9}",
             self.failure,
             self.total,
-            (self.failure as f32 / self.total as f32) * 100.0,
+            format_percent(self.failure, self.total),
         );
-        let error = format!(
-            "\tERROR:   {}/{} ({:.2}%)",
+        let mut error = format!(
+            "\tERROR:   {:4}/{} {:>9}",
             self.error,
             self.total,
-            (self.error as f32 / self.total as f32) * 100.0
+            format_percent(self.error, self.total),
         );
 
         if config::is_colored_output_enabled() {
-            println!(
+            success = format!(
                 "{}{}{}",
                 consts::SUCCESS_COLOR,
                 success,
                 consts::RESET_COLOR
             );
-            println!(
+            failure = format!(
                 "{}{}{}",
                 consts::FAILURE_COLOR,
                 failure,
                 consts::RESET_COLOR
             );
-            println!("{}{}{}", consts::ERROR_COLOR, error, consts::RESET_COLOR);
-        } else {
-            println!("{}", success);
-            println!("{}", failure);
-            println!("{}", error);
+            error = format!("{}{}{}", consts::ERROR_COLOR, error, consts::RESET_COLOR);
         }
+
+        print!("\n\tResult:\n{}\n{}\n{}\n", success, failure, error);
     }
 }

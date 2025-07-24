@@ -19,7 +19,7 @@
 use std::fs;
 use std::sync::OnceLock;
 
-use crate::check;
+use crate::{check, log_error};
 
 const GRUB_CFG_PATH: &str = "/boot/grub/grub.cfg";
 
@@ -38,13 +38,21 @@ pub fn init_grub_cfg() {
         Ok(content) => {
             GRUB_CFG.get_or_init(|| content);
         }
-        Err(err) => println!("Failed to initialize grub configuration: {}", err),
+        Err(err) => log_error!("Failed to initialize grub configuration: {}", err),
     };
 }
 
 /// Verify that grub is configured with a password.
 pub fn password_is_set() -> check::CheckReturn {
-    let grub_cfg = GRUB_CFG.get().expect("grub configuration not initialized");
+    let grub_cfg = match GRUB_CFG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("grub configuration not initialized".to_string()),
+            )
+        }
+    };
 
     // NOTE: "\n" is to ensure they are not commented out
     if grub_cfg.contains(&"\nset superusers".to_string())

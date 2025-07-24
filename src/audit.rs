@@ -27,6 +27,7 @@ use std::process::Stdio;
 use std::sync::OnceLock;
 
 use crate::check;
+use crate::log_error;
 
 const AUDIT_CFG_PATH: &str = "/etc/audit/auditd.conf";
 
@@ -64,7 +65,7 @@ pub fn init_audit_rules() {
             match str::from_utf8(&output.stderr) {
                 Ok(stderr) => {
                     if stderr == "You must be root to run this program.\n" {
-                        println!("Failed to initialize audit rules, root required");
+                        log_error!("Failed to initialize audit rules, root required");
                         return;
                     }
                 }
@@ -79,7 +80,7 @@ pub fn init_audit_rules() {
                     .collect()
             });
         }
-        Err(err) => println!("Failed to initialize audit rules: {}", err),
+        Err(err) => log_error!("Failed to initialize audit rules: {}", err),
     };
 }
 
@@ -107,17 +108,23 @@ pub fn init_audit_config() {
         Ok(content) => {
             AUDIT_CONFIG.get_or_init(|| parse_audit_config(content));
         }
-        Err(err) => println!("Failed to initialize audit configuration: {}", err),
+        Err(err) => log_error!("Failed to initialize audit configuration: {}", err),
     };
 }
 
 /// Check audit rule.
 pub fn check_audit_rule(rule: &str) -> check::CheckReturn {
-    if AUDIT_RULES
-        .get()
-        .expect("audit rules not initialized")
-        .contains(&rule.to_string())
-    {
+    let audit_rules = match AUDIT_RULES.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("audit rules not initialized".to_string()),
+            )
+        }
+    };
+
+    if audit_rules.contains(&rule.to_string()) {
         (check::CheckState::Success, None)
     } else {
         (check::CheckState::Failure, Some("not present".to_string()))
@@ -126,11 +133,17 @@ pub fn check_audit_rule(rule: &str) -> check::CheckReturn {
 
 /// Check audit configuration value.
 pub fn check_audit_config(key: &str, expected: &str) -> check::CheckReturn {
-    match AUDIT_CONFIG
-        .get()
-        .expect("audit configuration not initialized")
-        .get(key)
-    {
+    let audit_config = match AUDIT_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("audit rules not initialized".to_string()),
+            )
+        }
+    };
+
+    match audit_config.get(key) {
         Some(val) => {
             if val == expected {
                 (check::CheckState::Success, None)

@@ -21,14 +21,14 @@ use std::fs;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 
-use crate::check;
+use crate::{check, log_error, log_trace, log_warn};
 
 static PAM_CONFIG: OnceLock<PamConfig> = OnceLock::new();
 
 /// PAM configuration.
 ///
 /// The key of the HashMap is the name of the service (name of the file).
-/// The value is a list of rules found in that file.
+/// The value is a list of rules found in that file, or imported by it.
 pub type PamConfig = HashMap<String, Vec<PamRule>>;
 
 /// A single PAM rule (line).
@@ -119,26 +119,56 @@ fn parse_pam_rule(line: &str) -> Result<PamRule, String> {
 }
 
 /// Parse PAM file.
-fn parse_pam(content: String) -> Vec<PamRule> {
-    content
-        .lines()
-        .filter(|line| !line.starts_with("#"))
-        // ignore includes (`@include ...`)
-        // FIXME: resolve include to add the rules to the service
-        .filter(|line| !line.starts_with("@"))
-        .filter(|line| !line.is_empty())
-        .filter_map(|line| {
-            match parse_pam_rule(line) {
-                Ok(p) => Ok(p),
-                Err(error) => {
-                    // TODO: send to a proper logger
-                    println!("Error parsing PAM rule {}: {}", line.to_string(), error);
-                    Err(error)
-                }
+///
+/// Parse individual PAM rules and resolve includes recursively.
+fn parse_pam_file(path: PathBuf, content: String) -> Vec<PamRule> {
+    let parent = match path.parent() {
+        Some(p) => p,
+        None => &path,
+    };
+
+    let mut pam_rules: Vec<PamRule> = vec![];
+    for line in content.lines() {
+        if line.starts_with("#") || line.is_empty() {
+            continue;
+        }
+
+        // TODO: add a max depth to include resolves, to detect for example self
+        // includes or circle includes
+        if line.starts_with("@") {
+            let s: Vec<&str> = line.split_whitespace().collect();
+            if s.len() < 2 {
+                continue;
             }
-            .ok()
-        })
-        .collect()
+
+            let content = match fs::read_to_string(path.clone()) {
+                Ok(p) => p,
+                Err(err) => {
+                    log_error!(
+                        "Error opening {}: {}",
+                        path.to_string_lossy(),
+                        err.to_string()
+                    );
+                    continue;
+                }
+            };
+
+            let include = parent.join(s[1]);
+            log_trace!("PAM including: {:?}", include);
+            pam_rules.append(&mut parse_pam_file(include, content));
+            continue;
+        }
+
+        match parse_pam_rule(line) {
+            Ok(p) => pam_rules.push(p),
+            Err(error) => {
+                log_warn!("Error parsing PAM rule {}: {}", line.to_string(), error);
+                continue;
+            }
+        }
+    }
+
+    pam_rules
 }
 
 /// Get PAM configuration by reading files in `/etc/pam.d/`.
@@ -153,17 +183,17 @@ fn get_pam() -> Result<PamConfig, std::io::Error> {
     for path in paths {
         let content = match fs::read_to_string(path.clone()) {
             Ok(p) => p,
-            Err(error) => {
-                println!(
+            Err(err) => {
+                log_error!(
                     "Error opening {}: {}",
                     path.to_string_lossy(),
-                    error.to_string()
+                    err.to_string()
                 );
                 continue;
             }
         };
 
-        let rules = parse_pam(content);
+        let rules = parse_pam_file(path.clone(), content);
 
         config.insert(
             // get the file name, it represent the configured app
@@ -188,7 +218,7 @@ pub fn init_pam() {
         Ok(pam_config) => {
             PAM_CONFIG.get_or_init(|| pam_config);
         }
-        Err(err) => println!("Failed to initialize pam configuration: {}", err),
+        Err(err) => log_error!("Failed to initialize pam configuration: {}", err),
     };
 }
 
@@ -223,15 +253,14 @@ fn get_pam_rule(
                     // only check the end of the module (it's name) and not the 
                     // whole thing
                     // TODO: this is far from perfect
-                    // && rule.module == module
                     && rule.module.ends_with(module)
                 })
                 .collect();
 
             if rules.len() == 0 {
-                return Err("zero rule found".to_string());
+                return Err("rule not found".to_string());
             } else if rules.len() > 1 {
-                return Err("more than one found".to_string());
+                return Err("more than one rule found".to_string());
             }
 
             Ok(())
@@ -248,13 +277,35 @@ pub fn check_rule(
     control: &str,
     module: &str,
 ) -> check::CheckReturn {
-    let config = PAM_CONFIG.get().expect("pam configuration not initialized");
+    let config = match PAM_CONFIG.get() {
+        Some(c) => c,
+        None => return (check::CheckState::Error, Some("pam configuration not initialized".to_string()))
+    };
 
     match get_pam_rule(config, service, rule_type, control, module) {
         Ok(()) => (check::CheckState::Success, None),
         Err(err) => (check::CheckState::Failure, Some(err.to_string())),
     }
 }
+
+// TODO:
+// pub fn get_rule_flag(
+//     service: &str,
+//     rule_type: &str,
+//     control: &str,
+//     module: &str,
+//     flag: &str,
+// ) -> check::CheckReturn {
+//     let config = match PAM_CONFIG.get() {
+//         Some(c) => c,
+//         None => return (check::CheckState::Error, Some("pam configuration not initialized".to_string()))
+//     };
+//
+//     match get_pam_rule(config, service, rule_type, control, module) {
+//         Ok(()) => (check::CheckState::Success, None),
+//         Err(err) => (check::CheckState::Failure, Some(err.to_string())),
+//     }
+// }
 
 #[cfg(test)]
 mod tests {
@@ -368,7 +419,8 @@ mod tests {
 
     #[test]
     fn test_parse_pam() {
-        let r = parse_pam(
+        let r = parse_pam_file(
+            PathBuf::new(),
             "session    required   pam_limits.so
 
 # this is a comment
@@ -380,9 +432,9 @@ auth       sufficient pam_rootok.so
 # The standard Unix authentication modules, used with
 # NIS (man nsswitch) as well as normal /etc/passwd and
 # /etc/shadow entries.
-@include common-auth
-@include common-account
-@include common-session
+# @include common-auth
+# @include common-account
+# @include common-session
 "
             .to_string(),
         );

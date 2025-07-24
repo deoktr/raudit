@@ -21,8 +21,8 @@ use std::path::Path;
 use std::sync::OnceLock;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use crate::base;
 use crate::check;
+use crate::{base, log_error};
 
 const PASSWD_PATH: &str = "/etc/passwd";
 
@@ -129,14 +129,8 @@ pub fn init_passwd() {
         Ok(content) => {
             PASSWD_CONFIG.get_or_init(|| parse_passwd(content));
         }
-        Err(err) => println!("Failed to initialize passwd: {}", err),
+        Err(err) => log_error!("Failed to initialize passwd: {}", err),
     }
-}
-
-fn get_passwd_config() -> &'static PasswdConfig {
-    PASSWD_CONFIG
-        .get()
-        .expect("passwd configuration not initialized")
 }
 
 /// Parse the content of `/etc/passwd`.
@@ -220,19 +214,23 @@ pub fn init_shadow() {
         Ok(content) => {
             SHADOW_CONFIG.get_or_init(|| parse_shadow(content));
         }
-        Err(err) => println!("Failed to initialize shadow: {}", err),
+        Err(err) => log_error!("Failed to initialize shadow: {}", err),
     }
-}
-
-fn get_shadow_config() -> &'static ShadowConfig {
-    SHADOW_CONFIG
-        .get()
-        .expect("shadow configuration not initialized")
 }
 
 /// Verify if any user has a password in passwd (not equal to `x`).
 pub fn no_password_in_passwd() -> check::CheckReturn {
-    let g: Vec<String> = get_passwd_config()
+    let passwd = match PASSWD_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("passwd configuration not initialized".to_string()),
+            )
+        }
+    };
+
+    let g: Vec<String> = passwd
         .iter()
         .filter(|entry| entry.password != "x")
         .map(|entry| entry.username.clone())
@@ -247,7 +245,17 @@ pub fn no_password_in_passwd() -> check::CheckReturn {
 
 /// Verify that only root has UID 0.
 pub fn no_uid_zero() -> check::CheckReturn {
-    let g: Vec<String> = get_passwd_config()
+    let passwd = match PASSWD_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("passwd configuration not initialized".to_string()),
+            )
+        }
+    };
+
+    let g: Vec<String> = passwd
         .iter()
         .filter(|entry| entry.uid == 0 && entry.username != "root")
         .map(|entry| entry.username.clone())
@@ -262,9 +270,19 @@ pub fn no_uid_zero() -> check::CheckReturn {
 
 /// Ensure all passwords are hashed with yescrypt.
 pub fn yescrypt_hashes() -> check::CheckReturn {
+    let shadow = match SHADOW_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("shadow configuration not initialized".to_string()),
+            )
+        }
+    };
+
     // the full yescrypt format is:
     // \$y\$[./A-Za-z0-9]+\$[./A-Za-z0-9]{,86}\$[./A-Za-z0-9]{43}
-    let usernames: Vec<String> = get_shadow_config()
+    let usernames: Vec<String> = shadow
         .iter()
         .filter(|entry| entry.password.starts_with("$y$") || entry.password == "!")
         .map(|entry| entry.username.clone())
@@ -281,13 +299,24 @@ pub fn yescrypt_hashes() -> check::CheckReturn {
 ///
 /// Return true if NO account is locked.
 pub fn no_locked_account() -> check::CheckReturn {
-    let now = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("Time went backwards");
+    let shadow = match SHADOW_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("shadow configuration not initialized".to_string()),
+            )
+        }
+    };
+
+    let now = match SystemTime::now().duration_since(UNIX_EPOCH) {
+        Ok(c) => c,
+        Err(err) => return (check::CheckState::Error, Some(format!("{}", err))),
+    };
 
     let days_since_epoch = now.as_secs() / 86400;
 
-    let usernames: Vec<String> = get_shadow_config()
+    let usernames: Vec<String> = shadow
         .iter()
         .filter(|entry| match entry.expiration_date {
             Some(expiration_date) => u64::from(expiration_date) <= days_since_epoch,
@@ -305,8 +334,18 @@ pub fn no_locked_account() -> check::CheckReturn {
 
 /// Ensure that all home directories exist.
 pub fn no_missing_home() -> check::CheckReturn {
+    let passwd = match PASSWD_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("passwd configuration not initialized".to_string()),
+            )
+        }
+    };
+
     let mut usernames: Vec<String> = vec![];
-    for user in get_passwd_config().iter() {
+    for user in passwd.iter() {
         if (user.uid > 0 && user.uid < UID_MIN)
             || user.shell.ends_with("/nologin")
             || user.shell.ends_with("/false")
@@ -334,7 +373,15 @@ pub fn no_missing_home() -> check::CheckReturn {
 
 /// Ensure no duplicate UIDs exist.
 pub fn no_dup_uid() -> check::CheckReturn {
-    let passwd = get_passwd_config();
+    let passwd = match PASSWD_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("passwd configuration not initialized".to_string()),
+            )
+        }
+    };
 
     let usernames: Vec<String> = passwd
         .iter()
@@ -351,7 +398,15 @@ pub fn no_dup_uid() -> check::CheckReturn {
 
 /// Ensure no duplicate user names exist.
 pub fn no_dup_username() -> check::CheckReturn {
-    let passwd = get_passwd_config();
+    let passwd = match PASSWD_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("passwd configuration not initialized".to_string()),
+            )
+        }
+    };
 
     let usernames: Vec<String> = passwd
         .iter()
@@ -377,9 +432,17 @@ pub fn no_dup_username() -> check::CheckReturn {
 /// Ensure that all system users (UID < 1000) can't login with a shell, either
 /// have `nologin`, or `false` as shell.
 pub fn no_login_sys_users() -> check::CheckReturn {
-    let passwd = get_passwd_config();
+    let config = match PASSWD_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("passwd configuration not initialized".to_string()),
+            )
+        }
+    };
 
-    let usernames: Vec<String> = passwd
+    let usernames: Vec<String> = config
         .iter()
         .filter(|user| {
             (user.uid > 0 && user.uid < UID_MIN)
@@ -403,7 +466,17 @@ pub fn no_login_sys_users() -> check::CheckReturn {
 /// An account with an empty password field means that anybody may log in as
 /// that user without providing a password.
 pub fn no_empty_shadow_password() -> check::CheckReturn {
-    let usernames: Vec<String> = get_shadow_config()
+    let shadow = match SHADOW_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("shadow configuration not initialized".to_string()),
+            )
+        }
+    };
+
+    let usernames: Vec<String> = shadow
         .iter()
         .filter(|user| user.password == "")
         .map(|entry| entry.username.clone())
@@ -421,7 +494,17 @@ pub fn no_empty_shadow_password() -> check::CheckReturn {
 /// An account with an empty password field means that anybody may log in as
 /// that user without providing a password.
 pub fn no_empty_passwd_password() -> check::CheckReturn {
-    let usernames: Vec<String> = get_passwd_config()
+    let passwd = match PASSWD_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("passwd configuration not initialized".to_string()),
+            )
+        }
+    };
+
+    let usernames: Vec<String> = passwd
         .iter()
         .filter(|user| user.password == "")
         .map(|entry| entry.username.clone())

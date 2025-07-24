@@ -21,7 +21,7 @@ use std::process;
 use std::process::Stdio;
 use std::sync::OnceLock;
 
-use crate::check;
+use crate::{check, log_error};
 
 static SSHD_CONFIG: OnceLock<SshdConfig> = OnceLock::new();
 
@@ -55,7 +55,7 @@ pub fn init_sshd_config() {
             match output.status.code() {
                 Some(status) => {
                     if status != 0 {
-                        println!("Failed to get sshd configuration, got status code {} while running \"sshd -T\"", status);
+                        log_error!("Failed to get sshd configuration, got status code {} while running \"sshd -T\"", status);
                         return;
                     }
                 }
@@ -66,17 +66,18 @@ pub fn init_sshd_config() {
                 parse_sshd_config(String::from_utf8_lossy(&output.stdout).to_string())
             });
         }
-        Err(err) => println!("Failed to initialize groups: {}", err),
+        Err(err) => log_error!("Failed to initialize sshd configuration: {}", err),
     };
 }
 
 /// Get sshd configuration value from a collected configuration.
 pub fn get_sshd_config(key: &str) -> Result<String, String> {
-    match SSHD_CONFIG
-        .get()
-        .expect("sshd configuration not initialized")
-        .get(key)
-    {
+    let sshd_config = match SSHD_CONFIG.get() {
+        Some(c) => c,
+        None => return Err("ssh configuration not initialized".to_string()),
+    };
+
+    match sshd_config.get(key) {
         Some(val) => Ok(val.to_string()),
         None => Err(format!("{:?} not found in sshd configuration", key)),
     }
@@ -84,11 +85,17 @@ pub fn get_sshd_config(key: &str) -> Result<String, String> {
 
 /// Get sshd configuration value from a collected configuration.
 pub fn check_sshd_config(key: &str, value: &str) -> check::CheckReturn {
-    match SSHD_CONFIG
-        .get()
-        .expect("sshd configuration not initialized")
-        .get(key)
-    {
+    let sshd_config = match SSHD_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("pam configuration not initialized".to_string()),
+            )
+        }
+    };
+
+    match sshd_config.get(key) {
         Some(val) => {
             if val == value {
                 (check::CheckState::Success, None)

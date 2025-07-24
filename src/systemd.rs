@@ -20,7 +20,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::sync::OnceLock;
 
-use crate::check;
+use crate::{check, log_error};
 
 const SYSTEMD_CONF_PATH: &str = "/etc/systemd/system.conf";
 
@@ -55,17 +55,23 @@ pub fn init_systemd_config() {
         Ok(cfg) => {
             SYSTEMD_CONFIG.get_or_init(|| parse_systemd_config(cfg));
         }
-        Err(err) => println!("Failed to initialize groups: {}", err),
+        Err(err) => log_error!("Failed to initialize systemd configuration: {}", err),
     };
 }
 
 /// Get systemd value from a collected configuration.
 pub fn get_systemd_config(key: &str, expected: &str) -> check::CheckReturn {
-    match SYSTEMD_CONFIG
-        .get()
-        .expect("systemd config not initialized")
-        .get(key)
-    {
+    let systemd_config = match SYSTEMD_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("systemd config not initialized".to_string()),
+            )
+        }
+    };
+
+    match systemd_config.get(key) {
         Some(val) => {
             if val == expected {
                 (check::CheckState::Success, None)

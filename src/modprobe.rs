@@ -22,7 +22,7 @@ use std::process;
 use std::process::Stdio;
 use std::sync::OnceLock;
 
-use crate::check;
+use crate::{check, log_error};
 
 static MODPROBE_CONFIG: OnceLock<ModprobeConfig> = OnceLock::new();
 static MODPROBE_BLACKLIST: OnceLock<ModprobeBlacklist> = OnceLock::new();
@@ -102,10 +102,16 @@ fn init_modprobe_blacklist() {
         return;
     }
 
+    let modprobe = match MODPROBE_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            log_error!("Failed to initialize modprobe blacklist: Modprobe is not initialized");
+            return;
+        }
+    };
+
     MODPROBE_BLACKLIST.get_or_init(|| {
-        MODPROBE_CONFIG
-            .get()
-            .expect("modprobe not initialized")
+        modprobe
             .into_iter()
             .filter(|line| {
                 // `blacklist mod_name`
@@ -123,10 +129,16 @@ fn init_modprobe_disabled() {
         return;
     }
 
+    let modprobe = match MODPROBE_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            log_error!("Failed to initialize modprobe blacklist: Modprobe is not initialized");
+            return;
+        }
+    };
+
     MODPROBE_DISABLED.get_or_init(|| {
-        MODPROBE_CONFIG
-            .get()
-            .expect("modprobe not initialized")
+        modprobe
             .into_iter()
             .filter(|line| {
                 // `install mod_name /bin/false`
@@ -175,7 +187,7 @@ fn init_loaded_modules() {
             match output.status.code() {
                 Some(status) => {
                     if status != 0 {
-                        println!("failed to initialize loaded kernel modules, exit code {} while running \"lsmod\"", status);
+                        log_error!("failed to initialize loaded kernel modules, exit code {} while running \"lsmod\"", status);
                         return;
                     }
                 }
@@ -187,7 +199,7 @@ fn init_loaded_modules() {
             });
         }
         Err(err) => {
-            println!("failed to initialize loaded kernel modules: {}", err);
+            log_error!("failed to initialize loaded kernel modules: {}", err);
             return;
         }
     };
@@ -201,31 +213,30 @@ pub fn init_modprobe() {
     init_loaded_modules();
 }
 
-fn is_module_blacklist(module: &str) -> bool {
-    return MODPROBE_BLACKLIST
-        .get()
-        .expect("modprobe blacklist not initialized")
-        .contains(&module.to_string());
-}
-
-fn is_module_disabled(module: &str) -> bool {
-    return MODPROBE_DISABLED
-        .get()
-        .expect("modprobe disabled not initialized")
-        .contains(&module.to_string());
-}
-
-fn is_module_loaded(module: &str) -> bool {
-    return LOADED_MODULES
-        .get()
-        .expect("loaded modules not initialized")
-        .contains(&module.to_string());
-}
-
 /// Ensure that kernel module is blacklisted.
 pub fn check_module_blacklist(module: &str) -> check::CheckReturn {
-    if is_module_blacklist(module) {
-        if !is_module_loaded(module) {
+    let m_blacklist = match MODPROBE_BLACKLIST.get() {
+        Some(m_blacklist) => m_blacklist,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("modprobe blacklist not initialized".to_string()),
+            )
+        }
+    };
+
+    let loaded = match LOADED_MODULES.get() {
+        Some(loaded) => loaded,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("loaded modules not initialized".to_string()),
+            )
+        }
+    };
+
+    if m_blacklist.contains(&module.to_string()) {
+        if !loaded.contains(&module.to_string()) {
             (check::CheckState::Success, None)
         } else {
             (
@@ -243,9 +254,29 @@ pub fn check_module_blacklist(module: &str) -> check::CheckReturn {
 
 /// Ensure that kernel module is disabled.
 pub fn check_module_disabled(module: &str) -> check::CheckReturn {
-    if is_module_disabled(module) {
+    let m_disabled = match MODPROBE_DISABLED.get() {
+        Some(m_disabled) => m_disabled,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("modprobe disabled not initialized".to_string()),
+            )
+        }
+    };
+
+    let loaded = match LOADED_MODULES.get() {
+        Some(loaded) => loaded,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("loaded modules not initialized".to_string()),
+            )
+        }
+    };
+
+    if m_disabled.contains(&module.to_string()) {
         // TODO: should we even care about it being loaded since it's disabled
-        if !is_module_loaded(module) {
+        if !loaded.contains(&module.to_string()) {
             (check::CheckState::Success, None)
         } else {
             (

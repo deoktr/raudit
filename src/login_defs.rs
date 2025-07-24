@@ -20,7 +20,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::sync::OnceLock;
 
-use crate::check;
+use crate::{check, log_error};
 
 const LOGIN_DEFS_PATH: &str = "/etc/login.defs";
 
@@ -53,33 +53,37 @@ pub fn init_login_defs() {
         Ok(login_defs) => {
             LOGIN_DEFS_CONFIG.get_or_init(|| parse_login_defs(login_defs));
         }
-        Err(err) => println!("Failed to initialize login defs: {}", err),
+        Err(err) => log_error!("Failed to initialize login defs: {}", err),
     };
 }
 
 /// Check login.defs value from a collected configuration.
-pub fn get_login_defs(key: &str) -> Result<&str, String> {
-    match LOGIN_DEFS_CONFIG
-        .get()
-        .expect("login defs not initialized")
-        .get(key)
-    {
-        Some(val) => Ok(val),
-        None => Err(format!("error getting login.defs value for {}", key)),
-    }
+pub fn get_login_defs(key: &str) -> Result<Option<String>, String> {
+    let login_defs = match LOGIN_DEFS_CONFIG.get() {
+        Some(c) => c,
+        None => return Err("login defs configuration not initialized".to_string()),
+    };
+
+    Ok(login_defs.get(key).cloned())
 }
 
 /// Check login.defs value from a collected configuration.
 pub fn check_login_defs(key: &str, expected: &str) -> check::CheckReturn {
     match get_login_defs(key) {
-        Ok(val) => {
-            if val == expected {
-                (check::CheckState::Success, None)
-            } else {
-                (check::CheckState::Success, None)
+        Ok(val) => match val {
+            Some(value) => {
+                if value == expected {
+                    (check::CheckState::Success, None)
+                } else {
+                    (check::CheckState::Failure, None)
+                }
             }
-        }
-        Err(err) => (check::CheckState::Failure, Some(err.to_string())),
+            None => (
+                check::CheckState::Failure,
+                Some("key not present".to_string()),
+            ),
+        },
+        Err(err) => (check::CheckState::Error, Some(err.to_string())),
     }
 }
 

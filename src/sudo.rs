@@ -20,7 +20,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 
-use crate::check;
+use crate::{check, log_error, log_warn};
 
 const SUDOERS_PATH: &str = "/etc/sudoers";
 
@@ -89,12 +89,13 @@ pub fn init_sudoer() {
 
     let mut valid_paths = paths
         .into_iter()
+        .filter(|path| !path.ends_with("README"))
         .filter_map(|path| {
             match fs::read_to_string(&path) {
                 Ok(p) => Ok(p),
                 Err(error) => {
-                    println!(
-                        "Error opening {:?}: {}",
+                    log_warn!(
+                        "Failed to open {:?}: {}",
                         path.to_string_lossy(),
                         error.to_string()
                     );
@@ -107,7 +108,7 @@ pub fn init_sudoer() {
 
     // check if the list of valid sudo file to parse is empty
     if !valid_paths.peek().is_some() {
-        println!("no sudo file to read");
+        log_error!("Failed to initialize sudo configuration: No sudo file to read");
         return;
     }
 
@@ -123,14 +124,17 @@ pub fn init_sudoer() {
 
 /// Initialize the sudoers `Defaults` configuration.
 pub fn init_sudoer_defaults() {
-    if SUDO_CONFIG_DEFAULTS.get().is_some() {
+    if !SUDO_CONFIG.get().is_some() {
         return;
     }
 
+    let sudo_config = match SUDO_CONFIG_DEFAULTS.get() {
+        Some(c) => c,
+        None => return,
+    };
+
     SUDO_CONFIG_DEFAULTS.get_or_init(|| {
-        SUDO_CONFIG
-            .get()
-            .expect("group not initialized")
+        sudo_config
             .into_iter()
             .filter(|config| config.starts_with("Defaults"))
             .map(|config| {
@@ -154,21 +158,19 @@ pub fn init_sudoer_defaults() {
     });
 }
 
-fn get_sudo_config() -> &'static SudoConfig {
-    SUDO_CONFIG
-        .get()
-        .expect("sudo configuration not initialized")
-}
-
-fn get_sudo_defaults() -> &'static SudoConfigDefaults {
-    SUDO_CONFIG_DEFAULTS
-        .get()
-        .expect("sudo config defaults configuration not initialized")
-}
-
 /// Check if sudoers default is present
 pub fn check_sudo_defaults(defaults: &str) -> check::CheckReturn {
-    if get_sudo_defaults().contains(&defaults.to_string()) {
+    let sudo_defaults = match SUDO_CONFIG_DEFAULTS.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("sudo configuration defaults not initialized".to_string()),
+            )
+        }
+    };
+
+    if sudo_defaults.contains(&defaults.to_string()) {
         (check::CheckState::Success, None)
     } else {
         (check::CheckState::Failure, None)
@@ -177,7 +179,17 @@ pub fn check_sudo_defaults(defaults: &str) -> check::CheckReturn {
 
 /// Check that no sudo rules contain `NOPASSWD`.
 pub fn check_has_no_nopaswd() -> check::CheckReturn {
-    let g: Vec<String> = get_sudo_config()
+    let sudo_config = match SUDO_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("sudo configuration not initialized".to_string()),
+            )
+        }
+    };
+
+    let g: Vec<String> = sudo_config
         .iter()
         .filter(|config| config.contains("NOPASSWD"))
         .map(|config| config.clone())
@@ -192,7 +204,17 @@ pub fn check_has_no_nopaswd() -> check::CheckReturn {
 
 /// Ensure re-authentication for privilege escalation is not disabled globally.
 pub fn check_re_authentication_not_disabled() -> check::CheckReturn {
-    let g: Vec<String> = get_sudo_config()
+    let sudo_config = match SUDO_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("sudo configuration not initialized".to_string()),
+            )
+        }
+    };
+
+    let g: Vec<String> = sudo_config
         .iter()
         .filter(|config| config.contains("!authenticate"))
         .map(|config| config.clone())
