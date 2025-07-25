@@ -73,6 +73,46 @@ Generate JSON report:
 raudit --json=pretty > report.json
 ```
 
+Example JSON output:
+
+```bash
+raudit --json=pretty --filters USR_001,USR_002
+```
+
+```json
+{
+  "checks": [
+    {
+      "id": "USR_001",
+      "title": "Ensure that root is the only user with UID 0",
+      "tags": [
+        "user",
+        "passwd"
+      ],
+      "message": null,
+      "state": "Success"
+    },
+    {
+      "id": "USR_002",
+      "title": "Ensure no duplicate user names exist",
+      "tags": [
+        "user",
+        "passwd"
+      ],
+      "message": null,
+      "state": "Success"
+    }
+  ],
+  "stats": {
+    "total": 2,
+    "success": 2,
+    "failure": 0,
+    "error": 0,
+    "waiting": 0
+  }
+}
+```
+
 ## Develop
 
 Test:
