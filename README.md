@@ -67,6 +67,28 @@ Run checks:
 raudit
 ```
 
+Usage:
+
+```
+Audit Linux systems security configurations
+
+Usage: raudit [OPTIONS]
+
+Options:
+      --tags [<TAGS>...]        Comma-separated list of tags to filter
+      --filters [<FILTERS>...]  Comma-separated list of ID prefixes to filter
+      --log-level <LOG_LEVEL>   Log level [default: warn] [possible values: error, warn, info, debug, trace]
+      --no-parallelization      Disable multi-threading parallelization
+      --no-print-checks         Disable print of individual checks
+      --no-print-success        Disable print of successful checks
+      --no-stats                Disable print of stats
+      --no-colors               Disable colored output
+      --no-time                 Disable timer
+      --json <JSON>             Generate JSON output [default: off] [possible values: short, pretty, off]
+  -h, --help                    Print help
+  -V, --version                 Print version
+```
+
 Generate JSON report:
 
 ```bash
@@ -166,6 +188,7 @@ Benchmark 1: ./target/release/raudit
 - Work on performance, convert to String to &str
 - Add metadata to JSON report, like start/end time, elapsed, version, username, hostname etc.
 - Add documentation, both user and dev
+- Add option to only have `id`, `message` and `state` in JSON output of checks
 
 ## License
 
