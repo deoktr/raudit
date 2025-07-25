@@ -4,7 +4,7 @@ rAudit is a security audit tool to help you create your own security audit check
 
 Goals:
 
-- Fast audit
+- Fast and reliable audits
 - Easy to extend and create your own checks
 - JSON output
 
@@ -12,44 +12,6 @@ What it is NOT:
 
 - A configuration tool, no change is ever applied, just checks
 - A vulnerability checker, no attempts to find vulnerable versions of applications are made
-
-What is supported:
-
-- Mounts including options
-- Kenel params
-- Kernel compilation params
-- Sysctl params
-- Docker/Podman containers
-- Login.defs configuration
-- Modprobe including blacklisted and disabled modules
-- PAM rules
-- OpenSSH server configuration
-- Sudo configuration
-- Users and groups
-- Uptime
-- Systemd configuration
-- Processes
-- Audit rules and configuration
-- Grub configuration
-- GDM configuration
-- Shell configuration
-
-Support planned:
-
-- AppArmor
-- SELinux
-- ip and nftables
-- systemd units
-- nginx
-- Apache
-- Redis
-- MySQL
-- Squid
-- Traefik
-- Caddy
-- PostgreSQL
-- ProFTPD
-- firejail
 
 ## Usage
 
@@ -134,6 +96,50 @@ raudit --json=pretty --filters USR_001,USR_002
   }
 }
 ```
+
+## Rules
+
+Default rules exist, but you should customize them to suit your own needs.
+
+Some modules help with specific configuration checks.
+
+What is supported:
+
+- Mounts including options
+- Kenel params
+- Kernel compilation params
+- Sysctl params
+- Docker/Podman containers
+- Login.defs configuration
+- Modprobe including blacklisted and disabled modules
+- PAM rules
+- OpenSSH server configuration
+- Sudo configuration
+- Users and groups
+- Uptime
+- Systemd configuration
+- Processes
+- Audit rules and configuration
+- Grub configuration
+- GDM configuration
+- Shell configuration
+
+Support planned:
+
+- AppArmor
+- SELinux
+- ip and nftables
+- systemd units
+- nginx
+- Apache
+- Redis
+- MySQL
+- Squid
+- Traefik
+- Caddy
+- PostgreSQL
+- ProFTPD
+- firejail
 
 ## Develop
 
