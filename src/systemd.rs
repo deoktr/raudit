@@ -36,6 +36,7 @@ fn parse_systemd_config(systemd_config: String) -> SystemdConfig {
         .filter(|line| !line.is_empty())
         .filter(|line| !line.starts_with("#"))
         // ignore `[Manager]` line
+        // TODO: update parser to collect sections
         .filter(|line| !line.starts_with("["))
         .filter_map(|line| match line.split_once("=") {
             Some((key, value)) => Some((key.to_string(), value.trim_start().to_string())),
@@ -60,7 +61,7 @@ pub fn init_systemd_config() {
 }
 
 /// Get systemd value from a collected configuration.
-pub fn get_systemd_config(key: &str, expected: &str) -> check::CheckReturn {
+pub fn get_systemd_config(key: &str, value: &str) -> check::CheckReturn {
     let systemd_config = match SYSTEMD_CONFIG.get() {
         Some(c) => c,
         None => {
@@ -72,13 +73,13 @@ pub fn get_systemd_config(key: &str, expected: &str) -> check::CheckReturn {
     };
 
     match systemd_config.get(key) {
-        Some(val) => {
-            if val == expected {
+        Some(conf_value) => {
+            if conf_value == value {
                 (check::CheckState::Success, None)
             } else {
                 (
                     check::CheckState::Failure,
-                    Some(format!("{:?} != {:?}", val, expected)),
+                    Some(format!("{:?} != {:?}", conf_value, value)),
                 )
             }
         }

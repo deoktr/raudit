@@ -137,8 +137,8 @@ impl SysctlValue for i32 {
     }
 }
 
-pub fn check_sysctl<T: SysctlValue>(key: &str, expected: T) -> check::CheckReturn {
-    expected.check_sysctl(key)
+pub fn check_sysctl<T: SysctlValue>(key: &str, value: T) -> check::CheckReturn {
+    value.check_sysctl(key)
 }
 
 pub fn get_sysctl_i32_value(key: &str) -> Result<i32, String> {

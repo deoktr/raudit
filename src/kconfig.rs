@@ -63,14 +63,18 @@ fn parse_kernel_build_config(cmdline: String) -> KernelBuildConfig {
 }
 
 /// Get kernel build configuration by reading
-/// `/lib/modules/$(uname -r)/build/.config`.
+/// `/lib/modules/$(uname -r)/build/.config` or by reading `/proc/config.gz`.
 ///
+/// [view_kernel_conf](https://docs.rockylinux.org/gemstones/core/view_kernel_conf/)
 /// The file may not exist, it is only present if the kernel was compiled with
 /// `CONFIG_IKCONFIG_PROC=y`.
 pub fn init_kernel_build_config() {
     if KERNEL_BUILD_CONFIG.get().is_some() {
         return;
     }
+
+    // TODO: if `/lib/modules/.../build/.config` is not present, get it from
+    // another source
 
     let kernel_build_config_path = match get_kernel_build_config_path() {
         Ok(p) => p,

@@ -18,8 +18,8 @@
 
 // TODO: file permission check
 // TODO: file owner check
-// TODO: file content regex
 
+use regex::Regex;
 use std::fs;
 use std::path::Path;
 
@@ -69,5 +69,45 @@ pub fn directory_exist(path: &str) -> check::CheckReturn {
         (check::CheckState::Success, None)
     } else {
         (check::CheckState::Failure, None)
+    }
+}
+
+/// Check if the file content matches the pattern.
+pub fn check_file_content_regex(path: &str, pattern: &str) -> check::CheckReturn {
+    let re = match Regex::new(pattern) {
+        Ok(re) => re,
+        Err(err) => {
+            return (
+                check::CheckState::Error,
+                Some(format!(
+                    "failed to compile shell timeout regex: {}",
+                    err.to_string()
+                )),
+            )
+        }
+    };
+
+    let content = match fs::read_to_string(path) {
+        Ok(content) => content,
+        Err(err) => match err.kind() {
+            std::io::ErrorKind::NotFound => {
+                return (
+                    check::CheckState::Failure,
+                    Some("file not found".to_string()),
+                )
+            }
+            _ => {
+                return (
+                    check::CheckState::Error,
+                    Some(format!("failed to read file: {}", err.to_string())),
+                )
+            }
+        },
+    };
+
+    if re.is_match(&content) {
+        (check::CheckState::Success, None)
+    } else {
+        (check::CheckState::Failure, Some("no match".to_string()))
     }
 }

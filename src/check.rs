@@ -18,19 +18,30 @@
 
 use crate::{config, consts};
 
-use once_cell::sync::Lazy;
-use rayon::prelude::*;
 use std::collections::HashSet;
 use std::fmt::{Display, Formatter, Result};
 use std::sync::Mutex;
+
+use once_cell::sync::Lazy;
+use rayon::prelude::*;
+use serde::Serialize;
 
 pub type CheckReturn = (CheckState, Option<String>);
 type CheckFunc = fn() -> CheckReturn;
 type DependencyFunc = fn() -> ();
 
-static CHECKS: Lazy<Mutex<Vec<Check>>> = Lazy::new(|| Mutex::new(Vec::new()));
+static REPORT: Lazy<Mutex<Report>> = Lazy::new(|| Mutex::new(Report::default()));
 
-#[derive(PartialEq)]
+#[derive(Serialize, Default)]
+pub struct Report {
+    /// List of checks
+    checks: Vec<Check>,
+
+    /// Check stats
+    stats: ReportStats,
+}
+
+#[derive(PartialEq, Serialize)]
 pub enum CheckState {
     /// check passed
     Success,
@@ -43,8 +54,8 @@ pub enum CheckState {
 }
 
 /// Check is a verification to perform on the host.
+#[derive(Serialize)]
 pub struct Check {
-    // TODO: convert to String to &str to increase performance?
     /// ID of the check, can be used to filter the list
     id: String,
     /// Title shown in the check list
@@ -58,15 +69,18 @@ pub struct Check {
     state: CheckState,
 
     /// Check function
+    #[serde(skip_serializing)]
     check: CheckFunc,
     /// List of dependencies to run before the check
+    #[serde(skip_serializing)]
     dependencies: Vec<DependencyFunc>,
 }
 
 /// Print list of checks, with option to skip successful checks.
 pub fn print_checks(skip_success: bool) {
-    let checks = CHECKS.lock().unwrap();
-    for check in checks.iter() {
+    let report = REPORT.lock().expect("Checks not initialized");
+
+    for check in report.checks.iter() {
         if skip_success && check.state == CheckState::Success {
             continue;
         }
@@ -74,11 +88,23 @@ pub fn print_checks(skip_success: bool) {
     }
 }
 
+pub fn print_json(pretty: bool) {
+    let report = REPORT.lock().expect("Checks not initialized");
+
+    let json = if pretty {
+        serde_json::to_string_pretty(&*report).expect("Failed to serialize report")
+    } else {
+        serde_json::to_string(&*report).expect("Failed to serialize report")
+    };
+
+    println!("{}", json);
+}
+
 /// Print list of available tags.
 pub fn print_tags() {
-    let checks = CHECKS.lock().unwrap();
+    let report = REPORT.lock().unwrap();
     let mut tags: Vec<String> = vec![];
-    for check in checks.iter() {
+    for check in report.checks.iter() {
         for tag in check.tags.iter() {
             if tags.contains(&tag) {
                 continue;
@@ -91,9 +117,9 @@ pub fn print_tags() {
 
 /// Print list of available ID prefixes.
 pub fn print_id_prefixes() {
-    let checks = CHECKS.lock().unwrap();
+    let report = REPORT.lock().unwrap();
     let mut prefixes: Vec<String> = vec![];
-    for check in checks.iter() {
+    for check in report.checks.iter() {
         let prefix = match check.id.split_once("_") {
             Some((prefix, _)) => prefix.to_string(),
             None => continue,
@@ -108,18 +134,18 @@ pub fn print_id_prefixes() {
 
 /// Run checks in sequence.
 pub fn run_checks() {
-    let mut checks = CHECKS.lock().unwrap();
-    for check in checks.iter_mut() {
+    let mut report = REPORT.lock().unwrap();
+    for check in report.checks.iter_mut() {
         check.run();
     }
 }
 
 /// Run checks in parallel.
 pub fn par_run_checks() {
-    let mut checks = CHECKS.lock().unwrap();
+    let mut report = REPORT.lock().unwrap();
 
     // use rayon to run checks in parallel
-    checks.par_iter_mut().for_each(|check| check.run());
+    report.checks.par_iter_mut().for_each(|check| check.run());
 }
 
 /// Filter checks by their tags.
@@ -128,8 +154,10 @@ pub fn filter_tags(tags: Vec<String>) {
         return;
     }
 
-    let mut checks = CHECKS.lock().unwrap();
-    checks.retain(|check| tags.iter().any(|tag| check.tags.contains(tag)));
+    let mut report = REPORT.lock().unwrap();
+    report
+        .checks
+        .retain(|check| tags.iter().any(|tag| check.tags.contains(tag)));
 }
 
 /// Filter checks by their ID prefix.
@@ -138,16 +166,18 @@ pub fn filter_id(prefixes: Vec<String>) {
         return;
     }
 
-    let mut checks = CHECKS.lock().unwrap();
-    checks.retain(|check| prefixes.iter().any(|prefix| check.id.starts_with(prefix)));
+    let mut report = REPORT.lock().unwrap();
+    report
+        .checks
+        .retain(|check| prefixes.iter().any(|prefix| check.id.starts_with(prefix)));
 }
 
 /// Run dependencies in sequence.
 pub fn run_dependencies() {
-    let checks = CHECKS.lock().unwrap();
+    let report = REPORT.lock().unwrap();
     let mut unique_deps: HashSet<DependencyFunc> = HashSet::new();
 
-    for check in checks.iter() {
+    for check in report.checks.iter() {
         for dep in &check.dependencies {
             unique_deps.insert(*dep);
         }
@@ -158,10 +188,10 @@ pub fn run_dependencies() {
 
 /// Run dependencies in parallel.
 pub fn par_run_dependencies() {
-    let checks = CHECKS.lock().unwrap();
+    let report = REPORT.lock().unwrap();
     let mut unique_deps: HashSet<DependencyFunc> = HashSet::new();
 
-    for check in checks.iter() {
+    for check in report.checks.iter() {
         for dep in &check.dependencies {
             unique_deps.insert(*dep);
         }
@@ -232,8 +262,8 @@ pub fn add_check(
     check: CheckFunc,
     dependencies: Vec<DependencyFunc>,
 ) {
-    let mut checks = CHECKS.lock().unwrap();
-    checks.push(Check {
+    let mut report = REPORT.lock().unwrap();
+    report.checks.push(Check {
         id: id.to_string(),
         title: title.to_string(),
         state: CheckState::Waiting,
@@ -244,8 +274,8 @@ pub fn add_check(
     });
 }
 
-#[derive(Default)]
-pub struct CheckListStats {
+#[derive(Serialize, Default)]
+pub struct ReportStats {
     total: i32,
     success: i32,
     failure: i32,
@@ -253,26 +283,35 @@ pub struct CheckListStats {
     waiting: i32,
 }
 
-pub fn get_stats() -> CheckListStats {
-    let checks = CHECKS.lock().unwrap();
+pub fn calculate_stats() {
+    let mut report = REPORT.lock().unwrap();
 
-    let mut stats = CheckListStats::default();
+    let mut total = 0;
+    let mut success = 0;
+    let mut failure = 0;
+    let mut error = 0;
+    let mut waiting = 0;
 
-    for check in checks.iter() {
-        stats.total += 1;
+    for check in report.checks.iter() {
+        total += 1;
         match check.state {
-            CheckState::Success => stats.success += 1,
-            CheckState::Failure => stats.failure += 1,
-            CheckState::Error => stats.error += 1,
-            CheckState::Waiting => stats.waiting += 1,
+            CheckState::Success => success += 1,
+            CheckState::Failure => failure += 1,
+            CheckState::Error => error += 1,
+            CheckState::Waiting => waiting += 1,
         }
     }
-    return stats;
+
+    report.stats.total = total;
+    report.stats.success = success;
+    report.stats.failure = failure;
+    report.stats.error = error;
+    report.stats.waiting = waiting;
 }
 
 pub fn print_stats() {
-    let stats = get_stats();
-    stats.print();
+    let report = REPORT.lock().unwrap();
+    report.stats.print();
 }
 
 fn format_percent(val: i32, tot: i32) -> String {
@@ -283,8 +322,8 @@ fn format_percent(val: i32, tot: i32) -> String {
     format!("({:.2}%)", purcent)
 }
 
-impl CheckListStats {
-    pub fn print(self) {
+impl ReportStats {
+    pub fn print(&self) {
         let mut success = format!(
             "\tSUCCESS: {:4}/{} {:>9}",
             self.success,
@@ -320,6 +359,6 @@ impl CheckListStats {
             error = format!("{}{}{}", consts::ERROR_COLOR, error, consts::RESET_COLOR);
         }
 
-        print!("\n\tResult:\n{}\n{}\n{}\n", success, failure, error);
+        print!("\n\tResult:\n{}\n{}\n{}\n\n", success, failure, error);
     }
 }

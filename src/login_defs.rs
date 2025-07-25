@@ -68,11 +68,11 @@ pub fn get_login_defs(key: &str) -> Result<Option<String>, String> {
 }
 
 /// Check login.defs value from a collected configuration.
-pub fn check_login_defs(key: &str, expected: &str) -> check::CheckReturn {
+pub fn check_login_defs(key: &str, value: &str) -> check::CheckReturn {
     match get_login_defs(key) {
-        Ok(val) => match val {
-            Some(value) => {
-                if value == expected {
+        Ok(v) => match v {
+            Some(conf_value) => {
+                if conf_value == value {
                     (check::CheckState::Success, None)
                 } else {
                     (check::CheckState::Failure, None)

@@ -132,7 +132,7 @@ pub fn check_audit_rule(rule: &str) -> check::CheckReturn {
 }
 
 /// Check audit configuration value.
-pub fn check_audit_config(key: &str, expected: &str) -> check::CheckReturn {
+pub fn check_audit_config(key: &str, value: &str) -> check::CheckReturn {
     let audit_config = match AUDIT_CONFIG.get() {
         Some(c) => c,
         None => {
@@ -144,11 +144,14 @@ pub fn check_audit_config(key: &str, expected: &str) -> check::CheckReturn {
     };
 
     match audit_config.get(key) {
-        Some(val) => {
-            if val == expected {
+        Some(conf_value) => {
+            if conf_value == value {
                 (check::CheckState::Success, None)
             } else {
-                (check::CheckState::Failure, Some(format!("found: {}", val)))
+                (
+                    check::CheckState::Failure,
+                    Some(format!("found: {}", conf_value)),
+                )
             }
         }
         None => (

@@ -5,8 +5,8 @@ rAudit is a security audit tool to help you create your own security audit check
 Goals:
 
 - Fast audit
-- Make it easy to extend and create your own checks
-- Output to JSON
+- Easy to extend and create your own checks
+- JSON output
 
 What it is NOT:
 
@@ -32,6 +32,7 @@ What is supported:
 - Audit rules and configuration
 - Grub configuration
 - GDM configuration
+- Shell configuration
 
 Support planned:
 
@@ -58,10 +59,18 @@ Build:
 cargo build --release
 ```
 
-Run:
+Will generate executable in `./target/release/raudit`.
+
+Run checks:
 
 ```bash
-./target/release/raudit
+raudit
+```
+
+Generate JSON report:
+
+```bash
+raudit --json=pretty > report.json
 ```
 
 ## Develop
@@ -83,8 +92,8 @@ With: `hyperfine -i ./target/release/raudit`:
 
 ```
 Benchmark 1: ./target/release/raudit
-  Time (mean ± σ):      70.0 ms ±   0.7 ms    [User: 7.8 ms, System: 62.2 ms]
-  Range (min … max):    68.9 ms …  71.7 ms    41 runs
+  Time (mean ± σ):      75.0 ms ±   2.8 ms    [User: 90.9 ms, System: 123.3 ms]
+  Range (min … max):    71.3 ms …  80.7 ms    36 runs
 ```
 
 ## TODO
@@ -92,7 +101,6 @@ Benchmark 1: ./target/release/raudit
 - Give much more detailed logs of the error
 - Support tag negation with `!` this could be used if a setting changed based on a tag, for example `paranoid` could have stricter rules compared to `!paranoid` for the same config
 - Add a "criticity", "hardening level" value linked to a check
-- Add JSON output format
 - Generate linux audit logs
 - Add AppArmor profile
 - Create custom parsers for complex configurations (sudo, nginx, etc.)
@@ -115,7 +123,9 @@ Benchmark 1: ./target/release/raudit
 - Ensure systemd services are hardened (with sandboxing options) `systemctl cat`
 - Ensure cron is disabled if not needed
 - Use [OPA](https://www.openpolicyagent.org/) to define rules?
-- Add CLI flag to list out all available tags
+- Work on performance, convert to String to &str
+- Add metadata to JSON report, like start/end time, elapsed, version, username, hostname etc.
+- Add documentation, both user and dev
 
 ## License
 

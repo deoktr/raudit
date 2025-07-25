@@ -16,35 +16,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-mod apparmor;
-mod audit;
-mod base;
-mod check;
-mod clamav;
-mod cli;
-mod config;
-mod consts;
-mod docker;
-mod gdm;
-mod group;
-mod grub;
-mod kconfig;
-mod kernel;
-mod logger;
-mod login_defs;
-mod malloc;
-mod modprobe;
-mod mount;
-mod pam;
-mod ps;
-mod shell;
-mod sshd;
-mod sudo;
-mod sysctl;
-mod systemd;
-mod users;
-mod utils;
+use crate::{base, check};
 
-fn main() {
-    cli::cli()
+/// Ensure automatic logout from shells is configured.
+///
+/// In, /etc/profile.d/shell-timeout.sh:
+/// ```bash
+/// TMOUT="$(( 60*10 ))";
+/// [ -z "$DISPLAY" ] && export TMOUT;
+/// case $( /usr/bin/tty ) in
+/// 	/dev/tty[0-9]*) export TMOUT;;
+/// esac
+/// ```
+///
+/// <https://wiki.archlinux.org/title/Security#Automatic_logout>
+pub fn check_shell_timeout() -> check::CheckReturn {
+    base::check_file_content_regex(
+        "/etc/profile.d/shell-timeout.sh",
+        r#"TMOUT=.*;\n\[ -z "\$DISPLAY" ] && export TMOUT;\ncase \$\( /usr/bin/tty \) in\n[ \t]*/dev/tty\[0\-9\]\*\) export TMOUT;;\nesac"#,
+    )
 }
