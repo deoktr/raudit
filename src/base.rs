@@ -30,16 +30,16 @@ pub fn empty_or_missing_file(path: &str) -> check::CheckReturn {
     match fs::metadata(path) {
         Ok(meta) => {
             if meta.len() == 0 {
-                (check::CheckState::Success, None)
+                (check::CheckState::Passed, None)
             } else {
                 (
-                    check::CheckState::Failure,
+                    check::CheckState::Failed,
                     Some("file not empty".to_string()),
                 )
             }
         }
         Err(err) => match err.kind() {
-            std::io::ErrorKind::NotFound => (check::CheckState::Success, None),
+            std::io::ErrorKind::NotFound => (check::CheckState::Passed, None),
             _ => (check::CheckState::Error, Some(err.to_string())),
         },
     }
@@ -50,10 +50,10 @@ pub fn empty_file(path: &str) -> check::CheckReturn {
     match fs::metadata(path) {
         Ok(meta) => {
             if meta.len() == 0 {
-                (check::CheckState::Success, None)
+                (check::CheckState::Passed, None)
             } else {
                 (
-                    check::CheckState::Failure,
+                    check::CheckState::Failed,
                     Some("file not empty".to_string()),
                 )
             }
@@ -66,9 +66,9 @@ pub fn empty_file(path: &str) -> check::CheckReturn {
 pub fn directory_exist(path: &str) -> check::CheckReturn {
     let p = Path::new(path);
     if p.exists() && p.is_dir() {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     } else {
-        (check::CheckState::Failure, None)
+        (check::CheckState::Failed, None)
     }
 }
 
@@ -92,7 +92,7 @@ pub fn check_file_content_regex(path: &str, pattern: &str) -> check::CheckReturn
         Err(err) => match err.kind() {
             std::io::ErrorKind::NotFound => {
                 return (
-                    check::CheckState::Failure,
+                    check::CheckState::Failed,
                     Some("file not found".to_string()),
                 )
             }
@@ -106,8 +106,8 @@ pub fn check_file_content_regex(path: &str, pattern: &str) -> check::CheckReturn
     };
 
     if re.is_match(&content) {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     } else {
-        (check::CheckState::Failure, Some("no match".to_string()))
+        (check::CheckState::Failed, Some("no match".to_string()))
     }
 }

@@ -115,10 +115,10 @@ pub fn check_option_is_set(param: &str) -> check::CheckReturn {
     match config.get(param) {
         Some(val) => {
             if *val != "is not set".to_string() {
-                (check::CheckState::Success, None)
+                (check::CheckState::Passed, None)
             } else {
                 (
-                    check::CheckState::Failure,
+                    check::CheckState::Failed,
                     Some("param not set".to_string()),
                 )
             }
@@ -145,9 +145,9 @@ pub fn check_option_is_not_set(param: &str) -> check::CheckReturn {
     match config.get(param) {
         Some(val) => {
             if *val == "is not set".to_string() {
-                (check::CheckState::Success, None)
+                (check::CheckState::Passed, None)
             } else {
-                (check::CheckState::Failure, Some("param set".to_string()))
+                (check::CheckState::Failed, Some("param set".to_string()))
             }
         }
         None => (

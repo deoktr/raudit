@@ -118,9 +118,9 @@ pub fn no_password_in_group() -> check::CheckReturn {
         .collect();
 
     if g.len() != 0 {
-        (check::CheckState::Failure, Some(g.join(", ")))
+        (check::CheckState::Failed, Some(g.join(", ")))
     } else {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     }
 }
 
@@ -143,9 +143,9 @@ pub fn one_gid_zero() -> check::CheckReturn {
         .collect();
 
     if g.len() != 0 {
-        (check::CheckState::Failure, Some(g.join(", ")))
+        (check::CheckState::Failed, Some(g.join(", ")))
     } else {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     }
 }
 
@@ -168,9 +168,9 @@ pub fn no_dup_gid() -> check::CheckReturn {
         .collect();
 
     if g.len() != 0 {
-        (check::CheckState::Failure, Some(g.join(", ")))
+        (check::CheckState::Failed, Some(g.join(", ")))
     } else {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     }
 }
 
@@ -193,9 +193,9 @@ pub fn no_dup_name() -> check::CheckReturn {
         .collect();
 
     if g.len() != 0 {
-        (check::CheckState::Failure, Some(g.join(", ")))
+        (check::CheckState::Failed, Some(g.join(", ")))
     } else {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     }
 }
 

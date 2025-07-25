@@ -23,8 +23,8 @@ use crate::{check, utils::run};
 /// Ensure AppArmor is enabled.
 pub fn apparmor_enabled() -> check::CheckReturn {
     if run!("aa-enabled") == "Yes" {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     } else {
-        (check::CheckState::Failure, None)
+        (check::CheckState::Failed, None)
     }
 }

@@ -43,13 +43,16 @@ pub struct Report {
 
 #[derive(PartialEq, Serialize)]
 pub enum CheckState {
-    /// check passed
-    Success,
-    /// check failed
-    Failure,
-    /// execution error
+    /// Check passed
+    Passed,
+
+    /// Check failed
+    Failed,
+
+    /// Check function execution error
     Error,
-    /// yet to execute
+
+    /// Check is yet to execute
     Waiting,
 }
 
@@ -58,30 +61,34 @@ pub enum CheckState {
 pub struct Check {
     /// ID of the check, can be used to filter the list
     id: String,
+
     /// Title shown in the check list
     title: String,
+
     /// List of tags, can be used to filter the list
     tags: Vec<String>,
 
     /// Message to give result information
     message: Option<String>,
+
     /// State of the check
     state: CheckState,
 
     /// Check function
     #[serde(skip_serializing)]
     check: CheckFunc,
+
     /// List of dependencies to run before the check
     #[serde(skip_serializing)]
     dependencies: Vec<DependencyFunc>,
 }
 
-/// Print list of checks, with option to skip successful checks.
-pub fn print_checks(skip_success: bool) {
+/// Print list of checks, with option to skip passed checks.
+pub fn print_checks(skip_passed: bool) {
     let report = REPORT.lock().expect("Checks not initialized");
 
     for check in report.checks.iter() {
-        if skip_success && check.state == CheckState::Success {
+        if skip_passed && check.state == CheckState::Passed {
             continue;
         }
         println!("{}", check);
@@ -222,11 +229,11 @@ impl Display for Check {
 
         let message = if config::is_colored_output_enabled() {
             match self.state {
-                CheckState::Success => {
-                    format!("{}{}{}", consts::SUCCESS_COLOR, out, consts::RESET_COLOR)
+                CheckState::Passed => {
+                    format!("{}{}{}", consts::PASSED_COLOR, out, consts::RESET_COLOR)
                 }
-                CheckState::Failure => {
-                    format!("{}{}{}", consts::FAILURE_COLOR, out, consts::RESET_COLOR)
+                CheckState::Failed => {
+                    format!("{}{}{}", consts::FAILED_COLOR, out, consts::RESET_COLOR)
                 }
                 CheckState::Error => {
                     format!("{}{}{}", consts::ERROR_COLOR, out, consts::RESET_COLOR)
@@ -240,8 +247,8 @@ impl Display for Check {
             }
         } else {
             match self.state {
-                CheckState::Success => format!("PASSED {}", out),
-                CheckState::Failure => format!("FAILED {}", out),
+                CheckState::Passed => format!("PASSED {}", out),
+                CheckState::Failed => format!("FAILED {}", out),
                 CheckState::Error => format!("ERROR {}", out),
                 CheckState::Waiting => format!("N/A {} !NOT CHECKED!", out),
             }
@@ -277,8 +284,8 @@ pub fn add_check(
 #[derive(Serialize, Default)]
 pub struct ReportStats {
     total: i32,
-    success: i32,
-    failure: i32,
+    passed: i32,
+    failed: i32,
     error: i32,
     waiting: i32,
 }
@@ -287,24 +294,24 @@ pub fn calculate_stats() {
     let mut report = REPORT.lock().unwrap();
 
     let mut total = 0;
-    let mut success = 0;
-    let mut failure = 0;
+    let mut passed = 0;
+    let mut failed = 0;
     let mut error = 0;
     let mut waiting = 0;
 
     for check in report.checks.iter() {
         total += 1;
         match check.state {
-            CheckState::Success => success += 1,
-            CheckState::Failure => failure += 1,
+            CheckState::Passed => passed += 1,
+            CheckState::Failed => failed += 1,
             CheckState::Error => error += 1,
             CheckState::Waiting => waiting += 1,
         }
     }
 
     report.stats.total = total;
-    report.stats.success = success;
-    report.stats.failure = failure;
+    report.stats.passed = passed;
+    report.stats.failed = failed;
     report.stats.error = error;
     report.stats.waiting = waiting;
 }
@@ -324,41 +331,31 @@ fn format_percent(val: i32, tot: i32) -> String {
 
 impl ReportStats {
     pub fn print(&self) {
-        let mut success = format!(
-            "\tSUCCESS: {:4}/{} {:>9}",
-            self.success,
+        let mut passed = format!(
+            "\tPASSED: {:4}/{} {:>9}",
+            self.passed,
             self.total,
-            format_percent(self.success, self.total),
+            format_percent(self.passed, self.total),
         );
-        let mut failure = format!(
-            "\tFAILURE: {:4}/{} {:>9}",
-            self.failure,
+        let mut failed = format!(
+            "\tFAILED: {:4}/{} {:>9}",
+            self.failed,
             self.total,
-            format_percent(self.failure, self.total),
+            format_percent(self.failed, self.total),
         );
         let mut error = format!(
-            "\tERROR:   {:4}/{} {:>9}",
+            "\tERROR:  {:4}/{} {:>9}",
             self.error,
             self.total,
             format_percent(self.error, self.total),
         );
 
         if config::is_colored_output_enabled() {
-            success = format!(
-                "{}{}{}",
-                consts::SUCCESS_COLOR,
-                success,
-                consts::RESET_COLOR
-            );
-            failure = format!(
-                "{}{}{}",
-                consts::FAILURE_COLOR,
-                failure,
-                consts::RESET_COLOR
-            );
+            passed = format!("{}{}{}", consts::PASSED_COLOR, passed, consts::RESET_COLOR);
+            failed = format!("{}{}{}", consts::FAILED_COLOR, failed, consts::RESET_COLOR);
             error = format!("{}{}{}", consts::ERROR_COLOR, error, consts::RESET_COLOR);
         }
 
-        print!("\n\tResult:\n{}\n{}\n{}\n\n", success, failure, error);
+        print!("\n\tResult:\n{}\n{}\n{}\n\n", passed, failed, error);
     }
 }

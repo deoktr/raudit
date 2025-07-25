@@ -58,8 +58,8 @@ pub fn password_is_set() -> check::CheckReturn {
     if grub_cfg.contains(&"\nset superusers".to_string())
         && grub_cfg.contains(&"\npassword".to_string())
     {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     } else {
-        (check::CheckState::Failure, None)
+        (check::CheckState::Failed, None)
     }
 }

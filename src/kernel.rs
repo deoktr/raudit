@@ -66,9 +66,9 @@ pub fn check_kernel_params(variable: &str) -> check::CheckReturn {
     };
 
     if kparams.contains(&variable.to_string()) {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     } else {
-        (check::CheckState::Failure, None)
+        (check::CheckState::Failed, None)
     }
 }
 
@@ -79,8 +79,8 @@ pub fn check_reboot_required() -> check::CheckReturn {
     if !(Path::new("/var/run/reboot-required.pkgs").exists()
         || Path::new("/var/run/needs_restarting").exists())
     {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     } else {
-        (check::CheckState::Failure, None)
+        (check::CheckState::Failed, None)
     }
 }

@@ -73,13 +73,13 @@ pub fn check_login_defs(key: &str, value: &str) -> check::CheckReturn {
         Ok(v) => match v {
             Some(conf_value) => {
                 if conf_value == value {
-                    (check::CheckState::Success, None)
+                    (check::CheckState::Passed, None)
                 } else {
-                    (check::CheckState::Failure, None)
+                    (check::CheckState::Failed, None)
                 }
             }
             None => (
-                check::CheckState::Failure,
+                check::CheckState::Failed,
                 Some("key not present".to_string()),
             ),
         },

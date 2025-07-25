@@ -32,10 +32,10 @@ pub fn no_gdm_auto_logon() -> check::CheckReturn {
     match fs::read_to_string(GDM_CFG_PATH) {
         Ok(cfg) => {
             if cfg.lines().any(|l| l == "AutomaticLoginEnable=false") {
-                (check::CheckState::Success, None)
+                (check::CheckState::Passed, None)
             } else {
                 (
-                    check::CheckState::Failure,
+                    check::CheckState::Failed,
                     Some("missing AutomaticLoginEnable=false".to_string()),
                 )
             }

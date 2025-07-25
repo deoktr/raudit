@@ -60,6 +60,11 @@ pub fn init_systemd_config() {
     };
 }
 
+// TODO: init by parsing JSON
+// pub fn init_systemd_mount() {
+//     // systemd-mount --list --no-ask-password --json=short --full
+// }
+
 /// Get systemd value from a collected configuration.
 pub fn get_systemd_config(key: &str, value: &str) -> check::CheckReturn {
     let systemd_config = match SYSTEMD_CONFIG.get() {
@@ -75,16 +80,16 @@ pub fn get_systemd_config(key: &str, value: &str) -> check::CheckReturn {
     match systemd_config.get(key) {
         Some(conf_value) => {
             if conf_value == value {
-                (check::CheckState::Success, None)
+                (check::CheckState::Passed, None)
             } else {
                 (
-                    check::CheckState::Failure,
+                    check::CheckState::Failed,
                     Some(format!("{:?} != {:?}", conf_value, value)),
                 )
             }
         }
         None => (
-            check::CheckState::Failure,
+            check::CheckState::Failed,
             Some(format!("missing key {:?}", key)),
         ),
     }

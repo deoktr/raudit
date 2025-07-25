@@ -97,8 +97,8 @@ pub fn check_mount_present(target: &str) -> check::CheckReturn {
     };
 
     match get_mount(mounts, target) {
-        Some(_) => (check::CheckState::Success, None),
-        None => (check::CheckState::Failure, None),
+        Some(_) => (check::CheckState::Passed, None),
+        None => (check::CheckState::Failed, None),
     }
 }
 
@@ -125,16 +125,16 @@ pub fn check_mount_option(target: &str, option: &str) -> check::CheckReturn {
     match get_mount_options(mounts, target) {
         Some(options) => {
             if options.contains(&option.to_string()) {
-                (check::CheckState::Success, None)
+                (check::CheckState::Passed, None)
             } else {
                 (
-                    check::CheckState::Failure,
+                    check::CheckState::Failed,
                     Some("missing option".to_string()),
                 )
             }
         }
         None => (
-            check::CheckState::Failure,
+            check::CheckState::Failed,
             Some("not a mount point".to_string()),
         ),
     }

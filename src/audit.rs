@@ -125,9 +125,9 @@ pub fn check_audit_rule(rule: &str) -> check::CheckReturn {
     };
 
     if audit_rules.contains(&rule.to_string()) {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     } else {
-        (check::CheckState::Failure, Some("not present".to_string()))
+        (check::CheckState::Failed, Some("not present".to_string()))
     }
 }
 
@@ -146,16 +146,16 @@ pub fn check_audit_config(key: &str, value: &str) -> check::CheckReturn {
     match audit_config.get(key) {
         Some(conf_value) => {
             if conf_value == value {
-                (check::CheckState::Success, None)
+                (check::CheckState::Passed, None)
             } else {
                 (
-                    check::CheckState::Failure,
+                    check::CheckState::Failed,
                     Some(format!("found: {}", conf_value)),
                 )
             }
         }
         None => (
-            check::CheckState::Failure,
+            check::CheckState::Failed,
             Some(format!("key {:?} not present", key)),
         ),
     }

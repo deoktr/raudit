@@ -44,9 +44,9 @@ struct Cli {
     #[arg(long, action = clap::ArgAction::SetTrue)]
     no_print_checks: bool,
 
-    /// Disable print of successful checks
+    /// Disable print of passed checks
     #[arg(long, action = clap::ArgAction::SetTrue)]
-    no_print_success: bool,
+    no_print_passed: bool,
 
     /// Disable print of stats
     #[arg(long, action = clap::ArgAction::SetTrue)]
@@ -115,7 +115,7 @@ pub fn cli() {
 
     if args.json == JsonMode::Off {
         if !args.no_print_checks {
-            check::print_checks(args.no_print_success);
+            check::print_checks(args.no_print_passed);
         }
 
         if !args.no_stats {
@@ -168,10 +168,10 @@ fn add_all_checks() {
             match sysctl::get_sysctl_i32_value("kernel.perf_event_paranoid") {
                 Ok(value) => {
                     if value >= VAL {
-                        (check::CheckState::Success, Some(format!("{}", value)))
+                        (check::CheckState::Passed, Some(format!("{}", value)))
                     } else {
                         (
-                            check::CheckState::Failure,
+                            check::CheckState::Failed,
                             Some(format!("{} > {}", value, VAL)),
                         )
                     }
@@ -223,10 +223,10 @@ fn add_all_checks() {
             match sysctl::get_sysctl_i32_value("kernel.yama.ptrace_scope") {
                 Ok(value) => {
                     if value >= VAL {
-                        (check::CheckState::Success, Some(format!("{}", value)))
+                        (check::CheckState::Passed, Some(format!("{}", value)))
                     } else {
                         (
-                            check::CheckState::Failure,
+                            check::CheckState::Failed,
                             Some(format!("{} > {}", value, VAL)),
                         )
                     }
@@ -270,7 +270,7 @@ fn add_all_checks() {
             let (status, message) = sysctl::check_sysctl("fs.binfmt_misc.status", 0);
             // ignore if not present
             if status == check::CheckState::Error {
-                (check::CheckState::Success, None)
+                (check::CheckState::Passed, None)
             } else {
                 (status, message)
             }
@@ -395,10 +395,10 @@ fn add_all_checks() {
             match sysctl::get_sysctl_i32_value("net.ipv4.icmp_ratelimit") {
                 Ok(value) => {
                     if value <= VAL {
-                        (check::CheckState::Success, Some(format!("{}", value)))
+                        (check::CheckState::Passed, Some(format!("{}", value)))
                     } else {
                         (
-                            check::CheckState::Failure,
+                            check::CheckState::Failed,
                             Some(format!("{} > {}", value, VAL)),
                         )
                     }
@@ -610,10 +610,10 @@ fn add_all_checks() {
             match sysctl::get_sysctl_i32_value("user.max_user_namespaces") {
                 Ok(value) => {
                     if value <= VAL {
-                        (check::CheckState::Success, Some(format!("{}", value)))
+                        (check::CheckState::Passed, Some(format!("{}", value)))
                     } else {
                         (
-                            check::CheckState::Failure,
+                            check::CheckState::Failed,
                             Some(format!("{} > {}", value, VAL)),
                         )
                     }
@@ -632,10 +632,10 @@ fn add_all_checks() {
             match sysctl::get_sysctl_i32_value("kernel.warn_limit") {
                 Ok(value) => {
                     if value <= VAL {
-                        (check::CheckState::Success, Some(format!("{}", value)))
+                        (check::CheckState::Passed, Some(format!("{}", value)))
                     } else {
                         (
-                            check::CheckState::Failure,
+                            check::CheckState::Failed,
                             Some(format!("{} > {}", value, VAL)),
                         )
                     }
@@ -654,10 +654,10 @@ fn add_all_checks() {
             match sysctl::get_sysctl_i32_value("kernel.oops_limit") {
                 Ok(value) => {
                     if value <= VAL {
-                        (check::CheckState::Success, Some(format!("{}", value)))
+                        (check::CheckState::Passed, Some(format!("{}", value)))
                     } else {
                         (
-                            check::CheckState::Failure,
+                            check::CheckState::Failed,
                             Some(format!("{} > {}", value, VAL)),
                         )
                     }
@@ -3051,10 +3051,10 @@ fn add_all_checks() {
                     Some(vl) => match vl.parse::<i32>() {
                         Ok(val) => {
                             if val <= VAL {
-                                (check::CheckState::Success, Some(format!("{}", val)))
+                                (check::CheckState::Passed, Some(format!("{}", val)))
                             } else {
                                 (
-                                    check::CheckState::Failure,
+                                    check::CheckState::Failed,
                                     Some(format!("{} > {}", val, VAL)),
                                 )
                             }
@@ -3079,10 +3079,10 @@ fn add_all_checks() {
                     Some(vl) => match vl.parse::<i32>() {
                         Ok(val) => {
                             if val >= VAL {
-                                (check::CheckState::Success, Some(format!("{}", val)))
+                                (check::CheckState::Passed, Some(format!("{}", val)))
                             } else {
                                 (
-                                    check::CheckState::Failure,
+                                    check::CheckState::Failed,
                                     Some(format!("{} < {}", val, VAL)),
                                 )
                             }
@@ -3107,10 +3107,10 @@ fn add_all_checks() {
                     Some(vl) => match vl.parse::<i32>() {
                         Ok(val) => {
                             if val >= VAL {
-                                (check::CheckState::Success, Some(format!("{}", val)))
+                                (check::CheckState::Passed, Some(format!("{}", val)))
                             } else {
                                 (
-                                    check::CheckState::Failure,
+                                    check::CheckState::Failed,
                                     Some(format!("{} < {}", val, VAL)),
                                 )
                             }
@@ -3156,10 +3156,10 @@ fn add_all_checks() {
                     Some(vl) => match vl.parse::<i32>() {
                         Ok(val) => {
                             if val <= VAL {
-                                (check::CheckState::Success, Some(format!("{}", val)))
+                                (check::CheckState::Passed, Some(format!("{}", val)))
                             } else {
                                 (
-                                    check::CheckState::Failure,
+                                    check::CheckState::Failed,
                                     Some(format!("{} > {}", val, VAL)),
                                 )
                             }
@@ -3184,10 +3184,10 @@ fn add_all_checks() {
                     Some(vl) => match vl.parse::<i32>() {
                         Ok(val) => {
                             if val <= VAL {
-                                (check::CheckState::Success, Some(format!("{}", val)))
+                                (check::CheckState::Passed, Some(format!("{}", val)))
                             } else {
                                 (
-                                    check::CheckState::Failure,
+                                    check::CheckState::Failed,
                                     Some(format!("{} > {}", val, VAL)),
                                 )
                             }
@@ -3379,10 +3379,10 @@ fn add_all_checks() {
                 Ok(str_value) => match str_value.parse::<i32>() {
                     Ok(value) => {
                         if value <= VAL {
-                            (check::CheckState::Success, Some(format!("{}", value)))
+                            (check::CheckState::Passed, Some(format!("{}", value)))
                         } else {
                             (
-                                check::CheckState::Failure,
+                                check::CheckState::Failed,
                                 Some(format!("{} > {}", value, VAL)),
                             )
                         }
@@ -3418,10 +3418,10 @@ fn add_all_checks() {
                 Ok(str_value) => match str_value.parse::<i32>() {
                     Ok(value) => {
                         if value <= VAL {
-                            (check::CheckState::Success, Some(format!("{}", value)))
+                            (check::CheckState::Passed, Some(format!("{}", value)))
                         } else {
                             (
-                                check::CheckState::Failure,
+                                check::CheckState::Failed,
                                 Some(format!("{} > {}", value, VAL)),
                             )
                         }
@@ -3443,10 +3443,10 @@ fn add_all_checks() {
                 Ok(str_value) => match str_value.parse::<i32>() {
                     Ok(value) => {
                         if value <= VAL {
-                            (check::CheckState::Success, Some(format!("{}", value)))
+                            (check::CheckState::Passed, Some(format!("{}", value)))
                         } else {
                             (
-                                check::CheckState::Failure,
+                                check::CheckState::Failed,
                                 Some(format!("{} > {}", value, VAL)),
                             )
                         }
@@ -3622,10 +3622,10 @@ fn add_all_checks() {
                 Ok(str_value) => match str_value.parse::<i32>() {
                     Ok(value) => {
                         if value <= VAL {
-                            (check::CheckState::Success, Some(format!("{}", value)))
+                            (check::CheckState::Passed, Some(format!("{}", value)))
                         } else {
                             (
-                                check::CheckState::Failure,
+                                check::CheckState::Failed,
                                 Some(format!("{} > {}", value, VAL)),
                             )
                         }

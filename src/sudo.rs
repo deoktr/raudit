@@ -171,9 +171,9 @@ pub fn check_sudo_defaults(defaults: &str) -> check::CheckReturn {
     };
 
     if sudo_defaults.contains(&defaults.to_string()) {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     } else {
-        (check::CheckState::Failure, None)
+        (check::CheckState::Failed, None)
     }
 }
 
@@ -196,9 +196,9 @@ pub fn check_has_no_nopaswd() -> check::CheckReturn {
         .collect();
 
     if g.len() != 0 {
-        (check::CheckState::Failure, Some(g.join(", ")))
+        (check::CheckState::Failed, Some(g.join(", ")))
     } else {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     }
 }
 
@@ -221,8 +221,8 @@ pub fn check_re_authentication_not_disabled() -> check::CheckReturn {
         .collect();
 
     if g.len() != 0 {
-        (check::CheckState::Failure, Some(g.join(", ")))
+        (check::CheckState::Failed, Some(g.join(", ")))
     } else {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     }
 }

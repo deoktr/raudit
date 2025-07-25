@@ -79,10 +79,10 @@ impl SysctlValue for &str {
         match config.get(key) {
             Some(value) => {
                 if value == self {
-                    (check::CheckState::Success, None)
+                    (check::CheckState::Passed, None)
                 } else {
                     (
-                        check::CheckState::Failure,
+                        check::CheckState::Failed,
                         Some(format!("{:?} != {:?}", value, self)),
                     )
                 }
@@ -112,10 +112,10 @@ impl SysctlValue for i32 {
             Some(value) => match value.parse::<i32>() {
                 Ok(val) => {
                     if val == *self {
-                        (check::CheckState::Success, None)
+                        (check::CheckState::Passed, None)
                     } else {
                         (
-                            check::CheckState::Failure,
+                            check::CheckState::Failed,
                             Some(format!("{:?} != {:?}", val, self)),
                         )
                     }

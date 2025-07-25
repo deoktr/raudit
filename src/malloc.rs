@@ -51,9 +51,9 @@ pub fn has_scudo_malloc() -> check::CheckReturn {
     match LD_SO_PRELOAD.get() {
         Some(config) => {
             if config.contains("scudo") {
-                (check::CheckState::Success, None)
+                (check::CheckState::Passed, None)
             } else {
-                (check::CheckState::Failure, None)
+                (check::CheckState::Failed, None)
             }
         }
         None => (

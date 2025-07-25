@@ -42,7 +42,7 @@ Options:
       --log-level <LOG_LEVEL>   Log level [default: warn] [possible values: error, warn, info, debug, trace]
       --no-parallelization      Disable multi-threading parallelization
       --no-print-checks         Disable print of individual checks
-      --no-print-success        Disable print of successful checks
+      --no-print-passed         Disable print of passed checks
       --no-stats                Disable print of stats
       --no-colors               Disable colored output
       --no-time                 Disable timer
@@ -74,7 +74,7 @@ raudit --json=pretty --filters USR_001,USR_002
         "passwd"
       ],
       "message": null,
-      "state": "Success"
+      "state": "Passed"
     },
     {
       "id": "USR_002",
@@ -84,13 +84,13 @@ raudit --json=pretty --filters USR_001,USR_002
         "passwd"
       ],
       "message": null,
-      "state": "Success"
+      "state": "Passed"
     }
   ],
   "stats": {
     "total": 2,
-    "success": 2,
-    "failure": 0,
+    "passed": 2,
+    "failed": 0,
     "error": 0,
     "waiting": 0
   }

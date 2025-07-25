@@ -237,16 +237,16 @@ pub fn check_module_blacklist(module: &str) -> check::CheckReturn {
 
     if m_blacklist.contains(&module.to_string()) {
         if !loaded.contains(&module.to_string()) {
-            (check::CheckState::Success, None)
+            (check::CheckState::Passed, None)
         } else {
             (
-                check::CheckState::Failure,
+                check::CheckState::Failed,
                 Some("module blacklisted but loaded".to_string()),
             )
         }
     } else {
         (
-            check::CheckState::Failure,
+            check::CheckState::Failed,
             Some("module not blacklisted".to_string()),
         )
     }
@@ -277,16 +277,16 @@ pub fn check_module_disabled(module: &str) -> check::CheckReturn {
     if m_disabled.contains(&module.to_string()) {
         // TODO: should we even care about it being loaded since it's disabled
         if !loaded.contains(&module.to_string()) {
-            (check::CheckState::Success, None)
+            (check::CheckState::Passed, None)
         } else {
             (
-                check::CheckState::Failure,
+                check::CheckState::Failed,
                 Some("module disabled but loaded".to_string()),
             )
         }
     } else {
         (
-            check::CheckState::Failure,
+            check::CheckState::Failed,
             Some("module not disabled".to_string()),
         )
     }

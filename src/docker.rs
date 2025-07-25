@@ -60,7 +60,7 @@ pub fn docker_not_privileged() -> check::CheckReturn {
 
     let output = match cmd.output() {
         Ok(output) => output,
-        Err(err) => return (check::CheckState::Failure, Some(err.to_string())),
+        Err(err) => return (check::CheckState::Failed, Some(err.to_string())),
     };
 
     let ids: Vec<String> = String::from_utf8_lossy(&output.stdout)
@@ -89,9 +89,9 @@ pub fn docker_not_privileged() -> check::CheckReturn {
     // println!("Containers running with `--privileged`: {:?}", ids);
 
     if ids.len() == 0 {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     } else {
-        (check::CheckState::Failure, Some(ids.join(", ")))
+        (check::CheckState::Failed, Some(ids.join(", ")))
     }
 }
 
@@ -114,7 +114,7 @@ pub fn docker_cap_drop() -> check::CheckReturn {
 
     let output = match cmd.output() {
         Ok(output) => output,
-        Err(err) => return (check::CheckState::Failure, Some(err.to_string())),
+        Err(err) => return (check::CheckState::Failed, Some(err.to_string())),
     };
 
     let ids: Vec<String> = String::from_utf8_lossy(&output.stdout)
@@ -143,8 +143,8 @@ pub fn docker_cap_drop() -> check::CheckReturn {
     // println!("Missing cap drop on containers: {:?}", ids);
 
     if ids.len() == 0 {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     } else {
-        (check::CheckState::Failure, Some(ids.join(", ")))
+        (check::CheckState::Failed, Some(ids.join(", ")))
     }
 }

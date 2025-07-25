@@ -98,11 +98,11 @@ pub fn check_sshd_config(key: &str, value: &str) -> check::CheckReturn {
     match sshd_config.get(key) {
         Some(val) => {
             if val == value {
-                (check::CheckState::Success, None)
+                (check::CheckState::Passed, None)
             } else {
-                (check::CheckState::Failure, Some(val.to_string()))
+                (check::CheckState::Failed, Some(val.to_string()))
             }
         }
-        None => (check::CheckState::Failure, None),
+        None => (check::CheckState::Failed, None),
     }
 }

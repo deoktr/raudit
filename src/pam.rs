@@ -283,8 +283,8 @@ pub fn check_rule(
     };
 
     match get_pam_rule(config, service, rule_type, control, module) {
-        Ok(()) => (check::CheckState::Success, None),
-        Err(err) => (check::CheckState::Failure, Some(err.to_string())),
+        Ok(()) => (check::CheckState::Passed, None),
+        Err(err) => (check::CheckState::Failed, Some(err.to_string())),
     }
 }
 

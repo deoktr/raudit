@@ -237,9 +237,9 @@ pub fn no_password_in_passwd() -> check::CheckReturn {
         .collect();
 
     if g.len() != 0 {
-        (check::CheckState::Failure, Some(g.join(", ")))
+        (check::CheckState::Failed, Some(g.join(", ")))
     } else {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     }
 }
 
@@ -262,9 +262,9 @@ pub fn no_uid_zero() -> check::CheckReturn {
         .collect();
 
     if g.len() != 0 {
-        (check::CheckState::Failure, Some(g.join(", ")))
+        (check::CheckState::Failed, Some(g.join(", ")))
     } else {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     }
 }
 
@@ -289,9 +289,9 @@ pub fn yescrypt_hashes() -> check::CheckReturn {
         .collect();
 
     if usernames.len() != 0 {
-        (check::CheckState::Failure, Some(usernames.join(", ")))
+        (check::CheckState::Failed, Some(usernames.join(", ")))
     } else {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     }
 }
 
@@ -326,9 +326,9 @@ pub fn no_locked_account() -> check::CheckReturn {
         .collect();
 
     if usernames.len() != 0 {
-        (check::CheckState::Failure, Some(usernames.join(", ")))
+        (check::CheckState::Failed, Some(usernames.join(", ")))
     } else {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     }
 }
 
@@ -360,9 +360,9 @@ pub fn no_missing_home() -> check::CheckReturn {
     }
 
     if usernames.len() != 0 {
-        (check::CheckState::Failure, Some(usernames.join(", ")))
+        (check::CheckState::Failed, Some(usernames.join(", ")))
     } else {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     }
 }
 
@@ -390,9 +390,9 @@ pub fn no_dup_uid() -> check::CheckReturn {
         .collect();
 
     if usernames.len() != 0 {
-        (check::CheckState::Failure, Some(usernames.join(", ")))
+        (check::CheckState::Failed, Some(usernames.join(", ")))
     } else {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     }
 }
 
@@ -421,9 +421,9 @@ pub fn no_dup_username() -> check::CheckReturn {
         .collect();
 
     if usernames.len() != 0 {
-        (check::CheckState::Failure, Some(usernames.join(", ")))
+        (check::CheckState::Failed, Some(usernames.join(", ")))
     } else {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     }
 }
 
@@ -455,9 +455,9 @@ pub fn no_login_sys_users() -> check::CheckReturn {
         .collect();
 
     if usernames.len() != 0 {
-        (check::CheckState::Failure, Some(usernames.join(", ")))
+        (check::CheckState::Failed, Some(usernames.join(", ")))
     } else {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     }
 }
 
@@ -483,9 +483,9 @@ pub fn no_empty_shadow_password() -> check::CheckReturn {
         .collect();
 
     if usernames.len() != 0 {
-        (check::CheckState::Failure, Some(usernames.join(", ")))
+        (check::CheckState::Failed, Some(usernames.join(", ")))
     } else {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     }
 }
 
@@ -511,9 +511,9 @@ pub fn no_empty_passwd_password() -> check::CheckReturn {
         .collect();
 
     if usernames.len() != 0 {
-        (check::CheckState::Failure, Some(usernames.join(", ")))
+        (check::CheckState::Failed, Some(usernames.join(", ")))
     } else {
-        (check::CheckState::Success, None)
+        (check::CheckState::Passed, None)
     }
 }
 

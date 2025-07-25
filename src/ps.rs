@@ -112,7 +112,7 @@ pub fn is_running(name: &str) -> check::CheckReturn {
     };
 
     match get_pids(procs, name) {
-        Some(pids) => (check::CheckState::Success, Some(pids.join(", "))),
-        None => (check::CheckState::Failure, None),
+        Some(pids) => (check::CheckState::Passed, Some(pids.join(", "))),
+        None => (check::CheckState::Failed, None),
     }
 }
