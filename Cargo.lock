@@ -188,7 +188,7 @@ dependencies = [
 
 [[package]]
 name = "raudit"
-version = "0.20.0"
+version = "0.21.0"
 dependencies = [
  "clap",
  "once_cell",

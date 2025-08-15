@@ -32,13 +32,16 @@ type DependencyFunc = fn() -> ();
 
 static REPORT: Lazy<Mutex<Report>> = Lazy::new(|| Mutex::new(Report::default()));
 
-#[derive(Serialize, Default)]
+#[derive(Serialize)]
 pub struct Report {
     /// List of checks
     checks: Vec<Check>,
 
     /// Check stats
     stats: ReportStats,
+
+    /// Raudit version
+    version: String,
 }
 
 #[derive(PartialEq, Serialize)]
@@ -66,6 +69,7 @@ pub struct Check {
     title: String,
 
     /// List of tags, can be used to filter the list
+    #[serde(skip_serializing)]
     tags: Vec<String>,
 
     /// Message to give result information
@@ -205,6 +209,16 @@ pub fn par_run_dependencies() {
     }
 
     unique_deps.par_iter().for_each(|dep| dep());
+}
+
+impl Default for Report {
+    fn default() -> Self {
+        Report {
+            checks: vec![],
+            stats: ReportStats::default(),
+            version: env!("CARGO_PKG_VERSION").to_string(),
+        }
+    }
 }
 
 impl Check {
