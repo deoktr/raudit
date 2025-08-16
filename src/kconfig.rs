@@ -108,7 +108,7 @@ pub fn check_option_is_set(param: &str) -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("kcompile config not initialized".to_string()),
-            )
+            );
         }
     };
 
@@ -117,10 +117,7 @@ pub fn check_option_is_set(param: &str) -> check::CheckReturn {
             if *val != "is not set".to_string() {
                 (check::CheckState::Passed, None)
             } else {
-                (
-                    check::CheckState::Failed,
-                    Some("param not set".to_string()),
-                )
+                (check::CheckState::Failed, Some("param not set".to_string()))
             }
         }
         None => (
@@ -138,7 +135,7 @@ pub fn check_option_is_not_set(param: &str) -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("kcompile config not initialized".to_string()),
-            )
+            );
         }
     };
 

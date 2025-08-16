@@ -50,7 +50,7 @@ pub fn password_is_set() -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("grub configuration not initialized".to_string()),
-            )
+            );
         }
     };
 

@@ -72,7 +72,7 @@ impl SysctlValue for &str {
                 return (
                     check::CheckState::Error,
                     Some("sysctl configuration not initialized".to_string()),
-                )
+                );
             }
         };
 
@@ -104,7 +104,7 @@ impl SysctlValue for i32 {
                 return (
                     check::CheckState::Error,
                     Some("sysctl configuration not initialized".to_string()),
-                )
+                );
             }
         };
 

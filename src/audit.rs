@@ -120,7 +120,7 @@ pub fn check_audit_rule(rule: &str) -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("audit rules not initialized".to_string()),
-            )
+            );
         }
     };
 
@@ -139,7 +139,7 @@ pub fn check_audit_config(key: &str, value: &str) -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("audit rules not initialized".to_string()),
-            )
+            );
         }
     };
 

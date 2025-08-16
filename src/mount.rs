@@ -92,7 +92,7 @@ pub fn check_mount_present(target: &str) -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("mount configuration not initialized".to_string()),
-            )
+            );
         }
     };
 
@@ -118,7 +118,7 @@ pub fn check_mount_option(target: &str, option: &str) -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("mount configuration not initialized".to_string()),
-            )
+            );
         }
     };
 

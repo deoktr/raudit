@@ -55,7 +55,10 @@ pub fn init_sshd_config() {
             match output.status.code() {
                 Some(status) => {
                     if status != 0 {
-                        log_error!("Failed to get sshd configuration, got status code {} while running \"sshd -T\"", status);
+                        log_error!(
+                            "Failed to get sshd configuration, got status code {} while running \"sshd -T\"",
+                            status
+                        );
                         return;
                     }
                 }
@@ -91,7 +94,7 @@ pub fn check_sshd_config(key: &str, value: &str) -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("pam configuration not initialized".to_string()),
-            )
+            );
         }
     };
 

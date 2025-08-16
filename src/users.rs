@@ -226,7 +226,7 @@ pub fn no_password_in_passwd() -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("passwd configuration not initialized".to_string()),
-            )
+            );
         }
     };
 
@@ -251,7 +251,7 @@ pub fn no_uid_zero() -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("passwd configuration not initialized".to_string()),
-            )
+            );
         }
     };
 
@@ -276,7 +276,7 @@ pub fn yescrypt_hashes() -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("shadow configuration not initialized".to_string()),
-            )
+            );
         }
     };
 
@@ -284,7 +284,7 @@ pub fn yescrypt_hashes() -> check::CheckReturn {
     // \$y\$[./A-Za-z0-9]+\$[./A-Za-z0-9]{,86}\$[./A-Za-z0-9]{43}
     let usernames: Vec<String> = shadow
         .iter()
-        .filter(|entry| entry.password.starts_with("$y$") || entry.password == "!")
+        .filter(|entry| !entry.password.starts_with("$y$") && entry.password != "!")
         .map(|entry| entry.username.clone())
         .collect();
 
@@ -305,7 +305,7 @@ pub fn no_locked_account() -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("shadow configuration not initialized".to_string()),
-            )
+            );
         }
     };
 
@@ -340,7 +340,7 @@ pub fn no_missing_home() -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("passwd configuration not initialized".to_string()),
-            )
+            );
         }
     };
 
@@ -379,7 +379,7 @@ pub fn no_dup_uid() -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("passwd configuration not initialized".to_string()),
-            )
+            );
         }
     };
 
@@ -404,7 +404,7 @@ pub fn no_dup_username() -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("passwd configuration not initialized".to_string()),
-            )
+            );
         }
     };
 
@@ -438,7 +438,7 @@ pub fn no_login_sys_users() -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("passwd configuration not initialized".to_string()),
-            )
+            );
         }
     };
 
@@ -472,7 +472,7 @@ pub fn no_empty_shadow_password() -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("shadow configuration not initialized".to_string()),
-            )
+            );
         }
     };
 
@@ -500,7 +500,7 @@ pub fn no_empty_passwd_password() -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("passwd configuration not initialized".to_string()),
-            )
+            );
         }
     };
 

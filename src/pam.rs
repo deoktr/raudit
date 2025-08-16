@@ -245,8 +245,8 @@ fn get_pam_rule(
             let rules: Vec<&PamRule> = service
                 .into_iter()
                 .filter(|rule| {
-                    rule.rule_type == rule_type 
-                    && rule.control == control 
+                    rule.rule_type == rule_type
+                    && rule.control == control
 
                     // NOTE: on NixOS external lib have a full path, ex:
                     // `/nix/store/.../lib/security/pam_....so` that's why we 
@@ -279,7 +279,12 @@ pub fn check_rule(
 ) -> check::CheckReturn {
     let config = match PAM_CONFIG.get() {
         Some(c) => c,
-        None => return (check::CheckState::Error, Some("pam configuration not initialized".to_string()))
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("pam configuration not initialized".to_string()),
+            );
+        }
     };
 
     match get_pam_rule(config, service, rule_type, control, module) {

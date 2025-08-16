@@ -187,7 +187,10 @@ fn init_loaded_modules() {
             match output.status.code() {
                 Some(status) => {
                     if status != 0 {
-                        log_error!("failed to initialize loaded kernel modules, exit code {} while running \"lsmod\"", status);
+                        log_error!(
+                            "failed to initialize loaded kernel modules, exit code {} while running \"lsmod\"",
+                            status
+                        );
                         return;
                     }
                 }
@@ -221,7 +224,7 @@ pub fn check_module_blacklist(module: &str) -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("modprobe blacklist not initialized".to_string()),
-            )
+            );
         }
     };
 
@@ -231,7 +234,7 @@ pub fn check_module_blacklist(module: &str) -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("loaded modules not initialized".to_string()),
-            )
+            );
         }
     };
 
@@ -260,7 +263,7 @@ pub fn check_module_disabled(module: &str) -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("modprobe disabled not initialized".to_string()),
-            )
+            );
         }
     };
 
@@ -270,7 +273,7 @@ pub fn check_module_disabled(module: &str) -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("loaded modules not initialized".to_string()),
-            )
+            );
         }
     };
 

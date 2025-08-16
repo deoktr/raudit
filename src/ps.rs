@@ -92,11 +92,7 @@ pub fn get_pids(config: &Proc, name: &str) -> Option<Vec<String>> {
         procs.push(k.to_string());
     }
 
-    if procs.len() > 0 {
-        Some(procs)
-    } else {
-        None
-    }
+    if procs.len() > 0 { Some(procs) } else { None }
 }
 
 /// Check if a process is running from it's name.
@@ -107,7 +103,7 @@ pub fn is_running(name: &str) -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("processes not initialized".to_string()),
-            )
+            );
         }
     };
 

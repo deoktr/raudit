@@ -73,7 +73,7 @@ pub fn get_systemd_config(key: &str, value: &str) -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("systemd config not initialized".to_string()),
-            )
+            );
         }
     };
 

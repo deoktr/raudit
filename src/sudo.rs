@@ -166,7 +166,7 @@ pub fn check_sudo_defaults(defaults: &str) -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("sudo configuration defaults not initialized".to_string()),
-            )
+            );
         }
     };
 
@@ -185,7 +185,7 @@ pub fn check_has_no_nopaswd() -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("sudo configuration not initialized".to_string()),
-            )
+            );
         }
     };
 
@@ -210,7 +210,7 @@ pub fn check_re_authentication_not_disabled() -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("sudo configuration not initialized".to_string()),
-            )
+            );
         }
     };
 

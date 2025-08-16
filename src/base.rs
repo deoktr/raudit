@@ -83,7 +83,7 @@ pub fn check_file_content_regex(path: &str, pattern: &str) -> check::CheckReturn
                     "failed to compile shell timeout regex: {}",
                     err.to_string()
                 )),
-            )
+            );
         }
     };
 
@@ -94,13 +94,13 @@ pub fn check_file_content_regex(path: &str, pattern: &str) -> check::CheckReturn
                 return (
                     check::CheckState::Failed,
                     Some("file not found".to_string()),
-                )
+                );
             }
             _ => {
                 return (
                     check::CheckState::Error,
                     Some(format!("failed to read file: {}", err.to_string())),
-                )
+                );
             }
         },
     };

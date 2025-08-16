@@ -107,7 +107,7 @@ pub fn no_password_in_group() -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("group not initialized".to_string()),
-            )
+            );
         }
     };
 
@@ -132,7 +132,7 @@ pub fn one_gid_zero() -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("group not initialized".to_string()),
-            )
+            );
         }
     };
 
@@ -157,7 +157,7 @@ pub fn no_dup_gid() -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("group not initialized".to_string()),
-            )
+            );
         }
     };
 
@@ -182,7 +182,7 @@ pub fn no_dup_name() -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("group not initialized".to_string()),
-            )
+            );
         }
     };
 

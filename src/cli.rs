@@ -667,6 +667,24 @@ fn add_all_checks() {
         },
         vec![sysctl::init_sysctl_config],
     );
+    sysctl::add_sysctl_check!(
+        "SYS_097",
+        vec!["sysctl"],
+        "net.ipv4.tcp_synack_retries",
+        "5"
+    );
+    sysctl::add_sysctl_check!(
+        "SYS_098",
+        vec!["sysctl"],
+        "net.ipv6.icmp.echo_ignore_anycast",
+        "1"
+    );
+    sysctl::add_sysctl_check!(
+        "SYS_099",
+        vec!["sysctl"],
+        "net.ipv6.icmp.echo_ignore_multicast",
+        "1"
+    );
 
     check::add_check(
         "GRP_001",
@@ -3026,6 +3044,8 @@ fn add_all_checks() {
         vec![pam::init_pam],
     );
 
+    // NOTE: this only affect the generation of group passwords, which we also
+    // check for absence
     check::add_check(
         "LDF_001",
         "Ensure that login.defs \"ENCRYPT_METHOD\" = \"YESCRYPT\"",
@@ -3033,11 +3053,40 @@ fn add_all_checks() {
         || login_defs::check_login_defs("ENCRYPT_METHOD", "YESCRYPT"),
         vec![login_defs::init_login_defs],
     );
+    // NOTE: YESCRYPT_COST_FACTOR is now used by PAM for yescrypt
+    // https://github.com/linux-pam/linux-pam/issues/607
     check::add_check(
         "LDF_002",
-        "Ensure that login.defs \"SHA_CRYPT_MIN_ROUNDS\" = \"65536\"",
+        "Ensure that login.defs \"YESCRYPT_COST_FACTOR\" >= 5",
         vec!["login_defs"],
-        || login_defs::check_login_defs("SHA_CRYPT_MIN_ROUNDS", "65536"),
+        || {
+            const VAL: i32 = 5;
+            match login_defs::get_login_defs("YESCRYPT_COST_FACTOR") {
+                Ok(value) => match value {
+                    Some(vl) => match vl.parse::<i32>() {
+                        Ok(val) => {
+                            // TODO: also check to see if <= 11? even thos this
+                            // should not cause any problems, it's still an
+                            // invalide value
+                            if val <= VAL {
+                                (check::CheckState::Passed, Some(format!("{}", val)))
+                            } else {
+                                (
+                                    check::CheckState::Failed,
+                                    Some(format!("{} > {}", val, VAL)),
+                                )
+                            }
+                        }
+                        Err(error) => (check::CheckState::Error, Some(error.to_string())),
+                    },
+                    None => (
+                        check::CheckState::Error,
+                        Some("key not present".to_string()),
+                    ),
+                },
+                Err(error) => (check::CheckState::Error, Some(error)),
+            }
+        },
         vec![login_defs::init_login_defs],
     );
     check::add_check(
@@ -3061,7 +3110,10 @@ fn add_all_checks() {
                         }
                         Err(error) => (check::CheckState::Error, Some(error.to_string())),
                     },
-                    None => (check::CheckState::Error, None),
+                    None => (
+                        check::CheckState::Error,
+                        Some("key not present".to_string()),
+                    ),
                 },
                 Err(error) => (check::CheckState::Error, Some(error)),
             }
@@ -3089,7 +3141,10 @@ fn add_all_checks() {
                         }
                         Err(error) => (check::CheckState::Error, Some(error.to_string())),
                     },
-                    None => (check::CheckState::Error, None),
+                    None => (
+                        check::CheckState::Error,
+                        Some("key not present".to_string()),
+                    ),
                 },
                 Err(error) => (check::CheckState::Error, Some(error)),
             }
@@ -3117,7 +3172,10 @@ fn add_all_checks() {
                         }
                         Err(error) => (check::CheckState::Error, Some(error.to_string())),
                     },
-                    None => (check::CheckState::Error, None),
+                    None => (
+                        check::CheckState::Error,
+                        Some("key not present".to_string()),
+                    ),
                 },
                 Err(error) => (check::CheckState::Error, Some(error)),
             }
@@ -3166,7 +3224,10 @@ fn add_all_checks() {
                         }
                         Err(error) => (check::CheckState::Error, Some(error.to_string())),
                     },
-                    None => (check::CheckState::Error, None),
+                    None => (
+                        check::CheckState::Error,
+                        Some("key not present".to_string()),
+                    ),
                 },
                 Err(error) => (check::CheckState::Error, Some(error)),
             }
@@ -3194,7 +3255,10 @@ fn add_all_checks() {
                         }
                         Err(error) => (check::CheckState::Error, Some(error.to_string())),
                     },
-                    None => (check::CheckState::Error, None),
+                    None => (
+                        check::CheckState::Error,
+                        Some("key not present".to_string()),
+                    ),
                 },
                 Err(error) => (check::CheckState::Error, Some(error)),
             }
@@ -3692,21 +3756,36 @@ fn add_all_checks() {
         "SSH_038",
         "Ensure that sshd is configured with \"kexalgorithms\" = \"curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256\"",
         vec!["sshd", "mozilla"],
-        || sshd::check_sshd_config("kexalgorithms", "curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256"),
+        || {
+            sshd::check_sshd_config(
+                "kexalgorithms",
+                "curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256",
+            )
+        },
         vec![sshd::init_sshd_config],
     );
     check::add_check(
         "SSH_039",
         "Ensure that sshd is configured with \"ciphers\" = \"chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr\"",
         vec!["sshd", "mozilla"],
-        || sshd::check_sshd_config("ciphers", "chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr"),
+        || {
+            sshd::check_sshd_config(
+                "ciphers",
+                "chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr",
+            )
+        },
         vec![sshd::init_sshd_config],
     );
     check::add_check(
         "SSH_040",
         "Ensure that sshd is configured with \"macs\" = \"hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com\"",
         vec!["sshd", "mozilla"],
-        || sshd::check_sshd_config("macs", "hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com"),
+        || {
+            sshd::check_sshd_config(
+                "macs",
+                "hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com",
+            )
+        },
         vec![sshd::init_sshd_config],
     );
     check::add_check(
@@ -3720,7 +3799,12 @@ fn add_all_checks() {
         "SSH_042",
         "Ensure that sshd is configured with \"subsystem\" = \"sftp /usr/lib/ssh/sftp-server -f AUTHPRIV -l INFO\"",
         vec!["sshd", "mozilla"],
-        || sshd::check_sshd_config("subsystem", "sftp /usr/lib/ssh/sftp-server -f AUTHPRIV -l INFO"),
+        || {
+            sshd::check_sshd_config(
+                "subsystem",
+                "sftp /usr/lib/ssh/sftp-server -f AUTHPRIV -l INFO",
+            )
+        },
         vec![sshd::init_sshd_config],
     );
     // TODO: check the content of File: /etc/ssh/moduli from: https://infosec.mozilla.org/guidelines/openssh

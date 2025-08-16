@@ -61,7 +61,7 @@ pub fn check_kernel_params(variable: &str) -> check::CheckReturn {
             return (
                 check::CheckState::Error,
                 Some("kernel params not initialized".to_string()),
-            )
+            );
         }
     };
 
