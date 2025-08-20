@@ -134,6 +134,17 @@ Support planned:
 - ProFTPD
 - firejail
 
+## Build
+
+Build inside a container:
+
+```bash
+podman build -t raudit-build .
+podman run --rm --network none -v ./target:/src/target raudit-build
+```
+
+This will generate in `./target/x86_64-unknown-linux-gnu/release/raudit`.
+
 ## Develop
 
 Test:

@@ -883,11 +883,15 @@ fn add_all_checks() {
         || kernel::check_kernel_params("module.sig_enforce=1"),
         vec![kernel::init_kernel_params],
     );
+    // https://man.archlinux.org/man/kernel_lockdown.7
     check::add_check(
         "KNP_013",
-        "Ensure that kernel flag \"lockdown=confidentiality\" is present",
+        "Ensure that kernel flag \"lockdown=integrity\" is present",
         vec!["kernel"],
-        || kernel::check_kernel_params("lockdown=confidentiality"),
+        // TODO: allow for either "integrity" or "confidentiality" flags, from
+        // arch wiki: It is recommended to use integrity, unless your specific
+        // threat model dictates otherwise.
+        || kernel::check_kernel_params("lockdown=integrity"),
         vec![kernel::init_kernel_params],
     );
     check::add_check(
@@ -3499,11 +3503,11 @@ fn add_all_checks() {
     );
     check::add_check(
         "SSH_008",
-        "Ensure that sshd is configured with \"maxsessions\" <= 2",
+        "Ensure that sshd is configured with \"maxsessions\" <= 5",
         vec!["sshd", "CIS"],
         || {
-            const VAL: i32 = 2;
-            match sshd::get_sshd_config("maxauthtries") {
+            const VAL: i32 = 5;
+            match sshd::get_sshd_config("maxsessions") {
                 Ok(str_value) => match str_value.parse::<i32>() {
                     Ok(value) => {
                         if value <= VAL {
@@ -3540,7 +3544,7 @@ fn add_all_checks() {
         "SSH_011",
         "Ensure that sshd is configured with \"ignoreuserknownhosts\" = \"yes\"",
         vec!["sshd"],
-        || sshd::check_sshd_config("", ""),
+        || sshd::check_sshd_config("ignoreuserknownhosts", "yes"),
         vec![sshd::init_sshd_config],
     );
     check::add_check(
@@ -3682,7 +3686,7 @@ fn add_all_checks() {
         vec!["sshd", "CIS"],
         || {
             const VAL: i32 = 15;
-            match sshd::get_sshd_config("maxauthtries") {
+            match sshd::get_sshd_config("clientaliveinterval") {
                 Ok(str_value) => match str_value.parse::<i32>() {
                     Ok(value) => {
                         if value <= VAL {
@@ -3703,9 +3707,9 @@ fn add_all_checks() {
     );
     check::add_check(
         "SSH_031",
-        "Ensure that sshd is configured with \"clientalivecountmax\" = \"0\"",
+        "Ensure that sshd is configured with \"clientalivecountmax\" = \"3\"",
         vec!["sshd"],
-        || sshd::check_sshd_config("clientalivecountmax", "0"),
+        || sshd::check_sshd_config("clientalivecountmax", "3"),
         vec![sshd::init_sshd_config],
     );
     check::add_check(
@@ -3752,6 +3756,8 @@ fn add_all_checks() {
         vec![sshd::init_sshd_config],
     );
     // TODO: make skip it depending based on version, OpenSSH 6.7+
+    // TODO: for OpenSSH 10+:
+    // "mlkem768x25519-sha256,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521",
     check::add_check(
         "SSH_038",
         "Ensure that sshd is configured with \"kexalgorithms\" = \"curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256\"",
@@ -3805,6 +3811,13 @@ fn add_all_checks() {
                 "sftp /usr/lib/ssh/sftp-server -f AUTHPRIV -l INFO",
             )
         },
+        vec![sshd::init_sshd_config],
+    );
+    check::add_check(
+        "SSH_043",
+        "Ensure that sshd is configured with \"kbdinteractiveauthentication\" = \"no\"",
+        vec!["sshd"],
+        || sshd::check_sshd_config("kbdinteractiveauthentication", "no"),
         vec![sshd::init_sshd_config],
     );
     // TODO: check the content of File: /etc/ssh/moduli from: https://infosec.mozilla.org/guidelines/openssh
