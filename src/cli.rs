@@ -25,43 +25,43 @@ use std::time::Instant;
 #[command(version)]
 struct Cli {
     /// Comma-separated list of tags to filter
-    #[arg(long, value_delimiter = ',', num_args(0..))]
+    #[arg(long, value_delimiter = ',', num_args(0..), env = "TAGS")]
     tags: Option<Vec<String>>,
 
     /// Comma-separated list of ID prefixes to filter
-    #[arg(long, value_delimiter = ',', num_args(0..))]
+    #[arg(long, value_delimiter = ',', num_args(0..), env = "FILTERS")]
     filters: Option<Vec<String>>,
 
     /// Log level
-    #[arg(long, value_enum, default_value_t = logger::LogLevel::Warn)]
+    #[arg(long, value_enum, default_value_t = logger::LogLevel::Warn, env = "LOG_LEVEL")]
     log_level: logger::LogLevel,
 
     /// Disable multi-threading parallelization
-    #[arg(long, action = clap::ArgAction::SetTrue)]
+    #[arg(long, action = clap::ArgAction::SetTrue, env = "NO_PARALLELIZATION")]
     no_parallelization: bool,
 
     /// Disable print of individual checks
-    #[arg(long, action = clap::ArgAction::SetTrue)]
+    #[arg(long, action = clap::ArgAction::SetTrue, env = "NO_PRINT_CHECKS")]
     no_print_checks: bool,
 
     /// Disable print of passed checks
-    #[arg(long, action = clap::ArgAction::SetTrue)]
+    #[arg(long, action = clap::ArgAction::SetTrue, env = "NO_PRINT_PASSED")]
     no_print_passed: bool,
 
     /// Disable print of stats
-    #[arg(long, action = clap::ArgAction::SetTrue)]
+    #[arg(long, action = clap::ArgAction::SetTrue, env = "NO_STATS")]
     no_stats: bool,
 
     /// Disable colored output
-    #[arg(long, action = clap::ArgAction::SetTrue)]
+    #[arg(long, action = clap::ArgAction::SetTrue, env = "NO_COLORS")]
     no_colors: bool,
 
     /// Disable timer
-    #[arg(long, action = clap::ArgAction::SetTrue)]
+    #[arg(long, action = clap::ArgAction::SetTrue, env = "NO_TIME")]
     no_time: bool,
 
     /// Generate JSON output
-    #[arg(long, value_enum, default_value_t = JsonMode::Off)]
+    #[arg(long, value_enum, default_value_t = JsonMode::Off, env = "JSON")]
     json: JsonMode,
 }
 

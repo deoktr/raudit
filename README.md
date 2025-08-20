@@ -37,16 +37,16 @@ Audit Linux systems security configurations
 Usage: raudit [OPTIONS]
 
 Options:
-      --tags [<TAGS>...]        Comma-separated list of tags to filter
-      --filters [<FILTERS>...]  Comma-separated list of ID prefixes to filter
-      --log-level <LOG_LEVEL>   Log level [default: warn] [possible values: error, warn, info, debug, trace]
-      --no-parallelization      Disable multi-threading parallelization
-      --no-print-checks         Disable print of individual checks
-      --no-print-passed         Disable print of passed checks
-      --no-stats                Disable print of stats
-      --no-colors               Disable colored output
-      --no-time                 Disable timer
-      --json <JSON>             Generate JSON output [default: off] [possible values: short, pretty, off]
+      --tags [<TAGS>...]        Comma-separated list of tags to filter [env: TAGS=]
+      --filters [<FILTERS>...]  Comma-separated list of ID prefixes to filter [env: FILTERS=]
+      --log-level <LOG_LEVEL>   Log level [env: LOG_LEVEL=] [default: warn] [possible values: error, warn, info, debug, trace]
+      --no-parallelization      Disable multi-threading parallelization [env: NO_PARALLELIZATION=]
+      --no-print-checks         Disable print of individual checks [env: NO_PRINT_CHECKS=]
+      --no-print-passed         Disable print of passed checks [env: NO_PRINT_PASSED=]
+      --no-stats                Disable print of stats [env: NO_STATS=]
+      --no-colors               Disable colored output [env: NO_COLORS=]
+      --no-time                 Disable timer [env: NO_TIME=]
+      --json <JSON>             Generate JSON output [env: JSON=] [default: off] [possible values: short, pretty, off]
   -h, --help                    Print help
   -V, --version                 Print version
 ```
@@ -55,6 +55,12 @@ Generate JSON report:
 
 ```bash
 raudit --json=pretty > report.json
+```
+
+Note that you can also use env vars to control CLI flags:
+
+```bash
+JSON=pretty raudit > report.json
 ```
 
 Example JSON output:
@@ -151,6 +157,12 @@ Test:
 
 ```bash
 cargo test
+```
+
+Build updated version inside the container:
+
+```bash
+podman run --rm --network none -v ./:/src raudit-build
 ```
 
 ## Alternatives
