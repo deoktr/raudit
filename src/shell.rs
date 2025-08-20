@@ -31,6 +31,7 @@ use crate::{base, check};
 ///
 /// <https://wiki.archlinux.org/title/Security#Automatic_logout>
 pub fn check_shell_timeout() -> check::CheckReturn {
+    // FIXME: allow for comments, at least the the top
     base::check_file_content_regex(
         "/etc/profile.d/shell-timeout.sh",
         r#"TMOUT=.*;\n\[ -z "\$DISPLAY" ] && export TMOUT;\ncase \$\( /usr/bin/tty \) in\n[ \t]*/dev/tty\[0\-9\]\*\) export TMOUT;;\nesac"#,

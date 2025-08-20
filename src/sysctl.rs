@@ -21,7 +21,7 @@ use std::process;
 use std::process::Stdio;
 use std::sync::OnceLock;
 
-use crate::{check, log_error};
+use crate::{check, log_debug, log_error};
 
 static SYSCTL_CONFIG: OnceLock<SysctlConfig> = OnceLock::new();
 
@@ -55,8 +55,13 @@ pub fn init_sysctl_config() {
             let config = parse_sysctl_config(String::from_utf8_lossy(&output.stdout).to_string());
             SYSCTL_CONFIG.get_or_init(|| config);
         }
-        Err(err) => log_error!("Failed to initialize sysctl configuration: {}", err),
+        Err(err) => {
+            log_error!("Failed to initialize sysctl configuration: {}", err);
+            return;
+        }
     };
+
+    log_debug!("initialized sysctl config");
 }
 
 pub trait SysctlValue {

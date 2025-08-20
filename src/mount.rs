@@ -19,7 +19,7 @@
 use std::fs;
 use std::sync::OnceLock;
 
-use crate::{check, log_error};
+use crate::{check, log_debug, log_error};
 
 const PROC_MOUNTS_PATH: &str = "/proc/mounts";
 
@@ -70,8 +70,13 @@ pub fn init_mounts() {
         Ok(mounts) => {
             MOUNT_CONFIG.get_or_init(|| parse_mounts(mounts));
         }
-        Err(err) => log_error!("Failed to initialize mount config: {}", err),
+        Err(err) => {
+            log_error!("Failed to initialize mount config: {}", err);
+            return;
+        }
     };
+
+    log_debug!("initialized mounts");
 }
 
 /// Get mount from a collected configuration.

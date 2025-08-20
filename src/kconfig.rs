@@ -20,7 +20,7 @@ use std::sync::OnceLock;
 use std::{collections::HashMap, path::PathBuf};
 use std::{fs, io};
 
-use crate::{check, log_error};
+use crate::{check, log_debug, log_error};
 
 static KERNEL_BUILD_CONFIG: OnceLock<KernelBuildConfig> = OnceLock::new();
 
@@ -98,6 +98,8 @@ pub fn init_kernel_build_config() {
             return;
         }
     };
+
+    log_debug!("initialized kernel build config");
 }
 
 /// Ensure kernel build parameter is set.

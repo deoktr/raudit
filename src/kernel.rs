@@ -20,7 +20,7 @@ use std::fs;
 use std::path::Path;
 use std::sync::OnceLock;
 
-use crate::{check, log_error};
+use crate::{check, log_debug, log_error};
 
 const CMDLINE_PATH: &str = "/proc/cmdline";
 
@@ -49,8 +49,13 @@ pub fn init_kernel_params() {
         Ok(cmdline) => {
             KERNEL_PARAMS.get_or_init(|| parse_kernel_params(cmdline));
         }
-        Err(err) => log_error!("Failed to initialize kernel params: {}", err),
+        Err(err) => {
+            log_error!("Failed to initialize kernel params: {}", err);
+            return;
+        }
     }
+
+    log_debug!("initialized kernel params");
 }
 
 /// Get kernel params presence from a collected configuration.

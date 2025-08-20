@@ -176,8 +176,8 @@ With: `hyperfine -i ./target/release/raudit`:
 
 ```
 Benchmark 1: ./target/release/raudit
-  Time (mean ± σ):      75.0 ms ±   2.8 ms    [User: 90.9 ms, System: 123.3 ms]
-  Range (min … max):    71.3 ms …  80.7 ms    36 runs
+  Time (mean ± σ):     116.5 ms ±   5.3 ms    [User: 89.7 ms, System: 127.8 ms]
+  Range (min … max):   110.6 ms … 132.7 ms    24 runs
 ```
 
 ## TODO
@@ -200,7 +200,7 @@ Benchmark 1: ./target/release/raudit
 - Ensure logrotate is used
 - Ensure rsyslog is used
 - Ensure secure boot and TPM are setup
-- Ensure LSM is configured at boot with either AppArmor or SELiinux
+- Ensure LSM is configured at boot with either AppArmor or SELinux
 - Ensure AppArmor profiles are used for some processes
 - Ensure firejail is used for some processes
 - Ensure `/tmp` is managed by systemd `tmp.mount` unit, and is cleaned on shutdown
@@ -211,6 +211,7 @@ Benchmark 1: ./target/release/raudit
 - Add metadata to JSON report, like start/end time, elapsed, version, username, hostname etc.
 - Add documentation, both user and dev
 - Add option to only have `id`, `message` and `state` in JSON output of checks
+- Add check timeout, if they take too long just stop them, maybe even with ctrl+c?
 
 ## License
 

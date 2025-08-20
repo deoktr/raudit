@@ -20,7 +20,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::sync::OnceLock;
 
-use crate::{check, log_error};
+use crate::{check, log_debug, log_error};
 
 /// List of running process.
 ///
@@ -80,6 +80,7 @@ pub fn init_proc() {
     }
 
     PROCESSES.get_or_init(|| output);
+    log_debug!("initialized proc");
 }
 
 /// Get the list of PID with this name.

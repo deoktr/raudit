@@ -21,7 +21,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 
-use crate::{check, log_error, log_trace, log_warn};
+use crate::{check, log_debug, log_error, log_trace, log_warn};
 
 static PAM_CONFIG: OnceLock<PamConfig> = OnceLock::new();
 
@@ -218,8 +218,13 @@ pub fn init_pam() {
         Ok(pam_config) => {
             PAM_CONFIG.get_or_init(|| pam_config);
         }
-        Err(err) => log_error!("Failed to initialize pam configuration: {}", err),
+        Err(err) => {
+            log_error!("Failed to initialize pam configuration: {}", err);
+            return;
+        }
     };
+
+    log_debug!("initialized pam");
 }
 
 /// Get PAM rule from a collected configuration.

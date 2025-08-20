@@ -20,7 +20,7 @@ use std::fs;
 use std::sync::OnceLock;
 
 use crate::base::empty_or_missing_file;
-use crate::{check, log_error};
+use crate::{check, log_debug, log_error};
 
 const GROUP_PATH: &str = "/etc/group";
 
@@ -88,8 +88,13 @@ pub fn init_group() {
         Ok(content) => {
             GROUPS.get_or_init(|| parse_group(content));
         }
-        Err(err) => log_error!("Failed to initialize groups: {}", err),
+        Err(err) => {
+            log_error!("Failed to initialize groups: {}", err);
+            return;
+        }
     };
+
+    log_debug!("initialized group");
 }
 
 /// Ensure group shadow empty or missing.
@@ -197,6 +202,36 @@ pub fn no_dup_name() -> check::CheckReturn {
     } else {
         (check::CheckState::Passed, None)
     }
+}
+
+/// Ensure group has no members.
+pub fn no_members(group_name: &str) -> check::CheckReturn {
+    let groups = match GROUPS.get() {
+        Some(group) => group,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("group not initialized".to_string()),
+            );
+        }
+    };
+
+    for group in groups {
+        if group.name != group_name {
+            continue;
+        }
+
+        if group.user_list.len() != 0 {
+            return (check::CheckState::Failed, Some(group.user_list.join(", ")));
+        } else {
+            return (check::CheckState::Passed, None);
+        }
+    }
+
+    (
+        check::CheckState::Error,
+        Some(format!("no \"{}\" group found", group_name)),
+    )
 }
 
 #[cfg(test)]

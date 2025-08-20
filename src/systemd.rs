@@ -20,7 +20,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::sync::OnceLock;
 
-use crate::{check, log_error};
+use crate::{check, log_debug, log_error};
 
 const SYSTEMD_CONF_PATH: &str = "/etc/systemd/system.conf";
 
@@ -56,8 +56,13 @@ pub fn init_systemd_config() {
         Ok(cfg) => {
             SYSTEMD_CONFIG.get_or_init(|| parse_systemd_config(cfg));
         }
-        Err(err) => log_error!("Failed to initialize systemd configuration: {}", err),
+        Err(err) => {
+            log_error!("Failed to initialize systemd configuration: {}", err);
+            return;
+        }
     };
+
+    log_debug!("initialized systemd config");
 }
 
 // TODO: init by parsing JSON

@@ -21,7 +21,7 @@ use std::process;
 use std::process::Stdio;
 use std::sync::OnceLock;
 
-use crate::{check, log_error};
+use crate::{check, log_debug, log_error};
 
 static SSHD_CONFIG: OnceLock<SshdConfig> = OnceLock::new();
 
@@ -69,8 +69,13 @@ pub fn init_sshd_config() {
                 parse_sshd_config(String::from_utf8_lossy(&output.stdout).to_string())
             });
         }
-        Err(err) => log_error!("Failed to initialize sshd configuration: {}", err),
+        Err(err) => {
+            log_error!("Failed to initialize sshd configuration: {}", err);
+            return;
+        }
     };
+
+    log_debug!("initialized sshd config");
 }
 
 /// Get sshd configuration value from a collected configuration.
@@ -93,7 +98,7 @@ pub fn check_sshd_config(key: &str, value: &str) -> check::CheckReturn {
         None => {
             return (
                 check::CheckState::Error,
-                Some("pam configuration not initialized".to_string()),
+                Some("sshd configuration not initialized".to_string()),
             );
         }
     };

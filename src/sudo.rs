@@ -20,7 +20,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 
-use crate::{check, log_error, log_warn};
+use crate::{check, log_debug, log_error, log_warn};
 
 const SUDOERS_PATH: &str = "/etc/sudoers";
 
@@ -46,6 +46,8 @@ fn parse_sudoer(content: String) -> SudoConfig {
 pub fn init_sudo() {
     init_sudoer();
     init_sudoer_defaults();
+
+    log_debug!("initialized sudo");
 }
 
 /// Initialize the sudoers configuration by reading it's config files.
@@ -120,17 +122,22 @@ pub fn init_sudoer() {
         .collect();
 
     SUDO_CONFIG.get_or_init(|| config);
+
+    log_debug!("initialized sudoer configuration");
 }
 
 /// Initialize the sudoers `Defaults` configuration.
 pub fn init_sudoer_defaults() {
-    if !SUDO_CONFIG.get().is_some() {
+    if SUDO_CONFIG_DEFAULTS.get().is_some() {
         return;
     }
 
-    let sudo_config = match SUDO_CONFIG_DEFAULTS.get() {
+    let sudo_config = match SUDO_CONFIG.get() {
         Some(c) => c,
-        None => return,
+        None => {
+            log_error!("failed to initialize sudo defaults, sudo config not initialized");
+            return;
+        }
     };
 
     SUDO_CONFIG_DEFAULTS.get_or_init(|| {
@@ -156,6 +163,8 @@ pub fn init_sudoer_defaults() {
             .map(|config| config.to_string())
             .collect()
     });
+
+    log_debug!("initialized sudo default configuration");
 }
 
 /// Check if sudoers default is present

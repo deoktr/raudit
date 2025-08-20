@@ -22,7 +22,7 @@ use std::sync::OnceLock;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::check;
-use crate::{base, log_error};
+use crate::{base, log_debug, log_error};
 
 const PASSWD_PATH: &str = "/etc/passwd";
 
@@ -129,8 +129,13 @@ pub fn init_passwd() {
         Ok(content) => {
             PASSWD_CONFIG.get_or_init(|| parse_passwd(content));
         }
-        Err(err) => log_error!("Failed to initialize passwd: {}", err),
+        Err(err) => {
+            log_error!("Failed to initialize passwd: {}", err);
+            return;
+        }
     }
+
+    log_debug!("initialized passwd");
 }
 
 /// Parse the content of `/etc/passwd`.
@@ -214,8 +219,13 @@ pub fn init_shadow() {
         Ok(content) => {
             SHADOW_CONFIG.get_or_init(|| parse_shadow(content));
         }
-        Err(err) => log_error!("Failed to initialize shadow: {}", err),
+        Err(err) => {
+            log_error!("Failed to initialize shadow: {}", err);
+            return;
+        }
     }
+
+    log_debug!("initialized shadow");
 }
 
 /// Verify if any user has a password in passwd (not equal to `x`).

@@ -19,7 +19,7 @@
 use std::fs;
 use std::sync::OnceLock;
 
-use crate::{check, log_error};
+use crate::{check, log_debug, log_error};
 
 const GRUB_CFG_PATH: &str = "/boot/grub/grub.cfg";
 
@@ -38,8 +38,13 @@ pub fn init_grub_cfg() {
         Ok(content) => {
             GRUB_CFG.get_or_init(|| content);
         }
-        Err(err) => log_error!("Failed to initialize grub configuration: {}", err),
+        Err(err) => {
+            log_error!("Failed to initialize grub configuration: {}", err);
+            return;
+        }
     };
+
+    log_debug!("initialized grub cfg");
 }
 
 /// Verify that grub is configured with a password.

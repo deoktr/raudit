@@ -16,14 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// TODO: file permission check
-// TODO: file owner check
-
 use regex::Regex;
 use std::fs;
+use std::os::unix::fs::MetadataExt;
 use std::path::Path;
 
-use crate::check;
+use crate::{check, log_trace};
 
 /// Check if file is either empty or not present.
 pub fn empty_or_missing_file(path: &str) -> check::CheckReturn {
@@ -69,6 +67,100 @@ pub fn directory_exist(path: &str) -> check::CheckReturn {
         (check::CheckState::Passed, None)
     } else {
         (check::CheckState::Failed, None)
+    }
+}
+
+// TODO: have an alternative function that takes in a username and group name
+/// Check a file owner uid and gid.
+pub fn check_file_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
+    let metadata = match fs::metadata(path) {
+        Ok(v) => v,
+        Err(err) => {
+            return (check::CheckState::Error, Some(err.to_string()));
+        }
+    };
+
+    if metadata.is_dir() {
+        return (
+            check::CheckState::Error,
+            Some("path is a directory".to_string()),
+        );
+    }
+
+    let muid = metadata.uid();
+    let mgid = metadata.gid();
+
+    log_trace!("checking file owner for {:?}, got: {}:{}", path, muid, mgid);
+
+    if muid != uid || mgid != gid {
+        (
+            check::CheckState::Failed,
+            Some(format!(
+                "wanted \"{}:{}\" got \"{}:{}\"",
+                uid, gid, muid, mgid
+            )),
+        )
+    } else {
+        (check::CheckState::Passed, None)
+    }
+}
+
+/// Check a file owner uid and gid, and ignore error if file is missing.
+pub fn check_file_owner_id_ignore_missing(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
+    match fs::metadata(path) {
+        Ok(_) => check_file_owner_id(path, uid, gid),
+        Err(err) => match err.kind() {
+            std::io::ErrorKind::NotFound => {
+                (check::CheckState::Passed, Some("file missing".to_string()))
+            }
+            _ => (check::CheckState::Error, Some(err.to_string())),
+        },
+    }
+}
+
+/// Check a file permissions.
+///
+/// Permissions should be defined like: 0o644.
+/// <https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.mode>
+pub fn check_file_permission(path: &str, perms: u32) -> check::CheckReturn {
+    let metadata = match fs::metadata(path) {
+        Ok(v) => v,
+        Err(err) => {
+            return (check::CheckState::Error, Some(err.to_string()));
+        }
+    };
+
+    if metadata.is_dir() {
+        return (
+            check::CheckState::Error,
+            Some("path is a directory".to_string()),
+        );
+    }
+
+    let mode = metadata.mode() & 0o777;
+
+    log_trace!("checking file mode for {:?}, got: {:o}", path, mode);
+
+    if mode != perms {
+        (
+            check::CheckState::Failed,
+            Some(format!("wanted \"{:o}\" got \"{:o}\"", perms, mode)),
+        )
+    } else {
+        (check::CheckState::Passed, None)
+    }
+}
+
+/// Check a file owner uid and gid, and ignore error if file is missing.
+pub fn check_file_permission_ignore_missing(path: &str, perms: u32) -> check::CheckReturn {
+    match fs::metadata(path) {
+        Ok(_) => check_file_permission(path, perms),
+        Err(err) => match err.kind() {
+            std::io::ErrorKind::NotFound => {
+                (check::CheckState::Passed, Some("file missing".to_string()))
+            }
+            _ => (check::CheckState::Error, Some(err.to_string())),
+        },
     }
 }
 

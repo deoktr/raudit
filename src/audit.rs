@@ -27,7 +27,7 @@ use std::process::Stdio;
 use std::sync::OnceLock;
 
 use crate::check;
-use crate::log_error;
+use crate::{log_debug, log_error};
 
 const AUDIT_CFG_PATH: &str = "/etc/audit/auditd.conf";
 
@@ -80,8 +80,13 @@ pub fn init_audit_rules() {
                     .collect()
             });
         }
-        Err(err) => log_error!("Failed to initialize audit rules: {}", err),
+        Err(err) => {
+            log_error!("Failed to initialize audit rules: {}", err);
+            return;
+        }
     };
+
+    log_debug!("initialized audit rules");
 }
 
 /// Parse content of `/etc/audit/auditd.conf`.
@@ -108,8 +113,13 @@ pub fn init_audit_config() {
         Ok(content) => {
             AUDIT_CONFIG.get_or_init(|| parse_audit_config(content));
         }
-        Err(err) => log_error!("Failed to initialize audit configuration: {}", err),
+        Err(err) => {
+            log_error!("Failed to initialize audit configuration: {}", err);
+            return;
+        }
     };
+
+    log_debug!("initialized audit config");
 }
 
 /// Check audit rule.

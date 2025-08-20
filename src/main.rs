@@ -45,6 +45,30 @@ mod systemd;
 mod users;
 mod utils;
 
+mod rules {
+    pub mod apparmor;
+    pub mod audit;
+    pub mod clamav;
+    pub mod docker;
+    pub mod gdm;
+    pub mod group;
+    pub mod grub;
+    pub mod kernel;
+    pub mod kernel_params;
+    pub mod login_defs;
+    pub mod malloc;
+    pub mod modprobe;
+    pub mod mount;
+    pub mod pam;
+    pub mod shell;
+    pub mod sshd;
+    pub mod sudo;
+    pub mod sysctl;
+    pub mod system;
+    pub mod systemd;
+    pub mod user;
+}
+
 fn main() {
     cli::cli()
 }

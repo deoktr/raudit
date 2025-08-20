@@ -20,7 +20,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::sync::OnceLock;
 
-use crate::{check, log_error};
+use crate::{check, log_debug, log_error};
 
 const LOGIN_DEFS_PATH: &str = "/etc/login.defs";
 
@@ -53,8 +53,13 @@ pub fn init_login_defs() {
         Ok(login_defs) => {
             LOGIN_DEFS_CONFIG.get_or_init(|| parse_login_defs(login_defs));
         }
-        Err(err) => log_error!("Failed to initialize login defs: {}", err),
+        Err(err) => {
+            log_error!("Failed to initialize login defs: {}", err);
+            return;
+        }
     };
+
+    log_debug!("initialized login.defs");
 }
 
 /// Check login.defs value from a collected configuration.

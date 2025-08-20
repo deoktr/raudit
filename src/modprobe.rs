@@ -22,7 +22,7 @@ use std::process;
 use std::process::Stdio;
 use std::sync::OnceLock;
 
-use crate::{check, log_error};
+use crate::{check, log_debug, log_error};
 
 static MODPROBE_CONFIG: OnceLock<ModprobeConfig> = OnceLock::new();
 static MODPROBE_BLACKLIST: OnceLock<ModprobeBlacklist> = OnceLock::new();
@@ -94,6 +94,7 @@ fn init_modprobe_config() {
         .collect();
 
     MODPROBE_CONFIG.get_or_init(|| config);
+    log_debug!("initialized modprobe");
 }
 
 /// Initialize modprobe blacklisted modules from modprobe config.
@@ -121,6 +122,7 @@ fn init_modprobe_blacklist() {
             .map(|line| line.to_string())
             .collect()
     });
+    log_debug!("initialized modprobe blacklist");
 }
 
 /// Initialize modprobe disabled modules from modprobe config.
@@ -155,6 +157,7 @@ fn init_modprobe_disabled() {
             .map(|line| line.to_string())
             .collect()
     });
+    log_debug!("initialized modprobe disabled");
 }
 
 /// Parse the output of `lsmod` to extract modules.

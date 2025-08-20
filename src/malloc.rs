@@ -19,7 +19,7 @@
 use std::fs;
 use std::sync::OnceLock;
 
-use crate::check;
+use crate::{check, log_debug};
 
 // FIXME: on NixOS the file is `/etc/ld-nix.so.preload`
 const LD_SO_PRELOAD_PATH: &str = "/etc/ld.so.preload";
@@ -41,6 +41,8 @@ pub fn init_ld_so_preload() {
         // an empty string, otherwise log error
         Err(_) => "".to_owned(),
     });
+
+    log_debug!("initialized ld.so.preload");
 }
 
 /// Uses [scudo](https://llvm.org/docs/ScudoHardenedAllocator.html).
