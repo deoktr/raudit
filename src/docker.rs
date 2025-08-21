@@ -26,8 +26,6 @@
 // with uid and gid > 0 and < 1000
 // TODO: ensure that ports are only exposed on loopback/localhost (if they are
 // not 80/443)
-// TODO: ensure no user is part of docker group, protect from easy privesc
-// https://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/docker-security/abusing-docker-socket-for-privilege-escalation.html
 // TODO: ensure docker is running rootless
 // https://docs.docker.com/engine/security/rootless/
 // TODO: ensure no containers has the docker socket mounted to it (`/var/run/docker.sock`), capabilities or is unconfined
@@ -39,7 +37,7 @@
 use std::process;
 use std::process::Stdio;
 
-use crate::check;
+use crate::{check, log_debug};
 
 /// Ensure containers are not started with `--privileged` flag.
 ///
@@ -85,8 +83,7 @@ pub fn docker_not_privileged() -> check::CheckReturn {
         })
         .collect();
 
-    // debug
-    // println!("Containers running with `--privileged`: {:?}", ids);
+    log_debug!("containers running with `--privileged`: {:?}", ids);
 
     if ids.len() == 0 {
         (check::CheckState::Passed, None)
@@ -139,8 +136,7 @@ pub fn docker_cap_drop() -> check::CheckReturn {
         })
         .collect();
 
-    // debug
-    // println!("Missing cap drop on containers: {:?}", ids);
+    log_debug!("Missing cap drop on containers: {:?}", ids);
 
     if ids.len() == 0 {
         (check::CheckState::Passed, None)

@@ -204,7 +204,7 @@ pub fn no_dup_name() -> check::CheckReturn {
     }
 }
 
-/// Ensure group has no members.
+/// Ensure group is empty.
 pub fn no_members(group_name: &str) -> check::CheckReturn {
     let groups = match GROUPS.get() {
         Some(group) => group,

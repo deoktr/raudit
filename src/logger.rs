@@ -28,7 +28,7 @@ pub enum LogLevel {
     Trace = 5,
 }
 
-const DEFAULT_LOG_LEVEL: LogLevel = LogLevel::Info;
+pub const DEFAULT_LOG_LEVEL: LogLevel = LogLevel::Info;
 
 static LOG_LEVEL: AtomicU8 = AtomicU8::new(DEFAULT_LOG_LEVEL as u8);
 

@@ -33,7 +33,7 @@ struct Cli {
     filters: Option<Vec<String>>,
 
     /// Log level
-    #[arg(long, value_enum, default_value_t = logger::LogLevel::Warn, env = "LOG_LEVEL")]
+    #[arg(long, value_enum, default_value_t = logger::DEFAULT_LOG_LEVEL, env = "LOG_LEVEL")]
     log_level: logger::LogLevel,
 
     /// Disable multi-threading parallelization

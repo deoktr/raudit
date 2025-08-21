@@ -15,4 +15,12 @@ pub fn add_checks() {
         docker::docker_cap_drop,
         vec![],
     );
+    // https://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/docker-security/abusing-docker-socket-for-privilege-escalation.html
+    check::add_check(
+        "CNT_003",
+        "Ensure group \"docker\" is empty",
+        vec!["container", "docker", "group"],
+        || group::no_members("docker"),
+        vec![group::init_group],
+    );
 }
