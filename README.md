@@ -165,10 +165,16 @@ Build updated version inside the container:
 podman run --rm --network none -v ./:/src raudit-build
 ```
 
-## Alternatives
+## Security
 
-- [lynis](https://github.com/CISOfy/lynis)
-- [kernel-hardening-checker](https://github.com/a13xp0p0v/kernel-hardening-checker)
+[cargo-audit](https://github.com/RustSec/rustsec/tree/main/cargo-audit) is used to audit dependencies for crates with security vulnerabilities, the check is made in Github CI.
+
+You can also manually run the audit:
+
+```bash
+cargo install cargo-audit --locked
+cargo audit
+```
 
 ## Benchmark
 
@@ -179,6 +185,11 @@ Benchmark 1: ./target/release/raudit
   Time (mean ± σ):     116.5 ms ±   5.3 ms    [User: 89.7 ms, System: 127.8 ms]
   Range (min … max):   110.6 ms … 132.7 ms    24 runs
 ```
+
+## Alternatives
+
+- [lynis](https://github.com/CISOfy/lynis)
+- [kernel-hardening-checker](https://github.com/a13xp0p0v/kernel-hardening-checker)
 
 ## TODO
 
@@ -196,6 +207,7 @@ Benchmark 1: ./target/release/raudit
 - Ensure localhost is resolved on `127.0.0.1` in `/etc/hosts`
 - Run `systemd-analyze security ...` on all systemd services and raise errors based on results
 - Ensure DNS supports DNSSEC and is secured with DoT DoH or DNSCRYPT
+- Ensure NTP is configured by running `timedatectl`
 - Ensure NTP is configured with NTS
 - Ensure logrotate is used
 - Ensure rsyslog is used
