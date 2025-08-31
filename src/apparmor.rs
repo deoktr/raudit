@@ -17,14 +17,20 @@
  */
 
 // TODO: parse apparmor profiles
+use std::fs;
 
-use crate::{check, utils::run};
+use crate::check;
 
 /// Ensure AppArmor is enabled.
 pub fn apparmor_enabled() -> check::CheckReturn {
-    if run!("aa-enabled") == "Yes" {
-        (check::CheckState::Passed, None)
-    } else {
-        (check::CheckState::Failed, None)
+    match fs::read_to_string("/sys/module/apparmor/parameters/enabled") {
+        Ok(content) => {
+            if content == "Y\n" {
+                (check::CheckState::Passed, None)
+            } else {
+                (check::CheckState::Failed, None)
+            }
+        }
+        Err(err) => (check::CheckState::Error, Some(err.to_string())),
     }
 }

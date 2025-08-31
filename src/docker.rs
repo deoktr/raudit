@@ -70,7 +70,7 @@ pub fn docker_not_privileged() -> check::CheckReturn {
                 let cmd: Vec<&str> = create_cmd[1..create_cmd.len() - 1].split(" ").collect();
 
                 // debug
-                println!("{} {:?}", id, cmd);
+                log_debug!("{} {:?}", id, cmd);
 
                 if cmd.contains(&"--privileged") {
                     Some(id.to_string())
@@ -123,7 +123,7 @@ pub fn docker_cap_drop() -> check::CheckReturn {
                 let cap_list: Vec<&str> = cap_drop[1..cap_drop.len() - 1].split(" ").collect();
 
                 // debug
-                println!("{} {:?}", id, cap_list);
+                log_debug!("{} {:?}", id, cap_list);
 
                 if cap_list.len() < 11 {
                     Some(id.to_string())

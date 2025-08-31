@@ -18,8 +18,6 @@
 
 use std::fs;
 use std::path::PathBuf;
-use std::process;
-use std::process::Stdio;
 use std::sync::OnceLock;
 
 use crate::{check, log_debug, log_error};
@@ -94,7 +92,8 @@ fn init_modprobe_config() {
         .collect();
 
     MODPROBE_CONFIG.get_or_init(|| config);
-    log_debug!("initialized modprobe");
+
+    log_debug!("initialized modprobe config");
 }
 
 /// Initialize modprobe blacklisted modules from modprobe config.
@@ -122,6 +121,7 @@ fn init_modprobe_blacklist() {
             .map(|line| line.to_string())
             .collect()
     });
+
     log_debug!("initialized modprobe blacklist");
 }
 
@@ -157,6 +157,7 @@ fn init_modprobe_disabled() {
             .map(|line| line.to_string())
             .collect()
     });
+
     log_debug!("initialized modprobe disabled");
 }
 
@@ -175,40 +176,23 @@ fn parse_lsmod_modules(lsmod: String) -> Vec<String> {
         .collect()
 }
 
-/// Initialize currently loaded kernel modules by running `lsmod`.
+/// Initialize currently loaded kernel modules by reading `/proc/modules`.
 fn init_loaded_modules() {
     if LOADED_MODULES.get().is_some() {
         return;
     }
 
-    // TODO: read from `/proc/modules` instead of using `lsmod`
-    let mut cmd = process::Command::new("lsmod");
-    cmd.stdin(Stdio::null());
-
-    match cmd.output() {
-        Ok(output) => {
-            match output.status.code() {
-                Some(status) => {
-                    if status != 0 {
-                        log_error!(
-                            "failed to initialize loaded kernel modules, exit code {} while running \"lsmod\"",
-                            status
-                        );
-                        return;
-                    }
-                }
-                None => (),
-            };
-
-            LOADED_MODULES.get_or_init(|| {
-                parse_lsmod_modules(String::from_utf8_lossy(&output.stdout).to_string())
-            });
+    match fs::read_to_string("/proc/modules") {
+        Ok(content) => {
+            LOADED_MODULES.get_or_init(|| parse_lsmod_modules(content));
         }
         Err(err) => {
             log_error!("failed to initialize loaded kernel modules: {}", err);
             return;
         }
     };
+
+    log_debug!("initialized modprobe loaded kernel modules");
 }
 
 /// Initialize modprobe configuration, disabled and blacklist.
@@ -217,6 +201,8 @@ pub fn init_modprobe() {
     init_modprobe_disabled();
     init_modprobe_blacklist();
     init_loaded_modules();
+
+    log_debug!("initialized modprobe");
 }
 
 /// Ensure that kernel module is blacklisted.
