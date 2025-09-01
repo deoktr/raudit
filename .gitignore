@@ -1,3 +1,5 @@
 debug/
 target/
 *.pdb
+*.json
+venv/

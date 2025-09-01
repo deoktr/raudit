@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Raudit</title>
+  <style>
+    .check { padding: 4px; }
+    .check-id { font-family: monospace; font-weight: bold; }
+    .check-message { font-style: italic; }
+    .state-Passed { background-color: oklch(87.1% 0.15 154.449); }
+    .state-Failed { background-color: oklch(80.8% 0.114 19.571); }
+    .state-Error { background-color: oklch(80.9% 0.105 251.813); }
+    .state-Waiting { background-color: oklch(86.9% 0.022 252.894); }
+  </style>
+</head>
+<body>
+  <h3>Raudit {{ version }}</h3>
+  <h4>Stats:</h4>
+  <table>
+    <thead>
+      <tr>
+        <th>Passed</th>
+        <th>Failed</th>
+        <th>Error</th>
+        <th>Waiting</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="state-Passed">{{ '%0.2f' % ((stats["passed"] / stats["total"]) * 100) }}% ({{ stats["passed"] }})</td>
+        <td class="state-Failed">{{ '%0.2f' % ((stats["failed"] / stats["total"]) * 100) }}% ({{ stats["failed"] }})</td>
+        <td class="state-Error">{{ '%0.2f' % ((stats["error"] / stats["total"]) * 100) }}% ({{ stats["error"] }})</td>
+        <td class="state-Waiting">{{ '%0.2f' % ((stats["waiting"] / stats["total"]) * 100) }}% ({{ stats["waiting"] }})</td>
+        <td>{{ stats["total"] }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <h4>Checks:</h4>
+  {% for check in checks %}
+  <div class="check state-{{ check.state }}">
+    <span class="check-id">[{{ check.id }}]</span>
+    {{ check.title }}
+    {% if check.message %}<span class="check-message">({{ check.message }})</span>{% endif %}
+  </div>
+  {% endfor %}
+</body>
+</html>
