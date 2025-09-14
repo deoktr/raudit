@@ -4,6 +4,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Raudit</title>
   <style>
+    body { padding: 10px; }
+    table { border-collapse: collapse; }
+    th, td { border: 1px solid black; }
     .check { padding: 4px; }
     .check-id { font-family: monospace; font-weight: bold; }
     .check-message { font-style: italic; }
@@ -37,12 +40,18 @@
     </tbody>
   </table>
   <h4>Checks:</h4>
-  {% for check in checks %}
-  <div class="check state-{{ check.state }}">
-    <span class="check-id">[{{ check.id }}]</span>
-    {{ check.title }}
-    {% if check.message %}<span class="check-message">({{ check.message }})</span>{% endif %}
-  </div>
+  <table>
+    <tbody>
+      {% for check in checks %}
+      <tr class="check state-{{ check.state }}">
+        <td class="check-id">[{{ check.id }}]</td>
+        <td>
+          {{ check.title }}
+          {% if check.message %}<span class="check-message">({{ check.message }})</span>{% endif %}
+        </td>
+      </tr>
+    </tbody>
   {% endfor %}
+  </table>
 </body>
 </html>
