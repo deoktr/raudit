@@ -3,16 +3,16 @@ use crate::*;
 pub fn add_checks() {
     check::add_check(
         "APT_001",
-        "Ensure apt is configured with \"Acquire::http::AllowRedirect\" = \"false\"",
+        "Ensure apt is configured with \"Acquire::http::AllowRedirect\" = \"0\"",
         vec!["apt"],
-        || apt::check_apt("Acquire::http::AllowRedirect", "false"),
+        || apt::check_apt("Acquire::http::AllowRedirect", "0"),
         vec![apt::init_apt_config],
     );
     check::add_check(
         "APT_002",
-        "Ensure apt is configured with \"APT::Get::AllowUnauthenticated\" = \"false\"",
+        "Ensure apt is configured with \"APT::Get::AllowUnauthenticated\" = \"0\"",
         vec!["apt"],
-        || apt::check_apt("APT::Get::AllowUnauthenticated", "false"),
+        || apt::check_apt("APT::Get::AllowUnauthenticated", "0"),
         vec![apt::init_apt_config],
     );
     check::add_check(
@@ -24,37 +24,37 @@ pub fn add_checks() {
     );
     check::add_check(
         "APT_004",
-        "Ensure apt is configured with \"APT::Get::AutomaticRemove\" = \"true\"",
+        "Ensure apt is configured with \"APT::Get::AutomaticRemove\" = \"1\"",
         vec!["apt"],
-        || apt::check_apt("APT::Get::AutomaticRemove", "true"),
+        || apt::check_apt("APT::Get::AutomaticRemove", "1"),
         vec![apt::init_apt_config],
     );
     check::add_check(
         "APT_005",
-        "Ensure apt is configured with \"APT::Install-Recommends\" = \"false\"",
+        "Ensure apt is configured with \"APT::Install-Recommends\" = \"0\"",
         vec!["apt"],
-        || apt::check_apt("APT::Install-Recommends", "false"),
+        || apt::check_apt("APT::Install-Recommends", "0"),
         vec![apt::init_apt_config],
     );
     check::add_check(
         "APT_006",
-        "Ensure apt is configured with \"APT::Install-Suggests\" = \"false\"",
+        "Ensure apt is configured with \"APT::Install-Suggests\" = \"0\"",
         vec!["apt"],
-        || apt::check_apt("APT::Install-Suggests", "false"),
+        || apt::check_apt("APT::Install-Suggests", "0"),
         vec![apt::init_apt_config],
     );
     check::add_check(
         "APT_007",
-        "Ensure apt is configured with \"Acquire::AllowInsecureRepositories\" = \"false\"",
+        "Ensure apt is configured with \"Acquire::AllowInsecureRepositories\" = \"0\"",
         vec!["apt"],
-        || apt::check_apt("Acquire::AllowInsecureRepositories", "false"),
+        || apt::check_apt("Acquire::AllowInsecureRepositories", "0"),
         vec![apt::init_apt_config],
     );
     check::add_check(
         "APT_008",
-        "Ensure apt is configured with \"Acquire::AllowDowngradeToInsecureRepositories\" = \"false\"",
+        "Ensure apt is configured with \"Acquire::AllowDowngradeToInsecureRepositories\" = \"0\"",
         vec!["apt"],
-        || apt::check_apt("Acquire::AllowDowngradeToInsecureRepositories", "false"),
+        || apt::check_apt("Acquire::AllowDowngradeToInsecureRepositories", "0"),
         vec![apt::init_apt_config],
     );
     check::add_check(
@@ -68,16 +68,16 @@ pub fn add_checks() {
     // unattended-upgrade
     check::add_check(
         "APT_010",
-        "Ensure apt is configured with \"Unattended-Upgrade::Remove-Unused-Dependencies\" = \"true\"",
+        "Ensure apt is configured with \"Unattended-Upgrade::Remove-Unused-Dependencies\" = \"1\"",
         vec!["apt"],
-        || apt::check_apt("Unattended-Upgrade::Remove-Unused-Dependencies", "true"),
+        || apt::check_apt("Unattended-Upgrade::Remove-Unused-Dependencies", "1"),
         vec![apt::init_apt_config],
     );
     check::add_check(
         "APT_011",
-        "Ensure apt is configured with \"Unattended-Upgrade::Remove-Unused-Kernel-Packages\" = \"true\"",
+        "Ensure apt is configured with \"Unattended-Upgrade::Remove-Unused-Kernel-Packages\" = \"1\"",
         vec!["apt"],
-        || apt::check_apt("Unattended-Upgrade::Remove-Unused-Kernel-Packages", "true"),
+        || apt::check_apt("Unattended-Upgrade::Remove-Unused-Kernel-Packages", "1"),
         vec![apt::init_apt_config],
     );
 }
