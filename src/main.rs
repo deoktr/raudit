@@ -17,6 +17,7 @@
  */
 
 mod apparmor;
+mod apt;
 mod audit;
 mod base;
 mod check;
@@ -47,6 +48,7 @@ mod utils;
 
 mod rules {
     pub mod apparmor;
+    pub mod apt;
     pub mod audit;
     pub mod clamav;
     pub mod docker;

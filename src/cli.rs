@@ -136,6 +136,8 @@ pub fn cli() {
 // add checks for all modules
 fn add_all_checks() {
     rules::apparmor::add_checks();
+    // TODO: automatically filter out if not on Debian based distro
+    rules::apt::add_checks();
     rules::audit::add_checks();
     rules::clamav::add_checks();
     rules::docker::add_checks();

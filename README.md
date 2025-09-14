@@ -122,6 +122,7 @@ What is supported:
 - Grub configuration
 - GDM configuration
 - Shell configuration
+- APT package manager configuration
 
 Support planned:
 
@@ -190,6 +191,7 @@ Benchmark 1: ./target/release/raudit
 
 - [lynis](https://github.com/CISOfy/lynis)
 - [kernel-hardening-checker](https://github.com/a13xp0p0v/kernel-hardening-checker)
+- [konstruktoid/hardening](https://github.com/konstruktoid/hardening)
 
 ## TODO
 
