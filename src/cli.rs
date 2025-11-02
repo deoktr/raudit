@@ -144,6 +144,7 @@ fn add_all_checks() {
     rules::gdm::add_checks();
     rules::group::add_checks();
     rules::grub::add_checks();
+    rules::hosts::add_checks();
     rules::kernel::add_checks();
     rules::kernel_params::add_checks();
     rules::login_defs::add_checks();

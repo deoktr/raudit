@@ -29,6 +29,7 @@ mod docker;
 mod gdm;
 mod group;
 mod grub;
+mod hosts;
 mod kconfig;
 mod kernel;
 mod logger;
@@ -55,6 +56,7 @@ mod rules {
     pub mod gdm;
     pub mod group;
     pub mod grub;
+    pub mod hosts;
     pub mod kernel;
     pub mod kernel_params;
     pub mod login_defs;

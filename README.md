@@ -104,42 +104,41 @@ Some modules help with specific configuration checks.
 
 What is supported:
 
-- Mounts including options
-- Kenel params
-- Kernel compilation params
-- Sysctl params
-- Docker/Podman containers
-- Login.defs configuration
-- Modprobe including blacklisted and disabled modules
-- PAM rules
-- OpenSSH server configuration
-- Sudo configuration
-- Users and groups
-- Uptime
-- Systemd configuration
-- Processes
-- Audit rules and configuration
-- Grub configuration
-- GDM configuration
-- Shell configuration
-- APT package manager configuration
+- Mounts including options.
+- Kenel params.
+- Kernel compilation params.
+- Sysctl params.
+- Docker/Podman containers.
+- Login.defs configuration.
+- Modprobe including blacklisted and disabled modules.
+- PAM rules.
+- OpenSSH server configuration.
+- Sudo configuration.
+- Users and groups.
+- Uptime.
+- Systemd configuration.
+- Processes.
+- Audit rules and configuration.
+- Grub configuration.
+- GDM configuration.
+- Shell configuration.
+- APT package manager configuration.
+- Hosts configuration.
 
 Support planned:
 
-- AppArmor
-- SELinux
-- ip and nftables
-- systemd units
-- nginx
-- Apache
-- Redis
-- MySQL
-- Squid
-- Traefik
-- Caddy
-- PostgreSQL
-- ProFTPD
-- firejail
+- AppArmor.
+- SELinux.
+- IP and nftables.
+- Systemd units.
+- Nginx.
+- Apache.
+- Redis.
+- MySQL.
+- Squid.
+- PostgreSQL.
+- ProFTPD.
+- Firejail.
 
 ## Build
 
@@ -198,15 +197,10 @@ Benchmark 1: ./target/release/raudit
 - Give much more detailed logs of the error
 - Support tag negation with `!` this could be used if a setting changed based on a tag, for example `paranoid` could have stricter rules compared to `!paranoid` for the same config
 - Add a "criticity", "hardening level" value linked to a check
-- Generate linux audit logs
-- Add AppArmor profile
 - Create custom parsers for complex configurations (sudo, nginx, etc.)
 - Give the user's the ability to specify config paths, with globing
-- Get configuration from file
+- Get raudit configuration from file
 - Check permissions on startup (root or not) and warn user if needed
-- Add firejail rules
-- Add firejail profile for raudit
-- Ensure localhost is resolved on `127.0.0.1` in `/etc/hosts`
 - Run `systemd-analyze security ...` on all systemd services and raise errors based on results
 - Ensure DNS supports DNSSEC and is secured with DoT DoH or DNSCRYPT
 - Ensure NTP is configured by running `timedatectl`
