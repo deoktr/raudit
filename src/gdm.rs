@@ -28,7 +28,7 @@ const GDM_CFG_PATH: &str = "/etc/gdm/custom.conf";
 ///
 /// <https://www.stigviewer.com/stig/red_hat_enterprise_linux_9/2024-06-04/finding/V-258018>
 pub fn no_gdm_auto_logon() -> check::CheckReturn {
-    // TODO: ensure that this is under `[daemon]`
+    // TODO: ensure that this is under `[daemon]`, parse with TOML
     match fs::read_to_string(GDM_CFG_PATH) {
         Ok(cfg) => {
             if cfg.lines().any(|l| l == "AutomaticLoginEnable=false") {
