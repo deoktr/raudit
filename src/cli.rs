@@ -158,5 +158,6 @@ fn add_all_checks() {
     rules::sysctl::add_checks();
     rules::system::add_checks();
     rules::systemd::add_checks();
+    rules::uptime::add_checks();
     rules::user::add_checks();
 }

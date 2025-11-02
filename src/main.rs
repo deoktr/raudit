@@ -44,6 +44,7 @@ mod sshd;
 mod sudo;
 mod sysctl;
 mod systemd;
+mod uptime;
 mod users;
 mod utils;
 
@@ -70,6 +71,7 @@ mod rules {
     pub mod sysctl;
     pub mod system;
     pub mod systemd;
+    pub mod uptime;
     pub mod user;
 }
 

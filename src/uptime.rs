@@ -19,26 +19,52 @@
 use std::fs;
 use std::sync::OnceLock;
 
+use crate::{check, log_debug, log_error};
+
 const UPTIME_PATH: &str = "/proc/uptime";
 
 pub static UPTIME: OnceLock<u64> = OnceLock::new();
 
 /// Init system uptime by reading `/proc/uptime`.
-pub fn init_uptime() -> Result<(), std::io::Error> {
-    let content = fs::read_to_string(UPTIME_PATH)?;
-    match content.split_once(" ") {
-        Some((uptime, _idle)) => {
-            // remove the decimals before parsing to u64
-            match uptime[..uptime.len() - 3].parse::<u64>() {
-                Ok(u) => {
-                    UPTIME.get_or_init(|| u);
-                    ()
+pub fn init_uptime() {
+    if UPTIME.get().is_some() {
+        return;
+    }
+
+    match fs::read_to_string(UPTIME_PATH) {
+        Ok(content) => match content.split_once(" ") {
+            Some((uptime, _idle)) => {
+                // remove the decimals before parsing to u64
+                match uptime[..uptime.len() - 3].parse::<u64>() {
+                    Ok(u) => {
+                        UPTIME.get_or_init(|| u);
+                        log_debug!("initialized uptime");
+                        ()
+                    }
+                    Err(err) => log_error!("Failed to initialize uptime: {}", err),
                 }
-                // should never happen, don't even log it
-                Err(_) => (),
+            }
+            None => log_error!("Failed to initialize uptime: invalide file format"),
+        },
+        Err(err) => log_error!("Failed to initialize uptime: {}", err),
+    };
+}
+
+/// Ensure uptime is bellow the maximum allowed.
+pub fn uptime_bellow(max_uptime: u64) -> check::CheckReturn {
+    match UPTIME.get() {
+        Some(uptime) => {
+            if uptime < &max_uptime {
+                return (check::CheckState::Passed, None);
+            } else {
+                (check::CheckState::Failed, Some(format!("{}", uptime)))
             }
         }
-        None => (),
-    };
-    Ok(())
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("uptime not initialized".to_string()),
+            );
+        }
+    }
 }

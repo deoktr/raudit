@@ -50,7 +50,7 @@ fn parse_hosts(hosts: String) -> Hosts {
         .collect()
 }
 
-/// Get the system's grub config from `/boot/grub/grub.cfg`.
+/// Get the system's hosts config from `/boot/grub/grub.cfg`.
 pub fn init_hosts() {
     if HOSTS.get().is_some() {
         return;
@@ -69,7 +69,7 @@ pub fn init_hosts() {
     log_debug!("initialized hosts");
 }
 
-/// Verify that grub is configured with a password.
+/// Ensure that hosts entry is present.
 pub fn entry_present(addr: &str, value: &str) -> check::CheckReturn {
     let hosts = match HOSTS.get() {
         Some(c) => c,
