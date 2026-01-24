@@ -25,16 +25,14 @@ use crate::check;
 use crate::{base, log_debug, log_error};
 
 const PASSWD_PATH: &str = "/etc/passwd";
-
 const SHADOW_PATH: &str = "/etc/shadow";
-
 const SECURETTY_PATH: &str = "/etc/securetty";
 
+// TODO: get dynamically
 /// UID_MIN as defined in `/etc/login.defs`.
 const UID_MIN: u32 = 1000;
 
 static PASSWD_CONFIG: OnceLock<PasswdConfig> = OnceLock::new();
-
 static SHADOW_CONFIG: OnceLock<ShadowConfig> = OnceLock::new();
 
 /// Passwd configuration from `/etc/passwd`.

@@ -36,10 +36,8 @@ static REPORT: Lazy<Mutex<Report>> = Lazy::new(|| Mutex::new(Report::default()))
 pub struct Report {
     /// List of checks
     checks: Vec<Check>,
-
     /// Check stats
     stats: ReportStats,
-
     /// Raudit version
     version: String,
 }
@@ -48,13 +46,10 @@ pub struct Report {
 pub enum CheckState {
     /// Check passed
     Passed,
-
     /// Check failed
     Failed,
-
     /// Check function execution error
     Error,
-
     /// Check is yet to execute
     Waiting,
 }

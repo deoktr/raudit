@@ -90,6 +90,7 @@ pub fn add_checks() {
         "USR_101",
         "Ensure \"/etc/shadow\" file permissions are \"640\"",
         vec!["group", "CIS"],
+        // TODO: accept less permissions, like 600
         || base::check_file_permission("/etc/shadow", 0o640),
         vec![],
     );
@@ -98,6 +99,7 @@ pub fn add_checks() {
         "Ensure \"/etc/shadow-\" file owner is \"root:shadow\" or file is missing",
         vec!["group", "CIS"],
         // FIXME: use shadow gid instead of 42
+        // TODO: create util function to get UID fron username
         || base::check_file_owner_id_ignore_missing("/etc/shadow-", 0, 42),
         vec![],
     );
@@ -117,7 +119,7 @@ pub fn add_checks() {
     );
     check::add_check(
         "USR_105",
-        "Ensure \"/etc/security/opasswd\" file permissions are \"640\" or file is missing",
+        "Ensure \"/etc/security/opasswd\" file permissions are \"600\" or file is missing",
         vec!["group"],
         || base::check_file_permission_ignore_missing("/etc/security/opasswd", 0o600),
         vec![],

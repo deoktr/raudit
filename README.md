@@ -4,14 +4,9 @@ rAudit is a security audit tool to help you create your own security audit check
 
 Goals:
 
-- Fast and reliable audits
-- Easy to extend and create your own checks
-- JSON output
-
-What it is NOT:
-
-- A configuration tool, no change is ever applied, just checks
-- A vulnerability checker, no attempts to find vulnerable versions of applications are made
+- Fast and reliable audits.
+- Easy to extend and create your own checks.
+- JSON output.
 
 ## Usage
 
@@ -108,7 +103,7 @@ What is supported:
 - Kenel params.
 - Kernel compilation params.
 - Sysctl params.
-- Docker/Podman containers.
+- Docker and Podman.
 - Login.defs configuration.
 - Modprobe including blacklisted and disabled modules.
 - PAM rules.
@@ -220,6 +215,7 @@ Benchmark 1: ./target/release/raudit
 - Add documentation, both user and dev
 - Add option to only have `id`, `message` and `state` in JSON output of checks
 - Add check timeout, if they take too long just stop them, maybe even with ctrl+c?
+- Build in CI on release
 
 ## License
 

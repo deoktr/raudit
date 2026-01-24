@@ -18,10 +18,6 @@
 
 // TODO: cache containers JSON config instead of query for all checks
 // TODO: check: <https://github.com/docker/docker-bench-security>
-// docker container inspect -l --format '{{.Id}}={{.Config.User}}'
-// each line are id=user
-// the user should also define the group, ex: `999:999`
-// with uid and gid > 0 and < 1000
 // TODO: ensure that ports are only exposed on loopback/localhost (if they are
 // not 80/443)
 // TODO: ensure docker is running rootless
@@ -41,9 +37,9 @@ use crate::{check, log_debug, log_trace};
 ///
 /// Don't start containers with `--privileged`.
 /// Check manually with:
-/// docker container inspect -l --format '{{.Id}}={{.Config.CreateCommand}}'
-pub fn docker_not_privileged() -> check::CheckReturn {
-    let mut cmd = process::Command::new("docker");
+/// podman container inspect -l --format '{{.Id}}\t{{.Config.CreateCommand}}'
+pub fn podman_not_privileged() -> check::CheckReturn {
+    let mut cmd = process::Command::new("podman");
     cmd.stdin(Stdio::null());
     cmd.args(vec![
         "container",
@@ -66,7 +62,7 @@ pub fn docker_not_privileged() -> check::CheckReturn {
                 // remove []
                 let cmd: Vec<&str> = create_cmd[1..create_cmd.len() - 1].split(" ").collect();
 
-                log_trace!("docker privileged {} {:?}", id, cmd);
+                log_trace!("podman privileged {} {:?}", id, cmd);
 
                 if cmd.contains(&"--privileged") {
                     Some(id.to_string())
@@ -92,9 +88,9 @@ pub fn docker_not_privileged() -> check::CheckReturn {
 ///
 /// Start containers with `--cap-drop=all` to remove all capabilities.
 /// check manually with:
-/// docker container inspect -l --format '{{.Id}}={{.Config.CreateCommand}}'
-pub fn docker_cap_drop() -> check::CheckReturn {
-    let mut cmd = process::Command::new("docker");
+/// podman container inspect -l --format '{{.Id}}={{.Config.CreateCommand}}'
+pub fn podman_cap_drop() -> check::CheckReturn {
+    let mut cmd = process::Command::new("podman");
     cmd.stdin(Stdio::null());
     cmd.args(vec![
         "container",
@@ -117,7 +113,7 @@ pub fn docker_cap_drop() -> check::CheckReturn {
                 // remove []
                 let cap_list: Vec<&str> = cap_drop[1..cap_drop.len() - 1].split(" ").collect();
 
-                log_trace!("docker cap {} {:?}", id, cap_list);
+                log_trace!("cap list for podman container {} {:?}", id, cap_list);
 
                 if cap_list.len() < 11 {
                     Some(id.to_string())
@@ -131,6 +127,55 @@ pub fn docker_cap_drop() -> check::CheckReturn {
         .collect();
 
     log_debug!("Missing cap drop on containers: {:?}", ids);
+
+    if ids.len() == 0 {
+        (check::CheckState::Passed, None)
+    } else {
+        (check::CheckState::Failed, Some(ids.join(", ")))
+    }
+}
+
+/// Ensure containers services are running as user.
+///
+/// Start containers and run process as a user inside it.
+/// check manually with:
+/// podman container inspect -l --format '{{.Id}}\t{{.Config.User}}'
+pub fn podman_user() -> check::CheckReturn {
+    let mut cmd = process::Command::new("podman");
+    cmd.stdin(Stdio::null());
+    cmd.args(vec![
+        "container",
+        "inspect",
+        "-l",
+        "--format",
+        "{{.Id}}\t{{.Config.User}}",
+    ]);
+
+    let output = match cmd.output() {
+        Ok(output) => output,
+        Err(err) => return (check::CheckState::Failed, Some(err.to_string())),
+    };
+
+    let ids: Vec<String> = String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .map(|x| x.to_string())
+        .filter_map(|line| match line.split_once("\t") {
+            Some((id, uid)) => {
+                // debug
+                log_trace!("podman container user {} {:?}", id, uid);
+
+                if uid == "0" {
+                    Some(id.to_string())
+                } else {
+                    None
+                }
+            }
+            // should never happen, don't even log it
+            None => None,
+        })
+        .collect();
+
+    log_debug!("Running as root on containers: {:?}", ids);
 
     if ids.len() == 0 {
         (check::CheckState::Passed, None)

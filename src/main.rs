@@ -38,6 +38,7 @@ mod malloc;
 mod modprobe;
 mod mount;
 mod pam;
+mod podman;
 mod ps;
 mod shell;
 mod sshd;
@@ -65,6 +66,7 @@ mod rules {
     pub mod modprobe;
     pub mod mount;
     pub mod pam;
+    pub mod podman;
     pub mod shell;
     pub mod sshd;
     pub mod sudo;

@@ -23,7 +23,6 @@ use crate::base::empty_or_missing_file;
 use crate::{check, log_debug, log_error};
 
 const GROUP_PATH: &str = "/etc/group";
-
 const SHADOW_PATH: &str = "/etc/gshadow";
 
 static GROUPS: OnceLock<Groups> = OnceLock::new();

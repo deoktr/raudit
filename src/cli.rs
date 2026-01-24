@@ -152,6 +152,7 @@ fn add_all_checks() {
     rules::modprobe::add_checks();
     rules::mount::add_checks();
     rules::pam::add_checks();
+    rules::podman::add_checks();
     rules::shell::add_checks();
     rules::sshd::add_checks();
     rules::sudo::add_checks();
