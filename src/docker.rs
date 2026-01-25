@@ -31,7 +31,7 @@
 // TODO: ensure an apparmor profile is enabled for containers
 // TODO: ensure containers are isolated with user namespaces <https://docs.docker.com/engine/security/userns-remap/>
 // TODO: ensure resources are limited to avoid container DOS the host
-// TODO: get and store podman configuration from `podman info -f json`
+// TODO: get and store docker configuration from `docker info -f json`
 
 use std::process;
 use std::process::Stdio;
@@ -42,14 +42,15 @@ use crate::{check, log_debug, log_trace};
 ///
 /// Don't start containers with `--privileged`.
 /// Check manually with:
-/// docker container inspect -l --format '{{.Id}}={{.Config.CreateCommand}}'
+/// docker container inspect --format '{{.Id}}={{.Config.CreateCommand}}' <id>
 pub fn docker_not_privileged() -> check::CheckReturn {
+    // FIXME: iter over containers
+
     let mut cmd = process::Command::new("docker");
     cmd.stdin(Stdio::null());
     cmd.args(vec![
         "container",
         "inspect",
-        "-l",
         "--format",
         "{{.Id}}\t{{.Config.CreateCommand}}",
     ]);
@@ -80,7 +81,9 @@ pub fn docker_not_privileged() -> check::CheckReturn {
         })
         .collect();
 
-    log_debug!("containers running with `--privileged`: {:?}", ids);
+    if ids.len() > 0 {
+        log_debug!("containers running with `--privileged`: {:?}", ids);
+    }
 
     if ids.len() == 0 {
         (check::CheckState::Passed, None)
@@ -93,14 +96,15 @@ pub fn docker_not_privileged() -> check::CheckReturn {
 ///
 /// Start containers with `--cap-drop=all` to remove all capabilities.
 /// check manually with:
-/// docker container inspect -l --format '{{.Id}}={{.Config.CreateCommand}}'
+/// docker container inspect --format '{{.Id}}={{.HostConfig.CapDrop}}' <id>
 pub fn docker_cap_drop() -> check::CheckReturn {
+    // FIXME: iter over containers
+
     let mut cmd = process::Command::new("docker");
     cmd.stdin(Stdio::null());
     cmd.args(vec![
         "container",
         "inspect",
-        "-l",
         "--format",
         "{{.Id}}\t{{.HostConfig.CapDrop}}",
     ]);
@@ -131,7 +135,62 @@ pub fn docker_cap_drop() -> check::CheckReturn {
         })
         .collect();
 
-    log_debug!("Missing cap drop on containers: {:?}", ids);
+    if ids.len() > 0 {
+        log_debug!("Missing cap drop on containers: {:?}", ids);
+    }
+
+    if ids.len() == 0 {
+        (check::CheckState::Passed, None)
+    } else {
+        (check::CheckState::Failed, Some(ids.join(", ")))
+    }
+}
+
+/// Ensure all containers are running with non-root user.
+///
+/// check manually with:
+/// docker container inspect --format '{{.Id}}={{.Config.User}}' <id>
+pub fn docker_container_user() -> check::CheckReturn {
+    // FIXME: iter over containers
+
+    let mut cmd = process::Command::new("docker");
+    cmd.stdin(Stdio::null());
+    cmd.args(vec![
+        "container",
+        "inspect",
+        "--format",
+        "{{.Id}}\t{{.Config.User}}",
+    ]);
+
+    let output = match cmd.output() {
+        Ok(output) => output,
+        Err(err) => return (check::CheckState::Failed, Some(err.to_string())),
+    };
+
+    let ids: Vec<String> = String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .map(|x| x.to_string())
+        .filter_map(|line| match line.split_once("\t") {
+            Some((id, cap_drop)) => {
+                // remove []
+                let cap_list: Vec<&str> = cap_drop[1..cap_drop.len() - 1].split(" ").collect();
+
+                log_trace!("docker user {} {:?}", id, cap_list);
+
+                if cap_list.len() < 11 {
+                    Some(id.to_string())
+                } else {
+                    None
+                }
+            }
+            // should never happen, don't even log it
+            None => None,
+        })
+        .collect();
+
+    if ids.len() > 0 {
+        log_debug!("Missing user on containers: {:?}", ids);
+    }
 
     if ids.len() == 0 {
         (check::CheckState::Passed, None)

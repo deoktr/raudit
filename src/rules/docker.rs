@@ -115,6 +115,136 @@ pub fn add_checks() {
         vec![ps::init_proc],
     );
     check::add_check(
+        "CNT_016",
+        "Ensure docker service file is owned by root",
+        vec!["container", "docker", "systemd", "CIS"], // CIS Docker 3.1
+        || match systemd::get_service_file("docker") {
+            Some(path) => base::check_file_owner_id(&path, 0, 0),
+            None => (
+                check::CheckState::Error,
+                Some("systemd docker file not found".to_string()),
+            ),
+        },
+        vec![],
+    );
+    check::add_check(
+        "CNT_017",
+        "Ensure docker service file permissions 644 are set",
+        vec!["container", "docker", "systemd", "CIS"], // CIS Docker 3.2
+        || match systemd::get_service_file("docker") {
+            Some(path) => base::check_file_permission(&path, 0o644),
+            None => (
+                check::CheckState::Error,
+                Some("systemd docker file not found".to_string()),
+            ),
+        },
+        vec![],
+    );
+    check::add_check(
+        "CNT_018",
+        "Ensure docker socket file is owned by root",
+        vec!["container", "docker", "systemd", "CIS"], // CIS Docker 3.3
+        || match systemd::get_socket_file("docker") {
+            Some(path) => base::check_file_owner_id(&path, 0, 0),
+            None => (
+                check::CheckState::Error,
+                Some("systemd docker file not found".to_string()),
+            ),
+        },
+        vec![],
+    );
+    check::add_check(
+        "CNT_019",
+        "Ensure docker socket file permissions 644 are set",
+        vec!["container", "docker", "systemd", "CIS"], // CIS Docker 3.4
+        || match systemd::get_socket_file("docker") {
+            Some(path) => base::check_file_permission(&path, 0o644),
+            None => (
+                check::CheckState::Error,
+                Some("systemd docker file not found".to_string()),
+            ),
+        },
+        vec![],
+    );
+    // TODO: allow missing
+    check::add_check(
+        "CNT_020",
+        "Ensure docker etc directory is owned by root",
+        vec!["container", "docker", "CIS"], // CIS Docker 3.5
+        || base::check_dir_owner_id("/etc/docker", 0, 0),
+        vec![],
+    );
+    // TODO: allow missing
+    check::add_check(
+        "CNT_021",
+        "Ensure docker etc directory permissions is 755",
+        vec!["container", "docker", "CIS"], // CIS Docker 3.6
+        || base::check_dir_permission("/etc/docker", 0o755),
+        vec![],
+    );
+    // TODO: allow missing
+    check::add_check(
+        "CNT_022",
+        "Ensure docker daemon.json config file is owned by root",
+        vec!["container", "docker", "CIS"], // CIS Docker 3.17
+        || base::check_file_owner_id("/etc/docker/daemon.json", 0, 0),
+        vec![],
+    );
+    // TODO: allow missing
+    check::add_check(
+        "CNT_023",
+        "Ensure docker daemon.json config file permissions is 644",
+        vec!["container", "docker", "CIS"], // CIS Docker 3.18
+        || base::check_file_permission("/etc/docker/daemon.json", 0o644),
+        vec![],
+    );
+    // TODO: allow missing
+    check::add_check(
+        "CNT_024",
+        "Ensure default docker config file is owned by root",
+        vec!["container", "docker", "CIS"], // CIS Docker 3.19
+        || base::check_file_owner_id("/etc/default/docker", 0, 0),
+        vec![],
+    );
+    // TODO: allow missing
+    check::add_check(
+        "CNT_025",
+        "Ensure default docker config file permissions is 644",
+        vec!["container", "docker", "CIS"], // CIS Docker 3.20
+        || base::check_file_permission("/etc/default/docker", 0o644),
+        vec![],
+    );
+    // TODO: only if on RHEL/Centos
+    check::add_check(
+        "CNT_026",
+        "Ensure sysconfig docker config file is owned by root",
+        vec!["container", "docker", "CIS"], // CIS Docker 3.21
+        || base::check_file_owner_id("/etc/sysconfig/docker", 0, 0),
+        vec![],
+    );
+    // TODO: only if on RHEL/Centos
+    check::add_check(
+        "CNT_027",
+        "Ensure sysconfig docker config file permissions is 644",
+        vec!["container", "docker", "CIS"], // CIS Docker 3.22
+        || base::check_file_permission("/etc/sysconfig/docker", 0o644),
+        vec![],
+    );
+    check::add_check(
+        "CNT_028",
+        "Ensure docker containerd socket file is owned by root",
+        vec!["container", "docker", "CIS"], // CIS Docker 3.23
+        || base::check_file_owner_id("/run/containerd/containerd.sock", 0, 0),
+        vec![],
+    );
+    check::add_check(
+        "CNT_029",
+        "Ensure docker containerd socket file permissions is 660",
+        vec!["container", "docker", "CIS"], // CIS Docker 3.24
+        || base::check_file_permission("/run/containerd/containerd.sock", 0o660),
+        vec![],
+    );
+    check::add_check(
         "CNT_100",
         "Ensure audit rule for docker daemon is present",
         vec!["container", "docker", "audit", "CIS"], // CIS Docker 1.1.3

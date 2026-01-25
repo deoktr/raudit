@@ -76,7 +76,9 @@ pub fn podman_not_privileged() -> check::CheckReturn {
         })
         .collect();
 
-    log_debug!("containers running with `--privileged`: {:?}", ids);
+    if ids.len() > 0 {
+        log_debug!("containers running with `--privileged`: {:?}", ids);
+    }
 
     if ids.len() == 0 {
         (check::CheckState::Passed, None)
@@ -127,7 +129,9 @@ pub fn podman_cap_drop() -> check::CheckReturn {
         })
         .collect();
 
-    log_debug!("Missing cap drop on containers: {:?}", ids);
+    if ids.len() > 0 {
+        log_debug!("Missing cap drop on containers: {:?}", ids);
+    }
 
     if ids.len() == 0 {
         (check::CheckState::Passed, None)
@@ -176,7 +180,9 @@ pub fn podman_user() -> check::CheckReturn {
         })
         .collect();
 
-    log_debug!("Running as root on containers: {:?}", ids);
+    if ids.len() > 0 {
+        log_debug!("Running as root on containers: {:?}", ids);
+    }
 
     if ids.len() == 0 {
         (check::CheckState::Passed, None)

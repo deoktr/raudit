@@ -105,6 +105,41 @@ pub fn check_file_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn
     }
 }
 
+// TODO: have an alternative function that takes in a username and group name
+/// Check a directory owner uid and gid.
+pub fn check_dir_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
+    let metadata = match fs::metadata(path) {
+        Ok(v) => v,
+        Err(err) => {
+            return (check::CheckState::Error, Some(err.to_string()));
+        }
+    };
+
+    if !metadata.is_dir() {
+        return (
+            check::CheckState::Error,
+            Some("path is not a directory".to_string()),
+        );
+    }
+
+    let muid = metadata.uid();
+    let mgid = metadata.gid();
+
+    log_trace!("checking file owner for {:?}, got: {}:{}", path, muid, mgid);
+
+    if muid != uid || mgid != gid {
+        (
+            check::CheckState::Failed,
+            Some(format!(
+                "wanted \"{}:{}\" got \"{}:{}\"",
+                uid, gid, muid, mgid
+            )),
+        )
+    } else {
+        (check::CheckState::Passed, None)
+    }
+}
+
 /// Check a file owner uid and gid, and ignore error if file is missing.
 pub fn check_file_owner_id_ignore_missing(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
     match fs::metadata(path) {
@@ -140,6 +175,39 @@ pub fn check_file_permission(path: &str, perms: u32) -> check::CheckReturn {
     let mode = metadata.mode() & 0o777;
 
     log_trace!("checking file mode for {:?}, got: {:o}", path, mode);
+
+    if mode != perms {
+        (
+            check::CheckState::Failed,
+            Some(format!("wanted \"{:o}\" got \"{:o}\"", perms, mode)),
+        )
+    } else {
+        (check::CheckState::Passed, None)
+    }
+}
+
+/// Check a directory permissions.
+///
+/// Permissions should be defined like: 0o644.
+/// <https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.mode>
+pub fn check_dir_permission(path: &str, perms: u32) -> check::CheckReturn {
+    let metadata = match fs::metadata(path) {
+        Ok(v) => v,
+        Err(err) => {
+            return (check::CheckState::Error, Some(err.to_string()));
+        }
+    };
+
+    if !metadata.is_dir() {
+        return (
+            check::CheckState::Error,
+            Some("path is not a directory".to_string()),
+        );
+    }
+
+    let mode = metadata.mode() & 0o777;
+
+    log_trace!("checking dir mode for {:?}, got: {:o}", path, mode);
 
     if mode != perms {
         (

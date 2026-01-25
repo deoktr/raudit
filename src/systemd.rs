@@ -18,9 +18,10 @@
 
 use std::collections::HashMap;
 use std::fs;
+use std::path::Path;
 use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_error};
+use crate::{check, log_debug, log_error, utils::run};
 
 const SYSTEMD_CONF_PATH: &str = "/etc/systemd/system.conf";
 
@@ -98,4 +99,41 @@ pub fn get_systemd_config(key: &str, value: &str) -> check::CheckReturn {
             Some(format!("missing key {:?}", key)),
         ),
     }
+}
+
+/// Get the path of the systemd service file.
+pub fn get_systemd_file(service: &str) -> Option<String> {
+    let sys_path = format!("/etc/systemd/system/{}", service);
+    if Path::new(&sys_path).exists() {
+        return Some(sys_path);
+    }
+
+    let lib_path = format!("/lib/systemd/system/{}", service);
+    if Path::new(&lib_path).exists() {
+        return Some(lib_path);
+    }
+
+    match run!("systemctl", "show", "-p", "FragmentPath", &service).strip_prefix("FragmentPath=") {
+        Some(p) => {
+            if p != "" {
+                return Some(p.to_string());
+            }
+        }
+        None => (),
+    };
+
+    let usr_lib_path = format!("/usr/lib/systemd/system/{}", service);
+    if Path::new(&usr_lib_path).exists() {
+        return Some(usr_lib_path);
+    }
+
+    None
+}
+
+pub fn get_service_file(name: &str) -> Option<String> {
+    get_systemd_file(&format!("{}.service", name))
+}
+
+pub fn get_socket_file(name: &str) -> Option<String> {
+    get_systemd_file(&format!("{}.socket", name))
 }

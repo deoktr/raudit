@@ -37,11 +37,10 @@ macro_rules! run {
         run!($bin,)
     };
 
-    ($bin:tt, $($params:tt),*) => {{
+    ($bin:tt, $($params:expr),*) => {{
         let mut cmd = std::process::Command::new($bin);
         cmd.stdin(std::process::Stdio::null());
-        let params: Vec<&str> = vec![$($params),*];
-        cmd.args(params);
+        cmd.args(&[$($params),*]);
         match cmd.output() {
             Ok(output) => String::from_utf8_lossy(&output.stdout).to_string().replace("\n", ""),
             Err(_) => "".to_string(),
