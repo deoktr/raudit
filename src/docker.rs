@@ -31,12 +31,85 @@
 // TODO: ensure an apparmor profile is enabled for containers
 // TODO: ensure containers are isolated with user namespaces <https://docs.docker.com/engine/security/userns-remap/>
 // TODO: ensure resources are limited to avoid container DOS the host
-// TODO: get and store docker configuration from `docker info -f json`
 
+use serde_json::Value;
 use std::process;
 use std::process::Stdio;
+use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_trace};
+use crate::{check, log_debug, log_error, log_trace};
+
+static DOCKER_INFO: OnceLock<DockerInfo> = OnceLock::new();
+
+pub type DockerInfo = Value;
+
+/// Initialize docker info by running `docker info -f json`.
+pub fn init_docker_info() {
+    if DOCKER_INFO.get().is_some() {
+        return;
+    }
+
+    let mut cmd = process::Command::new("docker");
+    cmd.stdin(Stdio::null());
+    cmd.args(vec!["info", "-f", "json"]);
+
+    match cmd.output() {
+        Ok(output) => {
+            let stdout = match str::from_utf8(&output.stdout) {
+                Ok(s) => s,
+                Err(err) => {
+                    log_error!("Failed to read docker info as UTF8: {}", err);
+                    return;
+                }
+            };
+
+            let config: DockerInfo = match serde_json::from_str(stdout) {
+                Ok(c) => c,
+                Err(err) => {
+                    log_error!("Failed to unmarshal json from docker info: {}", err);
+                    return;
+                }
+            };
+            DOCKER_INFO.get_or_init(|| config);
+        }
+        Err(err) => {
+            log_error!("Failed to initialize docker info: {}", err);
+            return;
+        }
+    };
+
+    log_debug!("initialized docker info");
+}
+
+/// Check a configuration from Docker, the pointer are defined by RFC6901.
+pub fn check_docker_info(pointer: &str, expected: Value) -> check::CheckReturn {
+    let info = match DOCKER_INFO.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("docker info not initialized".to_string()),
+            );
+        }
+    };
+
+    match &info.pointer(pointer) {
+        Some(val) => {
+            if **val != expected {
+                (
+                    check::CheckState::Failed,
+                    Some(format!("{:?} != {:?}", val, expected)),
+                )
+            } else {
+                (check::CheckState::Passed, None)
+            }
+        }
+        None => (
+            check::CheckState::Error,
+            Some(format!("pointer {:?} not found", pointer)),
+        ),
+    }
+}
 
 /// Ensure containers are not started with `--privileged` flag.
 ///

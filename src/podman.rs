@@ -27,12 +27,84 @@
 // TODO: ensure an apparmor profile is enabled for containers
 // TODO: ensure containers are isolated with user namespaces <https://docs.docker.com/engine/security/userns-remap/>
 // TODO: ensure resources are limited to avoid container DOS the host
-// TODO: get and store podman configuration from `podman info -f json`
 
+use serde_json::Value;
 use std::process;
 use std::process::Stdio;
+use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_trace};
+use crate::{check, log_debug, log_error, log_trace};
+
+static PODMAN_INFO: OnceLock<PodmanInfo> = OnceLock::new();
+
+pub type PodmanInfo = Value;
+
+/// Initialize podman info by running `podman info -f json`.
+pub fn init_podman_info() {
+    if PODMAN_INFO.get().is_some() {
+        return;
+    }
+
+    let mut cmd = process::Command::new("podman");
+    cmd.stdin(Stdio::null());
+    cmd.args(vec!["info", "-f", "json"]);
+
+    match cmd.output() {
+        Ok(output) => {
+            let stdout = match str::from_utf8(&output.stdout) {
+                Ok(s) => s,
+                Err(err) => {
+                    log_error!("Failed to read podman info as UTF8: {}", err);
+                    return;
+                }
+            };
+
+            let config: PodmanInfo = match serde_json::from_str(stdout) {
+                Ok(c) => c,
+                Err(err) => {
+                    log_error!("Failed to unmarshal json from podman info: {}", err);
+                    return;
+                }
+            };
+            PODMAN_INFO.get_or_init(|| config);
+        }
+        Err(err) => {
+            log_error!("Failed to initialize podman info: {}", err);
+            return;
+        }
+    };
+
+    log_debug!("initialized podman info");
+}
+
+pub fn check_podman_info(pointer: &str, expected: Value) -> check::CheckReturn {
+    let info = match PODMAN_INFO.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("podman info not initialized".to_string()),
+            );
+        }
+    };
+
+    match &info.pointer(pointer) {
+        Some(val) => {
+            if **val != expected {
+                (
+                    check::CheckState::Failed,
+                    Some(format!("{:?} != {:?}", val, expected)),
+                )
+            } else {
+                (check::CheckState::Passed, None)
+            }
+        }
+        None => (
+            check::CheckState::Error,
+            Some(format!("pointer {:?} not found", pointer)),
+        ),
+    }
+}
 
 /// Ensure containers are not started with `--privileged` flag.
 ///

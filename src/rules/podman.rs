@@ -30,4 +30,16 @@ pub fn add_checks() {
         || mount::check_mount_present("/var/lib/containers"),
         vec![mount::init_mounts],
     );
+    check::add_check(
+        "CNT_505",
+        "Ensure apparmor is enabled for podman",
+        vec!["container", "podman", "apparmor"],
+        || {
+            podman::check_podman_info(
+                "/host/security/apparmorEnabled",
+                serde_json::Value::Bool(true),
+            )
+        },
+        vec![podman::init_podman_info],
+    );
 }

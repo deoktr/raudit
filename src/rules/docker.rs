@@ -23,6 +23,7 @@ pub fn add_checks() {
         || group::no_members("docker"),
         vec![group::init_group],
     );
+    // TODO: get mount point from Docker configuration "DockerRootDir"
     check::add_check(
         "CNT_004",
         "Ensure docker mount point \"/var/lib/docker\" exist",
@@ -243,6 +244,13 @@ pub fn add_checks() {
         vec!["container", "docker", "CIS"], // CIS Docker 3.24
         || base::check_file_permission("/run/containerd/containerd.sock", 0o660),
         vec![],
+    );
+    check::add_check(
+        "CNT_030",
+        "Ensure docker swarm is not enabled",
+        vec!["container", "docker", "CIS", "foo"],
+        || docker::check_docker_info("/Swarm/ControlAvailable", serde_json::Value::Bool(false)),
+        vec![docker::init_docker_info],
     );
     check::add_check(
         "CNT_100",
