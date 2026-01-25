@@ -113,3 +113,132 @@ pub fn is_running(name: &str) -> check::CheckReturn {
         None => (check::CheckState::Failed, None),
     }
 }
+
+// get process flags
+fn get_proc_flags(name: &str) -> Result<Vec<String>, check::CheckReturn> {
+    let procs = match PROCESSES.get() {
+        Some(kparams) => kparams,
+        None => {
+            return Err((
+                check::CheckState::Error,
+                Some("processes not initialized".to_string()),
+            ));
+        }
+    };
+
+    let pids = match get_pids(procs, name) {
+        Some(pids) => pids,
+        None => {
+            return Err((
+                check::CheckState::Error,
+                Some(format!("no {} process found", name)),
+            ));
+        }
+    };
+
+    if pids.len() > 1 {
+        return Err((
+            check::CheckState::Error,
+            Some(format!(
+                "multiple process found with name {}: {}",
+                name,
+                pids.join(", ")
+            )),
+        ));
+    }
+
+    let path = format!("/proc/{}/cmdline", pids[0]);
+    let content = match fs::read_to_string(path) {
+        Ok(content) => content,
+        Err(err) => {
+            return Err((
+                check::CheckState::Error,
+                Some(format!("failed to read file: {}", err.to_string())),
+            ));
+        }
+    };
+
+    Ok(content.split("\0").map(String::from).collect())
+}
+
+/// Get process flag value.
+fn get_proc_flag_value(name: &str, flag: &str) -> Result<String, check::CheckReturn> {
+    let cmd = get_proc_flags(name)?;
+
+    for (index, item) in cmd.iter().enumerate() {
+        if item.starts_with(&format!("{}=", flag)) {
+            return Ok(item.trim_start_matches(&format!("{}=", flag)).to_string());
+        } else if item == flag {
+            if cmd.len() < index + 2 {
+                return Ok(cmd[index + 1].clone());
+            } else {
+                return Err((
+                    check::CheckState::Failed,
+                    Some(format!("missing flag {} value", flag)),
+                ));
+            }
+        }
+    }
+
+    Err((
+        check::CheckState::Failed,
+        Some(format!("missing flag {}", flag)),
+    ))
+}
+
+/// Check if a process is running with the specified flag.
+pub fn is_running_with_flag(name: &str, flag: &str) -> check::CheckReturn {
+    let cmd = match get_proc_flags(name) {
+        Ok(flags) => flags,
+        Err(err) => return err,
+    };
+
+    if cmd.contains(&flag.to_string()) {
+        (check::CheckState::Passed, None)
+    } else {
+        (
+            check::CheckState::Failed,
+            Some(format!("missing flag {}", flag)),
+        )
+    }
+}
+
+/// Check if a process is running without the specified flag.
+pub fn is_running_without_flag(name: &str, flag: &str) -> check::CheckReturn {
+    let cmd = match get_proc_flags(name) {
+        Ok(flags) => flags,
+        Err(err) => return err,
+    };
+
+    if !cmd.contains(&flag.to_string()) {
+        (check::CheckState::Passed, None)
+    } else {
+        (
+            check::CheckState::Failed,
+            Some(format!("missing flag {}", flag)),
+        )
+    }
+}
+
+/// Check if a process is running with the specified flag with value.
+pub fn is_running_with_flag_value(name: &str, flag: &str, value: &str) -> check::CheckReturn {
+    let flag_value = match get_proc_flag_value(name, flag) {
+        Ok(f) => f,
+        Err(err) => return err,
+    };
+
+    if flag_value != value {
+        (
+            check::CheckState::Failed,
+            Some(format!(
+                "wrong value for flag {} {} != {}",
+                flag, flag_value, value
+            )),
+        )
+    } else {
+        (check::CheckState::Passed, None)
+    }
+}
+
+// TODO: add 'is_running_without_flag_value' but would need to modify function
+// get_proc_flag_value since it would not matter if the flag is missing

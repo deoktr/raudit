@@ -22,4 +22,12 @@ pub fn add_checks() {
         podman::podman_user,
         vec![],
     );
+    check::add_check(
+        "CNT_504",
+        "Ensure mount point \"/var/lib/containers\" exist",
+        vec!["container", "podman", "mount"],
+        // TODO: get path by running: podman info -f '{{ .Store.RunRoot }}'
+        || mount::check_mount_present("/var/lib/containers"),
+        vec![mount::init_mounts],
+    );
 }

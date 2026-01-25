@@ -216,6 +216,8 @@ Benchmark 1: ./target/release/raudit
 - Add option to only have `id`, `message` and `state` in JSON output of checks
 - Add check timeout, if they take too long just stop them, maybe even with ctrl+c?
 - Build in CI on release
+- Add configurations for whitelist on some rules, for example whitelist trusted users in a docker group, instead of failling the check that would force admins to create config
+- Add check to avoid check name collision
 
 ## License
 

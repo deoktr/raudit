@@ -27,6 +27,7 @@
 // TODO: ensure an apparmor profile is enabled for containers
 // TODO: ensure containers are isolated with user namespaces <https://docs.docker.com/engine/security/userns-remap/>
 // TODO: ensure resources are limited to avoid container DOS the host
+// TODO: get and store podman configuration from `podman info -f json`
 
 use std::process;
 use std::process::Stdio;
