@@ -16,7 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// TODO: cache containers JSON config instead of query for all checks
 // TODO: check: <https://github.com/docker/docker-bench-security>
 // TODO: ensure that ports are only exposed on loopback/localhost (if they are
 // not 80/443)
@@ -24,20 +23,23 @@
 // https://docs.docker.com/engine/security/rootless/
 // TODO: ensure no containers has the docker socket mounted to it (`/var/run/docker.sock`), capabilities or is unconfined
 // https://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/docker-security/docker-breakout-privilege-escalation/index.html#automatic-enumeration-and-escape
-// TODO: ensure an apparmor profile is enabled for containers
 // TODO: ensure containers are isolated with user namespaces <https://docs.docker.com/engine/security/userns-remap/>
 // TODO: ensure resources are limited to avoid container DOS the host
+// TODO: if no containers to check because no running, mark as skipped
 
 use serde_json::Value;
+use std::collections::HashMap;
 use std::process;
 use std::process::Stdio;
 use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_error, log_trace};
+use crate::{check, log_debug, log_error};
 
 static PODMAN_INFO: OnceLock<PodmanInfo> = OnceLock::new();
+static CONTAINERS: OnceLock<Containers> = OnceLock::new();
 
 pub type PodmanInfo = Value;
+pub type Containers = HashMap<String, Value>;
 
 /// Initialize podman info by running `podman info -f json`.
 pub fn init_podman_info() {
@@ -77,6 +79,82 @@ pub fn init_podman_info() {
     log_debug!("initialized podman info");
 }
 
+/// Initialize container inspect by running `podman ps --format '{{.ID}}'` and
+/// then `podman container inspect <ids>`.
+pub fn init_containers_inspect() {
+    if CONTAINERS.get().is_some() {
+        return;
+    }
+
+    let mut podman_ps = process::Command::new("podman");
+    podman_ps.stdin(Stdio::null());
+    podman_ps.args(vec!["ps", "--format", "{{.ID}}"]);
+
+    let output = match podman_ps.output() {
+        Ok(output) => output,
+        Err(err) => {
+            log_error!("Failed to execute \"podman ps\": {}", err);
+            return;
+        }
+    };
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let ids: Vec<&str> = stdout.lines().collect();
+
+    if ids.len() == 0 {
+        CONTAINERS.get_or_init(|| Containers::new());
+    } else {
+        let mut podman_inspect = process::Command::new("podman");
+        podman_inspect.stdin(Stdio::null());
+
+        let mut args: Vec<&str> = vec!["inspect"];
+        args.extend(ids);
+        podman_inspect.args(args);
+
+        let output = match podman_inspect.output() {
+            Ok(output) => output,
+            Err(err) => {
+                log_error!("Failed to execute \"podman inspect\": {}", err);
+                return;
+            }
+        };
+
+        let stdout = match str::from_utf8(&output.stdout) {
+            Ok(j) => j,
+            Err(err) => {
+                log_error!("Failed to decode \"podman inspect\" utf8: {}", err);
+                return;
+            }
+        };
+
+        let inspect: Value = match serde_json::from_str(stdout) {
+            Ok(j) => j,
+            Err(err) => {
+                log_error!("Failed to parse \"podman inspect\" json: {}", err);
+                return;
+            }
+        };
+
+        let inspects = match inspect.as_array() {
+            Some(i) => i,
+            None => {
+                log_error!("Failed to parse \"podman inspect\" json: not an array");
+                return;
+            }
+        };
+
+        let mut containers: Containers = Containers::new();
+        for container in inspects {
+            let id: String = container["Id"].to_string();
+            containers.insert(id, container.clone());
+        }
+
+        CONTAINERS.get_or_init(|| containers);
+    }
+
+    log_debug!("initialized containers inspect");
+}
+
 pub fn check_podman_info(pointer: &str, expected: Value) -> check::CheckReturn {
     let info = match PODMAN_INFO.get() {
         Some(c) => c,
@@ -110,51 +188,40 @@ pub fn check_podman_info(pointer: &str, expected: Value) -> check::CheckReturn {
 ///
 /// Don't start containers with `--privileged`.
 /// Check manually with:
-/// podman container inspect -l --format '{{.Id}}\t{{.Config.CreateCommand}}'
+/// podman container inspect --format '{{.Id}}\t{{.HostConfig.Privileged}}' <id>
 pub fn podman_not_privileged() -> check::CheckReturn {
-    let mut cmd = process::Command::new("podman");
-    cmd.stdin(Stdio::null());
-    cmd.args(vec![
-        "container",
-        "inspect",
-        "-l",
-        "--format",
-        "{{.Id}}\t{{.Config.CreateCommand}}",
-    ]);
-
-    let output = match cmd.output() {
-        Ok(output) => output,
-        Err(err) => return (check::CheckState::Failed, Some(err.to_string())),
+    let containers = match CONTAINERS.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("containers inspect not initialized".to_string()),
+            );
+        }
     };
 
-    let ids: Vec<String> = String::from_utf8_lossy(&output.stdout)
-        .lines()
-        .map(|x| x.to_string())
-        .filter_map(|line| match line.split_once("\t") {
-            Some((id, create_cmd)) => {
-                // remove []
-                let cmd: Vec<&str> = create_cmd[1..create_cmd.len() - 1].split(" ").collect();
+    if containers.len() == 0 {
+        return (check::CheckState::Passed, Some("no containers".to_string()));
+    }
 
-                log_trace!("podman privileged {} {:?}", id, cmd);
+    let ids: Vec<String> = containers
+        .into_iter()
+        .filter_map(|(id, container)| {
+            let privileged = &container["HostConfig"]["Privileged"];
+            log_debug!("podman container {} privileged: {:?}", id, privileged);
 
-                if cmd.contains(&"--privileged") {
-                    Some(id.to_string())
-                } else {
-                    None
-                }
+            if privileged == &Value::Bool(true) {
+                Some(id.clone())
+            } else {
+                None
             }
-            // should never happen, don't even log it
-            None => None,
         })
         .collect();
-
-    if ids.len() > 0 {
-        log_debug!("containers running with `--privileged`: {:?}", ids);
-    }
 
     if ids.len() == 0 {
         (check::CheckState::Passed, None)
     } else {
+        log_debug!("containers running with `--privileged`: {:?}", ids);
         (check::CheckState::Failed, Some(ids.join(", ")))
     }
 }
@@ -163,51 +230,40 @@ pub fn podman_not_privileged() -> check::CheckReturn {
 ///
 /// Start containers with `--cap-drop=all` to remove all capabilities.
 /// check manually with:
-/// podman container inspect -l --format '{{.Id}}={{.Config.CreateCommand}}'
+/// podman container inspect --format '{{.Id}}={{.HostConfig.CapDrop}}' <id>
 pub fn podman_cap_drop() -> check::CheckReturn {
-    let mut cmd = process::Command::new("podman");
-    cmd.stdin(Stdio::null());
-    cmd.args(vec![
-        "container",
-        "inspect",
-        "-l",
-        "--format",
-        "{{.Id}}\t{{.HostConfig.CapDrop}}",
-    ]);
-
-    let output = match cmd.output() {
-        Ok(output) => output,
-        Err(err) => return (check::CheckState::Failed, Some(err.to_string())),
+    let containers = match CONTAINERS.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("containers inspect not initialized".to_string()),
+            );
+        }
     };
 
-    let ids: Vec<String> = String::from_utf8_lossy(&output.stdout)
-        .lines()
-        .map(|x| x.to_string())
-        .filter_map(|line| match line.split_once("\t") {
-            Some((id, cap_drop)) => {
-                // remove []
-                let cap_list: Vec<&str> = cap_drop[1..cap_drop.len() - 1].split(" ").collect();
+    if containers.len() == 0 {
+        return (check::CheckState::Passed, Some("no containers".to_string()));
+    }
 
-                log_trace!("cap list for podman container {} {:?}", id, cap_list);
+    let ids: Vec<String> = containers
+        .into_iter()
+        .filter_map(|(id, container)| {
+            let capdrop = container["HostConfig"]["CapDrop"].as_array()?;
+            log_debug!("podman container {} cap drop: {:?}", id, capdrop);
 
-                if cap_list.len() < 11 {
-                    Some(id.to_string())
-                } else {
-                    None
-                }
+            if capdrop.len() < 11 {
+                Some(id.clone())
+            } else {
+                None
             }
-            // should never happen, don't even log it
-            None => None,
         })
         .collect();
-
-    if ids.len() > 0 {
-        log_debug!("Missing cap drop on containers: {:?}", ids);
-    }
 
     if ids.len() == 0 {
         (check::CheckState::Passed, None)
     } else {
+        log_debug!("Missing cap drop on containers: {:?}", ids);
         (check::CheckState::Failed, Some(ids.join(", ")))
     }
 }
@@ -216,49 +272,79 @@ pub fn podman_cap_drop() -> check::CheckReturn {
 ///
 /// Start containers and run process as a user inside it.
 /// check manually with:
-/// podman container inspect -l --format '{{.Id}}\t{{.Config.User}}'
+/// podman container inspect --format '{{.Id}}\t{{.Config.User}}' <id>
 pub fn podman_user() -> check::CheckReturn {
-    let mut cmd = process::Command::new("podman");
-    cmd.stdin(Stdio::null());
-    cmd.args(vec![
-        "container",
-        "inspect",
-        "-l",
-        "--format",
-        "{{.Id}}\t{{.Config.User}}",
-    ]);
-
-    let output = match cmd.output() {
-        Ok(output) => output,
-        Err(err) => return (check::CheckState::Failed, Some(err.to_string())),
+    let containers = match CONTAINERS.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("containers inspect not initialized".to_string()),
+            );
+        }
     };
 
-    let ids: Vec<String> = String::from_utf8_lossy(&output.stdout)
-        .lines()
-        .map(|x| x.to_string())
-        .filter_map(|line| match line.split_once("\t") {
-            Some((id, uid)) => {
-                // debug
-                log_trace!("podman container user {} {:?}", id, uid);
+    if containers.len() == 0 {
+        return (check::CheckState::Passed, Some("no containers".to_string()));
+    }
 
-                if uid == "0" {
-                    Some(id.to_string())
-                } else {
-                    None
-                }
+    let ids: Vec<String> = containers
+        .into_iter()
+        .filter_map(|(id, container)| {
+            let user = &container["Config"]["User"];
+            log_debug!("podman container {} user: {}", id, user);
+            if *user == Value::String("0".to_string()) {
+                Some(id.clone())
+            } else {
+                None
             }
-            // should never happen, don't even log it
-            None => None,
         })
         .collect();
-
-    if ids.len() > 0 {
-        log_debug!("Running as root on containers: {:?}", ids);
-    }
 
     if ids.len() == 0 {
         (check::CheckState::Passed, None)
     } else {
+        log_debug!("Running as root on containers: {:?}", ids);
+        (check::CheckState::Failed, Some(ids.join(", ")))
+    }
+}
+
+/// Ensure containers are running with an apparmor profile.
+///
+/// check manually with:
+/// podman container inspect -l --format '{{.Id}}\t{{.AppArmorProfile}}'
+pub fn podman_apparmor() -> check::CheckReturn {
+    let containers = match CONTAINERS.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Error,
+                Some("containers inspect not initialized".to_string()),
+            );
+        }
+    };
+
+    if containers.len() == 0 {
+        return (check::CheckState::Passed, Some("no containers".to_string()));
+    }
+
+    let ids: Vec<String> = containers
+        .into_iter()
+        .filter_map(|(id, container)| {
+            let aap = &container["AppArmorProfile"];
+            log_debug!("podman container {} apparmor profile: {}", id, aap);
+            if *aap == Value::String("".to_string()) {
+                Some(id.clone())
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    if ids.len() == 0 {
+        (check::CheckState::Passed, None)
+    } else {
+        log_debug!("Running without apparmor profile on containers: {:?}", ids);
         (check::CheckState::Failed, Some(ids.join(", ")))
     }
 }

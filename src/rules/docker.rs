@@ -4,24 +4,23 @@ pub fn add_checks() {
     check::add_check(
         "CNT_001",
         "Ensure docker containers are not started with \"--privileged\" flag",
-        vec!["container", "docker"],
+        vec!["container", "docker", "foo"],
         docker::docker_not_privileged,
-        vec![],
+        vec![docker::init_containers_inspect],
     );
     check::add_check(
         "CNT_002",
         "Ensure docker containers capabilities are dopped",
-        vec!["container", "docker"],
+        vec!["container", "docker", "foo"],
         docker::docker_cap_drop,
-        vec![],
+        vec![docker::init_containers_inspect],
     );
-    // https://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/docker-security/abusing-docker-socket-for-privilege-escalation.html
     check::add_check(
         "CNT_003",
-        "Ensure docker group is empty",
-        vec!["container", "docker", "group", "CIS"], // CIS Docker 1.1.2
-        || group::no_members("docker"),
-        vec![group::init_group],
+        "Ensure docker containers are running with a user",
+        vec!["container", "docker", "foo"],
+        docker::docker_container_user,
+        vec![docker::init_containers_inspect],
     );
     // TODO: get mount point from Docker configuration "DockerRootDir"
     check::add_check(
@@ -247,10 +246,18 @@ pub fn add_checks() {
     );
     check::add_check(
         "CNT_030",
-        "Ensure docker swarm is not enabled",
-        vec!["container", "docker", "CIS", "foo"],
+        "Ensure docker swarm is disabled if not needed",
+        vec!["container", "docker", "CIS"], // CIS Docker 5.1
         || docker::check_docker_info("/Swarm/ControlAvailable", serde_json::Value::Bool(false)),
         vec![docker::init_docker_info],
+    );
+    // https://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/docker-security/abusing-docker-socket-for-privilege-escalation.html
+    check::add_check(
+        "CNT_031",
+        "Ensure docker group is empty",
+        vec!["container", "docker", "group", "CIS"], // CIS Docker 1.1.2
+        || group::no_members("docker"),
+        vec![group::init_group],
     );
     check::add_check(
         "CNT_100",

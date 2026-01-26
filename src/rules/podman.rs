@@ -6,21 +6,21 @@ pub fn add_checks() {
         "Ensure podman containers are not started with \"--privileged\" flag",
         vec!["container", "podman"],
         podman::podman_not_privileged,
-        vec![],
+        vec![podman::init_containers_inspect],
     );
     check::add_check(
         "CNT_502",
         "Ensure podman containers capabilities are dopped",
         vec!["container", "podman"],
         podman::podman_cap_drop,
-        vec![],
+        vec![podman::init_containers_inspect],
     );
     check::add_check(
         "CNT_503",
         "Ensure podman containers are started with a user",
         vec!["container", "podman"],
         podman::podman_user,
-        vec![],
+        vec![podman::init_containers_inspect],
     );
     check::add_check(
         "CNT_504",
@@ -41,5 +41,12 @@ pub fn add_checks() {
             )
         },
         vec![podman::init_podman_info],
+    );
+    check::add_check(
+        "CNT_506",
+        "Ensure podman containers are started with an apparmor profile",
+        vec!["container", "podman", "apparmor"],
+        podman::podman_apparmor,
+        vec![podman::init_containers_inspect],
     );
 }

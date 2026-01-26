@@ -218,6 +218,7 @@ Benchmark 1: ./target/release/raudit
 - Build in CI on release
 - Add configurations for whitelist on some rules, for example whitelist trusted users in a docker group, instead of failling the check that would force admins to create config
 - Add check to avoid check name collision
+- Use macro `run!()` to log commands
 
 ## License
 
