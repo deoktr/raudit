@@ -51,22 +51,23 @@ fn parse_hosts(hosts: String) -> Hosts {
 }
 
 /// Get the system's hosts config from `/boot/grub/grub.cfg`.
+fn get_hosts() -> Result<Hosts, std::io::Error> {
+    Ok(parse_hosts(fs::read_to_string(HOSTS_PATH)?))
+}
+
+/// Init the system's hosts config from `/boot/grub/grub.cfg`.
 pub fn init_hosts() {
     if HOSTS.get().is_some() {
         return;
     }
 
-    match fs::read_to_string(HOSTS_PATH) {
-        Ok(hosts) => {
-            HOSTS.get_or_init(|| parse_hosts(hosts));
+    match get_hosts() {
+        Ok(h) => {
+            HOSTS.get_or_init(|| h);
+            log_debug!("initialized hosts");
         }
-        Err(err) => {
-            log_error!("Failed to initialize hosts: {}", err);
-            return;
-        }
-    };
-
-    log_debug!("initialized hosts");
+        Err(err) => log_error!("failed to initialize hosts: {}", err),
+    }
 }
 
 /// Ensure that hosts entry is present.
@@ -86,6 +87,7 @@ pub fn entry_present(addr: &str, value: &str) -> check::CheckReturn {
             return (check::CheckState::Passed, None);
         }
     }
+
     (check::CheckState::Failed, None)
 }
 

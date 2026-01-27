@@ -18,6 +18,7 @@
 
 use std::time::Duration;
 
+/// Format short duration, under an hour.
 pub fn format_duration(dur: Duration) -> String {
     let secs = dur.as_secs();
     if secs >= 60 {

@@ -60,23 +60,24 @@ fn parse_mounts(mounts: String) -> MountConfig {
         .collect()
 }
 
-/// Initialize mounts configuration by reading `/proc/mounts`.
+/// Get mounts configuration by reading `/proc/mounts`.
+fn get_mounts() -> Result<MountConfig, std::io::Error> {
+    Ok(parse_mounts(fs::read_to_string(PROC_MOUNTS_PATH)?))
+}
+
+/// Init mounts configuration by reading `/proc/mounts`.
 pub fn init_mounts() {
     if MOUNT_CONFIG.get().is_some() {
         return;
     }
 
-    match fs::read_to_string(PROC_MOUNTS_PATH) {
-        Ok(mounts) => {
-            MOUNT_CONFIG.get_or_init(|| parse_mounts(mounts));
+    match get_mounts() {
+        Ok(m) => {
+            MOUNT_CONFIG.get_or_init(|| m);
+            log_debug!("initialized mounts");
         }
-        Err(err) => {
-            log_error!("Failed to initialize mount config: {}", err);
-            return;
-        }
-    };
-
-    log_debug!("initialized mounts");
+        Err(err) => log_error!("failed to initialize mount config: {}", err),
+    }
 }
 
 /// Get mount from a collected configuration.

@@ -41,118 +41,86 @@ static CONTAINERS: OnceLock<Containers> = OnceLock::new();
 pub type DockerInfo = Value;
 pub type Containers = HashMap<String, Value>;
 
-/// Initialize docker info by running `docker info -f json`.
+/// Get docker info by running `docker info -f json`.
+fn get_docker_info() -> Result<DockerInfo, String> {
+    let mut cmd = process::Command::new("docker");
+    cmd.stdin(Stdio::null());
+    cmd.args(vec!["info", "-f", "json"]);
+
+    let output = cmd.output().map_err(|e| e.to_string())?;
+    let stdout = str::from_utf8(&output.stdout).map_err(|e| e.to_string())?;
+    let config: DockerInfo = serde_json::from_str(stdout).map_err(|e| e.to_string())?;
+    Ok(config)
+}
+
+/// Init docker info by running `docker info -f json`.
 pub fn init_docker_info() {
     if DOCKER_INFO.get().is_some() {
         return;
     }
 
-    let mut cmd = process::Command::new("docker");
-    cmd.stdin(Stdio::null());
-    cmd.args(vec!["info", "-f", "json"]);
-
-    match cmd.output() {
-        Ok(output) => {
-            let stdout = match str::from_utf8(&output.stdout) {
-                Ok(s) => s,
-                Err(err) => {
-                    log_error!("Failed to read docker info as UTF8: {}", err);
-                    return;
-                }
-            };
-
-            let config: DockerInfo = match serde_json::from_str(stdout) {
-                Ok(c) => c,
-                Err(err) => {
-                    log_error!("Failed to unmarshal json from docker info: {}", err);
-                    return;
-                }
-            };
-            DOCKER_INFO.get_or_init(|| config);
+    match get_docker_info() {
+        Ok(c) => {
+            DOCKER_INFO.get_or_init(|| c);
+            log_debug!("initialized docker info");
         }
-        Err(err) => {
-            log_error!("Failed to initialize docker info: {}", err);
-            return;
-        }
-    };
-
-    log_debug!("initialized docker info");
+        Err(err) => log_error!("failed to initialize docker info: {}", err),
+    }
 }
 
-/// Initialize container inspect by running `docker ps --format '{{.ID}}'` and
+/// Get container inspect by running `docker ps --format '{{.ID}}'` and
+/// then `docker container inspect <ids>`.
+fn get_containers_inspect() -> Result<Containers, String> {
+    let mut docker_ps = process::Command::new("docker");
+    docker_ps.stdin(Stdio::null());
+    docker_ps.args(vec!["ps", "--format", "{{.ID}}"]);
+
+    let output = docker_ps.output().map_err(|e| e.to_string())?;
+    let stdout = str::from_utf8(&output.stdout).map_err(|e| e.to_string())?;
+    let ids: Vec<&str> = stdout.lines().collect();
+
+    if ids.len() == 0 {
+        return Ok(Containers::new());
+    }
+
+    let mut docker_inspect = process::Command::new("docker");
+    docker_inspect.stdin(Stdio::null());
+
+    let mut args: Vec<&str> = vec!["inspect"];
+    args.extend(ids);
+    docker_inspect.args(args);
+
+    let output = docker_inspect.output().map_err(|e| e.to_string())?;
+    let stdout = str::from_utf8(&output.stdout).map_err(|e| e.to_string())?;
+    let inspect: Value = serde_json::from_str(stdout).map_err(|e| e.to_string())?;
+    let inspects = match inspect.as_array() {
+        Some(i) => i,
+        None => return Err("failed to parse \"docker inspect\" json: not an array".to_string()),
+    };
+
+    let mut containers: Containers = Containers::new();
+    for container in inspects {
+        let id: String = container["Id"].to_string();
+        containers.insert(id, container.clone());
+    }
+
+    Ok(containers)
+}
+
+/// Init container inspect by running `docker ps --format '{{.ID}}'` and
 /// then `docker container inspect <ids>`.
 pub fn init_containers_inspect() {
     if CONTAINERS.get().is_some() {
         return;
     }
 
-    let mut docker_ps = process::Command::new("docker");
-    docker_ps.stdin(Stdio::null());
-    docker_ps.args(vec!["ps", "--format", "{{.ID}}"]);
-
-    let output = match docker_ps.output() {
-        Ok(output) => output,
-        Err(err) => {
-            log_error!("Failed to execute \"docker ps\": {}", err);
-            return;
+    match get_containers_inspect() {
+        Ok(c) => {
+            CONTAINERS.get_or_init(|| c);
+            log_debug!("initialized docker containers");
         }
-    };
-
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let ids: Vec<&str> = stdout.lines().collect();
-
-    if ids.len() == 0 {
-        CONTAINERS.get_or_init(|| Containers::new());
-    } else {
-        let mut docker_inspect = process::Command::new("docker");
-        docker_inspect.stdin(Stdio::null());
-
-        let mut args: Vec<&str> = vec!["inspect"];
-        args.extend(ids);
-        docker_inspect.args(args);
-
-        let output = match docker_inspect.output() {
-            Ok(output) => output,
-            Err(err) => {
-                log_error!("Failed to execute \"docker inspect\": {}", err);
-                return;
-            }
-        };
-
-        let stdout = match str::from_utf8(&output.stdout) {
-            Ok(j) => j,
-            Err(err) => {
-                log_error!("Failed to decode \"docker inspect\" utf8: {}", err);
-                return;
-            }
-        };
-
-        let inspect: Value = match serde_json::from_str(stdout) {
-            Ok(j) => j,
-            Err(err) => {
-                log_error!("Failed to parse \"docker inspect\" json: {}", err);
-                return;
-            }
-        };
-
-        let inspects = match inspect.as_array() {
-            Some(i) => i,
-            None => {
-                log_error!("Failed to parse \"docker inspect\" json: not an array");
-                return;
-            }
-        };
-
-        let mut containers: Containers = Containers::new();
-        for container in inspects {
-            let id: String = container["Id"].to_string();
-            containers.insert(id, container.clone());
-        }
-
-        CONTAINERS.get_or_init(|| containers);
+        Err(err) => log_error!("failed to initialize docker containers: {}", err),
     }
-
-    log_debug!("initialized containers inspect");
 }
 
 /// Check a configuration from Docker, the pointer are defined by RFC6901.

@@ -118,22 +118,25 @@ pub fn parse_passwd(content: String) -> PasswdConfig {
 }
 
 /// Get the system's users from `/etc/passwd`.
+fn get_passwd() -> Result<PasswdConfig, String> {
+    Ok(parse_passwd(
+        fs::read_to_string(PASSWD_PATH).map_err(|e| e.to_string())?,
+    ))
+}
+
+/// Init the system's users from `/etc/passwd`.
 pub fn init_passwd() {
     if PASSWD_CONFIG.get().is_some() {
         return;
     }
 
-    match fs::read_to_string(PASSWD_PATH) {
-        Ok(content) => {
-            PASSWD_CONFIG.get_or_init(|| parse_passwd(content));
+    match get_passwd() {
+        Ok(p) => {
+            PASSWD_CONFIG.get_or_init(|| p);
+            log_debug!("initialized passwd");
         }
-        Err(err) => {
-            log_error!("Failed to initialize passwd: {}", err);
-            return;
-        }
-    }
-
-    log_debug!("initialized passwd");
+        Err(err) => log_error!("failed to initialize passwd: {}", err),
+    };
 }
 
 /// Parse the content of `/etc/passwd`.
@@ -208,22 +211,25 @@ pub fn parse_shadow(content: String) -> ShadowConfig {
 }
 
 /// Get the system's users from `/etc/shadow`.
+fn get_shadow() -> Result<ShadowConfig, String> {
+    Ok(parse_shadow(
+        fs::read_to_string(SHADOW_PATH).map_err(|e| e.to_string())?,
+    ))
+}
+
+/// Init the system's users from `/etc/shadow`.
 pub fn init_shadow() {
     if SHADOW_CONFIG.get().is_some() {
         return;
     }
 
-    match fs::read_to_string(SHADOW_PATH) {
-        Ok(content) => {
-            SHADOW_CONFIG.get_or_init(|| parse_shadow(content));
+    match get_shadow() {
+        Ok(s) => {
+            SHADOW_CONFIG.get_or_init(|| s);
+            log_debug!("initialized shadow");
         }
-        Err(err) => {
-            log_error!("Failed to initialize shadow: {}", err);
-            return;
-        }
-    }
-
-    log_debug!("initialized shadow");
+        Err(err) => log_error!("failed to initialize shadow: {}", err),
+    };
 }
 
 /// Verify if any user has a password in passwd (not equal to `x`).
@@ -292,7 +298,9 @@ pub fn yescrypt_hashes() -> check::CheckReturn {
     // \$y\$[./A-Za-z0-9]+\$[./A-Za-z0-9]{,86}\$[./A-Za-z0-9]{43}
     let usernames: Vec<String> = shadow
         .iter()
-        .filter(|entry| !entry.password.starts_with("$y$") && entry.password != "!")
+        .filter(|entry| {
+            !entry.password.starts_with("$y$") && entry.password != "!" && entry.password != "!*"
+        })
         .map(|entry| entry.username.clone())
         .collect();
 
@@ -304,8 +312,6 @@ pub fn yescrypt_hashes() -> check::CheckReturn {
 }
 
 /// Ensure no accounts are locked, delete them.
-///
-/// Return true if NO account is locked.
 pub fn no_locked_account() -> check::CheckReturn {
     let shadow = match SHADOW_CONFIG.get() {
         Some(c) => c,
@@ -324,6 +330,8 @@ pub fn no_locked_account() -> check::CheckReturn {
 
     let days_since_epoch = now.as_secs() / 86400;
 
+    // TODO: allow locked system accounts (UID < 1000)
+    // this is the default on ArchLinux
     let usernames: Vec<String> = shadow
         .iter()
         .filter(|entry| match entry.expiration_date {

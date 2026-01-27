@@ -77,23 +77,24 @@ pub fn parse_group(content: String) -> Groups {
         .collect()
 }
 
-/// Initialize groups from `/etc/group`.
+/// Get groups from `/etc/group`.
+fn get_group() -> Result<Groups, std::io::Error> {
+    Ok(parse_group(fs::read_to_string(GROUP_PATH)?))
+}
+
+/// Init groups from `/etc/group`.
 pub fn init_group() {
     if GROUPS.get().is_some() {
         return;
     }
 
-    match fs::read_to_string(GROUP_PATH) {
-        Ok(content) => {
-            GROUPS.get_or_init(|| parse_group(content));
+    match get_group() {
+        Ok(g) => {
+            GROUPS.get_or_init(|| g);
+            log_debug!("initialized group");
         }
-        Err(err) => {
-            log_error!("Failed to initialize groups: {}", err);
-            return;
-        }
-    };
-
-    log_debug!("initialized group");
+        Err(err) => log_error!("failed to initialize groups: {}", err),
+    }
 }
 
 /// Ensure group shadow empty or missing.

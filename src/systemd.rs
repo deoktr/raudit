@@ -48,22 +48,25 @@ fn parse_systemd_config(systemd_config: String) -> SystemdConfig {
 }
 
 /// Get systemd configuration by reading `/etc/systemd/system.conf`.
+fn get_systemd_config() -> Result<SystemdConfig, String> {
+    Ok(parse_systemd_config(
+        fs::read_to_string(SYSTEMD_CONF_PATH).map_err(|e| e.to_string())?,
+    ))
+}
+
+/// Init systemd configuration by reading `/etc/systemd/system.conf`.
 pub fn init_systemd_config() {
     if SYSTEMD_CONFIG.get().is_some() {
         return;
     }
 
-    match fs::read_to_string(SYSTEMD_CONF_PATH) {
-        Ok(cfg) => {
-            SYSTEMD_CONFIG.get_or_init(|| parse_systemd_config(cfg));
+    match get_systemd_config() {
+        Ok(c) => {
+            SYSTEMD_CONFIG.get_or_init(|| c);
+            log_debug!("initialized systemd config");
         }
-        Err(err) => {
-            log_error!("Failed to initialize systemd configuration: {}", err);
-            return;
-        }
+        Err(err) => log_error!("failed to initialize systemd configuration: {}", err),
     };
-
-    log_debug!("initialized systemd config");
 }
 
 // TODO: init by parsing JSON
@@ -72,7 +75,7 @@ pub fn init_systemd_config() {
 // }
 
 /// Get systemd value from a collected configuration.
-pub fn get_systemd_config(key: &str, value: &str) -> check::CheckReturn {
+pub fn get_systemd_config_value(key: &str, value: &str) -> check::CheckReturn {
     let systemd_config = match SYSTEMD_CONFIG.get() {
         Some(c) => c,
         None => {

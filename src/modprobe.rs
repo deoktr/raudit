@@ -53,12 +53,8 @@ fn parse_modprobe(content: String) -> ModprobeConfig {
         .collect()
 }
 
-/// Initialize modprobe configuration by reading files.
-fn init_modprobe_config() {
-    if MODPROBE_CONFIG.get().is_some() {
-        return;
-    }
-
+/// Get modprobe configuration by reading files.
+fn get_modprobe_config() -> ModprobeConfig {
     // get all modprob configuration file paths
     let paths: Vec<PathBuf> = vec![
         fs::read_dir("/lib/modprobe.d/"),
@@ -91,74 +87,83 @@ fn init_modprobe_config() {
         .flatten()
         .collect();
 
-    MODPROBE_CONFIG.get_or_init(|| config);
+    config
+}
 
+/// Init modprobe configuration by reading files.
+fn init_modprobe_config() {
+    if MODPROBE_CONFIG.get().is_some() {
+        return;
+    }
+
+    MODPROBE_CONFIG.get_or_init(|| get_modprobe_config());
     log_debug!("initialized modprobe config");
 }
 
-/// Initialize modprobe blacklisted modules from modprobe config.
+/// Get modprobe blacklisted modules from modprobe config.
+fn get_modprobe_blacklist(modprobe: &ModprobeConfig) -> ModprobeBlacklist {
+    modprobe
+        .into_iter()
+        .filter(|line| {
+            // `blacklist mod_name`
+            line.starts_with("blacklist")
+        })
+        .filter_map(|line| line.split_whitespace().nth(1))
+        .map(|line| line.to_string())
+        .collect()
+}
+
+/// Get modprobe blacklisted modules from modprobe config.
 fn init_modprobe_blacklist() {
     if MODPROBE_BLACKLIST.get().is_some() {
         return;
     }
 
-    let modprobe = match MODPROBE_CONFIG.get() {
-        Some(c) => c,
+    match MODPROBE_CONFIG.get() {
+        Some(c) => {
+            MODPROBE_BLACKLIST.get_or_init(|| get_modprobe_blacklist(c));
+            log_debug!("initialized modprobe blacklist");
+        }
         None => {
-            log_error!("Failed to initialize modprobe blacklist: Modprobe is not initialized");
+            log_error!("failed to initialize modprobe blacklist: Modprobe is not initialized");
             return;
         }
-    };
-
-    MODPROBE_BLACKLIST.get_or_init(|| {
-        modprobe
-            .into_iter()
-            .filter(|line| {
-                // `blacklist mod_name`
-                line.starts_with("blacklist")
-            })
-            .filter_map(|line| line.split_whitespace().nth(1))
-            .map(|line| line.to_string())
-            .collect()
-    });
-
-    log_debug!("initialized modprobe blacklist");
+    }
 }
 
-/// Initialize modprobe disabled modules from modprobe config.
+/// Get modprobe disabled modules from modprobe config.
+fn get_modprobe_disabled(modprobe: &ModprobeConfig) -> ModprobeDisabled {
+    modprobe
+        .into_iter()
+        .filter(|line| {
+            // `install mod_name /bin/false`
+            // OR
+            // `install mod_name /bin/true`
+            // NOTE: technically it can be any other executable other then the
+            // actuall module
+            // You could for example add a custom executable to log every
+            // loading attempts
+            line.starts_with("install")
+                && (line.ends_with("/bin/false") || line.ends_with("/bin/true"))
+        })
+        .filter_map(|line| line.split_whitespace().nth(1))
+        .map(|line| line.to_string())
+        .collect()
+}
+
+/// Init modprobe disabled modules from modprobe config.
 fn init_modprobe_disabled() {
     if MODPROBE_DISABLED.get().is_some() {
         return;
     }
 
-    let modprobe = match MODPROBE_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            log_error!("Failed to initialize modprobe blacklist: Modprobe is not initialized");
-            return;
+    match MODPROBE_CONFIG.get() {
+        Some(c) => {
+            MODPROBE_DISABLED.get_or_init(|| get_modprobe_disabled(c));
+            log_debug!("initialized modprobe disabled");
         }
+        None => log_error!("failed to initialize modprobe blacklist: Modprobe is not initialized"),
     };
-
-    MODPROBE_DISABLED.get_or_init(|| {
-        modprobe
-            .into_iter()
-            .filter(|line| {
-                // `install mod_name /bin/false`
-                // OR
-                // `install mod_name /bin/true`
-                // NOTE: technically it can be any other executable other then the
-                // actuall module
-                // You could for example add a custom executable to log every
-                // loading attempts
-                line.starts_with("install")
-                    && (line.ends_with("/bin/false") || line.ends_with("/bin/true"))
-            })
-            .filter_map(|line| line.split_whitespace().nth(1))
-            .map(|line| line.to_string())
-            .collect()
-    });
-
-    log_debug!("initialized modprobe disabled");
 }
 
 /// Parse the output of `lsmod` to extract modules.
@@ -176,7 +181,7 @@ fn parse_lsmod_modules(lsmod: String) -> Vec<String> {
         .collect()
 }
 
-/// Initialize currently loaded kernel modules by reading `/proc/modules`.
+/// Init currently loaded kernel modules by reading `/proc/modules`.
 fn init_loaded_modules() {
     if LOADED_MODULES.get().is_some() {
         return;
@@ -185,17 +190,13 @@ fn init_loaded_modules() {
     match fs::read_to_string("/proc/modules") {
         Ok(content) => {
             LOADED_MODULES.get_or_init(|| parse_lsmod_modules(content));
+            log_debug!("initialized modprobe loaded kernel modules");
         }
-        Err(err) => {
-            log_error!("failed to initialize loaded kernel modules: {}", err);
-            return;
-        }
-    };
-
-    log_debug!("initialized modprobe loaded kernel modules");
+        Err(err) => log_error!("failed to initialize loaded kernel modules: {}", err),
+    }
 }
 
-/// Initialize modprobe configuration, disabled and blacklist.
+/// Init modprobe configuration, disabled and blacklist.
 pub fn init_modprobe() {
     init_modprobe_config();
     init_modprobe_disabled();

@@ -41,42 +41,70 @@ static CONTAINERS: OnceLock<Containers> = OnceLock::new();
 pub type PodmanInfo = Value;
 pub type Containers = HashMap<String, Value>;
 
-/// Initialize podman info by running `podman info -f json`.
+/// Get podman info by running `podman info -f json`.
+fn get_podman_info() -> Result<PodmanInfo, String> {
+    let mut cmd = process::Command::new("podman");
+    cmd.stdin(Stdio::null());
+    cmd.args(vec!["info", "-f", "json"]);
+
+    let output = cmd.output().map_err(|e| e.to_string())?;
+    let stdout = str::from_utf8(&output.stdout).map_err(|e| e.to_string())?;
+    let config: PodmanInfo = serde_json::from_str(stdout).map_err(|e| e.to_string())?;
+    Ok(config)
+}
+
+/// Init podman info by running `podman info -f json`.
 pub fn init_podman_info() {
     if PODMAN_INFO.get().is_some() {
         return;
     }
 
-    let mut cmd = process::Command::new("podman");
-    cmd.stdin(Stdio::null());
-    cmd.args(vec!["info", "-f", "json"]);
-
-    match cmd.output() {
-        Ok(output) => {
-            let stdout = match str::from_utf8(&output.stdout) {
-                Ok(s) => s,
-                Err(err) => {
-                    log_error!("Failed to read podman info as UTF8: {}", err);
-                    return;
-                }
-            };
-
-            let config: PodmanInfo = match serde_json::from_str(stdout) {
-                Ok(c) => c,
-                Err(err) => {
-                    log_error!("Failed to unmarshal json from podman info: {}", err);
-                    return;
-                }
-            };
-            PODMAN_INFO.get_or_init(|| config);
+    match get_podman_info() {
+        Ok(c) => {
+            PODMAN_INFO.get_or_init(|| c);
+            log_debug!("initialized podman info");
         }
-        Err(err) => {
-            log_error!("Failed to initialize podman info: {}", err);
-            return;
-        }
+        Err(err) => log_error!("failed to initialize podman info: {}", err),
+    }
+}
+
+/// Get container inspect by running `podman ps --format '{{.ID}}'` and
+/// then `podman container inspect <ids>`.
+fn get_containers_inspect() -> Result<Containers, String> {
+    let mut podman_ps = process::Command::new("podman");
+    podman_ps.stdin(Stdio::null());
+    podman_ps.args(vec!["ps", "--format", "{{.ID}}"]);
+
+    let output = podman_ps.output().map_err(|e| e.to_string())?;
+    let stdout = str::from_utf8(&output.stdout).map_err(|e| e.to_string())?;
+    let ids: Vec<&str> = stdout.lines().collect();
+
+    if ids.len() == 0 {
+        return Ok(Containers::new());
+    }
+
+    let mut podman_inspect = process::Command::new("podman");
+    podman_inspect.stdin(Stdio::null());
+
+    let mut args: Vec<&str> = vec!["inspect"];
+    args.extend(ids);
+    podman_inspect.args(args);
+
+    let output = podman_inspect.output().map_err(|e| e.to_string())?;
+    let stdout = str::from_utf8(&output.stdout).map_err(|e| e.to_string())?;
+    let inspect: Value = serde_json::from_str(stdout).map_err(|e| e.to_string())?;
+    let inspects = match inspect.as_array() {
+        Some(i) => i,
+        None => return Err("failed to parse \"podman inspect\" json: not an array".to_string()),
     };
 
-    log_debug!("initialized podman info");
+    let mut containers: Containers = Containers::new();
+    for container in inspects {
+        let id: String = container["Id"].to_string();
+        containers.insert(id, container.clone());
+    }
+
+    Ok(containers)
 }
 
 /// Initialize container inspect by running `podman ps --format '{{.ID}}'` and
@@ -86,73 +114,13 @@ pub fn init_containers_inspect() {
         return;
     }
 
-    let mut podman_ps = process::Command::new("podman");
-    podman_ps.stdin(Stdio::null());
-    podman_ps.args(vec!["ps", "--format", "{{.ID}}"]);
-
-    let output = match podman_ps.output() {
-        Ok(output) => output,
-        Err(err) => {
-            log_error!("Failed to execute \"podman ps\": {}", err);
-            return;
+    match get_containers_inspect() {
+        Ok(c) => {
+            CONTAINERS.get_or_init(|| c);
+            log_debug!("initialized podman containers");
         }
-    };
-
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let ids: Vec<&str> = stdout.lines().collect();
-
-    if ids.len() == 0 {
-        CONTAINERS.get_or_init(|| Containers::new());
-    } else {
-        let mut podman_inspect = process::Command::new("podman");
-        podman_inspect.stdin(Stdio::null());
-
-        let mut args: Vec<&str> = vec!["inspect"];
-        args.extend(ids);
-        podman_inspect.args(args);
-
-        let output = match podman_inspect.output() {
-            Ok(output) => output,
-            Err(err) => {
-                log_error!("Failed to execute \"podman inspect\": {}", err);
-                return;
-            }
-        };
-
-        let stdout = match str::from_utf8(&output.stdout) {
-            Ok(j) => j,
-            Err(err) => {
-                log_error!("Failed to decode \"podman inspect\" utf8: {}", err);
-                return;
-            }
-        };
-
-        let inspect: Value = match serde_json::from_str(stdout) {
-            Ok(j) => j,
-            Err(err) => {
-                log_error!("Failed to parse \"podman inspect\" json: {}", err);
-                return;
-            }
-        };
-
-        let inspects = match inspect.as_array() {
-            Some(i) => i,
-            None => {
-                log_error!("Failed to parse \"podman inspect\" json: not an array");
-                return;
-            }
-        };
-
-        let mut containers: Containers = Containers::new();
-        for container in inspects {
-            let id: String = container["Id"].to_string();
-            containers.insert(id, container.clone());
-        }
-
-        CONTAINERS.get_or_init(|| containers);
+        Err(err) => log_error!("failed to initialize podman containers: {}", err),
     }
-
-    log_debug!("initialized containers inspect");
 }
 
 pub fn check_podman_info(pointer: &str, expected: Value) -> check::CheckReturn {

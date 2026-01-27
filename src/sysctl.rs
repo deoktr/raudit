@@ -40,28 +40,30 @@ fn parse_sysctl_config(stdout: String) -> SysctlConfig {
         .collect()
 }
 
-/// Initialize sysctl configuration by running `sysctl --all`.
+/// Get sysctl configuration by running `sysctl --all`.
+fn get_sysctl_config() -> Result<SysctlConfig, String> {
+    let mut cmd = process::Command::new("sysctl");
+    cmd.stdin(Stdio::null());
+    cmd.args(vec!["--all"]);
+
+    Ok(parse_sysctl_config(
+        String::from_utf8_lossy(&cmd.output().map_err(|e| e.to_string())?.stdout).to_string(),
+    ))
+}
+
+/// Init sysctl configuration by running `sysctl --all`.
 pub fn init_sysctl_config() {
     if SYSCTL_CONFIG.get().is_some() {
         return;
     }
 
-    let mut cmd = process::Command::new("sysctl");
-    cmd.stdin(Stdio::null());
-    cmd.args(vec!["--all"]);
-
-    match cmd.output() {
-        Ok(output) => {
-            let config = parse_sysctl_config(String::from_utf8_lossy(&output.stdout).to_string());
-            SYSCTL_CONFIG.get_or_init(|| config);
+    match get_sysctl_config() {
+        Ok(c) => {
+            SYSCTL_CONFIG.get_or_init(|| c);
+            log_debug!("initialized sysctl config");
         }
-        Err(err) => {
-            log_error!("Failed to initialize sysctl configuration: {}", err);
-            return;
-        }
-    };
-
-    log_debug!("initialized sysctl config");
+        Err(err) => log_error!("failed to initialize sysctl configuration: {}", err),
+    }
 }
 
 pub trait SysctlValue {

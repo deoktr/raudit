@@ -43,28 +43,31 @@ fn parse_apt_config(stdout: String) -> AptConfig {
         .collect()
 }
 
-/// Initialize apt configuration by running `apt-config dump`.
+/// Get apt configuration by running `apt-config dump`.
+fn get_apt_config() -> Result<AptConfig, std::io::Error> {
+    let mut cmd = process::Command::new("apt-config");
+    cmd.stdin(Stdio::null());
+    cmd.args(vec!["dump"]);
+
+    let output = cmd.output()?;
+    Ok(parse_apt_config(
+        String::from_utf8_lossy(&output.stdout).to_string(),
+    ))
+}
+
+/// Init apt configuration by running `apt-config dump`.
 pub fn init_apt_config() {
     if APT_CONFIG.get().is_some() {
         return;
     }
 
-    let mut cmd = process::Command::new("apt-config");
-    cmd.stdin(Stdio::null());
-    cmd.args(vec!["dump"]);
-
-    match cmd.output() {
-        Ok(output) => {
-            let config = parse_apt_config(String::from_utf8_lossy(&output.stdout).to_string());
-            APT_CONFIG.get_or_init(|| config);
+    match get_apt_config() {
+        Ok(c) => {
+            APT_CONFIG.get_or_init(|| c);
+            log_debug!("initialized apt config");
         }
-        Err(err) => {
-            log_error!("Failed to initialize apt configuration: {}", err);
-            return;
-        }
-    };
-
-    log_debug!("initialized apt config");
+        Err(err) => log_error!("failed to initialize apt config: {}", err),
+    }
 }
 
 pub fn check_apt(key: &str, value: &str) -> check::CheckReturn {

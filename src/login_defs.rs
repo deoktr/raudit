@@ -43,27 +43,28 @@ fn parse_login_defs(login_defs: String) -> LoginDefsConfig {
         .collect()
 }
 
-/// Initialized login.defs configuration by reading `/etc/login.defs`.
+/// Get login.defs configuration by reading `/etc/login.defs`.
+fn get_login_defs() -> Result<LoginDefsConfig, std::io::Error> {
+    Ok(parse_login_defs(fs::read_to_string(LOGIN_DEFS_PATH)?))
+}
+
+/// Init login.defs configuration by reading `/etc/login.defs`.
 pub fn init_login_defs() {
     if LOGIN_DEFS_CONFIG.get().is_some() {
         return;
     }
 
-    match fs::read_to_string(LOGIN_DEFS_PATH) {
-        Ok(login_defs) => {
-            LOGIN_DEFS_CONFIG.get_or_init(|| parse_login_defs(login_defs));
+    match get_login_defs() {
+        Ok(c) => {
+            LOGIN_DEFS_CONFIG.get_or_init(|| c);
+            log_debug!("initialized login.defs");
         }
-        Err(err) => {
-            log_error!("Failed to initialize login defs: {}", err);
-            return;
-        }
-    };
-
-    log_debug!("initialized login.defs");
+        Err(err) => log_error!("failed to initialize login defs: {}", err),
+    }
 }
 
 /// Check login.defs value from a collected configuration.
-pub fn get_login_defs(key: &str) -> Result<Option<String>, String> {
+pub fn get_login_defs_value(key: &str) -> Result<Option<String>, String> {
     let login_defs = match LOGIN_DEFS_CONFIG.get() {
         Some(c) => c,
         None => return Err("login defs configuration not initialized".to_string()),
@@ -74,7 +75,7 @@ pub fn get_login_defs(key: &str) -> Result<Option<String>, String> {
 
 /// Check login.defs value from a collected configuration.
 pub fn check_login_defs(key: &str, value: &str) -> check::CheckReturn {
-    match get_login_defs(key) {
+    match get_login_defs_value(key) {
         Ok(v) => match v {
             Some(conf_value) => {
                 if conf_value == value {

@@ -29,7 +29,7 @@ pub fn add_checks() {
         vec!["sshd", "CIS"],
         || {
             const VAL: i32 = 60;
-            match sshd::get_sshd_config("logingracetime") {
+            match sshd::get_sshd_config_value("logingracetime") {
                 Ok(str_value) => match str_value.parse::<i32>() {
                     Ok(value) => {
                         if value <= VAL {
@@ -68,7 +68,7 @@ pub fn add_checks() {
         vec!["sshd", "CIS"],
         || {
             const VAL: i32 = 4;
-            match sshd::get_sshd_config("maxauthtries") {
+            match sshd::get_sshd_config_value("maxauthtries") {
                 Ok(str_value) => match str_value.parse::<i32>() {
                     Ok(value) => {
                         if value <= VAL {
@@ -93,7 +93,7 @@ pub fn add_checks() {
         vec!["sshd", "CIS"],
         || {
             const VAL: i32 = 5;
-            match sshd::get_sshd_config("maxsessions") {
+            match sshd::get_sshd_config_value("maxsessions") {
                 Ok(str_value) => match str_value.parse::<i32>() {
                     Ok(value) => {
                         if value <= VAL {
@@ -272,7 +272,7 @@ pub fn add_checks() {
         vec!["sshd", "CIS"],
         || {
             const VAL: i32 = 15;
-            match sshd::get_sshd_config("clientaliveinterval") {
+            match sshd::get_sshd_config_value("clientaliveinterval") {
                 Ok(str_value) => match str_value.parse::<i32>() {
                     Ok(value) => {
                         if value <= VAL {

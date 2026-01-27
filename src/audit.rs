@@ -22,6 +22,7 @@
 use core::str;
 use std::collections::HashMap;
 use std::fs;
+use std::io;
 use std::process;
 use std::process::Stdio;
 use std::sync::OnceLock;
@@ -46,12 +47,8 @@ pub type AuditConfig = HashMap<String, String>;
 /// output.
 pub type AuditRules = Vec<String>;
 
-/// Initialize audit rules by running `auditctl -l`.
-pub fn init_audit_rules() {
-    if AUDIT_RULES.get().is_some() {
-        return;
-    }
-
+/// Get audit rules by running `auditctl -l`.
+fn get_audit_rules() -> Result<AuditRules, std::io::Error> {
     // FIXME: running `auditctl -l` is not enought to gather all audit rules!
     // for example `-e 2` is missing from the output
     // also note that some command are defined differently from the rule file
@@ -60,33 +57,39 @@ pub fn init_audit_rules() {
     cmd.stdin(Stdio::null());
     cmd.args(vec!["-l"]);
 
-    match cmd.output() {
-        Ok(output) => {
-            match str::from_utf8(&output.stderr) {
-                Ok(stderr) => {
-                    if stderr == "You must be root to run this program.\n" {
-                        log_error!("Failed to initialize audit rules, root required");
-                        return;
-                    }
-                }
-                Err(_) => (),
-            };
-
-            AUDIT_RULES.get_or_init(|| {
-                // one line is one rule, no need for parsing
-                String::from_utf8_lossy(&output.stdout)
-                    .lines()
-                    .map(|x| x.to_string())
-                    .collect()
-            });
+    let output = cmd.output()?;
+    match str::from_utf8(&output.stderr) {
+        Ok(stderr) => {
+            if stderr == "You must be root to run this program.\n" {
+                return Err(io::Error::new(
+                    io::ErrorKind::PermissionDenied,
+                    "failed to initialize audit rules, root required",
+                ));
+            }
         }
-        Err(err) => {
-            log_error!("Failed to initialize audit rules: {}", err);
-            return;
-        }
+        Err(_) => (),
     };
 
-    log_debug!("initialized audit rules");
+    // one line is one rule, no need for parsing
+    Ok(String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .map(|x| x.to_string())
+        .collect())
+}
+
+/// Init audit rules by running `auditctl -l`.
+pub fn init_audit_rules() {
+    if AUDIT_RULES.get().is_some() {
+        return;
+    }
+
+    match get_audit_rules() {
+        Ok(c) => {
+            AUDIT_RULES.get_or_init(|| c);
+            log_debug!("initialized audit rules");
+        }
+        Err(err) => log_error!("failed to initialize audit rules: {}", err),
+    }
 }
 
 /// Parse content of `/etc/audit/auditd.conf`.
@@ -103,23 +106,24 @@ fn parse_audit_config(login_defs: String) -> AuditConfig {
         .collect()
 }
 
-/// Initialize audit configuration by reading `/etc/audit/auditd.conf`.
+/// Get audit configuration by reading `/etc/audit/auditd.conf`.
+fn get_audit_config() -> Result<AuditConfig, io::Error> {
+    Ok(parse_audit_config(fs::read_to_string(AUDIT_CFG_PATH)?))
+}
+
+/// Init audit configuration by reading `/etc/audit/auditd.conf`.
 pub fn init_audit_config() {
     if AUDIT_CONFIG.get().is_some() {
         return;
     }
 
-    match fs::read_to_string(AUDIT_CFG_PATH) {
-        Ok(content) => {
-            AUDIT_CONFIG.get_or_init(|| parse_audit_config(content));
+    match get_audit_config() {
+        Ok(c) => {
+            AUDIT_CONFIG.get_or_init(|| c);
+            log_debug!("initialized audit config");
         }
-        Err(err) => {
-            log_error!("Failed to initialize audit configuration: {}", err);
-            return;
-        }
-    };
-
-    log_debug!("initialized audit config");
+        Err(err) => log_error!("failed to initialize audit config: {}", err),
+    }
 }
 
 /// Check audit rule.

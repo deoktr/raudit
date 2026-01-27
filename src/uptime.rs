@@ -25,28 +25,34 @@ const UPTIME_PATH: &str = "/proc/uptime";
 
 pub static UPTIME: OnceLock<u64> = OnceLock::new();
 
+/// Get system uptime by reading `/proc/uptime`.
+fn get_uptime() -> Result<u64, String> {
+    match fs::read_to_string(UPTIME_PATH)
+        .map_err(|e| e.to_string())?
+        .split_once(" ")
+    {
+        Some((uptime, _idle)) => {
+            // remove the decimals before parsing to u64
+            uptime[..uptime.len() - 3]
+                .parse::<u64>()
+                .map_err(|e| e.to_string())
+        }
+        None => Err("invalide uptime file format".to_string()),
+    }
+}
+
 /// Init system uptime by reading `/proc/uptime`.
 pub fn init_uptime() {
     if UPTIME.get().is_some() {
         return;
     }
 
-    match fs::read_to_string(UPTIME_PATH) {
-        Ok(content) => match content.split_once(" ") {
-            Some((uptime, _idle)) => {
-                // remove the decimals before parsing to u64
-                match uptime[..uptime.len() - 3].parse::<u64>() {
-                    Ok(u) => {
-                        UPTIME.get_or_init(|| u);
-                        log_debug!("initialized uptime");
-                        ()
-                    }
-                    Err(err) => log_error!("Failed to initialize uptime: {}", err),
-                }
-            }
-            None => log_error!("Failed to initialize uptime: invalide file format"),
-        },
-        Err(err) => log_error!("Failed to initialize uptime: {}", err),
+    match get_uptime() {
+        Ok(u) => {
+            UPTIME.get_or_init(|| u);
+            log_debug!("initialized uptime");
+        }
+        Err(err) => log_error!("failed to initialize uptime: {}", err),
     };
 }
 
@@ -55,9 +61,15 @@ pub fn uptime_bellow(max_uptime: u64) -> check::CheckReturn {
     match UPTIME.get() {
         Some(uptime) => {
             if uptime < &max_uptime {
-                return (check::CheckState::Passed, None);
+                return (
+                    check::CheckState::Passed,
+                    Some(format!("{} h", uptime / 3600)),
+                );
             } else {
-                (check::CheckState::Failed, Some(format!("{}", uptime)))
+                (
+                    check::CheckState::Failed,
+                    Some(format!("{} h", uptime / 3600)),
+                )
             }
         }
         None => {

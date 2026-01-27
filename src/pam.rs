@@ -208,23 +208,19 @@ fn get_pam() -> Result<PamConfig, std::io::Error> {
     Ok(config)
 }
 
-/// Initialize pam rules.
+/// Init pam rules.
 pub fn init_pam() {
     if PAM_CONFIG.get().is_some() {
         return;
     }
 
     match get_pam() {
-        Ok(pam_config) => {
-            PAM_CONFIG.get_or_init(|| pam_config);
+        Ok(c) => {
+            PAM_CONFIG.get_or_init(|| c);
+            log_debug!("initialized pam");
         }
-        Err(err) => {
-            log_error!("Failed to initialize pam configuration: {}", err);
-            return;
-        }
-    };
-
-    log_debug!("initialized pam");
+        Err(err) => log_error!("failed to initialize pam configuration: {}", err),
+    }
 }
 
 /// Get PAM rule from a collected configuration.

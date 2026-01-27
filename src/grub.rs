@@ -29,22 +29,23 @@ static GRUB_CFG: OnceLock<GrubCfg> = OnceLock::new();
 pub type GrubCfg = String;
 
 /// Get the system's grub config from `/boot/grub/grub.cfg`.
+fn get_grub_cfg() -> Result<String, std::io::Error> {
+    Ok(fs::read_to_string(GRUB_CFG_PATH)?)
+}
+
+/// Init the system's grub config from `/boot/grub/grub.cfg`.
 pub fn init_grub_cfg() {
     if GRUB_CFG.get().is_some() {
         return;
     }
 
-    match fs::read_to_string(GRUB_CFG_PATH) {
-        Ok(content) => {
-            GRUB_CFG.get_or_init(|| content);
+    match get_grub_cfg() {
+        Ok(c) => {
+            GRUB_CFG.get_or_init(|| c);
+            log_debug!("initialized grub cfg");
         }
-        Err(err) => {
-            log_error!("Failed to initialize grub configuration: {}", err);
-            return;
-        }
-    };
-
-    log_debug!("initialized grub cfg");
+        Err(err) => log_error!("failed to initialize grub configuration: {}", err),
+    }
 }
 
 /// Verify that grub is configured with a password.

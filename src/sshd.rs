@@ -41,45 +41,47 @@ fn parse_sshd_config(sshd_t: String) -> SshdConfig {
 }
 
 /// Get the sshd (OpenSSH) configuration by running `sshd -T`.
+fn get_sshd_config() -> Result<SshdConfig, String> {
+    let mut cmd = process::Command::new("sshd");
+    cmd.stdin(Stdio::null());
+    cmd.args(vec!["-T"]);
+
+    let output = cmd.output().map_err(|e| e.to_string())?;
+
+    match output.status.code() {
+        Some(status) => {
+            if status != 0 {
+                return Err(format!(
+                    "failed to get sshd configuration, got status code {} while running \"sshd -T\"",
+                    status
+                ));
+            }
+        }
+        None => (),
+    };
+
+    Ok(parse_sshd_config(
+        String::from_utf8_lossy(&output.stdout).to_string(),
+    ))
+}
+
+/// Init the sshd (OpenSSH) configuration by running `sshd -T`.
 pub fn init_sshd_config() {
     if SSHD_CONFIG.get().is_some() {
         return;
     }
 
-    let mut cmd = process::Command::new("sshd");
-    cmd.stdin(Stdio::null());
-    cmd.args(vec!["-T"]);
-
-    match cmd.output() {
-        Ok(output) => {
-            match output.status.code() {
-                Some(status) => {
-                    if status != 0 {
-                        log_error!(
-                            "Failed to get sshd configuration, got status code {} while running \"sshd -T\"",
-                            status
-                        );
-                        return;
-                    }
-                }
-                None => (),
-            };
-
-            SSHD_CONFIG.get_or_init(|| {
-                parse_sshd_config(String::from_utf8_lossy(&output.stdout).to_string())
-            });
+    match get_sshd_config() {
+        Ok(c) => {
+            SSHD_CONFIG.get_or_init(|| c);
+            log_debug!("initialized sshd config");
         }
-        Err(err) => {
-            log_error!("Failed to initialize sshd configuration: {}", err);
-            return;
-        }
-    };
-
-    log_debug!("initialized sshd config");
+        Err(err) => log_error!("failed to initialize sshd configuration: {}", err),
+    }
 }
 
 /// Get sshd configuration value from a collected configuration.
-pub fn get_sshd_config(key: &str) -> Result<String, String> {
+pub fn get_sshd_config_value(key: &str) -> Result<String, String> {
     let sshd_config = match SSHD_CONFIG.get() {
         Some(c) => c,
         None => return Err("ssh configuration not initialized".to_string()),

@@ -53,8 +53,8 @@ def cli() -> int:
 
     parser.add_argument(
         "--logging",
-        help="logging level, DEBUG, INFO, ERROR, CRITICAL",
-        default="INFO",
+        help="logging level, debug, info, error, critical",
+        default="info",
     )
 
     parser.add_argument(

@@ -40,22 +40,23 @@ fn parse_kernel_params(cmdline: String) -> KernelParams {
 }
 
 /// Get kernel params by reading from `/proc/cmdline`.
+fn get_kernel_params() -> Result<KernelParams, std::io::Error> {
+    Ok(parse_kernel_params(fs::read_to_string(CMDLINE_PATH)?))
+}
+
+/// Init kernel params by reading from `/proc/cmdline`.
 pub fn init_kernel_params() {
     if KERNEL_PARAMS.get().is_some() {
         return;
     }
 
-    match fs::read_to_string(CMDLINE_PATH) {
-        Ok(cmdline) => {
-            KERNEL_PARAMS.get_or_init(|| parse_kernel_params(cmdline));
+    match get_kernel_params() {
+        Ok(c) => {
+            KERNEL_PARAMS.get_or_init(|| c);
+            log_debug!("initialized kernel params");
         }
-        Err(err) => {
-            log_error!("Failed to initialize kernel params: {}", err);
-            return;
-        }
+        Err(err) => log_error!("failed to initialize kernel params: {}", err),
     }
-
-    log_debug!("initialized kernel params");
 }
 
 /// Get kernel params presence from a collected configuration.

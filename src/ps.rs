@@ -29,21 +29,10 @@ pub type Proc = HashMap<String, String>;
 
 static PROCESSES: OnceLock<Proc> = OnceLock::new();
 
-// out: HashMap<Pid, Name>
-pub fn init_proc() {
-    if PROCESSES.get().is_some() {
-        return;
-    }
-
+fn get_proc() -> Result<Proc, std::io::Error> {
     let mut output = Proc::new();
 
-    let entries = match fs::read_dir("/proc/") {
-        Ok(e) => e,
-        Err(err) => {
-            log_error!("failed to read \"/proc/\": {}", err);
-            return;
-        }
-    };
+    let entries = fs::read_dir("/proc/")?;
 
     for entry in entries {
         if let Ok(entry) = entry {
@@ -55,7 +44,7 @@ pub fn init_proc() {
 
             let pid = match entry.file_name().into_string() {
                 Ok(pid) => pid,
-                Err(_error) => continue,
+                Err(_) => continue,
             };
 
             if !pid.chars().all(char::is_numeric) {
@@ -78,9 +67,22 @@ pub fn init_proc() {
             output.insert(pid, name);
         }
     }
+    Ok(output)
+}
 
-    PROCESSES.get_or_init(|| output);
-    log_debug!("initialized proc");
+/// Init proc.
+pub fn init_proc() {
+    if PROCESSES.get().is_some() {
+        return;
+    }
+
+    match get_proc() {
+        Ok(p) => {
+            PROCESSES.get_or_init(|| p);
+            log_debug!("initialized proc");
+        }
+        Err(err) => log_error!("failed to initialize proc: {}", err),
+    }
 }
 
 /// Get the list of PID with this name.

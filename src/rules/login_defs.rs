@@ -18,7 +18,7 @@ pub fn add_checks() {
         vec!["login_defs"],
         || {
             const VAL: i32 = 5;
-            match login_defs::get_login_defs("YESCRYPT_COST_FACTOR") {
+            match login_defs::get_login_defs_value("YESCRYPT_COST_FACTOR") {
                 Ok(value) => match value {
                     Some(vl) => match vl.parse::<i32>() {
                         Ok(val) => {
@@ -52,7 +52,7 @@ pub fn add_checks() {
         vec!["login_defs"],
         || {
             const VAL: i32 = 365;
-            match login_defs::get_login_defs("PASS_MAX_DAYS") {
+            match login_defs::get_login_defs_value("PASS_MAX_DAYS") {
                 Ok(value) => match value {
                     Some(vl) => match vl.parse::<i32>() {
                         Ok(val) => {
@@ -83,7 +83,7 @@ pub fn add_checks() {
         vec!["login_defs"],
         || {
             const VAL: i32 = 1;
-            match login_defs::get_login_defs("PASS_MIN_DAYS") {
+            match login_defs::get_login_defs_value("PASS_MIN_DAYS") {
                 Ok(value) => match value {
                     Some(vl) => match vl.parse::<i32>() {
                         Ok(val) => {
@@ -114,7 +114,7 @@ pub fn add_checks() {
         vec!["login_defs"],
         || {
             const VAL: i32 = 7;
-            match login_defs::get_login_defs("PASS_WARN_AGE") {
+            match login_defs::get_login_defs_value("PASS_WARN_AGE") {
                 Ok(value) => match value {
                     Some(vl) => match vl.parse::<i32>() {
                         Ok(val) => {
@@ -166,7 +166,7 @@ pub fn add_checks() {
         vec!["login_defs"],
         || {
             const VAL: i32 = 10;
-            match login_defs::get_login_defs("LOGIN_RETRIES") {
+            match login_defs::get_login_defs_value("LOGIN_RETRIES") {
                 Ok(value) => match value {
                     Some(vl) => match vl.parse::<i32>() {
                         Ok(val) => {
@@ -197,7 +197,7 @@ pub fn add_checks() {
         vec!["login_defs"],
         || {
             const VAL: i32 = 60;
-            match login_defs::get_login_defs("LOGIN_TIMEOUT") {
+            match login_defs::get_login_defs_value("LOGIN_TIMEOUT") {
                 Ok(value) => match value {
                     Some(vl) => match vl.parse::<i32>() {
                         Ok(val) => {

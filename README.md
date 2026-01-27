@@ -7,6 +7,7 @@ Goals:
 - Fast and reliable audits.
 - Easy to extend and create your own checks.
 - JSON output.
+- Easy to maintain.
 
 ## Usage
 
@@ -93,7 +94,7 @@ raudit --json=pretty --filters USR_001,USR_002
 
 ## Rules
 
-Default rules exist, but you should customize them to suit your own needs.
+Default rules are based on various sources including CIS, STIG, Mozilla, ArchLinux wiki. You should customize them to suit your own needs.
 
 Some modules help with specific configuration checks.
 
@@ -119,10 +120,10 @@ What is supported:
 - Shell configuration.
 - APT package manager configuration.
 - Hosts configuration.
+- AppArmor.
 
 Support planned:
 
-- AppArmor.
 - SELinux.
 - IP and nftables.
 - Systemd units.
@@ -196,6 +197,19 @@ Benchmark 1: ./target/release/raudit
 - Give the user's the ability to specify config paths, with globing
 - Get raudit configuration from file
 - Check permissions on startup (root or not) and warn user if needed
+- Use [OPA](https://www.openpolicyagent.org/) to define rules?
+- Work on performance, convert to String to &str
+- Add metadata to JSON report, like start/end time, elapsed, version, username, hostname etc.
+- Add documentation, both user and dev
+- Add option to only have `id`, `message` and `state` in JSON output of checks
+- Add check timeout, if they take too long just stop them, maybe even with ctrl+c?
+- Build in CI on release
+- Add configurations for whitelist on some rules, for example whitelist trusted users in a docker group, instead of failling the check that would force admins to create config
+- Add check to avoid check name collision
+- Use macro `run!()` to log commands
+
+Rules:
+
 - Run `systemd-analyze security ...` on all systemd services and raise errors based on results
 - Ensure DNS supports DNSSEC and is secured with DoT DoH or DNSCRYPT
 - Ensure NTP is configured by running `timedatectl`
@@ -209,16 +223,6 @@ Benchmark 1: ./target/release/raudit
 - Ensure `/tmp` is managed by systemd `tmp.mount` unit, and is cleaned on shutdown
 - Ensure systemd services are hardened (with sandboxing options) `systemctl cat`
 - Ensure cron is disabled if not needed
-- Use [OPA](https://www.openpolicyagent.org/) to define rules?
-- Work on performance, convert to String to &str
-- Add metadata to JSON report, like start/end time, elapsed, version, username, hostname etc.
-- Add documentation, both user and dev
-- Add option to only have `id`, `message` and `state` in JSON output of checks
-- Add check timeout, if they take too long just stop them, maybe even with ctrl+c?
-- Build in CI on release
-- Add configurations for whitelist on some rules, for example whitelist trusted users in a docker group, instead of failling the check that would force admins to create config
-- Add check to avoid check name collision
-- Use macro `run!()` to log commands
 
 ## License
 

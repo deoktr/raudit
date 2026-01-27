@@ -68,38 +68,33 @@ fn parse_kernel_build_config(cmdline: String) -> KernelBuildConfig {
 /// [view_kernel_conf](https://docs.rockylinux.org/gemstones/core/view_kernel_conf/)
 /// The file may not exist, it is only present if the kernel was compiled with
 /// `CONFIG_IKCONFIG_PROC=y`.
+fn get_kernel_build_config() -> Result<KernelBuildConfig, io::Error> {
+    // TODO: if `/lib/modules/.../build/.config` is not present, get it from
+    // another source
+
+    Ok(parse_kernel_build_config(fs::read_to_string(
+        get_kernel_build_config_path()?,
+    )?))
+}
+
+/// Init kernel build configuration by reading
+/// `/lib/modules/$(uname -r)/build/.config` or by reading `/proc/config.gz`.
+///
+/// [view_kernel_conf](https://docs.rockylinux.org/gemstones/core/view_kernel_conf/)
+/// The file may not exist, it is only present if the kernel was compiled with
+/// `CONFIG_IKCONFIG_PROC=y`.
 pub fn init_kernel_build_config() {
     if KERNEL_BUILD_CONFIG.get().is_some() {
         return;
     }
 
-    // TODO: if `/lib/modules/.../build/.config` is not present, get it from
-    // another source
-
-    let kernel_build_config_path = match get_kernel_build_config_path() {
-        Ok(p) => p,
-        Err(err) => {
-            log_error!(
-                "Failed to initialize kernel build config, error while building path: {}",
-                err.to_string()
-            );
-            return;
+    match get_kernel_build_config() {
+        Ok(c) => {
+            KERNEL_BUILD_CONFIG.get_or_init(|| c);
+            log_debug!("initialized kernel build config");
         }
-    };
-
-    match fs::read_to_string(&kernel_build_config_path) {
-        Ok(content) => KERNEL_BUILD_CONFIG.get_or_init(|| parse_kernel_build_config(content)),
-        Err(err) => {
-            log_error!(
-                "Failed to initialize kernel build config, error while reading {}: {}",
-                kernel_build_config_path.to_string_lossy(),
-                err.to_string()
-            );
-            return;
-        }
-    };
-
-    log_debug!("initialized kernel build config");
+        Err(err) => log_error!("failed to initialize kernel build config: {}", err),
+    }
 }
 
 /// Ensure kernel build parameter is set.
