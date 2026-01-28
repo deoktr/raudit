@@ -165,6 +165,7 @@ fn add_all_checks() {
     // TODO: automatically filter out if not on Debian based distro
     rules::apt::add_checks();
     rules::audit::add_checks();
+    rules::bin::add_checks();
     rules::clamav::add_checks();
     rules::docker::add_checks();
     rules::gdm::add_checks();

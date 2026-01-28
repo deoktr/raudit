@@ -143,6 +143,7 @@ What is supported:
 - APT package manager configuration.
 - Hosts configuration.
 - AppArmor.
+- Bin.
 
 Support planned:
 

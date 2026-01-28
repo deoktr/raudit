@@ -20,6 +20,7 @@ mod apparmor;
 mod apt;
 mod audit;
 mod base;
+mod bin;
 mod check;
 mod clamav;
 mod cli;
@@ -53,6 +54,7 @@ mod rules {
     pub mod apparmor;
     pub mod apt;
     pub mod audit;
+    pub mod bin;
     pub mod clamav;
     pub mod docker;
     pub mod gdm;

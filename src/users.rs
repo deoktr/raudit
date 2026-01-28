@@ -405,7 +405,7 @@ pub fn no_dup_uid() -> check::CheckReturn {
         .map(|entry| entry.username.clone())
         .collect();
 
-    if usernames.len() != 0 {
+    if !usernames.is_empty() {
         (check::CheckState::Failed, Some(usernames.join(", ")))
     } else {
         (check::CheckState::Passed, None)
@@ -436,7 +436,7 @@ pub fn no_dup_username() -> check::CheckReturn {
         .map(|entry| entry.username.clone())
         .collect();
 
-    if usernames.len() != 0 {
+    if !usernames.is_empty() {
         (check::CheckState::Failed, Some(usernames.join(", ")))
     } else {
         (check::CheckState::Passed, None)
@@ -470,7 +470,7 @@ pub fn no_login_sys_users() -> check::CheckReturn {
         .map(|entry| entry.username.clone())
         .collect();
 
-    if usernames.len() != 0 {
+    if !usernames.is_empty() {
         (check::CheckState::Failed, Some(usernames.join(", ")))
     } else {
         (check::CheckState::Passed, None)
@@ -498,7 +498,7 @@ pub fn no_empty_shadow_password() -> check::CheckReturn {
         .map(|entry| entry.username.clone())
         .collect();
 
-    if usernames.len() != 0 {
+    if !usernames.is_empty() {
         (check::CheckState::Failed, Some(usernames.join(", ")))
     } else {
         (check::CheckState::Passed, None)
@@ -522,11 +522,11 @@ pub fn no_empty_passwd_password() -> check::CheckReturn {
 
     let usernames: Vec<String> = passwd
         .iter()
-        .filter(|user| user.password == "")
+        .filter(|user| user.password.is_empty())
         .map(|entry| entry.username.clone())
         .collect();
 
-    if usernames.len() != 0 {
+    if !usernames.is_empty() {
         (check::CheckState::Failed, Some(usernames.join(", ")))
     } else {
         (check::CheckState::Passed, None)
