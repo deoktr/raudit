@@ -54,10 +54,9 @@ fn parse_kernel_build_config(cmdline: String) -> KernelBuildConfig {
                 .replacen(" is not set", "=is not set", 1)
                 .to_string()
         })
-        .filter_map(|line| match line.split_once("=") {
-            Some((key, value)) => Some((key.to_string(), value.trim_start().to_string())),
-            // should never happen, don't even log it
-            None => None,
+        .filter_map(|line| {
+            line.split_once("=")
+                .map(|(key, value)| (key.to_string(), value.trim_start().to_string()))
         })
         .collect()
 }
@@ -111,7 +110,7 @@ pub fn check_option_is_set(param: &str) -> check::CheckReturn {
 
     match config.get(param) {
         Some(val) => {
-            if *val != "is not set".to_string() {
+            if val != "is not set" {
                 (check::CheckState::Passed, None)
             } else {
                 (check::CheckState::Failed, Some("param not set".to_string()))
@@ -138,7 +137,7 @@ pub fn check_option_is_not_set(param: &str) -> check::CheckReturn {
 
     match config.get(param) {
         Some(val) => {
-            if *val == "is not set".to_string() {
+            if val == "is not set" {
                 (check::CheckState::Passed, None)
             } else {
                 (check::CheckState::Failed, Some("param set".to_string()))

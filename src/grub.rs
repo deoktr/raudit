@@ -30,7 +30,7 @@ pub type GrubCfg = String;
 
 /// Get the system's grub config from `/boot/grub/grub.cfg`.
 fn get_grub_cfg() -> Result<String, std::io::Error> {
-    Ok(fs::read_to_string(GRUB_CFG_PATH)?)
+    fs::read_to_string(GRUB_CFG_PATH)
 }
 
 /// Init the system's grub config from `/boot/grub/grub.cfg`.

@@ -96,13 +96,13 @@ pub fn init_sudoer() {
         .filter_map(|path| {
             match fs::read_to_string(&path) {
                 Ok(p) => Ok(p),
-                Err(error) => {
+                Err(err) => {
                     log_warn!(
                         "Failed to open {:?}: {}",
                         path.to_string_lossy(),
-                        error.to_string()
+                        err.to_string()
                     );
-                    Err(error)
+                    Err(err)
                 }
             }
             .ok()
@@ -110,17 +110,13 @@ pub fn init_sudoer() {
         .peekable();
 
     // check if the list of valid sudo file to parse is empty
-    if !valid_paths.peek().is_some() {
+    if valid_paths.peek().is_none() {
         log_error!("Failed to initialize sudo configuration: No sudo file to read");
         return;
     }
 
     // get the configuration from all config paths
-    let config: SudoConfig = valid_paths
-        .into_iter()
-        .map(|content| parse_sudoer(content))
-        .flatten()
-        .collect();
+    let config: SudoConfig = valid_paths.flat_map(parse_sudoer).collect();
 
     SUDO_CONFIG.get_or_init(|| config);
 
@@ -143,7 +139,7 @@ pub fn init_sudoer_defaults() {
 
     SUDO_CONFIG_DEFAULTS.get_or_init(|| {
         sudo_config
-            .into_iter()
+            .iter()
             .filter(|config| config.starts_with("Defaults"))
             .map(|config| {
                 config
@@ -202,10 +198,10 @@ pub fn check_has_no_nopaswd() -> check::CheckReturn {
     let g: Vec<String> = sudo_config
         .iter()
         .filter(|config| config.contains("NOPASSWD"))
-        .map(|config| config.clone())
+        .cloned()
         .collect();
 
-    if g.len() != 0 {
+    if !g.is_empty() {
         (check::CheckState::Failed, Some(g.join(", ")))
     } else {
         (check::CheckState::Passed, None)
@@ -227,10 +223,10 @@ pub fn check_re_authentication_not_disabled() -> check::CheckReturn {
     let g: Vec<String> = sudo_config
         .iter()
         .filter(|config| config.contains("!authenticate"))
-        .map(|config| config.clone())
+        .cloned()
         .collect();
 
-    if g.len() != 0 {
+    if !g.is_empty() {
         (check::CheckState::Failed, Some(g.join(", ")))
     } else {
         (check::CheckState::Passed, None)

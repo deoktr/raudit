@@ -41,7 +41,7 @@ pub fn add_checks() {
                         )
                     }
                 }
-                Err(error) => (check::CheckState::Error, Some(error)),
+                Err(err) => (check::CheckState::Error, Some(err)),
             }
         },
         vec![sysctl::init_sysctl_config],
@@ -96,7 +96,7 @@ pub fn add_checks() {
                         )
                     }
                 }
-                Err(error) => (check::CheckState::Error, Some(error)),
+                Err(err) => (check::CheckState::Error, Some(err)),
             }
         },
         vec![sysctl::init_sysctl_config],
@@ -268,7 +268,7 @@ pub fn add_checks() {
                         )
                     }
                 }
-                Err(error) => (check::CheckState::Error, Some(error)),
+                Err(err) => (check::CheckState::Error, Some(err)),
             }
         },
         vec![sysctl::init_sysctl_config],
@@ -483,7 +483,7 @@ pub fn add_checks() {
                         )
                     }
                 }
-                Err(error) => (check::CheckState::Error, Some(error)),
+                Err(err) => (check::CheckState::Error, Some(err)),
             }
         },
         vec![sysctl::init_sysctl_config],
@@ -505,7 +505,7 @@ pub fn add_checks() {
                         )
                     }
                 }
-                Err(error) => (check::CheckState::Error, Some(error)),
+                Err(err) => (check::CheckState::Error, Some(err)),
             }
         },
         vec![sysctl::init_sysctl_config],
@@ -527,7 +527,7 @@ pub fn add_checks() {
                         )
                     }
                 }
-                Err(error) => (check::CheckState::Error, Some(error)),
+                Err(err) => (check::CheckState::Error, Some(err)),
             }
         },
         vec![sysctl::init_sysctl_config],

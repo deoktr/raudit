@@ -82,12 +82,10 @@ pub fn init_mounts() {
 
 /// Get mount from a collected configuration.
 fn get_mount(mounts: &'static MountConfig, target: &str) -> Option<&'static Mount> {
-    for mount in mounts {
-        if mount.target == target {
-            return Some(mount);
-        }
-    }
-    return None;
+    mounts
+        .iter()
+        .find(|&mount| mount.target == target)
+        .map(|v| v as _)
 }
 
 /// Ensure that mount exist.
@@ -110,10 +108,7 @@ pub fn check_mount_present(target: &str) -> check::CheckReturn {
 
 /// Get mount options from a collected configuration.
 fn get_mount_options(mounts: &'static MountConfig, target: &str) -> Option<MountOptions> {
-    match get_mount(mounts, target) {
-        Some(mount) => Some(mount.options.clone()),
-        None => None,
-    }
+    get_mount(mounts, target).map(|mount| mount.options.clone())
 }
 
 /// Ensure that option is set on mount target.

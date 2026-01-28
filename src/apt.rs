@@ -32,13 +32,13 @@ pub type AptConfig = HashMap<String, String>;
 fn parse_apt_config(stdout: String) -> AptConfig {
     stdout
         .lines()
-        .filter_map(|line| match line.to_string().split_once(" ") {
-            Some((key, value)) => Some((
-                key.to_string(),
-                value.trim_end_matches(';').trim_matches('"').to_string(),
-            )),
-            // should never happen, don't even log it
-            None => None,
+        .filter_map(|line| {
+            line.to_string().split_once(" ").map(|(key, value)| {
+                (
+                    key.to_string(),
+                    value.trim_end_matches(';').trim_matches('"').to_string(),
+                )
+            })
         })
         .collect()
 }

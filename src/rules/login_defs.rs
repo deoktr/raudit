@@ -34,14 +34,14 @@ pub fn add_checks() {
                                 )
                             }
                         }
-                        Err(error) => (check::CheckState::Error, Some(error.to_string())),
+                        Err(err) => (check::CheckState::Error, Some(err.to_string())),
                     },
                     None => (
                         check::CheckState::Error,
                         Some("key not present".to_string()),
                     ),
                 },
-                Err(error) => (check::CheckState::Error, Some(error)),
+                Err(err) => (check::CheckState::Error, Some(err)),
             }
         },
         vec![login_defs::init_login_defs],
@@ -65,14 +65,14 @@ pub fn add_checks() {
                                 )
                             }
                         }
-                        Err(error) => (check::CheckState::Error, Some(error.to_string())),
+                        Err(err) => (check::CheckState::Error, Some(err.to_string())),
                     },
                     None => (
                         check::CheckState::Error,
                         Some("key not present".to_string()),
                     ),
                 },
-                Err(error) => (check::CheckState::Error, Some(error)),
+                Err(err) => (check::CheckState::Error, Some(err)),
             }
         },
         vec![login_defs::init_login_defs],
@@ -96,14 +96,14 @@ pub fn add_checks() {
                                 )
                             }
                         }
-                        Err(error) => (check::CheckState::Error, Some(error.to_string())),
+                        Err(err) => (check::CheckState::Error, Some(err.to_string())),
                     },
                     None => (
                         check::CheckState::Error,
                         Some("key not present".to_string()),
                     ),
                 },
-                Err(error) => (check::CheckState::Error, Some(error)),
+                Err(err) => (check::CheckState::Error, Some(err)),
             }
         },
         vec![login_defs::init_login_defs],
@@ -127,14 +127,14 @@ pub fn add_checks() {
                                 )
                             }
                         }
-                        Err(error) => (check::CheckState::Error, Some(error.to_string())),
+                        Err(err) => (check::CheckState::Error, Some(err.to_string())),
                     },
                     None => (
                         check::CheckState::Error,
                         Some("key not present".to_string()),
                     ),
                 },
-                Err(error) => (check::CheckState::Error, Some(error)),
+                Err(err) => (check::CheckState::Error, Some(err)),
             }
         },
         vec![login_defs::init_login_defs],
@@ -179,14 +179,14 @@ pub fn add_checks() {
                                 )
                             }
                         }
-                        Err(error) => (check::CheckState::Error, Some(error.to_string())),
+                        Err(err) => (check::CheckState::Error, Some(err.to_string())),
                     },
                     None => (
                         check::CheckState::Error,
                         Some("key not present".to_string()),
                     ),
                 },
-                Err(error) => (check::CheckState::Error, Some(error)),
+                Err(err) => (check::CheckState::Error, Some(err)),
             }
         },
         vec![login_defs::init_login_defs],
@@ -210,14 +210,14 @@ pub fn add_checks() {
                                 )
                             }
                         }
-                        Err(error) => (check::CheckState::Error, Some(error.to_string())),
+                        Err(err) => (check::CheckState::Error, Some(err.to_string())),
                     },
                     None => (
                         check::CheckState::Error,
                         Some("key not present".to_string()),
                     ),
                 },
-                Err(error) => (check::CheckState::Error, Some(error)),
+                Err(err) => (check::CheckState::Error, Some(err)),
             }
         },
         vec![login_defs::init_login_defs],

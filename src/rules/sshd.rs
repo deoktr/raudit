@@ -41,9 +41,9 @@ pub fn add_checks() {
                             )
                         }
                     }
-                    Err(error) => (check::CheckState::Error, Some(error.to_string())),
+                    Err(err) => (check::CheckState::Error, Some(err.to_string())),
                 },
-                Err(error) => (check::CheckState::Error, Some(error)),
+                Err(err) => (check::CheckState::Error, Some(err)),
             }
         },
         vec![sshd::init_sshd_config],
@@ -80,9 +80,9 @@ pub fn add_checks() {
                             )
                         }
                     }
-                    Err(error) => (check::CheckState::Error, Some(error.to_string())),
+                    Err(err) => (check::CheckState::Error, Some(err.to_string())),
                 },
-                Err(error) => (check::CheckState::Error, Some(error)),
+                Err(err) => (check::CheckState::Error, Some(err)),
             }
         },
         vec![sshd::init_sshd_config],
@@ -105,9 +105,9 @@ pub fn add_checks() {
                             )
                         }
                     }
-                    Err(error) => (check::CheckState::Error, Some(error.to_string())),
+                    Err(err) => (check::CheckState::Error, Some(err.to_string())),
                 },
-                Err(error) => (check::CheckState::Error, Some(error)),
+                Err(err) => (check::CheckState::Error, Some(err)),
             }
         },
         vec![sshd::init_sshd_config],
@@ -284,9 +284,9 @@ pub fn add_checks() {
                             )
                         }
                     }
-                    Err(error) => (check::CheckState::Error, Some(error.to_string())),
+                    Err(err) => (check::CheckState::Error, Some(err.to_string())),
                 },
-                Err(error) => (check::CheckState::Error, Some(error)),
+                Err(err) => (check::CheckState::Error, Some(err)),
             }
         },
         vec![sshd::init_sshd_config],

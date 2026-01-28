@@ -60,7 +60,7 @@ fn parse_pam_rule(line: &str) -> Result<PamRule, String> {
     }
 
     // remove potential comments at the end of the line
-    let clean_line = match line.splitn(2, "#").nth(0) {
+    let clean_line = match line.split("#").next() {
         Some(l) => l,
         None => return Err("failed to split the comment when parsing PAM rule".to_string()),
     };
@@ -161,8 +161,8 @@ fn parse_pam_file(path: PathBuf, content: String) -> Vec<PamRule> {
 
         match parse_pam_rule(line) {
             Ok(p) => pam_rules.push(p),
-            Err(error) => {
-                log_warn!("Error parsing PAM rule {}: {}", line.to_string(), error);
+            Err(err) => {
+                log_warn!("Error parsing PAM rule {}: {}", line.to_string(), err);
                 continue;
             }
         }
@@ -244,21 +244,21 @@ fn get_pam_rule(
     match config.get(service) {
         Some(service) => {
             let rules: Vec<&PamRule> = service
-                .into_iter()
+                .iter()
                 .filter(|rule| {
                     rule.rule_type == rule_type
                     && rule.control == control
 
                     // NOTE: on NixOS external lib have a full path, ex:
-                    // `/nix/store/.../lib/security/pam_....so` that's why we 
-                    // only check the end of the module (it's name) and not the 
+                    // `/nix/store/.../lib/security/pam_....so` that's why we
+                    // only check the end of the module (it's name) and not the
                     // whole thing
                     // TODO: this is far from perfect
                     && rule.module.ends_with(module)
                 })
                 .collect();
 
-            if rules.len() == 0 {
+            if rules.is_empty() {
                 return Err("rule not found".to_string());
             } else if rules.len() > 1 {
                 return Err("more than one rule found".to_string());

@@ -63,7 +63,7 @@ pub fn parse_group(content: String) -> Groups {
                 .next()
                 .unwrap_or_default()
                 .split(",")
-                .filter(|i| i.len() != 0)
+                .filter(|i| !i.is_empty())
                 .map(|i| i.to_string())
                 .collect();
 
@@ -118,11 +118,11 @@ pub fn no_password_in_group() -> check::CheckReturn {
 
     let g: Vec<String> = groups
         .iter()
-        .filter(|group| group.password != "x".to_string())
+        .filter(|group| group.password != "x")
         .map(|group| group.name.clone())
         .collect();
 
-    if g.len() != 0 {
+    if !g.is_empty() {
         (check::CheckState::Failed, Some(g.join(", ")))
     } else {
         (check::CheckState::Passed, None)
@@ -147,7 +147,7 @@ pub fn one_gid_zero() -> check::CheckReturn {
         .map(|group| group.name.clone())
         .collect();
 
-    if g.len() != 0 {
+    if !g.is_empty() {
         (check::CheckState::Failed, Some(g.join(", ")))
     } else {
         (check::CheckState::Passed, None)
@@ -172,7 +172,7 @@ pub fn no_dup_gid() -> check::CheckReturn {
         .map(|group| group.name.clone())
         .collect();
 
-    if g.len() != 0 {
+    if !g.is_empty() {
         (check::CheckState::Failed, Some(g.join(", ")))
     } else {
         (check::CheckState::Passed, None)
@@ -197,7 +197,7 @@ pub fn no_dup_name() -> check::CheckReturn {
         .map(|group| group.name.clone())
         .collect();
 
-    if g.len() != 0 {
+    if !g.is_empty() {
         (check::CheckState::Failed, Some(g.join(", ")))
     } else {
         (check::CheckState::Passed, None)
@@ -221,7 +221,7 @@ pub fn no_members(group_name: &str) -> check::CheckReturn {
             continue;
         }
 
-        if group.user_list.len() != 0 {
+        if !group.user_list.is_empty() {
             return (check::CheckState::Failed, Some(group.user_list.join(", ")));
         } else {
             return (check::CheckState::Passed, None);

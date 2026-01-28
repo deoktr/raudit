@@ -35,10 +35,9 @@ fn parse_login_defs(login_defs: String) -> LoginDefsConfig {
         .lines()
         .filter(|line| !line.is_empty())
         .filter(|line| !line.starts_with("#"))
-        .filter_map(|line| match line.split_once(char::is_whitespace) {
-            Some((key, value)) => Some((key.to_string(), value.trim_start().to_string())),
-            // should never happen, don't even log it
-            None => None,
+        .filter_map(|line| {
+            line.split_once(char::is_whitespace)
+                .map(|(key, value)| (key.to_string(), value.trim_start().to_string()))
         })
         .collect()
 }

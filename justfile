@@ -4,26 +4,16 @@ alias t := test
 default:
     @just --choose
 
-ci: test lint security
+ci: test lint audit
 
-[group("test")]
 test:
     cargo test --all
 
-[group("lint")]
-lint: check clippy
+format:
+    cargo fmt
 
-[group("lint")]
-check:
-    cargo check
-
-[group("lint")]
-clippy:
+lint:
     cargo clippy
 
-[group("security")]
-security: audit
-
-[group("security")]
 audit:
     cargo audit

@@ -58,16 +58,13 @@ fn get_audit_rules() -> Result<AuditRules, std::io::Error> {
     cmd.args(vec!["-l"]);
 
     let output = cmd.output()?;
-    match str::from_utf8(&output.stderr) {
-        Ok(stderr) => {
-            if stderr == "You must be root to run this program.\n" {
-                return Err(io::Error::new(
-                    io::ErrorKind::PermissionDenied,
-                    "failed to initialize audit rules, root required",
-                ));
-            }
-        }
-        Err(_) => (),
+    if let Ok(stderr) = str::from_utf8(&output.stderr)
+        && stderr == "You must be root to run this program.\n"
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::PermissionDenied,
+            "failed to initialize audit rules, root required",
+        ));
     };
 
     // one line is one rule, no need for parsing
@@ -98,10 +95,9 @@ fn parse_audit_config(login_defs: String) -> AuditConfig {
         .lines()
         .filter(|line| !line.is_empty())
         .filter(|line| !line.starts_with("#"))
-        .filter_map(|line| match line.split_once(char::is_whitespace) {
-            Some((key, value)) => Some((key.to_string(), value.trim_start().to_string())),
-            // should never happen, don't even log it
-            None => None,
+        .filter_map(|line| {
+            line.split_once(char::is_whitespace)
+                .map(|(key, value)| (key.to_string(), value.trim_start().to_string()))
         })
         .collect()
 }

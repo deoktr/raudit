@@ -79,7 +79,7 @@ fn get_containers_inspect() -> Result<Containers, String> {
     let stdout = str::from_utf8(&output.stdout).map_err(|e| e.to_string())?;
     let ids: Vec<&str> = stdout.lines().collect();
 
-    if ids.len() == 0 {
+    if ids.is_empty() {
         return Ok(Containers::new());
     }
 
@@ -168,12 +168,12 @@ pub fn podman_not_privileged() -> check::CheckReturn {
         }
     };
 
-    if containers.len() == 0 {
+    if containers.is_empty() {
         return (check::CheckState::Passed, Some("no containers".to_string()));
     }
 
     let ids: Vec<String> = containers
-        .into_iter()
+        .iter()
         .filter_map(|(id, container)| {
             let privileged = &container["HostConfig"]["Privileged"];
             log_debug!("podman container {} privileged: {:?}", id, privileged);
@@ -186,7 +186,7 @@ pub fn podman_not_privileged() -> check::CheckReturn {
         })
         .collect();
 
-    if ids.len() == 0 {
+    if ids.is_empty() {
         (check::CheckState::Passed, None)
     } else {
         log_debug!("containers running with `--privileged`: {:?}", ids);
@@ -210,12 +210,12 @@ pub fn podman_cap_drop() -> check::CheckReturn {
         }
     };
 
-    if containers.len() == 0 {
+    if containers.is_empty() {
         return (check::CheckState::Passed, Some("no containers".to_string()));
     }
 
     let ids: Vec<String> = containers
-        .into_iter()
+        .iter()
         .filter_map(|(id, container)| {
             let capdrop = container["HostConfig"]["CapDrop"].as_array()?;
             log_debug!("podman container {} cap drop: {:?}", id, capdrop);
@@ -228,7 +228,7 @@ pub fn podman_cap_drop() -> check::CheckReturn {
         })
         .collect();
 
-    if ids.len() == 0 {
+    if ids.is_empty() {
         (check::CheckState::Passed, None)
     } else {
         log_debug!("Missing cap drop on containers: {:?}", ids);
@@ -252,12 +252,12 @@ pub fn podman_user() -> check::CheckReturn {
         }
     };
 
-    if containers.len() == 0 {
+    if containers.is_empty() {
         return (check::CheckState::Passed, Some("no containers".to_string()));
     }
 
     let ids: Vec<String> = containers
-        .into_iter()
+        .iter()
         .filter_map(|(id, container)| {
             let user = &container["Config"]["User"];
             log_debug!("podman container {} user: {}", id, user);
@@ -269,7 +269,7 @@ pub fn podman_user() -> check::CheckReturn {
         })
         .collect();
 
-    if ids.len() == 0 {
+    if ids.is_empty() {
         (check::CheckState::Passed, None)
     } else {
         log_debug!("Running as root on containers: {:?}", ids);
@@ -292,12 +292,12 @@ pub fn podman_apparmor() -> check::CheckReturn {
         }
     };
 
-    if containers.len() == 0 {
+    if containers.is_empty() {
         return (check::CheckState::Passed, Some("no containers".to_string()));
     }
 
     let ids: Vec<String> = containers
-        .into_iter()
+        .iter()
         .filter_map(|(id, container)| {
             let aap = &container["AppArmorProfile"];
             log_debug!("podman container {} apparmor profile: {}", id, aap);
@@ -309,7 +309,7 @@ pub fn podman_apparmor() -> check::CheckReturn {
         })
         .collect();
 
-    if ids.len() == 0 {
+    if ids.is_empty() {
         (check::CheckState::Passed, None)
     } else {
         log_debug!("Running without apparmor profile on containers: {:?}", ids);

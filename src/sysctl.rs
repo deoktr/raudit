@@ -32,10 +32,10 @@ pub type SysctlConfig = HashMap<String, String>;
 fn parse_sysctl_config(stdout: String) -> SysctlConfig {
     stdout
         .lines()
-        .filter_map(|line| match line.to_string().split_once(" = ") {
-            Some((key, value)) => Some((key.to_string(), value.to_string())),
-            // should never happen, don't even log it
-            None => None,
+        .filter_map(|line| {
+            line.to_string()
+                .split_once(" = ")
+                .map(|(key, value)| (key.to_string(), value.to_string()))
         })
         .collect()
 }
@@ -127,13 +127,9 @@ impl SysctlValue for i32 {
                         )
                     }
                 }
-                Err(error) => (
+                Err(err) => (
                     check::CheckState::Error,
-                    Some(format!(
-                        "failed to convert {:?} to i32: {}",
-                        value,
-                        error.to_string()
-                    )),
+                    Some(format!("failed to convert {:?} to i32: {}", value, err)),
                 ),
             },
             None => (
@@ -156,10 +152,8 @@ pub fn get_sysctl_i32_value(key: &str) -> Result<i32, String> {
 
     match config.get(key) {
         Some(value) => match value.parse::<i32>() {
-            Ok(val) => {
-                return Ok(val);
-            }
-            Err(error) => Err(error.to_string()),
+            Ok(val) => Ok(val),
+            Err(err) => Err(err.to_string()),
         },
         None => Err(format!("missing sysctl {:?} key", key)),
     }

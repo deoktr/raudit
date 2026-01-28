@@ -32,10 +32,10 @@ pub type SshdConfig = HashMap<String, String>;
 fn parse_sshd_config(sshd_t: String) -> SshdConfig {
     sshd_t
         .lines()
-        .filter_map(|line| match line.to_string().split_once(" ") {
-            Some((key, value)) => Some((key.to_string(), value.to_string())),
-            // should never happen, don't even log it
-            None => None,
+        .filter_map(|line| {
+            line.to_string()
+                .split_once(" ")
+                .map(|(key, value)| (key.to_string(), value.to_string()))
         })
         .collect()
 }
@@ -48,16 +48,13 @@ fn get_sshd_config() -> Result<SshdConfig, String> {
 
     let output = cmd.output().map_err(|e| e.to_string())?;
 
-    match output.status.code() {
-        Some(status) => {
-            if status != 0 {
-                return Err(format!(
-                    "failed to get sshd configuration, got status code {} while running \"sshd -T\"",
-                    status
-                ));
-            }
-        }
-        None => (),
+    if let Some(status) = output.status.code()
+        && status != 0
+    {
+        return Err(format!(
+            "failed to get sshd configuration, got status code {} while running \"sshd -T\"",
+            status
+        ));
     };
 
     Ok(parse_sshd_config(

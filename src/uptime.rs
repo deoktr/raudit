@@ -61,10 +61,10 @@ pub fn uptime_bellow(max_uptime: u64) -> check::CheckReturn {
     match UPTIME.get() {
         Some(uptime) => {
             if uptime < &max_uptime {
-                return (
+                (
                     check::CheckState::Passed,
                     Some(format!("{} h", uptime / 3600)),
-                );
+                )
             } else {
                 (
                     check::CheckState::Failed,
@@ -72,11 +72,9 @@ pub fn uptime_bellow(max_uptime: u64) -> check::CheckReturn {
                 )
             }
         }
-        None => {
-            return (
-                check::CheckState::Error,
-                Some("uptime not initialized".to_string()),
-            );
-        }
+        None => (
+            check::CheckState::Error,
+            Some("uptime not initialized".to_string()),
+        ),
     }
 }

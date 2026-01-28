@@ -79,7 +79,7 @@ fn get_containers_inspect() -> Result<Containers, String> {
     let stdout = str::from_utf8(&output.stdout).map_err(|e| e.to_string())?;
     let ids: Vec<&str> = stdout.lines().collect();
 
-    if ids.len() == 0 {
+    if ids.is_empty() {
         return Ok(Containers::new());
     }
 
@@ -169,12 +169,12 @@ pub fn docker_not_privileged() -> check::CheckReturn {
         }
     };
 
-    if containers.len() == 0 {
+    if containers.is_empty() {
         return (check::CheckState::Passed, Some("no containers".to_string()));
     }
 
     let ids: Vec<String> = containers
-        .into_iter()
+        .iter()
         .filter_map(|(id, container)| {
             let privileged = &container["HostConfig"]["Privileged"];
             log_debug!("docker container {} privileged: {:?}", id, privileged);
@@ -187,7 +187,7 @@ pub fn docker_not_privileged() -> check::CheckReturn {
         })
         .collect();
 
-    if ids.len() == 0 {
+    if ids.is_empty() {
         (check::CheckState::Passed, None)
     } else {
         log_debug!("containers running with `--privileged`: {:?}", ids);
@@ -211,12 +211,12 @@ pub fn docker_cap_drop() -> check::CheckReturn {
         }
     };
 
-    if containers.len() == 0 {
+    if containers.is_empty() {
         return (check::CheckState::Passed, Some("no containers".to_string()));
     }
 
     let ids: Vec<String> = containers
-        .into_iter()
+        .iter()
         .filter_map(|(id, container)| {
             let capdrop_json = &container["HostConfig"]["CapDrop"];
             log_debug!("docker container {} cap drop: {:?}", id, capdrop_json);
@@ -235,7 +235,7 @@ pub fn docker_cap_drop() -> check::CheckReturn {
         })
         .collect();
 
-    if ids.len() == 0 {
+    if ids.is_empty() {
         (check::CheckState::Passed, None)
     } else {
         log_debug!("Missing cap drop on containers: {:?}", ids);
@@ -258,12 +258,12 @@ pub fn docker_container_user() -> check::CheckReturn {
         }
     };
 
-    if containers.len() == 0 {
+    if containers.is_empty() {
         return (check::CheckState::Passed, Some("no containers".to_string()));
     }
 
     let ids: Vec<String> = containers
-        .into_iter()
+        .iter()
         .filter_map(|(id, container)| {
             let user = &container["Config"]["User"];
             log_debug!("docker container {} user: {}", id, user);
@@ -275,7 +275,7 @@ pub fn docker_container_user() -> check::CheckReturn {
         })
         .collect();
 
-    if ids.len() == 0 {
+    if ids.is_empty() {
         (check::CheckState::Passed, None)
     } else {
         log_debug!("Running as root on containers: {:?}", ids);

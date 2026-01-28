@@ -112,7 +112,7 @@ pub fn print_tags() {
     let mut tags: Vec<String> = vec![];
     for check in report.checks.iter() {
         for tag in check.tags.iter() {
-            if tags.contains(&tag) {
+            if tags.contains(tag) {
                 continue;
             }
             tags.push(tag.clone());
@@ -156,7 +156,7 @@ pub fn par_run_checks() {
 
 /// Filter checks by their tags.
 pub fn filter_tags(tags: Vec<String>) {
-    if tags.len() == 0 {
+    if tags.is_empty() {
         return;
     }
 
@@ -168,7 +168,7 @@ pub fn filter_tags(tags: Vec<String>) {
 
 /// Filter out checks by their tags.
 pub fn filter_tags_exclude(tags: Vec<String>) {
-    if tags.len() == 0 {
+    if tags.is_empty() {
         return;
     }
 
@@ -180,7 +180,7 @@ pub fn filter_tags_exclude(tags: Vec<String>) {
 
 /// Filter checks by their ID prefix.
 pub fn filter_id(prefixes: Vec<String>) {
-    if prefixes.len() == 0 {
+    if prefixes.is_empty() {
         return;
     }
 
@@ -192,7 +192,7 @@ pub fn filter_id(prefixes: Vec<String>) {
 
 /// Filter out checks by their ID prefix.
 pub fn filter_id_exclude(prefixes: Vec<String>) {
-    if prefixes.len() == 0 {
+    if prefixes.is_empty() {
         return;
     }
 

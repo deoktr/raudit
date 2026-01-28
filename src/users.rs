@@ -170,26 +170,20 @@ pub fn parse_shadow(content: String) -> ShadowConfig {
                 .unwrap_or_default();
             let inactivity_period = match kvs.next() {
                 Some(v) => {
-                    if v.len() == 0 {
+                    if v.is_empty() {
                         None
                     } else {
-                        match v.parse::<u32>() {
-                            Ok(i) => Some(i),
-                            Err(_) => None,
-                        }
+                        v.parse::<u32>().ok()
                     }
                 }
                 None => None,
             };
             let expiration_date = match kvs.next() {
                 Some(v) => {
-                    if v.len() == 0 {
+                    if v.is_empty() {
                         None
                     } else {
-                        match v.parse::<u32>() {
-                            Ok(i) => Some(i),
-                            Err(_) => None,
-                        }
+                        v.parse::<u32>().ok()
                     }
                 }
                 None => None,
@@ -250,7 +244,7 @@ pub fn no_password_in_passwd() -> check::CheckReturn {
         .map(|entry| entry.username.clone())
         .collect();
 
-    if g.len() != 0 {
+    if !g.is_empty() {
         (check::CheckState::Failed, Some(g.join(", ")))
     } else {
         (check::CheckState::Passed, None)
@@ -275,7 +269,7 @@ pub fn no_uid_zero() -> check::CheckReturn {
         .map(|entry| entry.username.clone())
         .collect();
 
-    if g.len() != 0 {
+    if !g.is_empty() {
         (check::CheckState::Failed, Some(g.join(", ")))
     } else {
         (check::CheckState::Passed, None)
@@ -304,7 +298,7 @@ pub fn yescrypt_hashes() -> check::CheckReturn {
         .map(|entry| entry.username.clone())
         .collect();
 
-    if usernames.len() != 0 {
+    if !usernames.is_empty() {
         (check::CheckState::Failed, Some(usernames.join(", ")))
     } else {
         (check::CheckState::Passed, None)
@@ -341,7 +335,7 @@ pub fn no_locked_account() -> check::CheckReturn {
         .map(|entry| entry.username.clone())
         .collect();
 
-    if usernames.len() != 0 {
+    if !usernames.is_empty() {
         (check::CheckState::Failed, Some(usernames.join(", ")))
     } else {
         (check::CheckState::Passed, None)
@@ -375,7 +369,7 @@ pub fn no_missing_home() -> check::CheckReturn {
         }
     }
 
-    if usernames.len() != 0 {
+    if !usernames.is_empty() {
         (check::CheckState::Failed, Some(usernames.join(", ")))
     } else {
         (check::CheckState::Passed, None)
@@ -494,7 +488,7 @@ pub fn no_empty_shadow_password() -> check::CheckReturn {
 
     let usernames: Vec<String> = shadow
         .iter()
-        .filter(|user| user.password == "")
+        .filter(|user| user.password.is_empty())
         .map(|entry| entry.username.clone())
         .collect();
 

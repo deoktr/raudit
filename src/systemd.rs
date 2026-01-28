@@ -39,10 +39,9 @@ fn parse_systemd_config(systemd_config: String) -> SystemdConfig {
         // ignore `[Manager]` line
         // TODO: update parser to collect sections
         .filter(|line| !line.starts_with("["))
-        .filter_map(|line| match line.split_once("=") {
-            Some((key, value)) => Some((key.to_string(), value.trim_start().to_string())),
-            // should never happen, don't even log it
-            None => None,
+        .filter_map(|line| {
+            line.split_once("=")
+                .map(|(key, value)| (key.to_string(), value.trim_start().to_string()))
         })
         .collect()
 }
@@ -116,14 +115,11 @@ pub fn get_systemd_file(service: &str) -> Option<String> {
         return Some(lib_path);
     }
 
-    match run!("systemctl", "show", "-p", "FragmentPath", &service).strip_prefix("FragmentPath=") {
-        Some(p) => {
-            if p != "" {
-                return Some(p.to_string());
-            }
-        }
-        None => (),
-    };
+    if let Some(p) =
+        run!("systemctl", "show", "-p", "FragmentPath", &service).strip_prefix("FragmentPath=")
+        && !p.is_empty() {
+            return Some(p.to_string());
+        };
 
     let usr_lib_path = format!("/usr/lib/systemd/system/{}", service);
     if Path::new(&usr_lib_path).exists() {

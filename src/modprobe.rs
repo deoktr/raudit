@@ -63,28 +63,22 @@ fn get_modprobe_config() -> ModprobeConfig {
         fs::read_dir("/etc/modprobe.d/"),
     ]
     .into_iter()
-    .filter(|dir| dir.is_ok())
-    .map(|dir| dir.unwrap())
-    .map(|dir| {
-        dir.filter(|dentry| dentry.is_ok())
-            .map(|dentry| dentry.unwrap())
+    .flatten()
+    .flat_map(|dir| {
+        dir.flatten()
             // only keep `.conf` files
             .filter(|dentry| dentry.file_name().to_string_lossy().ends_with(".conf"))
             .map(|dentry| dentry.path())
             .filter(|path| !path.is_dir())
             .collect::<Vec<PathBuf>>()
     })
-    .flatten()
     .collect();
 
     // get the configuration from all config paths
     let config: ModprobeConfig = paths
         .into_iter()
-        .map(|path| fs::read_to_string(path))
-        .filter(|rcontent| rcontent.is_ok())
-        .map(|rcontent| rcontent.unwrap())
-        .map(|content| parse_modprobe(content))
-        .flatten()
+        .flat_map(fs::read_to_string)
+        .flat_map(parse_modprobe)
         .collect();
 
     config
@@ -96,14 +90,14 @@ fn init_modprobe_config() {
         return;
     }
 
-    MODPROBE_CONFIG.get_or_init(|| get_modprobe_config());
+    MODPROBE_CONFIG.get_or_init(get_modprobe_config);
     log_debug!("initialized modprobe config");
 }
 
 /// Get modprobe blacklisted modules from modprobe config.
 fn get_modprobe_blacklist(modprobe: &ModprobeConfig) -> ModprobeBlacklist {
     modprobe
-        .into_iter()
+        .iter()
         .filter(|line| {
             // `blacklist mod_name`
             line.starts_with("blacklist")
@@ -126,7 +120,6 @@ fn init_modprobe_blacklist() {
         }
         None => {
             log_error!("failed to initialize modprobe blacklist: Modprobe is not initialized");
-            return;
         }
     }
 }
@@ -134,7 +127,7 @@ fn init_modprobe_blacklist() {
 /// Get modprobe disabled modules from modprobe config.
 fn get_modprobe_disabled(modprobe: &ModprobeConfig) -> ModprobeDisabled {
     modprobe
-        .into_iter()
+        .iter()
         .filter(|line| {
             // `install mod_name /bin/false`
             // OR
@@ -174,7 +167,7 @@ fn parse_lsmod_modules(lsmod: String) -> Vec<String> {
         .skip(1)
         .map(|line| {
             line.split_whitespace()
-                .nth(0)
+                .next()
                 .unwrap_or_default()
                 .to_string()
         })

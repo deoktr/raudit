@@ -239,10 +239,7 @@ pub fn check_file_content_regex(path: &str, pattern: &str) -> check::CheckReturn
         Err(err) => {
             return (
                 check::CheckState::Error,
-                Some(format!(
-                    "failed to compile shell timeout regex: {}",
-                    err.to_string()
-                )),
+                Some(format!("failed to compile shell timeout regex: {}", err)),
             );
         }
     };
@@ -259,7 +256,7 @@ pub fn check_file_content_regex(path: &str, pattern: &str) -> check::CheckReturn
             _ => {
                 return (
                     check::CheckState::Error,
-                    Some(format!("failed to read file: {}", err.to_string())),
+                    Some(format!("failed to read file: {}", err)),
                 );
             }
         },

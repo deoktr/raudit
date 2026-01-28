@@ -34,38 +34,36 @@ fn get_proc() -> Result<Proc, std::io::Error> {
 
     let entries = fs::read_dir("/proc/")?;
 
-    for entry in entries {
-        if let Ok(entry) = entry {
-            let path = entry.path();
+    for entry in entries.flatten() {
+        let path = entry.path();
 
-            if !path.is_dir() {
-                continue;
-            }
+        if !path.is_dir() {
+            continue;
+        }
 
-            let pid = match entry.file_name().into_string() {
-                Ok(pid) => pid,
-                Err(_) => continue,
-            };
+        let pid = match entry.file_name().into_string() {
+            Ok(pid) => pid,
+            Err(_) => continue,
+        };
 
-            if !pid.chars().all(char::is_numeric) {
-                continue;
-            }
+        if !pid.chars().all(char::is_numeric) {
+            continue;
+        }
 
-            let mut name: String = String::new();
+        let mut name: String = String::new();
 
-            match fs::read_to_string(format!("/proc/{pid}/status")) {
-                Ok(status) => {
-                    for line in status.lines() {
-                        if line.starts_with("Name:") {
-                            name = line.replace("Name:\t", "").to_string();
-                            break;
-                        }
+        match fs::read_to_string(format!("/proc/{pid}/status")) {
+            Ok(status) => {
+                for line in status.lines() {
+                    if line.starts_with("Name:") {
+                        name = line.replace("Name:\t", "").to_string();
+                        break;
                     }
                 }
-                Err(_) => continue,
-            };
-            output.insert(pid, name);
-        }
+            }
+            Err(_) => continue,
+        };
+        output.insert(pid, name);
     }
     Ok(output)
 }
@@ -95,7 +93,7 @@ pub fn get_pids(config: &Proc, name: &str) -> Option<Vec<String>> {
         procs.push(k.to_string());
     }
 
-    if procs.len() > 0 { Some(procs) } else { None }
+    if !procs.is_empty() { Some(procs) } else { None }
 }
 
 /// Check if a process is running from it's name.
@@ -155,7 +153,7 @@ fn get_proc_flags(name: &str) -> Result<Vec<String>, check::CheckReturn> {
         Err(err) => {
             return Err((
                 check::CheckState::Error,
-                Some(format!("failed to read file: {}", err.to_string())),
+                Some(format!("failed to read file: {}", err)),
             ));
         }
     };
