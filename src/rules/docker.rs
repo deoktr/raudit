@@ -4,21 +4,21 @@ pub fn add_checks() {
     check::add_check(
         "CNT_001",
         "Ensure docker containers are not started with \"--privileged\" flag",
-        vec!["container", "docker", "foo"],
+        vec!["container", "docker"],
         docker::docker_not_privileged,
         vec![docker::init_containers_inspect],
     );
     check::add_check(
         "CNT_002",
         "Ensure docker containers capabilities are dopped",
-        vec!["container", "docker", "foo"],
+        vec!["container", "docker"],
         docker::docker_cap_drop,
         vec![docker::init_containers_inspect],
     );
     check::add_check(
         "CNT_003",
         "Ensure docker containers are running with a user",
-        vec!["container", "docker", "foo"],
+        vec!["container", "docker"],
         docker::docker_container_user,
         vec![docker::init_containers_inspect],
     );

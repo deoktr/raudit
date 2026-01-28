@@ -166,6 +166,18 @@ pub fn filter_tags(tags: Vec<String>) {
         .retain(|check| tags.iter().any(|tag| check.tags.contains(tag)));
 }
 
+/// Filter out checks by their tags.
+pub fn filter_tags_exclude(tags: Vec<String>) {
+    if tags.len() == 0 {
+        return;
+    }
+
+    let mut report = REPORT.lock().unwrap();
+    report
+        .checks
+        .retain(|check| !tags.iter().any(|tag| check.tags.contains(tag)));
+}
+
 /// Filter checks by their ID prefix.
 pub fn filter_id(prefixes: Vec<String>) {
     if prefixes.len() == 0 {
@@ -176,6 +188,18 @@ pub fn filter_id(prefixes: Vec<String>) {
     report
         .checks
         .retain(|check| prefixes.iter().any(|prefix| check.id.starts_with(prefix)));
+}
+
+/// Filter out checks by their ID prefix.
+pub fn filter_id_exclude(prefixes: Vec<String>) {
+    if prefixes.len() == 0 {
+        return;
+    }
+
+    let mut report = REPORT.lock().unwrap();
+    report
+        .checks
+        .retain(|check| !prefixes.iter().any(|prefix| check.id.starts_with(prefix)));
 }
 
 /// Run dependencies in sequence.

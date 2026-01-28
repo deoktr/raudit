@@ -23,6 +23,7 @@ use std::sync::OnceLock;
 use crate::{check, log_debug, log_error, log_warn};
 
 const SUDOERS_PATH: &str = "/etc/sudoers";
+const SUDOERS_DIR_PATH: &str = "/etc/sudoers.d";
 
 static SUDO_CONFIG: OnceLock<SudoConfig> = OnceLock::new();
 static SUDO_CONFIG_DEFAULTS: OnceLock<SudoConfigDefaults> = OnceLock::new();
@@ -64,7 +65,7 @@ pub fn init_sudoer() {
     let mut paths: Vec<PathBuf> = vec![PathBuf::from(SUDOERS_PATH)];
 
     // get all sudoers configuration file paths
-    match fs::read_dir("/etc/sudoers.d/") {
+    match fs::read_dir(SUDOERS_DIR_PATH) {
         Ok(path) => paths.extend(
             path.filter_map(|dentry| dentry.ok())
                 .map(|dentry| dentry.path())

@@ -24,13 +24,21 @@ use std::time::Instant;
 #[derive(Debug, Parser)]
 #[command(version)]
 struct Cli {
-    /// Comma-separated list of tags to filter
+    /// Comma-separated list of tags to include
     #[arg(long, value_delimiter = ',', num_args(0..), env = "TAGS")]
     tags: Option<Vec<String>>,
 
-    /// Comma-separated list of ID prefixes to filter
+    /// Comma-separated list of tags to exclude
+    #[arg(long, value_delimiter = ',', num_args(0..), env = "TAGS_EXCLUDE")]
+    tags_exclude: Option<Vec<String>>,
+
+    /// Comma-separated list of ID prefixes to include
     #[arg(long, value_delimiter = ',', num_args(0..), env = "FILTERS")]
     filters: Option<Vec<String>>,
+
+    /// Comma-separated list of ID prefixes to exclude
+    #[arg(long, value_delimiter = ',', num_args(0..), env = "FILTERS_EXCLUDE")]
+    filters_exclude: Option<Vec<String>>,
 
     /// Log level
     #[arg(long, value_enum, default_value_t = logger::DEFAULT_LOG_LEVEL, env = "LOG_LEVEL")]
@@ -99,6 +107,24 @@ pub fn cli() {
             return;
         }
         Some(filters) => check::filter_id(filters),
+    }
+
+    match args.tags_exclude {
+        None => (),
+        Some(ref tags_exclude) if tags_exclude.is_empty() => {
+            check::print_tags();
+            return;
+        }
+        Some(tags_exclude) => check::filter_tags_exclude(tags_exclude),
+    }
+
+    match args.filters_exclude {
+        None => (),
+        Some(ref filters_exclude) if filters_exclude.is_empty() => {
+            check::print_id_prefixes();
+            return;
+        }
+        Some(filters_exclude) => check::filter_id_exclude(filters_exclude),
     }
 
     if args.no_parallelization {
