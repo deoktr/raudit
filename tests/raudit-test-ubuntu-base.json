@@ -1,0 +1,5010 @@
+{
+  "checks": [
+    {
+      "id": "AAR_001",
+      "title": "Ensure AppArmor is enabled",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "APT_001",
+      "title": "Ensure apt is configured with \"Acquire::http::AllowRedirect\" = \"0\"",
+      "message": "key \"Acquire::http::AllowRedirect\" not present",
+      "state": "Failed"
+    },
+    {
+      "id": "APT_002",
+      "title": "Ensure apt is configured with \"APT::Get::AllowUnauthenticated\" = \"0\"",
+      "message": "key \"APT::Get::AllowUnauthenticated\" not present",
+      "state": "Failed"
+    },
+    {
+      "id": "APT_003",
+      "title": "Ensure apt is configured with \"APT::Periodic::AutocleanInterval\" = \"7\"",
+      "message": "key \"APT::Periodic::AutocleanInterval\" not present",
+      "state": "Failed"
+    },
+    {
+      "id": "APT_004",
+      "title": "Ensure apt is configured with \"APT::Get::AutomaticRemove\" = \"1\"",
+      "message": "key \"APT::Get::AutomaticRemove\" not present",
+      "state": "Failed"
+    },
+    {
+      "id": "APT_005",
+      "title": "Ensure apt is configured with \"APT::Install-Recommends\" = \"0\"",
+      "message": "found: 1",
+      "state": "Failed"
+    },
+    {
+      "id": "APT_006",
+      "title": "Ensure apt is configured with \"APT::Install-Suggests\" = \"0\"",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "APT_007",
+      "title": "Ensure apt is configured with \"Acquire::AllowInsecureRepositories\" = \"0\"",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "APT_008",
+      "title": "Ensure apt is configured with \"Acquire::AllowDowngradeToInsecureRepositories\" = \"0\"",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "APT_009",
+      "title": "Ensure apt is configured with \"APT::Sandbox::Seccomp\" = \"1\"",
+      "message": "key \"APT::Sandbox::Seccomp\" not present",
+      "state": "Failed"
+    },
+    {
+      "id": "APT_010",
+      "title": "Ensure apt is configured with \"Unattended-Upgrade::Remove-Unused-Dependencies\" = \"1\"",
+      "message": "key \"Unattended-Upgrade::Remove-Unused-Dependencies\" not present",
+      "state": "Failed"
+    },
+    {
+      "id": "APT_011",
+      "title": "Ensure apt is configured with \"Unattended-Upgrade::Remove-Unused-Kernel-Packages\" = \"1\"",
+      "message": "key \"Unattended-Upgrade::Remove-Unused-Kernel-Packages\" not present",
+      "state": "Failed"
+    },
+    {
+      "id": "AUD_001",
+      "title": "Ensure \"auditd\" is running",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "AUD_010",
+      "title": "Ensure that audit is configured with \"disk_full_action\" = \"HALT\"",
+      "message": "audit rules not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "AUD_100",
+      "title": "Ensure audit rules are immutable",
+      "message": "audit rules not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "AUD_101",
+      "title": "Ensure audit rule for sudo log file is present",
+      "message": "audit rules not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "BIN_001",
+      "title": "Ensure all SUID/SGID executables are allowed",
+      "message": "found 11, enable debug logging to see the list",
+      "state": "Failed"
+    },
+    {
+      "id": "CAV_001",
+      "title": "Ensure ClamAV is installed",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "CNT_001",
+      "title": "Ensure docker containers are not started with \"--privileged\" flag",
+      "message": "containers inspect not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_002",
+      "title": "Ensure docker containers capabilities are dopped",
+      "message": "containers inspect not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_003",
+      "title": "Ensure docker containers are running with a user",
+      "message": "containers inspect not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_004",
+      "title": "Ensure docker mount point \"/var/lib/docker\" exist",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "CNT_005",
+      "title": "Ensure docker network traffic is restricted between containers on the default bridge",
+      "message": "no dockerd process found",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_006",
+      "title": "Ensure docker logging level is set info",
+      "message": "no dockerd process found",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_008",
+      "title": "Ensure docker does not allow insecure registry",
+      "message": "no dockerd process found",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_009",
+      "title": "Ensure docker storage driver is aufs",
+      "message": "no dockerd process found",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_011",
+      "title": "Ensure docker uses an authorization plugin",
+      "message": "no dockerd process found",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_012",
+      "title": "Ensure docker cannot acquire new privileges",
+      "message": "no dockerd process found",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_013",
+      "title": "Ensure docker live restore is enabled",
+      "message": "no dockerd process found",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_014",
+      "title": "Ensure docker userland proxy is disabled",
+      "message": "no dockerd process found",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_015",
+      "title": "Ensure docker runs without experimental features",
+      "message": "no dockerd process found",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_016",
+      "title": "Ensure docker service file is owned by root",
+      "message": "systemd docker file not found",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_017",
+      "title": "Ensure docker service file permissions 644 are set",
+      "message": "systemd docker file not found",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_018",
+      "title": "Ensure docker socket file is owned by root",
+      "message": "systemd docker file not found",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_019",
+      "title": "Ensure docker socket file permissions 644 are set",
+      "message": "systemd docker file not found",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_020",
+      "title": "Ensure docker etc directory is owned by root",
+      "message": "No such file or directory (os error 2)",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_021",
+      "title": "Ensure docker etc directory permissions is 755",
+      "message": "No such file or directory (os error 2)",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_022",
+      "title": "Ensure docker daemon.json config file is owned by root",
+      "message": "No such file or directory (os error 2)",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_023",
+      "title": "Ensure docker daemon.json config file permissions is 644",
+      "message": "No such file or directory (os error 2)",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_024",
+      "title": "Ensure default docker config file is owned by root",
+      "message": "No such file or directory (os error 2)",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_025",
+      "title": "Ensure default docker config file permissions is 644",
+      "message": "No such file or directory (os error 2)",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_026",
+      "title": "Ensure sysconfig docker config file is owned by root",
+      "message": "No such file or directory (os error 2)",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_027",
+      "title": "Ensure sysconfig docker config file permissions is 644",
+      "message": "No such file or directory (os error 2)",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_028",
+      "title": "Ensure docker containerd socket file is owned by root",
+      "message": "No such file or directory (os error 2)",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_029",
+      "title": "Ensure docker containerd socket file permissions is 660",
+      "message": "No such file or directory (os error 2)",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_030",
+      "title": "Ensure docker swarm is disabled if not needed",
+      "message": "docker info not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_031",
+      "title": "Ensure docker group is empty",
+      "message": "no \"docker\" group found",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_100",
+      "title": "Ensure audit rule for docker daemon is present",
+      "message": "audit rules not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_101",
+      "title": "Ensure audit rule for docker run files and directories is present",
+      "message": "audit rules not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_102",
+      "title": "Ensure audit rule for docker var lib files and directories is present",
+      "message": "audit rules not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_103",
+      "title": "Ensure audit rule for docker etc files and directories is present",
+      "message": "audit rules not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_107",
+      "title": "Ensure audit rule for docker etc default file is present",
+      "message": "audit rules not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_108",
+      "title": "Ensure audit rule for docker etc daemon file is present",
+      "message": "audit rules not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_109",
+      "title": "Ensure audit rule for docker etc containerd config file is present",
+      "message": "audit rules not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_110",
+      "title": "Ensure audit rule for docker sysconfig file is present",
+      "message": "audit rules not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_111",
+      "title": "Ensure audit rule for docker containerd bin is present",
+      "message": "audit rules not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_112",
+      "title": "Ensure audit rule for docker runc bin is present",
+      "message": "audit rules not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "GDM_001",
+      "title": "Ensure no automatic logon to the system via a GUI is possible",
+      "message": "failed to read gdm configuration: No such file or directory (os error 2)",
+      "state": "Error"
+    },
+    {
+      "id": "GRP_001",
+      "title": "Ensure group shadow empty or missing",
+      "message": "file not empty",
+      "state": "Failed"
+    },
+    {
+      "id": "GRP_002",
+      "title": "Ensure no group has a password set",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "GRP_003",
+      "title": "Ensure that only root has GID 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "GRP_004",
+      "title": "Ensure no duplicate GIDs exist",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "GRP_005",
+      "title": "Ensure no duplicate group names exist",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "GRP_006",
+      "title": "Ensure \"shadow\" group is empty",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "GRP_100",
+      "title": "Ensure \"/etc/group\" file owner is \"root:root\"",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "GRP_101",
+      "title": "Ensure \"/etc/group\" file permissions are \"644\"",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "GRP_102",
+      "title": "Ensure \"/etc/gshadow\" file owner is \"root:root\" or file is missing",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "GRP_103",
+      "title": "Ensure \"/etc/gshadow\" file permissions are \"640\" or file is missing",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "GRP_104",
+      "title": "Ensure \"/etc/gshadow-\" file owner is \"root:root\" or file is missing",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "GRP_105",
+      "title": "Ensure \"/etc/gshadow-\" file permissions are \"640\" or file is missing",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "GRB_001",
+      "title": "Ensure that bootloader password is set",
+      "message": "grub configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "HST_001",
+      "title": "Ensure localhost is resolved to 127.0.0.1 in hosts file",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "HST_002",
+      "title": "Ensure localhost is resolved to ::1 in hosts file",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "KNP_001",
+      "title": "Ensure that kernel flag \"slab_nomerge\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_002",
+      "title": "Ensure that kernel flag \"slab_debug=FZ\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_003",
+      "title": "Ensure that kernel flag \"page_poison=1\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_004",
+      "title": "Ensure that kernel flag \"page_alloc.shuffle=1\" is present",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "KNP_005",
+      "title": "Ensure that kernel flag \"init_on_alloc=1\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_006",
+      "title": "Ensure that kernel flag \"init_on_free=1\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_007",
+      "title": "Ensure that kernel flag \"pti=on\" is present",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "KNP_008",
+      "title": "Ensure that kernel flag \"randomize_kstack_offset=on\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_009",
+      "title": "Ensure that kernel flag \"vsyscall=none\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_010",
+      "title": "Ensure that kernel flag \"debugfs=off\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_011",
+      "title": "Ensure that kernel flag \"oops=panic\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_012",
+      "title": "Ensure that kernel flag \"module.sig_enforce=1\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_013",
+      "title": "Ensure that kernel flag \"lockdown=integrity\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_014",
+      "title": "Ensure that kernel flag \"mce=0\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_015",
+      "title": "Ensure that kernel flag \"kfence.sample_interval=100\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_017",
+      "title": "Ensure that kernel flag \"vdso32=0\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_018",
+      "title": "Ensure that kernel flag \"amd_iommu=force_isolation\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_019",
+      "title": "Ensure that kernel flag \"intel_iommu=on\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_020",
+      "title": "Ensure that kernel flag \"iommu=force\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_021",
+      "title": "Ensure that kernel flag \"iommu.passthrough=0\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_022",
+      "title": "Ensure that kernel flag \"iommu.strict=1\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_023",
+      "title": "Ensure that kernel flag \"efi=disable_early_pci_dma\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_024",
+      "title": "Ensure that kernel flag \"random.trust_bootloader=off\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_025",
+      "title": "Ensure that kernel flag \"random.trust_cpu=off\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_026",
+      "title": "Ensure that kernel flag \"extra_latent_entropy\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_028",
+      "title": "Ensure that kernel flag \"ipv6.disable=1\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_029",
+      "title": "Ensure that kernel flag \"ia32_emulation=0\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_016",
+      "title": "Ensure that kernel flag \"cfi=kcfi\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_062",
+      "title": "Ensure that kernel flag \"random.trust_cpu=off\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_063",
+      "title": "Ensure that kernel flag \"hardened_usercopy=1\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_027",
+      "title": "Ensure that kernel flag \"remountsecure=3\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_030",
+      "title": "Ensure that kernel flag \"mitigations=auto\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_064",
+      "title": "Ensure that kernel flag \"mitigations=auto,nosmt\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_031",
+      "title": "Ensure that kernel flag \"nosmt=force\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_032",
+      "title": "Ensure that kernel flag \"spectre_v2=on\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_033",
+      "title": "Ensure that kernel flag \"spectre_bhi=on\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_034",
+      "title": "Ensure that kernel flag \"spec_store_bypass_disable=on\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_035",
+      "title": "Ensure that kernel flag \"l1tf=full,force\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_036",
+      "title": "Ensure that kernel flag \"mds=full\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_065",
+      "title": "Ensure that kernel flag \"mds=full,nosm\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_037",
+      "title": "Ensure that kernel flag \"tsx=off\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_038",
+      "title": "Ensure that kernel flag \"tsx_async_abort=full\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_066",
+      "title": "Ensure that kernel flag \"tsx_async_abort=full,nosmt\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_039",
+      "title": "Ensure that kernel flag \"kvm.nx_huge_pages=force\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_040",
+      "title": "Ensure that kernel flag \"l1d_flush=on\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_041",
+      "title": "Ensure that kernel flag \"mmio_stale_data=full\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_067",
+      "title": "Ensure that kernel flag \"mmio_stale_data=full,nosmt\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_042",
+      "title": "Ensure that kernel flag \"retbleed=auto\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_068",
+      "title": "Ensure that kernel flag \"retbleed=auto,nosmt\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_043",
+      "title": "Ensure that kernel flag \"spec_rstack_overflow=safe-ret\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_044",
+      "title": "Ensure that kernel flag \"gather_data_sampling=force\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_045",
+      "title": "Ensure that kernel flag \"reg_file_data_sampling=on\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_050",
+      "title": "Ensure that kernel flag \"spectre_v2_user=on\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_051",
+      "title": "Ensure that kernel flag \"srbds=auto,nosmt\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_060",
+      "title": "Ensure that kernel flag \"loglevel=0\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNP_061",
+      "title": "Ensure that kernel flag \"quiet\" is present",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KNC_038",
+      "title": "Ensure kernel build option \"CONFIG_EFI\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_042",
+      "title": "Ensure kernel build option \"CONFIG_CPU_SUP_AMD\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_043",
+      "title": "Ensure kernel build option \"CONFIG_CPU_SUP_INTEL\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_044",
+      "title": "Ensure kernel build option \"CONFIG_MODULES\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_045",
+      "title": "Ensure kernel build option \"CONFIG_DEVMEM\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_046",
+      "title": "Ensure kernel build option \"CONFIG_BPF_SYSCALL\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_047",
+      "title": "Ensure kernel build option \"CONFIG_BUG\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_049",
+      "title": "Ensure kernel build option \"CONFIG_THREAD_INFO_IN_TASK\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_050",
+      "title": "Ensure kernel build option \"CONFIG_IOMMU_SUPPORT\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_051",
+      "title": "Ensure kernel build option \"CONFIG_RANDOMIZE_BASE\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_052",
+      "title": "Ensure kernel build option \"CONFIG_LIST_HARDENED\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_053",
+      "title": "Ensure kernel build option \"CONFIG_RANDOM_KMALLOC_CACHES\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_054",
+      "title": "Ensure kernel build option \"CONFIG_SLAB_MERGE_DEFAULT\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_055",
+      "title": "Ensure kernel build option \"CONFIG_PAGE_TABLE_CHECK\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_056",
+      "title": "Ensure kernel build option \"CONFIG_PAGE_TABLE_CHECK_ENFORCED\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_057",
+      "title": "Ensure kernel build option \"CONFIG_BUG_ON_DATA_CORRUPTION\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_058",
+      "title": "Ensure kernel build option \"CONFIG_SLAB_FREELIST_HARDENED\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_059",
+      "title": "Ensure kernel build option \"CONFIG_SLAB_FREELIST_RANDOM\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_060",
+      "title": "Ensure kernel build option \"CONFIG_SHUFFLE_PAGE_ALLOCATOR\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_061",
+      "title": "Ensure kernel build option \"CONFIG_FORTIFY_SOURCE\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_065",
+      "title": "Ensure kernel build option \"CONFIG_INIT_ON_ALLOC_DEFAULT_ON\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_066",
+      "title": "Ensure kernel build option \"CONFIG_STATIC_USERMODEHELPER\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_067",
+      "title": "Ensure kernel build option \"CONFIG_SCHED_CORE\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_068",
+      "title": "Ensure kernel build option \"CONFIG_SECURITY_LOCKDOWN_LSM\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_069",
+      "title": "Ensure kernel build option \"CONFIG_SECURITY_LOCKDOWN_LSM_EARLY\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_070",
+      "title": "Ensure kernel build option \"CONFIG_LOCK_DOWN_KERNEL_FORCE_CONFIDENTIALITY\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_073",
+      "title": "Ensure kernel build option \"CONFIG_SECURITY\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_074",
+      "title": "Ensure kernel build option \"CONFIG_SECURITY_YAMA\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_075",
+      "title": "Ensure kernel build option \"CONFIG_SECURITY_LANDLOCK\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_076",
+      "title": "Ensure kernel build option \"CONFIG_SECURITY_SELINUX_DISABLE\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_077",
+      "title": "Ensure kernel build option \"CONFIG_SECURITY_SELINUX_BOOTPARAM\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_078",
+      "title": "Ensure kernel build option \"CONFIG_SECURITY_SELINUX_DEVELOP\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_079",
+      "title": "Ensure kernel build option \"CONFIG_SECURITY_WRITABLE_HOOKS\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_080",
+      "title": "Ensure kernel build option \"CONFIG_SECURITY_SELINUX_DEBUG\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_081",
+      "title": "Ensure kernel build option \"CONFIG_SECCOMP\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_082",
+      "title": "Ensure kernel build option \"CONFIG_SECCOMP_FILTER\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_083",
+      "title": "Ensure kernel build option \"CONFIG_BPF_UNPRIV_DEFAULT_OFF\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_084",
+      "title": "Ensure kernel build option \"CONFIG_STRICT_DEVMEM\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_085",
+      "title": "Ensure kernel build option \"CONFIG_X86_INTEL_TSX_MODE_OFF\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_087",
+      "title": "Ensure kernel build option \"CONFIG_SECURITY_DMESG_RESTRICT\" is set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_088",
+      "title": "Ensure kernel build option \"CONFIG_ACPI_CUSTOM_METHOD\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_089",
+      "title": "Ensure kernel build option \"CONFIG_COMPAT_BRK\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_090",
+      "title": "Ensure kernel build option \"CONFIG_DEVKMEM\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_091",
+      "title": "Ensure kernel build option \"CONFIG_BINFMT_MISC\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_092",
+      "title": "Ensure kernel build option \"CONFIG_INET_DIAG\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_093",
+      "title": "Ensure kernel build option \"CONFIG_KEXEC\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_094",
+      "title": "Ensure kernel build option \"CONFIG_PROC_KCORE\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_095",
+      "title": "Ensure kernel build option \"CONFIG_LEGACY_PTYS\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_096",
+      "title": "Ensure kernel build option \"CONFIG_HIBERNATION\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_097",
+      "title": "Ensure kernel build option \"CONFIG_COMPAT\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_098",
+      "title": "Ensure kernel build option \"CONFIG_IA32_EMULATION\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_099",
+      "title": "Ensure kernel build option \"CONFIG_X86_X32\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_100",
+      "title": "Ensure kernel build option \"CONFIG_X86_X32_ABI\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_101",
+      "title": "Ensure kernel build option \"CONFIG_MODIFY_LDT_SYSCALL\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_102",
+      "title": "Ensure kernel build option \"CONFIG_OABI_COMPAT\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_103",
+      "title": "Ensure kernel build option \"CONFIG_X86_MSR\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_104",
+      "title": "Ensure kernel build option \"CONFIG_LEGACY_TIOCSTI\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_105",
+      "title": "Ensure kernel build option \"CONFIG_MODULE_FORCE_LOAD\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_106",
+      "title": "Ensure kernel build option \"CONFIG_DRM_LEGACY\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_107",
+      "title": "Ensure kernel build option \"CONFIG_FB\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_108",
+      "title": "Ensure kernel build option \"CONFIG_VT\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_109",
+      "title": "Ensure kernel build option \"CONFIG_BLK_DEV_FD\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_110",
+      "title": "Ensure kernel build option \"CONFIG_BLK_DEV_FD_RAWCMD\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_111",
+      "title": "Ensure kernel build option \"CONFIG_NOUVEAU_LEGACY_CTX_SUPPORT\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_112",
+      "title": "Ensure kernel build option \"CONFIG_N_GSM\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_116",
+      "title": "Ensure kernel build option \"CONFIG_ZSMALLOC_STAT\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_117",
+      "title": "Ensure kernel build option \"CONFIG_DEBUG_KMEMLEAK\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_118",
+      "title": "Ensure kernel build option \"CONFIG_BINFMT_AOUT\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_119",
+      "title": "Ensure kernel build option \"CONFIG_KPROBE_EVENTS\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_120",
+      "title": "Ensure kernel build option \"CONFIG_UPROBE_EVENTS\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_121",
+      "title": "Ensure kernel build option \"CONFIG_GENERIC_TRACER\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_122",
+      "title": "Ensure kernel build option \"CONFIG_FUNCTION_TRACER\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_123",
+      "title": "Ensure kernel build option \"CONFIG_STACK_TRACER\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_124",
+      "title": "Ensure kernel build option \"CONFIG_HIST_TRIGGERS\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_125",
+      "title": "Ensure kernel build option \"CONFIG_BLK_DEV_IO_TRACE\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_126",
+      "title": "Ensure kernel build option \"CONFIG_PROC_VMCORE\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_127",
+      "title": "Ensure kernel build option \"CONFIG_PROC_PAGE_MONITOR\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_128",
+      "title": "Ensure kernel build option \"CONFIG_USELIB\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_129",
+      "title": "Ensure kernel build option \"CONFIG_CHECKPOINT_RESTORE\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_130",
+      "title": "Ensure kernel build option \"CONFIG_USERFAULTFD\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_131",
+      "title": "Ensure kernel build option \"CONFIG_HWPOISON_INJECT\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_132",
+      "title": "Ensure kernel build option \"CONFIG_MEM_SOFT_DIRTY\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_133",
+      "title": "Ensure kernel build option \"CONFIG_DEVPORT\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_134",
+      "title": "Ensure kernel build option \"CONFIG_DEBUG_FS\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_135",
+      "title": "Ensure kernel build option \"CONFIG_NOTIFIER_ERROR_INJECTION\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_136",
+      "title": "Ensure kernel build option \"CONFIG_FAIL_FUTEX\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_137",
+      "title": "Ensure kernel build option \"CONFIG_PUNIT_ATOM_DEBUG\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_138",
+      "title": "Ensure kernel build option \"CONFIG_ACPI_CONFIGFS\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_139",
+      "title": "Ensure kernel build option \"CONFIG_EDAC_DEBUG\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_140",
+      "title": "Ensure kernel build option \"CONFIG_DRM_I915_DEBUG\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_141",
+      "title": "Ensure kernel build option \"CONFIG_BCACHE_CLOSURES_DEBUG\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_142",
+      "title": "Ensure kernel build option \"CONFIG_DVB_C8SECTPFE\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_143",
+      "title": "Ensure kernel build option \"CONFIG_MTD_SLRAM\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_144",
+      "title": "Ensure kernel build option \"CONFIG_MTD_PHRAM\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_145",
+      "title": "Ensure kernel build option \"CONFIG_IO_URING\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_146",
+      "title": "Ensure kernel build option \"CONFIG_KCMP\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_147",
+      "title": "Ensure kernel build option \"CONFIG_RSEQ\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_148",
+      "title": "Ensure kernel build option \"CONFIG_LATENCYTOP\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_149",
+      "title": "Ensure kernel build option \"CONFIG_KCOV\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_150",
+      "title": "Ensure kernel build option \"CONFIG_PROVIDE_OHCI1394_DMA_INIT\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_151",
+      "title": "Ensure kernel build option \"CONFIG_SUNRPC_DEBUG\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_152",
+      "title": "Ensure kernel build option \"CONFIG_X86_16BIT\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_153",
+      "title": "Ensure kernel build option \"CONFIG_BLK_DEV_UBLK\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_154",
+      "title": "Ensure kernel build option \"CONFIG_SMB_SERVER\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_155",
+      "title": "Ensure kernel build option \"CONFIG_XFS_ONLINE_SCRUB_STATS\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_156",
+      "title": "Ensure kernel build option \"CONFIG_CACHESTAT_SYSCALL\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_157",
+      "title": "Ensure kernel build option \"CONFIG_PREEMPTIRQ_TRACEPOINTS\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_158",
+      "title": "Ensure kernel build option \"CONFIG_ENABLE_DEFAULT_TRACERS\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_159",
+      "title": "Ensure kernel build option \"CONFIG_PROVE_LOCKING\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_160",
+      "title": "Ensure kernel build option \"CONFIG_TEST_DEBUG_VIRTUAL\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_161",
+      "title": "Ensure kernel build option \"CONFIG_MPTCP\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_162",
+      "title": "Ensure kernel build option \"CONFIG_TLS\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_163",
+      "title": "Ensure kernel build option \"CONFIG_TIPC\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_164",
+      "title": "Ensure kernel build option \"CONFIG_IP_SCTP\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_165",
+      "title": "Ensure kernel build option \"CONFIG_KGDB\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_166",
+      "title": "Ensure kernel build option \"CONFIG_PTDUMP_DEBUGFS\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_167",
+      "title": "Ensure kernel build option \"CONFIG_X86_PTDUMP\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_170",
+      "title": "Ensure kernel build option \"CONFIG_STAGING\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_171",
+      "title": "Ensure kernel build option \"CONFIG_KSM\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_172",
+      "title": "Ensure kernel build option \"CONFIG_KALLSYMS\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_173",
+      "title": "Ensure kernel build option \"CONFIG_KEXEC_FILE\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_174",
+      "title": "Ensure kernel build option \"CONFIG_CRASH_DUMP\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_175",
+      "title": "Ensure kernel build option \"CONFIG_USER_NS\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_176",
+      "title": "Ensure kernel build option \"CONFIG_X86_CPUID\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_177",
+      "title": "Ensure kernel build option \"CONFIG_X86_IOPL_IOPERM\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_178",
+      "title": "Ensure kernel build option \"CONFIG_ACPI_TABLE_UPGRADE\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_179",
+      "title": "Ensure kernel build option \"CONFIG_EFI_CUSTOM_SSDT_OVERLAYS\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_180",
+      "title": "Ensure kernel build option \"CONFIG_AIO\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_181",
+      "title": "Ensure kernel build option \"CONFIG_MAGIC_SYSRQ\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_182",
+      "title": "Ensure kernel build option \"CONFIG_MAGIC_SYSRQ_DEFAULT_ENABLE\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_183",
+      "title": "Ensure kernel build option \"CONFIG_MAGIC_SYSRQ_SERIAL\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_187",
+      "title": "Ensure kernel build option \"CONFIG_EFI_TEST\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_188",
+      "title": "Ensure kernel build option \"CONFIG_MMIOTRACE_TEST\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_189",
+      "title": "Ensure kernel build option \"CONFIG_KPROBES\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_191",
+      "title": "Ensure kernel build option \"CONFIG_MMIOTRACE\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_192",
+      "title": "Ensure kernel build option \"CONFIG_LIVEPATCH\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_193",
+      "title": "Ensure kernel build option \"CONFIG_IP_DCCP\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_194",
+      "title": "Ensure kernel build option \"CONFIG_FTRACE\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_195",
+      "title": "Ensure kernel build option \"CONFIG_VIDEO_VIVID\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_196",
+      "title": "Ensure kernel build option \"CONFIG_INPUT_EVBUG\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_197",
+      "title": "Ensure kernel build option \"CONFIG_CORESIGHT\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_198",
+      "title": "Ensure kernel build option \"CONFIG_XFS_SUPPORT_V4\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_199",
+      "title": "Ensure kernel build option \"CONFIG_BLK_DEV_WRITE_MOUNTED\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_200",
+      "title": "Ensure kernel build option \"CONFIG_FAULT_INJECTION\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "KNC_201",
+      "title": "Ensure kernel build option \"CONFIG_LKDTM\" is not set",
+      "message": "kcompile config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "LDF_001",
+      "title": "Ensure that login.defs \"ENCRYPT_METHOD\" = \"YESCRYPT\"",
+      "message": "YESCRYPT != SHA512",
+      "state": "Failed"
+    },
+    {
+      "id": "LDF_002",
+      "title": "Ensure that login.defs \"YESCRYPT_COST_FACTOR\" >= 5",
+      "message": "key not present",
+      "state": "Error"
+    },
+    {
+      "id": "LDF_003",
+      "title": "Ensure that login.defs \"PASS_MAX_DAYS\" <= 365",
+      "message": "99999 > 365",
+      "state": "Failed"
+    },
+    {
+      "id": "LDF_004",
+      "title": "Ensure that login.defs \"PASS_MIN_DAYS\" >= 1",
+      "message": "0 < 1",
+      "state": "Failed"
+    },
+    {
+      "id": "LDF_005",
+      "title": "Ensure that login.defs \"PASS_WARN_AGE\" >= 7",
+      "message": "7",
+      "state": "Passed"
+    },
+    {
+      "id": "LDF_006",
+      "title": "Ensure that login.defs \"SYSLOG_SU_ENAB\" = \"yes\"",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "LDF_007",
+      "title": "Ensure that login.defs \"SYSLOG_SG_ENAB\" = \"yes\"",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "LDF_008",
+      "title": "Ensure that login.defs \"UMASK\" = \"077\"",
+      "message": "077 != 022",
+      "state": "Failed"
+    },
+    {
+      "id": "LDF_009",
+      "title": "Ensure that login.defs \"LOGIN_RETRIES\" <= 10",
+      "message": "5",
+      "state": "Passed"
+    },
+    {
+      "id": "LDF_010",
+      "title": "Ensure that login.defs \"LOGIN_TIMEOUT\" <= 60",
+      "message": "60",
+      "state": "Passed"
+    },
+    {
+      "id": "LDF_011",
+      "title": "Ensure that login.defs \"FAILLOG_ENAB\" = \"yes\"",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "LDF_012",
+      "title": "Ensure that login.defs \"LOG_OK_LOGINS\" = \"yes\"",
+      "message": "yes != no",
+      "state": "Failed"
+    },
+    {
+      "id": "LIB_001",
+      "title": "Ensure \"scudo\" hardened malloc is used system wide",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_000",
+      "title": "Ensure that kernel module \"snd_intel8x0\" is blacklisted",
+      "message": "module not blacklisted",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_001",
+      "title": "Ensure that kernel module \"sr_mod\" is blacklisted",
+      "message": "module not blacklisted",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_002",
+      "title": "Ensure that kernel module \"snd_intel8x0m\" is blacklisted",
+      "message": "module not blacklisted",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_003",
+      "title": "Ensure that kernel module \"cdrom\" is blacklisted",
+      "message": "module not blacklisted",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_004",
+      "title": "Ensure that kernel module \"amd76x_edac\" is blacklisted",
+      "message": "module not blacklisted",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_005",
+      "title": "Ensure that kernel module \"ath_pci\" is blacklisted",
+      "message": "module not blacklisted",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_006",
+      "title": "Ensure that kernel module \"evbug\" is blacklisted",
+      "message": "module not blacklisted",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_007",
+      "title": "Ensure that kernel module \"snd_aw2\" is blacklisted",
+      "message": "module not blacklisted",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_008",
+      "title": "Ensure that kernel module \"snd_pcsp\" is blacklisted",
+      "message": "module not blacklisted",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_009",
+      "title": "Ensure that kernel module \"usbkbd\" is blacklisted",
+      "message": "module not blacklisted",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_010",
+      "title": "Ensure that kernel module \"usbmouse\" is blacklisted",
+      "message": "module not blacklisted",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_500",
+      "title": "Ensure that kernel module \"cfg80211\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_501",
+      "title": "Ensure that kernel module \"intel_agp\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_502",
+      "title": "Ensure that kernel module \"ip_tables\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_503",
+      "title": "Ensure that kernel module \"mousedev\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_504",
+      "title": "Ensure that kernel module \"psmouse\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_505",
+      "title": "Ensure that kernel module \"tls\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_506",
+      "title": "Ensure that kernel module \"virtio_balloon\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_507",
+      "title": "Ensure that kernel module \"virtio_console\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_508",
+      "title": "Ensure that kernel module \"af_802154\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_509",
+      "title": "Ensure that kernel module \"appletalk\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_510",
+      "title": "Ensure that kernel module \"dccp\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_511",
+      "title": "Ensure that kernel module \"netrom\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_512",
+      "title": "Ensure that kernel module \"rose\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_513",
+      "title": "Ensure that kernel module \"n_hdlc\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_514",
+      "title": "Ensure that kernel module \"ax25\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_515",
+      "title": "Ensure that kernel module \"x25\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_516",
+      "title": "Ensure that kernel module \"decnet\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_517",
+      "title": "Ensure that kernel module \"econet\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_518",
+      "title": "Ensure that kernel module \"ipx\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_519",
+      "title": "Ensure that kernel module \"psnap\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_520",
+      "title": "Ensure that kernel module \"p8023\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_521",
+      "title": "Ensure that kernel module \"p8022\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_522",
+      "title": "Ensure that kernel module \"eepro100\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_523",
+      "title": "Ensure that kernel module \"eth1394\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_524",
+      "title": "Ensure that kernel module \"atm\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_525",
+      "title": "Ensure that kernel module \"ueagle_atm\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_526",
+      "title": "Ensure that kernel module \"usbatm\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_527",
+      "title": "Ensure that kernel module \"xusbatm\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_528",
+      "title": "Ensure that kernel module \"n_hdlc\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_529",
+      "title": "Ensure that kernel module \"c_can\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_530",
+      "title": "Ensure that kernel module \"c_can_pci\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_531",
+      "title": "Ensure that kernel module \"c_can_platform\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_532",
+      "title": "Ensure that kernel module \"can\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_533",
+      "title": "Ensure that kernel module \"can_bcm\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_534",
+      "title": "Ensure that kernel module \"can_dev\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_535",
+      "title": "Ensure that kernel module \"can_gw\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_536",
+      "title": "Ensure that kernel module \"can_isotp\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_537",
+      "title": "Ensure that kernel module \"can_raw\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_538",
+      "title": "Ensure that kernel module \"can_j1939\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_539",
+      "title": "Ensure that kernel module \"can327\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_540",
+      "title": "Ensure that kernel module \"ifi_canfd\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_541",
+      "title": "Ensure that kernel module \"janz_ican3\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_542",
+      "title": "Ensure that kernel module \"m_can\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_543",
+      "title": "Ensure that kernel module \"m_can_pci\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_544",
+      "title": "Ensure that kernel module \"m_can_platform\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_545",
+      "title": "Ensure that kernel module \"phy_can_transceiver\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_546",
+      "title": "Ensure that kernel module \"slcan\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_547",
+      "title": "Ensure that kernel module \"ucan\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_548",
+      "title": "Ensure that kernel module \"vxcan\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_549",
+      "title": "Ensure that kernel module \"vcan\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_550",
+      "title": "Ensure that kernel module \"tipc\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_551",
+      "title": "Ensure that kernel module \"tipc_diag\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_552",
+      "title": "Ensure that kernel module \"rds\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_553",
+      "title": "Ensure that kernel module \"rds_rdma\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_554",
+      "title": "Ensure that kernel module \"rds_tcp\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_555",
+      "title": "Ensure that kernel module \"sctp\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_556",
+      "title": "Ensure that kernel module \"sctp_diag\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_557",
+      "title": "Ensure that kernel module \"adfs\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_558",
+      "title": "Ensure that kernel module \"affs\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_559",
+      "title": "Ensure that kernel module \"bfs\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_560",
+      "title": "Ensure that kernel module \"befs\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_561",
+      "title": "Ensure that kernel module \"cramfs\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_562",
+      "title": "Ensure that kernel module \"efs\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_563",
+      "title": "Ensure that kernel module \"erofs\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_564",
+      "title": "Ensure that kernel module \"exofs\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_565",
+      "title": "Ensure that kernel module \"freevxfs\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_566",
+      "title": "Ensure that kernel module \"f2fs\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_567",
+      "title": "Ensure that kernel module \"hfs\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_568",
+      "title": "Ensure that kernel module \"hfsplus\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_569",
+      "title": "Ensure that kernel module \"squashfs\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_570",
+      "title": "Ensure that kernel module \"hpfs\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_571",
+      "title": "Ensure that kernel module \"jfs\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_572",
+      "title": "Ensure that kernel module \"jffs2\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_573",
+      "title": "Ensure that kernel module \"minix\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_574",
+      "title": "Ensure that kernel module \"nilfs2\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_575",
+      "title": "Ensure that kernel module \"ntfs\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_576",
+      "title": "Ensure that kernel module \"omfs\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_577",
+      "title": "Ensure that kernel module \"qnx4\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_578",
+      "title": "Ensure that kernel module \"qnx6\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_579",
+      "title": "Ensure that kernel module \"sysv\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_580",
+      "title": "Ensure that kernel module \"ufs\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_581",
+      "title": "Ensure that kernel module \"udf\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_582",
+      "title": "Ensure that kernel module \"reiserfs\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_583",
+      "title": "Ensure that kernel module \"ksmbd\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_584",
+      "title": "Ensure that kernel module \"gfs2\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_585",
+      "title": "Ensure that kernel module \"cifs\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_586",
+      "title": "Ensure that kernel module \"cifs_arc4\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_587",
+      "title": "Ensure that kernel module \"cifs_md4\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_588",
+      "title": "Ensure that kernel module \"nfs\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_589",
+      "title": "Ensure that kernel module \"nfs_acl\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_590",
+      "title": "Ensure that kernel module \"nfs_layout_nfsv41_files\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_591",
+      "title": "Ensure that kernel module \"nfs_layout_flexfiles\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_592",
+      "title": "Ensure that kernel module \"nfsd\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_593",
+      "title": "Ensure that kernel module \"nfsv2\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_594",
+      "title": "Ensure that kernel module \"nfsv3\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_595",
+      "title": "Ensure that kernel module \"nfsv4\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_596",
+      "title": "Ensure that kernel module \"usb_storage\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_597",
+      "title": "Ensure that kernel module \"vivid\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_598",
+      "title": "Ensure that kernel module \"floppy\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_599",
+      "title": "Ensure that kernel module \"joydev\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_600",
+      "title": "Ensure that kernel module \"bluetooth\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_601",
+      "title": "Ensure that kernel module \"bluetooth_6lowpan\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_602",
+      "title": "Ensure that kernel module \"bt3c_cs\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_603",
+      "title": "Ensure that kernel module \"btbcm\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_604",
+      "title": "Ensure that kernel module \"btintel\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_605",
+      "title": "Ensure that kernel module \"btmrvl\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_606",
+      "title": "Ensure that kernel module \"btmrvl_sdio\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_607",
+      "title": "Ensure that kernel module \"btmtk\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_608",
+      "title": "Ensure that kernel module \"btmtksdio\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_609",
+      "title": "Ensure that kernel module \"btmtkuart\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_610",
+      "title": "Ensure that kernel module \"btnxpuart\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_611",
+      "title": "Ensure that kernel module \"btqca\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_612",
+      "title": "Ensure that kernel module \"btrsi\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_613",
+      "title": "Ensure that kernel module \"btrtl\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_614",
+      "title": "Ensure that kernel module \"btsdio\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_615",
+      "title": "Ensure that kernel module \"btusb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_616",
+      "title": "Ensure that kernel module \"virtio_bt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_617",
+      "title": "Ensure that kernel module \"dv1394\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_618",
+      "title": "Ensure that kernel module \"firewire_core\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_619",
+      "title": "Ensure that kernel module \"firewire_ohci\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_620",
+      "title": "Ensure that kernel module \"firewire_net\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_621",
+      "title": "Ensure that kernel module \"firewire_sbp2\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_622",
+      "title": "Ensure that kernel module \"ohci1394\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_623",
+      "title": "Ensure that kernel module \"raw1394\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_624",
+      "title": "Ensure that kernel module \"sbp2\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_625",
+      "title": "Ensure that kernel module \"video1394\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_626",
+      "title": "Ensure that kernel module \"garmin_gps\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_627",
+      "title": "Ensure that kernel module \"gnss\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_628",
+      "title": "Ensure that kernel module \"gnss_mtk\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_629",
+      "title": "Ensure that kernel module \"gnss_serial\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_630",
+      "title": "Ensure that kernel module \"gnss_sirf\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_631",
+      "title": "Ensure that kernel module \"gnss_ubx\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_632",
+      "title": "Ensure that kernel module \"gnss_usb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_633",
+      "title": "Ensure that kernel module \"pmt_class\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_634",
+      "title": "Ensure that kernel module \"pmt_crashlog\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_635",
+      "title": "Ensure that kernel module \"pmt_telemetry\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_636",
+      "title": "Ensure that kernel module \"intel_wmi_thunderbolt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_637",
+      "title": "Ensure that kernel module \"thunderbolt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_638",
+      "title": "Ensure that kernel module \"thunderbolt_net\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_639",
+      "title": "Ensure that kernel module \"hamradio\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_640",
+      "title": "Ensure that kernel module \"aty128fb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_641",
+      "title": "Ensure that kernel module \"atyfb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_642",
+      "title": "Ensure that kernel module \"cirrusfb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_643",
+      "title": "Ensure that kernel module \"cyber2000fb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_644",
+      "title": "Ensure that kernel module \"cyblafb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_645",
+      "title": "Ensure that kernel module \"gx1fb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_646",
+      "title": "Ensure that kernel module \"hgafb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_647",
+      "title": "Ensure that kernel module \"i810fb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_648",
+      "title": "Ensure that kernel module \"intelfb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_649",
+      "title": "Ensure that kernel module \"kyrofb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_650",
+      "title": "Ensure that kernel module \"lxfb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_651",
+      "title": "Ensure that kernel module \"matroxfb_bases\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_652",
+      "title": "Ensure that kernel module \"neofb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_653",
+      "title": "Ensure that kernel module \"nvidiafb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_654",
+      "title": "Ensure that kernel module \"pm2fb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_655",
+      "title": "Ensure that kernel module \"radeonfb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_656",
+      "title": "Ensure that kernel module \"rivafb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_657",
+      "title": "Ensure that kernel module \"s1d13xxxfb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_658",
+      "title": "Ensure that kernel module \"savagefb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_659",
+      "title": "Ensure that kernel module \"sisfb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_660",
+      "title": "Ensure that kernel module \"sstfb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_661",
+      "title": "Ensure that kernel module \"tdfxfb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_662",
+      "title": "Ensure that kernel module \"tridentfb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_663",
+      "title": "Ensure that kernel module \"vesafb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_664",
+      "title": "Ensure that kernel module \"vfb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_665",
+      "title": "Ensure that kernel module \"viafb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_666",
+      "title": "Ensure that kernel module \"vt8623fb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_667",
+      "title": "Ensure that kernel module \"udlfb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_668",
+      "title": "Ensure that kernel module \"asus_acpi\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_669",
+      "title": "Ensure that kernel module \"bcm43xx\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_670",
+      "title": "Ensure that kernel module \"de4x5\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_671",
+      "title": "Ensure that kernel module \"prism54\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_672",
+      "title": "Ensure that kernel module \"uvcvideo\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_673",
+      "title": "Ensure that kernel module \"arkfb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_674",
+      "title": "Ensure that kernel module \"matroxfb_base\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_675",
+      "title": "Ensure that kernel module \"mb862xxfb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_676",
+      "title": "Ensure that kernel module \"pm3fb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_677",
+      "title": "Ensure that kernel module \"s3fb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_678",
+      "title": "Ensure that kernel module \"snd_mixer_oss\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_679",
+      "title": "Ensure that kernel module \"acquirewdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_680",
+      "title": "Ensure that kernel module \"advantech_ec_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_681",
+      "title": "Ensure that kernel module \"advantechwdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_682",
+      "title": "Ensure that kernel module \"alim1535_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_683",
+      "title": "Ensure that kernel module \"cadence_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_684",
+      "title": "Ensure that kernel module \"cpu5wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_685",
+      "title": "Ensure that kernel module \"da9055_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_686",
+      "title": "Ensure that kernel module \"da9063_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_687",
+      "title": "Ensure that kernel module \"dw_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_688",
+      "title": "Ensure that kernel module \"eurotechwdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_689",
+      "title": "Ensure that kernel module \"f71808e_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_690",
+      "title": "Ensure that kernel module \"i6300esb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_691",
+      "title": "Ensure that kernel module \"iTCO_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_692",
+      "title": "Ensure that kernel module \"ibmasr\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_693",
+      "title": "Ensure that kernel module \"it8712f_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_694",
+      "title": "Ensure that kernel module \"kempld_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_695",
+      "title": "Ensure that kernel module \"max63xx_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_696",
+      "title": "Ensure that kernel module \"mena21_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_697",
+      "title": "Ensure that kernel module \"menz69_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_698",
+      "title": "Ensure that kernel module \"ni903x_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_699",
+      "title": "Ensure that kernel module \"nv_tco\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_700",
+      "title": "Ensure that kernel module \"pc87413_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_701",
+      "title": "Ensure that kernel module \"pcwd_usb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_702",
+      "title": "Ensure that kernel module \"rave_sp_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_703",
+      "title": "Ensure that kernel module \"sbc60xxwdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_704",
+      "title": "Ensure that kernel module \"sbc_fitpc2_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_705",
+      "title": "Ensure that kernel module \"sch311x_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_706",
+      "title": "Ensure that kernel module \"smsc37b787_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_707",
+      "title": "Ensure that kernel module \"sp5100_tco\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_708",
+      "title": "Ensure that kernel module \"twl4030_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_709",
+      "title": "Ensure that kernel module \"w83627hf_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_710",
+      "title": "Ensure that kernel module \"w83977f_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_711",
+      "title": "Ensure that kernel module \"wdat_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_712",
+      "title": "Ensure that kernel module \"wm831x_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_713",
+      "title": "Ensure that kernel module \"xen_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_714",
+      "title": "Ensure that kernel module \"snd_pcm_oss\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_715",
+      "title": "Ensure that kernel module \"alim7101_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_716",
+      "title": "Ensure that kernel module \"da9052_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_717",
+      "title": "Ensure that kernel module \"da9062_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_718",
+      "title": "Ensure that kernel module \"ebc_c384_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_719",
+      "title": "Ensure that kernel module \"exar_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_720",
+      "title": "Ensure that kernel module \"hpwdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_721",
+      "title": "Ensure that kernel module \"iTCO_vendor_support\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_722",
+      "title": "Ensure that kernel module \"ib700wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_723",
+      "title": "Ensure that kernel module \"ie6xx_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_724",
+      "title": "Ensure that kernel module \"it87_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_725",
+      "title": "Ensure that kernel module \"machzwd\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_726",
+      "title": "Ensure that kernel module \"mei_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_727",
+      "title": "Ensure that kernel module \"menf21bmc_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_728",
+      "title": "Ensure that kernel module \"mlx_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_729",
+      "title": "Ensure that kernel module \"nic7018_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_730",
+      "title": "Ensure that kernel module \"of_xilinx_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_731",
+      "title": "Ensure that kernel module \"pcwd_pci\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_732",
+      "title": "Ensure that kernel module \"pretimeout_panic\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_733",
+      "title": "Ensure that kernel module \"retu_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_734",
+      "title": "Ensure that kernel module \"sbc_epx_c3\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_735",
+      "title": "Ensure that kernel module \"sc1200wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_736",
+      "title": "Ensure that kernel module \"simatic_ipc_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_737",
+      "title": "Ensure that kernel module \"softdog\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_738",
+      "title": "Ensure that kernel module \"tqmx86_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_739",
+      "title": "Ensure that kernel module \"via_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_740",
+      "title": "Ensure that kernel module \"w83877f_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_741",
+      "title": "Ensure that kernel module \"wafer5823wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_742",
+      "title": "Ensure that kernel module \"wdt_pci\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_743",
+      "title": "Ensure that kernel module \"wm8350_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_744",
+      "title": "Ensure that kernel module \"ziirave_wdt\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_745",
+      "title": "Ensure that kernel module \"pcspkr\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_746",
+      "title": "Ensure that kernel module \"ac97\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_747",
+      "title": "Ensure that kernel module \"ac97_codec\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_748",
+      "title": "Ensure that kernel module \"ac97_plugin_ad1980\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_749",
+      "title": "Ensure that kernel module \"ad1848\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_750",
+      "title": "Ensure that kernel module \"ad1889\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_751",
+      "title": "Ensure that kernel module \"adlib_card\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_752",
+      "title": "Ensure that kernel module \"aedsp16\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_753",
+      "title": "Ensure that kernel module \"ali5455\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_754",
+      "title": "Ensure that kernel module \"btaudio\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_755",
+      "title": "Ensure that kernel module \"cmpci\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_756",
+      "title": "Ensure that kernel module \"cs4232\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_757",
+      "title": "Ensure that kernel module \"cs4281\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_758",
+      "title": "Ensure that kernel module \"cs461x\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_759",
+      "title": "Ensure that kernel module \"cs46xx\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_760",
+      "title": "Ensure that kernel module \"emu10k1\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_761",
+      "title": "Ensure that kernel module \"es1370\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_762",
+      "title": "Ensure that kernel module \"es1371\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_763",
+      "title": "Ensure that kernel module \"esssolo1\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_764",
+      "title": "Ensure that kernel module \"forte\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_765",
+      "title": "Ensure that kernel module \"gus\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_766",
+      "title": "Ensure that kernel module \"i810_audio\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_767",
+      "title": "Ensure that kernel module \"kahlua\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_768",
+      "title": "Ensure that kernel module \"mad16\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_769",
+      "title": "Ensure that kernel module \"maestro\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_770",
+      "title": "Ensure that kernel module \"maestro3\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_771",
+      "title": "Ensure that kernel module \"maui\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_772",
+      "title": "Ensure that kernel module \"mpu401\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_773",
+      "title": "Ensure that kernel module \"nm256_audio\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_774",
+      "title": "Ensure that kernel module \"opl3\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_775",
+      "title": "Ensure that kernel module \"opl3sa\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_776",
+      "title": "Ensure that kernel module \"opl3sa2\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_777",
+      "title": "Ensure that kernel module \"pas2\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_778",
+      "title": "Ensure that kernel module \"pss\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_779",
+      "title": "Ensure that kernel module \"rme96xx\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_780",
+      "title": "Ensure that kernel module \"sb\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_781",
+      "title": "Ensure that kernel module \"sb_lib\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_782",
+      "title": "Ensure that kernel module \"sgalaxy\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_783",
+      "title": "Ensure that kernel module \"sonicvibes\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_784",
+      "title": "Ensure that kernel module \"sound\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_785",
+      "title": "Ensure that kernel module \"sscape\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_786",
+      "title": "Ensure that kernel module \"trident\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_787",
+      "title": "Ensure that kernel module \"trix\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_788",
+      "title": "Ensure that kernel module \"uart401\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_789",
+      "title": "Ensure that kernel module \"uart6850\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_790",
+      "title": "Ensure that kernel module \"via82cxxx_audio\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_791",
+      "title": "Ensure that kernel module \"v_midi\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_792",
+      "title": "Ensure that kernel module \"wavefront\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_793",
+      "title": "Ensure that kernel module \"ymfpci\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_794",
+      "title": "Ensure that kernel module \"ac97_plugin_wm97xx\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_795",
+      "title": "Ensure that kernel module \"ad1816\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_796",
+      "title": "Ensure that kernel module \"audio\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_797",
+      "title": "Ensure that kernel module \"awe_wave\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_798",
+      "title": "Ensure that kernel module \"dmasound_core\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_799",
+      "title": "Ensure that kernel module \"dmasound_pmac\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_800",
+      "title": "Ensure that kernel module \"harmony\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_801",
+      "title": "Ensure that kernel module \"sequencer\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_802",
+      "title": "Ensure that kernel module \"soundcard\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_803",
+      "title": "Ensure that kernel module \"usb_midi\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "KMD_804",
+      "title": "Ensure that kernel module \"microcode\" is disabled",
+      "message": "module not disabled",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_001",
+      "title": "Ensure mount point \"/boot\" exist",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_002",
+      "title": "Ensure mount point \"/tmp\" exist",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_003",
+      "title": "Ensure mount point \"/home\" exist",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_004",
+      "title": "Ensure mount point \"/var\" exist",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_005",
+      "title": "Ensure mount point \"/var/log\" exist",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_006",
+      "title": "Ensure mount point \"/var/log/audit\" exist",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_007",
+      "title": "Ensure mount point \"/var/tmp\" exist",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_008",
+      "title": "Ensure mount point \"/dev/shm\" exist",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "MNT_020",
+      "title": "Ensure mount option \"nodev\" is set for \"/dev/shm\"",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "MNT_023",
+      "title": "Ensure mount option \"errors=remount-ro\" is set for \"/\"",
+      "message": "missing option",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_024",
+      "title": "Ensure mount option \"nodev\" is set for \"/boot\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_025",
+      "title": "Ensure mount option \"nosuid\" is set for \"/boot\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_026",
+      "title": "Ensure mount option \"noexec\" is set for \"/boot\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_027",
+      "title": "Ensure mount option \"noauto\" is set for \"/boot\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_028",
+      "title": "Ensure mount option \"nodev\" is set for \"/home\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_029",
+      "title": "Ensure mount option \"nosuid\" is set for \"/home\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_030",
+      "title": "Ensure mount option \"noexec\" is set for \"/home\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_031",
+      "title": "Ensure mount option \"nodev\" is set for \"/tmp\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_032",
+      "title": "Ensure mount option \"nosuid\" is set for \"/tmp\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_033",
+      "title": "Ensure mount option \"noexec\" is set for \"/tmp\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_034",
+      "title": "Ensure mount option \"nodev\" is set for \"/var\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_035",
+      "title": "Ensure mount option \"nosuid\" is set for \"/var\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_036",
+      "title": "Ensure mount option \"noexec\" is set for \"/var\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_037",
+      "title": "Ensure mount option \"nodev\" is set for \"/var/log\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_038",
+      "title": "Ensure mount option \"nosuid\" is set for \"/var/log\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_039",
+      "title": "Ensure mount option \"noexec\" is set for \"/var/log\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_040",
+      "title": "Ensure mount option \"nodev\" is set for \"/var/log/audit\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_041",
+      "title": "Ensure mount option \"nosuid\" is set for \"/var/log/audit\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_042",
+      "title": "Ensure mount option \"noexec\" is set for \"/var/log/audit\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_043",
+      "title": "Ensure mount option \"nodev\" is set for \"/var/tmp\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_044",
+      "title": "Ensure mount option \"nosuid\" is set for \"/var/tmp\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_045",
+      "title": "Ensure mount option \"noexec\" is set for \"/var/tmp\"",
+      "message": "not a mount point",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_046",
+      "title": "Ensure mount option \"nodev\" is set for \"/proc\"",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "MNT_047",
+      "title": "Ensure mount option \"nosuid\" is set for \"/proc\"",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "MNT_048",
+      "title": "Ensure mount option \"noexec\" is set for \"/proc\"",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "MNT_049",
+      "title": "Ensure mount option \"hidepid=invisible\" is set for \"/proc\"",
+      "message": "missing option",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_050",
+      "title": "Ensure mount option \"nosuid\" is set for \"/dev\"",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "MNT_051",
+      "title": "Ensure mount option \"noexec\" is set for \"/dev\"",
+      "message": "missing option",
+      "state": "Failed"
+    },
+    {
+      "id": "MNT_052",
+      "title": "Ensure mount option \"nodev\" is set for \"/dev/shm\"",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "MNT_053",
+      "title": "Ensure mount option \"nosuid\" is set for \"/dev/shm\"",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "MNT_054",
+      "title": "Ensure mount option \"noexec\" is set for \"/dev/shm\"",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "PAM_001",
+      "title": "Ensure PAM service \"passwd\" has rule \"account required pam_unix\"",
+      "message": "rule not found",
+      "state": "Failed"
+    },
+    {
+      "id": "PAM_002",
+      "title": "Ensure PAM service \"passwd\" has rule \"password required pam_pwquality\"",
+      "message": "rule not found",
+      "state": "Failed"
+    },
+    {
+      "id": "PAM_015",
+      "title": "Ensure PAM service \"su\" has rule \"auth required pam_wheel\"",
+      "message": "rule not found",
+      "state": "Failed"
+    },
+    {
+      "id": "PAM_024",
+      "title": "Ensure PAM service \"login\" has rule \"auth required pam_faillock\"",
+      "message": "rule not found",
+      "state": "Failed"
+    },
+    {
+      "id": "PAM_030",
+      "title": "Ensure PAM service \"login\" has rule \"auth optional pam_faildelay\"",
+      "message": "more than one rule found",
+      "state": "Failed"
+    },
+    {
+      "id": "CNT_501",
+      "title": "Ensure podman containers are not started with \"--privileged\" flag",
+      "message": "containers inspect not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_502",
+      "title": "Ensure podman containers capabilities are dopped",
+      "message": "containers inspect not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_503",
+      "title": "Ensure podman containers are started with a user",
+      "message": "containers inspect not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_504",
+      "title": "Ensure podman mount point \"/var/lib/containers\" exist",
+      "message": null,
+      "state": "Failed"
+    },
+    {
+      "id": "CNT_505",
+      "title": "Ensure apparmor is enabled for podman",
+      "message": "podman info not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "CNT_506",
+      "title": "Ensure podman containers are started with an apparmor profile",
+      "message": "containers inspect not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SHL_001",
+      "title": "Ensure automatic logout from shells is configured",
+      "message": "file not found",
+      "state": "Failed"
+    },
+    {
+      "id": "SSH_001",
+      "title": "Ensure that sshd is configured with \"fingerprinthash\" = \"SHA256\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_002",
+      "title": "Ensure that sshd is configured with \"syslogfacility\" = \"AUTH\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_003",
+      "title": "Ensure that sshd is configured with \"loglevel\" = \"VERBOSE\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_004",
+      "title": "Ensure that sshd is configured with \"logingracetime\" <= 60",
+      "message": "ssh configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_005",
+      "title": "Ensure that sshd is configured with \"permitrootlogin\" = \"no\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_006",
+      "title": "Ensure that sshd is configured with \"strictmodes\" = \"yes\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_007",
+      "title": "Ensure that sshd is configured with \"maxauthtries\" <= 4",
+      "message": "ssh configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_008",
+      "title": "Ensure that sshd is configured with \"maxsessions\" <= 5",
+      "message": "ssh configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_009",
+      "title": "Ensure that sshd is configured with \"hostbasedauthentication\" = \"no\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_010",
+      "title": "Ensure that sshd is configured with \"ignorerhosts\" = \"yes\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_011",
+      "title": "Ensure that sshd is configured with \"ignoreuserknownhosts\" = \"yes\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_012",
+      "title": "Ensure that sshd is configured with \"pubkeyauthentication\" = \"yes\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_013",
+      "title": "Ensure that sshd is configured with \"passwordauthentication\" = \"no\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_014",
+      "title": "Ensure that sshd is configured with \"kbdinteractiveauthentication\" = \"no\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_015",
+      "title": "Ensure that sshd is configured with \"permitemptypasswords\" = \"no\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_016",
+      "title": "Ensure that sshd is configured with \"kerberosauthentication\" = \"no\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_017",
+      "title": "Ensure that sshd is configured with \"kerberosorlocalpasswd\" = \"no\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_018",
+      "title": "Ensure that sshd is configured with \"kerberosticketcleanup\" = \"yes\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_019",
+      "title": "Ensure that sshd is configured with \"gssapiauthentication\" = \"no\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_020",
+      "title": "Ensure that sshd is configured with \"gssapicleanupcredentials\" = \"yes\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_044",
+      "title": "Ensure that sshd is configured with \"usepam\" = \"yes\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_025",
+      "title": "Ensure that sshd is configured with \"disableforwarding\" = \"yes\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_021",
+      "title": "Ensure that sshd is configured with \"x11forwarding\" = \"no\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_022",
+      "title": "Ensure that sshd is configured with \"allowagentforwarding\" = \"no\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_023",
+      "title": "Ensure that sshd is configured with \"allowstreamlocalforwarding\" = \"no\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_024",
+      "title": "Ensure that sshd is configured with \"allowtcpforwarding\" = \"no\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_026",
+      "title": "Ensure that sshd is configured with \"gatewayports\" = \"no\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_027",
+      "title": "Ensure that sshd is configured with \"x11uselocalhost\" = \"yes\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_028",
+      "title": "Ensure that sshd is configured with \"printmotd\" = \"no\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_029",
+      "title": "Ensure that sshd is configured with \"permituserenvironment\" = \"no\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_030",
+      "title": "Ensure that sshd is configured with \"clientaliveinterval\" <= 15",
+      "message": "ssh configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_031",
+      "title": "Ensure that sshd is configured with \"clientalivecountmax\" = \"3\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_032",
+      "title": "Ensure that sshd is configured with \"tcpkeepalive\" = \"no\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_033",
+      "title": "Ensure that sshd is configured with \"usedns\" = \"no\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_034",
+      "title": "Ensure that sshd is configured with \"permittunnel\" = \"no\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_035",
+      "title": "Ensure that sshd is configured with \"maxstartups\" = \"10:30:60\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_036",
+      "title": "Ensure that sshd is configured with \"printlastlog\" = \"no\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_037",
+      "title": "Ensure that sshd is configured with \"allowgroups\" = \"sshusers\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_038",
+      "title": "Ensure that sshd is configured with \"kexalgorithms\" = \"curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_039",
+      "title": "Ensure that sshd is configured with \"ciphers\" = \"chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_040",
+      "title": "Ensure that sshd is configured with \"macs\" = \"hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_041",
+      "title": "Ensure that sshd is configured with \"authenticationmethods\" = \"publickey\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_042",
+      "title": "Ensure that sshd is configured with \"subsystem\" = \"sftp /usr/lib/openssh/sftp-server -f AUTHPRIV -l INFO\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_043",
+      "title": "Ensure that sshd is configured with \"kbdinteractiveauthentication\" = \"no\"",
+      "message": "sshd configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SUD_001",
+      "title": "Ensure that sudo default config \"noexec\" is set",
+      "message": "sudo configuration defaults not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SUD_002",
+      "title": "Ensure that sudo default config \"requiretty\" is set",
+      "message": "sudo configuration defaults not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SUD_003",
+      "title": "Ensure that sudo default config \"use_pty\" is set",
+      "message": "sudo configuration defaults not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SUD_004",
+      "title": "Ensure that sudo default config \"umask=0027\" is set",
+      "message": "sudo configuration defaults not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SUD_005",
+      "title": "Ensure that sudo default config \"ignore_dot\" is set",
+      "message": "sudo configuration defaults not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SUD_006",
+      "title": "Ensure that sudo default config \"passwd_timeout=1\" is set",
+      "message": "sudo configuration defaults not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SUD_007",
+      "title": "Ensure that sudo default config \"env_reset, timestamp_timeout=15\" is set",
+      "message": "sudo configuration defaults not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SUD_008",
+      "title": "Ensure that sudo default config \"timestamp_timeout=15\" is set",
+      "message": "sudo configuration defaults not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SUD_009",
+      "title": "Ensure that sudo default config \"env_reset\" is set",
+      "message": "sudo configuration defaults not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SUD_010",
+      "title": "Ensure that sudo default config \"mail_badpass\" is set",
+      "message": "sudo configuration defaults not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SUD_011",
+      "title": "Ensure that sudo default config \"logfile=\"/var/log/sudo.log\"\" is set",
+      "message": "sudo configuration defaults not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SUD_012",
+      "title": "Ensure that sudo default config \":%sudo !noexec\" is set",
+      "message": "sudo configuration defaults not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SUD_013",
+      "title": "Ensure that sudo default config \"lecture=\"always\"\" is set",
+      "message": "sudo configuration defaults not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SUD_014",
+      "title": "Ensure that sudo default config \"lecture_file=\"/usr/share/doc/sudo_lecture.txt\"\" is set",
+      "message": "sudo configuration defaults not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SUD_015",
+      "title": "Ensure that sudoers config does not contain \"NOPASSWD\"",
+      "message": "sudo configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SUD_016",
+      "title": "Ensure that sudoers re authentication is not disabled",
+      "message": "sudo configuration not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "SYS_001",
+      "title": "Ensure sysctl \"kernel.kptr_restrict\" = 2",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_002",
+      "title": "Ensure sysctl \"kernel.ftrace_enabled\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_003",
+      "title": "Ensure sysctl \"kernel.randomize_va_space\" = 2",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_004",
+      "title": "Ensure sysctl \"kernel.dmesg_restrict\" = 1",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_005",
+      "title": "Ensure sysctl \"kernel.printk\" = \"3\\t3\\t3\\t3\"",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_006",
+      "title": "Ensure sysctl \"kernel.perf_cpu_time_max_percent\" = 1",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_007",
+      "title": "Ensure sysctl \"kernel.perf_event_max_sample_rate\" = 1",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_008",
+      "title": "Ensure sysctl \"kernel.perf_event_paranoid\" >= 2",
+      "message": "3",
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_009",
+      "title": "Ensure sysctl \"kernel.sysrq\" = 0",
+      "message": "16 != 0",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_010",
+      "title": "Ensure sysctl \"kernel.kexec_load_disabled\" = 1",
+      "message": "missing sysctl \"kernel.kexec_load_disabled\" key",
+      "state": "Error"
+    },
+    {
+      "id": "SYS_011",
+      "title": "Ensure sysctl \"kernel.unprivileged_bpf_disabled\" = 1",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_012",
+      "title": "Ensure sysctl \"net.core.bpf_jit_harden\" = 2",
+      "message": "missing sysctl \"net.core.bpf_jit_harden\" key",
+      "state": "Error"
+    },
+    {
+      "id": "SYS_013",
+      "title": "Ensure sysctl \"kernel.panic_on_oops\" = 1",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_014",
+      "title": "Ensure sysctl \"kernel.panic\" = \"-1\"",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_015",
+      "title": "Ensure sysctl \"kernel.modules_disabled\" = 1",
+      "message": "0 != 1",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_016",
+      "title": "Ensure sysctl \"kernel.unprivileged_userns_clone\" = 0",
+      "message": "1 != 0",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_017",
+      "title": "Ensure sysctl \"kernel.yama.ptrace_scope\" >= 1",
+      "message": "3",
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_018",
+      "title": "Ensure sysctl \"kernel.io_uring_disabled\" = 2",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_019",
+      "title": "Ensure sysctl \"kernel.core_pattern\" = \"|/bin/false\"",
+      "message": "\"|/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h %d %F\" != \"|/bin/false\"",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_020",
+      "title": "Ensure sysctl \"kernel.core_uses_pid\" = 1",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_021",
+      "title": "Ensure sysctl \"vm.unprivileged_userfaultfd\" = 0",
+      "message": "missing sysctl \"vm.unprivileged_userfaultfd\" key",
+      "state": "Error"
+    },
+    {
+      "id": "SYS_022",
+      "title": "Ensure sysctl \"vm.mmap_rnd_bits\" = 32",
+      "message": "missing sysctl \"vm.mmap_rnd_bits\" key",
+      "state": "Error"
+    },
+    {
+      "id": "SYS_023",
+      "title": "Ensure sysctl \"vm.mmap_rnd_compat_bits\" = 16",
+      "message": "missing sysctl \"vm.mmap_rnd_compat_bits\" key",
+      "state": "Error"
+    },
+    {
+      "id": "SYS_024",
+      "title": "Ensure sysctl \"vm.mmap_min_addr\" = 65536",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_025",
+      "title": "Ensure sysctl \"dev.tty.ldisc_autoload\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_026",
+      "title": "Ensure sysctl \"dev.tty.legacy_tiocsti\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_027",
+      "title": "Ensure sysctl \"vm.max_map_count\" = 1048576",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_028",
+      "title": "Ensure sysctl \"vm.swappiness\" = 1",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_029",
+      "title": "Ensure sysctl \"fs.suid_dumpable\" = 0",
+      "message": "2 != 0",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_030",
+      "title": "Ensure sysctl \"fs.protected_fifos\" = 2",
+      "message": "1 != 2",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_031",
+      "title": "Ensure sysctl \"fs.protected_regular\" = 2",
+      "message": "1 != 2",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_032",
+      "title": "Ensure sysctl \"fs.protected_symlinks\" = 1",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_033",
+      "title": "Ensure sysctl \"fs.protected_hardlinks\" = 1",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_034",
+      "title": "Ensure sysctl \"fs.binfmt_misc.status\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_035",
+      "title": "Ensure sysctl \"net.ipv4.ip_forward\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_036",
+      "title": "Ensure sysctl \"net.ipv4.conf.all.accept_source_route\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_037",
+      "title": "Ensure sysctl \"net.ipv4.conf.default.accept_source_route\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_038",
+      "title": "Ensure sysctl \"net.ipv6.conf.all.accept_source_route\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_039",
+      "title": "Ensure sysctl \"net.ipv6.conf.default.accept_source_route\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_040",
+      "title": "Ensure sysctl \"net.ipv4.conf.all.accept_redirects\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_041",
+      "title": "Ensure sysctl \"net.ipv4.conf.default.accept_redirects\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_042",
+      "title": "Ensure sysctl \"net.ipv4.conf.all.secure_redirects\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_043",
+      "title": "Ensure sysctl \"net.ipv4.conf.default.secure_redirects\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_044",
+      "title": "Ensure sysctl \"net.ipv4.conf.all.send_redirects\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_045",
+      "title": "Ensure sysctl \"net.ipv4.conf.default.send_redirects\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_046",
+      "title": "Ensure sysctl \"net.ipv6.conf.all.accept_redirects\" = 0",
+      "message": "1 != 0",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_047",
+      "title": "Ensure sysctl \"net.ipv6.conf.default.accept_redirects\" = 0",
+      "message": "1 != 0",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_050",
+      "title": "Ensure sysctl \"net.ipv4.icmp_echo_ignore_all\" = 1",
+      "message": "0 != 1",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_051",
+      "title": "Ensure sysctl \"net.ipv6.icmp.echo_ignore_all\" = 1",
+      "message": "0 != 1",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_052",
+      "title": "Ensure sysctl \"net.ipv4.icmp_echo_ignore_broadcasts\" = 1",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_053",
+      "title": "Ensure sysctl \"net.ipv4.conf.all.rp_filter\" = 1",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_054",
+      "title": "Ensure sysctl \"net.ipv4.conf.default.rp_filter\" = 1",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_055",
+      "title": "Ensure sysctl \"net.ipv4.icmp_ignore_bogus_error_responses\" = 1",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_056",
+      "title": "Ensure sysctl \"net.ipv4.icmp_ratelimit\" <= 100",
+      "message": "1000 > 100",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_057",
+      "title": "Ensure sysctl \"net.ipv4.icmp_ratemask\" = 88089",
+      "message": "6168 != 88089",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_058",
+      "title": "Ensure sysctl \"net.ipv4.tcp_syncookies\" = 1",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_059",
+      "title": "Ensure sysctl \"net.ipv4.conf.all.accept_local\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_060",
+      "title": "Ensure sysctl \"net.ipv4.conf.all.shared_media\" = 1",
+      "message": "0 != 1",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_061",
+      "title": "Ensure sysctl \"net.ipv4.conf.default.shared_media\" = 1",
+      "message": "0 != 1",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_062",
+      "title": "Ensure sysctl \"net.ipv4.conf.all.arp_filter\" = 1",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_063",
+      "title": "Ensure sysctl \"net.ipv4.conf.all.arp_ignore\" = 2",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_064",
+      "title": "Ensure sysctl \"net.ipv4.conf.default.arp_ignore\" = 2",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_065",
+      "title": "Ensure sysctl \"net.ipv4.conf.default.arp_announce\" = 2",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_066",
+      "title": "Ensure sysctl \"net.ipv4.conf.all.arp_announce\" = 2",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_067",
+      "title": "Ensure sysctl \"net.ipv4.conf.all.route_localnet\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_068",
+      "title": "Ensure sysctl \"net.ipv4.conf.all.drop_gratuitous_arp\" = 1",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_069",
+      "title": "Ensure sysctl \"net.ipv4.ip_local_port_range\" = \"32768\\t65535\"",
+      "message": "\"32768\\t60999\" != \"32768\\t65535\"",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_070",
+      "title": "Ensure sysctl \"net.ipv4.tcp_rfc1337\" = 1",
+      "message": "0 != 1",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_071",
+      "title": "Ensure sysctl \"net.ipv6.conf.all.forwarding\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_072",
+      "title": "Ensure sysctl \"net.ipv6.conf.default.forwarding\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_073",
+      "title": "Ensure sysctl \"net.ipv6.conf.all.accept_ra\" = 0",
+      "message": "1 != 0",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_074",
+      "title": "Ensure sysctl \"net.ipv6.conf.default.accept_ra\" = 0",
+      "message": "1 != 0",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_075",
+      "title": "Ensure sysctl \"net.ipv4.tcp_timestamps\" = 0",
+      "message": "1 != 0",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_076",
+      "title": "Ensure sysctl \"net.ipv4.conf.all.log_martians\" = 1",
+      "message": "0 != 1",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_077",
+      "title": "Ensure sysctl \"net.ipv4.conf.default.log_martians\" = 1",
+      "message": "0 != 1",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_078",
+      "title": "Ensure sysctl \"net.ipv6.conf.all.router_solicitations\" = 0",
+      "message": "-1 != 0",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_079",
+      "title": "Ensure sysctl \"net.ipv6.conf.default.router_solicitations\" = 0",
+      "message": "-1 != 0",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_080",
+      "title": "Ensure sysctl \"net.ipv6.conf.all.accept_ra_rtr_pref\" = 0",
+      "message": "1 != 0",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_081",
+      "title": "Ensure sysctl \"net.ipv6.conf.default.accept_ra_rtr_pref\" = 0",
+      "message": "1 != 0",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_082",
+      "title": "Ensure sysctl \"net.ipv6.conf.all.accept_ra_defrtr\" = 0",
+      "message": "1 != 0",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_083",
+      "title": "Ensure sysctl \"net.ipv6.conf.default.accept_ra_defrtr\" = 0",
+      "message": "1 != 0",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_084",
+      "title": "Ensure sysctl \"net.ipv6.conf.all.autoconf\" = 0",
+      "message": "1 != 0",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_085",
+      "title": "Ensure sysctl \"net.ipv6.conf.default.autoconf\" = 0",
+      "message": "1 != 0",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_086",
+      "title": "Ensure sysctl \"net.ipv6.conf.all.max_addresses\" = 1",
+      "message": "16 != 1",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_087",
+      "title": "Ensure sysctl \"net.ipv6.conf.default.max_addresses\" = 1",
+      "message": "16 != 1",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_088",
+      "title": "Ensure sysctl \"net.core.bpf_jit_enable\" = 0",
+      "message": "missing sysctl \"net.core.bpf_jit_enable\" key",
+      "state": "Error"
+    },
+    {
+      "id": "SYS_089",
+      "title": "Ensure sysctl \"net.ipv4.tcp_sack\" = 0",
+      "message": "1 != 0",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_090",
+      "title": "Ensure sysctl \"net.ipv4.tcp_dsack\" = 0",
+      "message": "1 != 0",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_091",
+      "title": "Ensure sysctl \"net.ipv4.tcp_fack\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_092",
+      "title": "Ensure sysctl \"net.ipv6.conf.all.use_tempaddr\" = 2",
+      "message": "0 != 2",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_093",
+      "title": "Ensure sysctl \"net.ipv6.conf.default.use_tempaddr\" = 2",
+      "message": "0 != 2",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_094",
+      "title": "Ensure sysctl \"user.max_user_namespaces\" <= 31231",
+      "message": "2147483647 > 31231",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_095",
+      "title": "Ensure sysctl \"kernel.warn_limit\" <= 100",
+      "message": "100",
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_096",
+      "title": "Ensure sysctl \"kernel.oops_limit\" <= 100",
+      "message": "100",
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_097",
+      "title": "Ensure sysctl \"net.ipv4.tcp_synack_retries\" = 5",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_098",
+      "title": "Ensure sysctl \"net.ipv6.icmp.echo_ignore_anycast\" = 1",
+      "message": "0 != 1",
+      "state": "Failed"
+    },
+    {
+      "id": "SYS_099",
+      "title": "Ensure sysctl \"net.ipv6.icmp.echo_ignore_multicast\" = 1",
+      "message": "0 != 1",
+      "state": "Failed"
+    },
+    {
+      "id": "SYT_001",
+      "title": "Ensure no reboot is required",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYD_001",
+      "title": "Ensure that systemd config \"CtrlAltDelBurstAction\" = \"none\"",
+      "message": "systemd config not initialized",
+      "state": "Error"
+    },
+    {
+      "id": "UPT_001",
+      "title": "Ensure host has not been running for more than 3 months without reboot",
+      "message": "1 h",
+      "state": "Passed"
+    },
+    {
+      "id": "USR_001",
+      "title": "Ensure that root is the only user with UID 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "USR_002",
+      "title": "Ensure no duplicate user names exist",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "USR_003",
+      "title": "Ensure no duplicate UIDs exist",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "USR_004",
+      "title": "Ensure that \"/etc/securetty\" is empty",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "USR_005",
+      "title": "Ensure no login is available on system accounts",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "USR_006",
+      "title": "Ensure all passwords are hashed with yescrypt",
+      "message": "root, daemon, bin, sys, sync, games, man, lp, mail, news, uucp, proxy, www-data, backup, list, irc, _apt, nobody",
+      "state": "Failed"
+    },
+    {
+      "id": "USR_007",
+      "title": "Ensure no accounts are locked, delete them",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "USR_008",
+      "title": "Ensure that all home directories exist",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "USR_009",
+      "title": "Ensure \"/etc/shadow\" password fields are not empty",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "USR_010",
+      "title": "Ensure \"/etc/passwd\" password fields are not empty",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "USR_011",
+      "title": "Ensure accounts in \"/etc/passwd\" use shadowed passwords",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "USR_100",
+      "title": "Ensure \"/etc/shadow\" file owner is \"root:shadow\"",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "USR_101",
+      "title": "Ensure \"/etc/shadow\" file permissions are \"640\"",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "USR_102",
+      "title": "Ensure \"/etc/shadow-\" file owner is \"root:shadow\" or file is missing",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "USR_103",
+      "title": "Ensure \"/etc/shadow-\" file permissions are \"640\" or file is missing",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "USR_104",
+      "title": "Ensure \"/etc/security/opasswd\" file owner is \"root:root\" or file is missing",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "USR_105",
+      "title": "Ensure \"/etc/security/opasswd\" file permissions are \"600\" or file is missing",
+      "message": null,
+      "state": "Passed"
+    }
+  ],
+  "stats": {
+    "total": 833,
+    "passed": 103,
+    "failed": 469,
+    "error": 261,
+    "waiting": 0
+  },
+  "version": "0.26.0"
+}

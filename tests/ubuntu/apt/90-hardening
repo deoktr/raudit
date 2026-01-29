@@ -1,0 +1,7 @@
+Acquire::http::AllowRedirect "0";
+Acquire::AllowDowngradeToInsecureRepositories "0";
+Acquire::AllowInsecureRepositories "0";
+APT::Get::AllowUnauthenticated "0";
+APT::Install-Recommends "0";
+APT::Install-Suggests "0";
+APT::Sandbox::Seccomp "1";

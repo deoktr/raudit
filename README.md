@@ -219,7 +219,6 @@ Benchmark 1: ./target/release/raudit
 - Add a "criticity", "hardening level" value linked to a check
 - Create custom parsers for complex configurations (sudo, nginx, etc.)
 - Give the user's the ability to specify config paths, with globing
-- Get raudit configuration from file
 - Check permissions on startup (root or not) and warn user if needed
 - Use [OPA](https://www.openpolicyagent.org/) to define rules?
 - Work on performance, convert to String to &str
@@ -239,6 +238,8 @@ Benchmark 1: ./target/release/raudit
 - Add way more details to checks, an explaination of why it's a problem, and
   details on how to fix it, that way on failed checks the user would have
   effective info on what to do
+- Fix all TODO and FIXME in code
+- Skip tests based on distro or installed application: sshd, podman, docker, apt
 
 Rules:
 
