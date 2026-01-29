@@ -9,6 +9,7 @@ Goals:
 - Easy to extend and create your own checks.
 - JSON output.
 - Easy to maintain.
+- Work for both servers and workstations.
 
 ## Usage
 
@@ -27,17 +28,21 @@ Server:
 raudit --tags server --tags-exclude paranoid
 ```
 
+> [!NOTE]
+> Some checks requires root permissions to run.
+
 Generate JSON report:
 
 ```bash
 raudit --json=pretty > report.json
 ```
 
-Note that you can also use env vars to control CLI flags:
-
-```bash
-JSON=pretty raudit > report.json
-```
+> [!NOTE]
+> You can also use env vars to control CLI flags:
+>
+> ```bash
+> JSON=pretty raudit > report.json
+> ```
 
 Example JSON output:
 

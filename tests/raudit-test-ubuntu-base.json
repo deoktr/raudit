@@ -3673,12 +3673,6 @@
       "state": "Passed"
     },
     {
-      "id": "MNT_023",
-      "title": "Ensure mount option \"errors=remount-ro\" is set for \"/\"",
-      "message": "missing option",
-      "state": "Failed"
-    },
-    {
       "id": "MNT_024",
       "title": "Ensure mount option \"nodev\" is set for \"/boot\"",
       "message": "not a mount point",
@@ -4893,7 +4887,7 @@
     {
       "id": "UPT_001",
       "title": "Ensure host has not been running for more than 3 months without reboot",
-      "message": "1 h",
+      "message": "2 h",
       "state": "Passed"
     },
     {
@@ -5000,11 +4994,11 @@
     }
   ],
   "stats": {
-    "total": 833,
+    "total": 832,
     "passed": 103,
-    "failed": 469,
+    "failed": 468,
     "error": 261,
     "waiting": 0
   },
-  "version": "0.26.0"
+  "version": "0.27.0"
 }

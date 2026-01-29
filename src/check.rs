@@ -50,7 +50,7 @@ pub enum CheckState {
     Failed,
     /// Check function execution error
     Error,
-    /// Check is yet to execute
+    /// Check is yet to execute or in progress
     Waiting,
 }
 
