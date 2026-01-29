@@ -83,6 +83,7 @@ pub fn check_reboot_required() -> check::CheckReturn {
     // TODO: on RHEL use `needs-restarting -r` command, status 0 no reboot
     // required, 1 if it is
     if !(Path::new("/var/run/reboot-required.pkgs").exists()
+        || Path::new("/var/run/reboot-required").exists()
         || Path::new("/var/run/needs_restarting").exists())
     {
         (check::CheckState::Passed, None)

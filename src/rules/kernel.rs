@@ -105,7 +105,7 @@ pub fn add_checks() {
         vec![kernel::init_kernel_params],
     );
     check::add_check(
-        "KNP_016",
+        "KNP_015",
         "Ensure that kernel flag \"kfence.sample_interval=100\" is present",
         vec!["kernel"],
         || kernel::check_kernel_params("kfence.sample_interval=100"),
@@ -203,7 +203,7 @@ pub fn add_checks() {
         vec![kernel::init_kernel_params],
     );
     check::add_check(
-        "KNP_017",
+        "KNP_062",
         "Ensure that kernel flag \"random.trust_cpu=off\" is present",
         vec!["kernel", "paranoid"],
         || kernel::check_kernel_params("random.trust_cpu=off"),
@@ -213,7 +213,7 @@ pub fn add_checks() {
     // from: kernel-hardening-checker
     // https://lwn.net/Articles/695991/
     check::add_check(
-        "KNP_020",
+        "KNP_063",
         "Ensure that kernel flag \"hardened_usercopy=1\" is present",
         vec!["kernel"],
         || kernel::check_kernel_params("hardened_usercopy=1"),
@@ -247,7 +247,7 @@ pub fn add_checks() {
         vec![kernel::init_kernel_params],
     );
     check::add_check(
-        "KNP_030",
+        "KNP_064",
         "Ensure that kernel flag \"mitigations=auto,nosmt\" is present",
         vec!["kernel", "paranoid"],
         || kernel::check_kernel_params("mitigations=auto,nosmt"),
@@ -296,7 +296,7 @@ pub fn add_checks() {
         vec![kernel::init_kernel_params],
     );
     check::add_check(
-        "KNP_036",
+        "KNP_065",
         "Ensure that kernel flag \"mds=full,nosm\" is present",
         vec!["kernel", "paranoid"],
         || kernel::check_kernel_params("mds=full,nosm"),
@@ -317,7 +317,7 @@ pub fn add_checks() {
         vec![kernel::init_kernel_params],
     );
     check::add_check(
-        "KNP_038",
+        "KNP_066",
         "Ensure that kernel flag \"tsx_async_abort=full,nosmt\" is present",
         vec!["kernel"],
         || kernel::check_kernel_params("tsx_async_abort=full,nosmt"),
@@ -345,7 +345,7 @@ pub fn add_checks() {
         vec![kernel::init_kernel_params],
     );
     check::add_check(
-        "KNP_041",
+        "KNP_067",
         "Ensure that kernel flag \"mmio_stale_data=full,nosmt\" is present",
         vec!["kernel", "paranoid"],
         || kernel::check_kernel_params("mmio_stale_data=full,nosmt"),
@@ -359,7 +359,7 @@ pub fn add_checks() {
         vec![kernel::init_kernel_params],
     );
     check::add_check(
-        "KNP_042",
+        "KNP_068",
         "Ensure that kernel flag \"retbleed=auto,nosmt\" is present",
         vec!["kernel", "paranoid"],
         || kernel::check_kernel_params("retbleed=auto,nosmt"),

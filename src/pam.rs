@@ -56,13 +56,13 @@ fn parse_pam_rule(line: &str) -> Result<PamRule, String> {
 
     // can't parse includes here, just rules
     if line.starts_with("@") {
-        return Err("line starts with @".to_string());
+        return Err("Line starts with @".to_string());
     }
 
     // remove potential comments at the end of the line
     let clean_line = match line.split("#").next() {
         Some(l) => l,
-        None => return Err("failed to split the comment when parsing PAM rule".to_string()),
+        None => return Err("Failed to split the comment when parsing PAM rule".to_string()),
     };
 
     let mut ws_split = clean_line.split_whitespace();

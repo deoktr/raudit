@@ -197,7 +197,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     );
     check::add_check(
-        "SSH_037",
+        "SSH_044",
         "Ensure that sshd is configured with \"usepam\" = \"yes\"",
         vec!["sshd", "CIS", "STIG"],
         || sshd::check_sshd_config("usepam", "yes"),

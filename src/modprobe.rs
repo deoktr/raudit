@@ -300,7 +300,7 @@ pub(crate) use add_module_blacklisted_check_list;
 /// Add checks from a list of modules.
 macro_rules! add_module_disabled_check_list {
     ($($module:expr),* $(,)?) => {
-        let mut __i_add_module_disabled_check_list = 1;
+        let mut __i_add_module_disabled_check_list = 500;
         $(
             $crate::check::add_check(
                 format!("KMD_{:03}", __i_add_module_disabled_check_list).as_str(),

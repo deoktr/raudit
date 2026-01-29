@@ -25,12 +25,12 @@ pub fn add_checks() {
                             // TODO: also check to see if <= 11? even thos this
                             // should not cause any problems, it's still an
                             // invalide value
-                            if val <= VAL {
+                            if val >= VAL {
                                 (check::CheckState::Passed, Some(format!("{}", val)))
                             } else {
                                 (
                                     check::CheckState::Failed,
-                                    Some(format!("{} > {}", val, VAL)),
+                                    Some(format!("{} < {}", val, VAL)),
                                 )
                             }
                         }

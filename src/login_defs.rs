@@ -80,7 +80,10 @@ pub fn check_login_defs(key: &str, value: &str) -> check::CheckReturn {
                 if conf_value == value {
                     (check::CheckState::Passed, None)
                 } else {
-                    (check::CheckState::Failed, None)
+                    (
+                        check::CheckState::Failed,
+                        Some(format!("{} != {}", value, conf_value)),
+                    )
                 }
             }
             None => (

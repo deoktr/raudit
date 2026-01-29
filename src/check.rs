@@ -141,9 +141,7 @@ pub fn print_id_prefixes() {
 /// Run checks in sequence.
 pub fn run_checks() {
     let mut report = REPORT.lock().unwrap();
-    for check in report.checks.iter_mut() {
-        check.run();
-    }
+    report.checks.iter_mut().for_each(|check| check.run());
 }
 
 /// Run checks in parallel.

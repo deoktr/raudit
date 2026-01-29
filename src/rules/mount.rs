@@ -66,28 +66,28 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_001",
+        "MNT_023",
         "Ensure mount option \"errors=remount-ro\" is set for \"/\"",
         vec!["mount", "fs", "mount_option"],
         || mount::check_mount_option("/", "errors=remount-ro"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_002",
+        "MNT_024",
         "Ensure mount option \"nodev\" is set for \"/boot\"",
         vec!["mount", "fs", "mount_option"],
         || mount::check_mount_option("/boot", "nodev"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_003",
+        "MNT_025",
         "Ensure mount option \"nosuid\" is set for \"/boot\"",
         vec!["mount", "fs", "mount_option"],
         || mount::check_mount_option("/boot", "nosuid"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_004",
+        "MNT_026",
         "Ensure mount option \"noexec\" is set for \"/boot\"",
         vec!["mount", "fs", "mount_option"],
         || mount::check_mount_option("/boot", "noexec"),
@@ -95,21 +95,21 @@ pub fn add_checks() {
     );
     // TODO: optional
     check::add_check(
-        "MNT_005",
+        "MNT_027",
         "Ensure mount option \"noauto\" is set for \"/boot\"",
         vec!["mount", "fs", "mount_option"],
         || mount::check_mount_option("/boot", "noauto"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_006",
+        "MNT_028",
         "Ensure mount option \"nodev\" is set for \"/home\"",
         vec!["mount", "fs", "mount_option", "CIS"],
         || mount::check_mount_option("/home", "nodev"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_007",
+        "MNT_029",
         "Ensure mount option \"nosuid\" is set for \"/home\"",
         vec!["mount", "fs", "mount_option", "CIS"],
         || mount::check_mount_option("/home", "nosuid"),
@@ -117,42 +117,42 @@ pub fn add_checks() {
     );
     // TODO: optional
     check::add_check(
-        "MNT_008",
+        "MNT_030",
         "Ensure mount option \"noexec\" is set for \"/home\"",
         vec!["mount", "fs", "mount_option"],
         || mount::check_mount_option("/home", "noexec"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_009",
+        "MNT_031",
         "Ensure mount option \"nodev\" is set for \"/tmp\"",
         vec!["mount", "fs", "mount_option", "CIS"],
         || mount::check_mount_option("/tmp", "nodev"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_010",
+        "MNT_032",
         "Ensure mount option \"nosuid\" is set for \"/tmp\"",
         vec!["mount", "fs", "mount_option", "CIS"],
         || mount::check_mount_option("/tmp", "nosuid"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_011",
+        "MNT_033",
         "Ensure mount option \"noexec\" is set for \"/tmp\"",
         vec!["mount", "fs", "mount_option", "CIS"],
         || mount::check_mount_option("/tmp", "noexec"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_012",
+        "MNT_034",
         "Ensure mount option \"nodev\" is set for \"/var\"",
         vec!["mount", "fs", "mount_option", "CIS"],
         || mount::check_mount_option("/var", "nodev"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_013",
+        "MNT_035",
         "Ensure mount option \"nosuid\" is set for \"/var\"",
         vec!["mount", "fs", "mount_option", "CIS"],
         || mount::check_mount_option("/var", "nosuid"),
@@ -160,91 +160,91 @@ pub fn add_checks() {
     );
     // TODO: optional
     check::add_check(
-        "MNT_014",
+        "MNT_036",
         "Ensure mount option \"noexec\" is set for \"/var\"",
         vec!["mount", "fs", "mount_option"],
         || mount::check_mount_option("/var", "noexec"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_015",
+        "MNT_037",
         "Ensure mount option \"nodev\" is set for \"/var/log\"",
         vec!["mount", "fs", "mount_option", "CIS"],
         || mount::check_mount_option("/var/log", "nodev"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_016",
+        "MNT_038",
         "Ensure mount option \"nosuid\" is set for \"/var/log\"",
         vec!["mount", "fs", "mount_option", "CIS"],
         || mount::check_mount_option("/var/log", "nosuid"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_017",
+        "MNT_039",
         "Ensure mount option \"noexec\" is set for \"/var/log\"",
         vec!["mount", "fs", "mount_option", "CIS"],
         || mount::check_mount_option("/var/log", "noexec"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_018",
+        "MNT_040",
         "Ensure mount option \"nodev\" is set for \"/var/log/audit\"",
         vec!["mount", "fs", "mount_option", "CIS"],
         || mount::check_mount_option("/var/log/audit", "nodev"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_019",
+        "MNT_041",
         "Ensure mount option \"nosuid\" is set for \"/var/log/audit\"",
         vec!["mount", "fs", "mount_option", "CIS"],
         || mount::check_mount_option("/var/log/audit", "nosuid"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_010",
+        "MNT_042",
         "Ensure mount option \"noexec\" is set for \"/var/log/audit\"",
         vec!["mount", "fs", "mount_option", "CIS"],
         || mount::check_mount_option("/var/log/audit", "noexec"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_011",
+        "MNT_043",
         "Ensure mount option \"nodev\" is set for \"/var/tmp\"",
         vec!["mount", "fs", "mount_option", "CIS"],
         || mount::check_mount_option("/var/tmp", "nodev"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_012",
+        "MNT_044",
         "Ensure mount option \"nosuid\" is set for \"/var/tmp\"",
         vec!["mount", "fs", "mount_option", "CIS"],
         || mount::check_mount_option("/var/tmp", "nosuid"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_013",
+        "MNT_045",
         "Ensure mount option \"noexec\" is set for \"/var/tmp\"",
         vec!["mount", "fs", "mount_option", "CIS"],
         || mount::check_mount_option("/var/tmp", "noexec"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_014",
+        "MNT_046",
         "Ensure mount option \"nodev\" is set for \"/proc\"",
         vec!["mount", "fs", "mount_option"],
         || mount::check_mount_option("/proc", "nodev"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_015",
+        "MNT_047",
         "Ensure mount option \"nosuid\" is set for \"/proc\"",
         vec!["mount", "fs", "mount_option"],
         || mount::check_mount_option("/proc", "nosuid"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_016",
+        "MNT_048",
         "Ensure mount option \"noexec\" is set for \"/proc\"",
         vec!["mount", "fs", "mount_option"],
         || mount::check_mount_option("/proc", "noexec"),
@@ -255,42 +255,42 @@ pub fn add_checks() {
     // https://github.com/systemd/systemd/issues/12955#issuecomment-508490893
     // https://github.com/systemd/systemd/issues/20848#issuecomment-930185888
     check::add_check(
-        "MNT_017",
+        "MNT_049",
         "Ensure mount option \"hidepid=invisible\" is set for \"/proc\"",
         vec!["mount", "fs", "mount_option", "paranoid"],
         || mount::check_mount_option("/proc", "hidepid=invisible"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_018",
+        "MNT_050",
         "Ensure mount option \"nosuid\" is set for \"/dev\"",
         vec!["mount", "fs", "mount_option"],
         || mount::check_mount_option("/dev", "nosuid"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_019",
+        "MNT_051",
         "Ensure mount option \"noexec\" is set for \"/dev\"",
         vec!["mount", "fs", "mount_option"],
         || mount::check_mount_option("/dev", "noexec"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_020",
+        "MNT_052",
         "Ensure mount option \"nodev\" is set for \"/dev/shm\"",
         vec!["mount", "fs", "mount_option", "CIS"],
         || mount::check_mount_option("/dev/shm", "nodev"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_021",
+        "MNT_053",
         "Ensure mount option \"nosuid\" is set for \"/dev/shm\"",
         vec!["mount", "fs", "mount_option", "CIS"],
         || mount::check_mount_option("/dev/shm", "nosuid"),
         vec![mount::init_mounts],
     );
     check::add_check(
-        "MNT_022",
+        "MNT_054",
         "Ensure mount option \"noexec\" is set for \"/dev/shm\"",
         vec!["mount", "fs", "mount_option", "CIS"],
         || mount::check_mount_option("/dev/shm", "noexec"),
