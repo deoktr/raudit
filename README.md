@@ -12,18 +12,19 @@ Goals:
 
 ## Usage
 
-Build:
+By default, all checks are running, you can reduce the number by filtering for
+your specific needs:
+
+Workstation:
 
 ```bash
-cargo build --release
+raudit --tags workstation --tags-exclude paranoid
 ```
 
-Will generate executable in `./target/release/raudit`.
-
-Run checks:
+Server:
 
 ```bash
-raudit
+raudit --tags server --tags-exclude paranoid
 ```
 
 Generate JSON report:
@@ -160,6 +161,14 @@ Support planned:
 - Firejail.
 
 ## Build
+
+Build from source with `cargo`:
+
+```bash
+cargo build --release
+```
+
+Will generate executable in `./target/release/raudit`.
 
 Build inside a container:
 
