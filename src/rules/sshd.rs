@@ -1,7 +1,6 @@
 use crate::*;
 
 pub fn add_checks() {
-    // TODO: check for configuration file permissions
     check::add_check(
         "SSH_001",
         "Ensure that sshd is configured with \"fingerprinthash\" = \"SHA256\"",
@@ -218,27 +217,6 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     );
     check::add_check(
-        "SSH_022",
-        "Ensure that sshd is configured with \"allowagentforwarding\" = \"no\"",
-        vec!["sshd", "server"],
-        || sshd::check_sshd_config("allowagentforwarding", "no"),
-        vec![sshd::init_sshd_config],
-    );
-    check::add_check(
-        "SSH_023",
-        "Ensure that sshd is configured with \"allowstreamlocalforwarding\" = \"no\"",
-        vec!["sshd", "server"],
-        || sshd::check_sshd_config("allowstreamlocalforwarding", "no"),
-        vec![sshd::init_sshd_config],
-    );
-    check::add_check(
-        "SSH_024",
-        "Ensure that sshd is configured with \"allowtcpforwarding\" = \"no\"",
-        vec!["sshd", "server"],
-        || sshd::check_sshd_config("allowtcpforwarding", "no"),
-        vec![sshd::init_sshd_config],
-    );
-    check::add_check(
         "SSH_026",
         "Ensure that sshd is configured with \"gatewayports\" = \"no\"",
         vec!["sshd", "server"],
@@ -342,16 +320,27 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     );
     // TODO: make skip it depending based on version, OpenSSH 6.7+
-    // TODO: for OpenSSH 10+:
-    // "mlkem768x25519-sha256,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521",
+    // check::add_check(
+    //     "SSH_038",
+    //     "Ensure that sshd is configured with \"kexalgorithms\" = \"curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256\"",
+    //     vec!["sshd", "mozilla", "server"],
+    //     || {
+    //         sshd::check_sshd_config(
+    //             "kexalgorithms",
+    //             "curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256",
+    //         )
+    //     },
+    //     vec![sshd::init_sshd_config],
+    // );
+    // NOTE: for OpenSSH 10+:
     check::add_check(
         "SSH_038",
-        "Ensure that sshd is configured with \"kexalgorithms\" = \"curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256\"",
+        "Ensure that sshd is configured with \"kexalgorithms\" = \"mlkem768x25519-sha256,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521\"",
         vec!["sshd", "mozilla", "server"],
         || {
             sshd::check_sshd_config(
                 "kexalgorithms",
-                "curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256",
+                "mlkem768x25519-sha256,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521",
             )
         },
         vec![sshd::init_sshd_config],
@@ -406,6 +395,100 @@ pub fn add_checks() {
         || sshd::check_sshd_config("kbdinteractiveauthentication", "no"),
         vec![sshd::init_sshd_config],
     );
+    check::add_check(
+        "SSH_045",
+        "Ensure sshd service file is owned by root",
+        vec!["sshd", "systemd", "server"],
+        || match systemd::get_service_file("sshd") {
+            Some(path) => base::check_file_owner_id(&path, 0, 0),
+            None => (
+                check::CheckState::Error,
+                Some("systemd sshd service file not found".to_string()),
+            ),
+        },
+        vec![],
+    );
+    check::add_check(
+        "SSH_046",
+        "Ensure sshd service file permissions 644 are set",
+        vec!["sshd", "systemd", "server"],
+        || match systemd::get_service_file("sshd") {
+            Some(path) => base::check_file_permission(&path, 0o644),
+            None => (
+                check::CheckState::Error,
+                Some("systemd sshd service file not found".to_string()),
+            ),
+        },
+        vec![],
+    );
+    check::add_check(
+        "SSH_047",
+        "Ensure ssh etc directory is owned by root",
+        vec!["sshd", "server"],
+        || base::check_dir_owner_id("/etc/ssh", 0, 0),
+        vec![],
+    );
+    check::add_check(
+        "SSH_048",
+        "Ensure ssh etc directory permissions is 755",
+        vec!["sshd", "server"],
+        || base::check_dir_permission("/etc/ssh", 0o755),
+        vec![],
+    );
+    check::add_check(
+        "SSH_049",
+        "Ensure sshd config file is owned by root",
+        vec!["sshd", "server"],
+        || base::check_file_owner_id("/etc/ssh/sshd_config", 0, 0),
+        vec![],
+    );
+    check::add_check(
+        "SSH_050",
+        "Ensure sshd config file permissions is 644",
+        vec!["sshd", "server"],
+        || base::check_file_permission("/etc/ssh/sshd_config", 0o644),
+        vec![],
+    );
+    check::add_check(
+        "SSH_051",
+        "Ensure sshd etc config directory is owned by root",
+        vec!["sshd", "server"],
+        || base::check_dir_owner_id("/etc/ssh/sshd_config.d", 0, 0),
+        vec![],
+    );
     // TODO: check the content of File: /etc/ssh/moduli from: https://infosec.mozilla.org/guidelines/openssh
     // TODO: add OpenSSH client rules: https://infosec.mozilla.org/guidelines/openssh#openssh-client
+    //
+    // removed rules
+    //
+    // Note that disabling agent forwarding does not improve security unless
+    // users are also denied shell access, as they can always install their
+    // own forwarders.
+    // check::add_check(
+    //     "SSH_022",
+    //     "Ensure that sshd is configured with \"allowagentforwarding\" = \"no\"",
+    //     vec!["sshd", "server"],
+    //     || sshd::check_sshd_config("allowagentforwarding", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // Note that disabling StreamLocal forwarding does not improve security
+    // unless users are also denied shell access, as they  can  always install
+    // their own forwarders.
+    // check::add_check(
+    //     "SSH_023",
+    //     "Ensure that sshd is configured with \"allowstreamlocalforwarding\" = \"no\"",
+    //     vec!["sshd", "server"],
+    //     || sshd::check_sshd_config("allowstreamlocalforwarding", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
+    // Note that disabling TCP forwarding does not improve security unless users
+    // arealso denied shell access, as they can always install their own
+    // forwarders.
+    // check::add_check(
+    //     "SSH_024",
+    //     "Ensure that sshd is configured with \"allowtcpforwarding\" = \"no\"",
+    //     vec!["sshd", "server"],
+    //     || sshd::check_sshd_config("allowtcpforwarding", "no"),
+    //     vec![sshd::init_sshd_config],
+    // );
 }

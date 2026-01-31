@@ -189,25 +189,25 @@
     {
       "id": "CNT_016",
       "title": "Ensure docker service file is owned by root",
-      "message": "systemd docker file not found",
+      "message": "systemd docker service file not found",
       "state": "Error"
     },
     {
       "id": "CNT_017",
       "title": "Ensure docker service file permissions 644 are set",
-      "message": "systemd docker file not found",
+      "message": "systemd docker service file not found",
       "state": "Error"
     },
     {
       "id": "CNT_018",
       "title": "Ensure docker socket file is owned by root",
-      "message": "systemd docker file not found",
+      "message": "systemd docker socket file not found",
       "state": "Error"
     },
     {
       "id": "CNT_019",
       "title": "Ensure docker socket file permissions 644 are set",
-      "message": "systemd docker file not found",
+      "message": "systemd docker socket file not found",
       "state": "Error"
     },
     {
@@ -4069,24 +4069,6 @@
       "state": "Error"
     },
     {
-      "id": "SSH_022",
-      "title": "Ensure that sshd is configured with \"allowagentforwarding\" = \"no\"",
-      "message": "sshd configuration not initialized",
-      "state": "Error"
-    },
-    {
-      "id": "SSH_023",
-      "title": "Ensure that sshd is configured with \"allowstreamlocalforwarding\" = \"no\"",
-      "message": "sshd configuration not initialized",
-      "state": "Error"
-    },
-    {
-      "id": "SSH_024",
-      "title": "Ensure that sshd is configured with \"allowtcpforwarding\" = \"no\"",
-      "message": "sshd configuration not initialized",
-      "state": "Error"
-    },
-    {
       "id": "SSH_026",
       "title": "Ensure that sshd is configured with \"gatewayports\" = \"no\"",
       "message": "sshd configuration not initialized",
@@ -4160,7 +4142,7 @@
     },
     {
       "id": "SSH_038",
-      "title": "Ensure that sshd is configured with \"kexalgorithms\" = \"curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256\"",
+      "title": "Ensure that sshd is configured with \"kexalgorithms\" = \"mlkem768x25519-sha256,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521\"",
       "message": "sshd configuration not initialized",
       "state": "Error"
     },
@@ -4193,6 +4175,48 @@
       "title": "Ensure that sshd is configured with \"kbdinteractiveauthentication\" = \"no\"",
       "message": "sshd configuration not initialized",
       "state": "Error"
+    },
+    {
+      "id": "SSH_045",
+      "title": "Ensure sshd service file is owned by root",
+      "message": "systemd sshd service file not found",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_046",
+      "title": "Ensure sshd service file permissions 644 are set",
+      "message": "systemd sshd service file not found",
+      "state": "Error"
+    },
+    {
+      "id": "SSH_047",
+      "title": "Ensure ssh etc directory is owned by root",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SSH_048",
+      "title": "Ensure ssh etc directory permissions is 755",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SSH_049",
+      "title": "Ensure sshd config file is owned by root",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SSH_050",
+      "title": "Ensure sshd config file permissions is 644",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SSH_051",
+      "title": "Ensure sshd etc config directory is owned by root",
+      "message": null,
+      "state": "Passed"
     },
     {
       "id": "SUD_001",
@@ -4634,15 +4658,15 @@
     },
     {
       "id": "SYS_060",
-      "title": "Ensure sysctl \"net.ipv4.conf.all.shared_media\" = 1",
-      "message": "0 != 1",
-      "state": "Failed"
+      "title": "Ensure sysctl \"net.ipv4.conf.all.shared_media\" = 0",
+      "message": null,
+      "state": "Passed"
     },
     {
       "id": "SYS_061",
-      "title": "Ensure sysctl \"net.ipv4.conf.default.shared_media\" = 1",
-      "message": "0 != 1",
-      "state": "Failed"
+      "title": "Ensure sysctl \"net.ipv4.conf.default.shared_media\" = 0",
+      "message": null,
+      "state": "Passed"
     },
     {
       "id": "SYS_062",
@@ -4873,6 +4897,42 @@
       "state": "Failed"
     },
     {
+      "id": "SYS_100",
+      "title": "Ensure sysctl \"net.ipv4.conf.all.forwarding\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_101",
+      "title": "Ensure sysctl \"net.ipv4.conf.default.forwarding\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_102",
+      "title": "Ensure sysctl \"net.ipv4.conf.all.mc_forwarding\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_103",
+      "title": "Ensure sysctl \"net.ipv4.conf.default.mc_forwarding\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_104",
+      "title": "Ensure sysctl \"net.ipv6.conf.all.mc_forwarding\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
+      "id": "SYS_105",
+      "title": "Ensure sysctl \"net.ipv6.conf.default.mc_forwarding\" = 0",
+      "message": null,
+      "state": "Passed"
+    },
+    {
       "id": "SYT_001",
       "title": "Ensure no reboot is required",
       "message": null,
@@ -4887,7 +4947,7 @@
     {
       "id": "UPT_001",
       "title": "Ensure host has not been running for more than 3 months without reboot",
-      "message": "2 h",
+      "message": "9 h",
       "state": "Passed"
     },
     {
@@ -4994,10 +5054,10 @@
     }
   ],
   "stats": {
-    "total": 832,
-    "passed": 117,
-    "failed": 455,
-    "error": 260,
+    "total": 842,
+    "passed": 130,
+    "failed": 453,
+    "error": 259,
     "waiting": 0
   },
   "version": "0.27.0"

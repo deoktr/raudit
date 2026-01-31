@@ -1,6 +1,9 @@
 use crate::*;
 
 pub fn add_checks() {
+    // Note disabling IPv6 via 'net.ipv6.conf.all.disable_ipv6' is not included
+    // as a rule even if it's a CIS rule, this is because it does not increase
+    // the security
     sysctl::add_sysctl_check!(
         "SYS_001",
         vec!["sysctl", "server", "workstation"],
@@ -416,13 +419,13 @@ pub fn add_checks() {
         "SYS_060",
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.conf.all.shared_media",
-        1
+        0
     );
     sysctl::add_sysctl_check!(
         "SYS_061",
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.conf.default.shared_media",
-        1
+        0
     );
     sysctl::add_sysctl_check!(
         "SYS_062",
@@ -700,5 +703,41 @@ pub fn add_checks() {
         vec!["sysctl", "server", "workstation"],
         "net.ipv6.icmp.echo_ignore_multicast",
         1
+    );
+    sysctl::add_sysctl_check!(
+        "SYS_100",
+        vec!["sysctl", "server", "workstation"],
+        "net.ipv4.conf.all.forwarding",
+        0
+    );
+    sysctl::add_sysctl_check!(
+        "SYS_101",
+        vec!["sysctl", "server", "workstation"],
+        "net.ipv4.conf.default.forwarding",
+        0
+    );
+    sysctl::add_sysctl_check!(
+        "SYS_102",
+        vec!["sysctl", "server", "workstation"],
+        "net.ipv4.conf.all.mc_forwarding",
+        0
+    );
+    sysctl::add_sysctl_check!(
+        "SYS_103",
+        vec!["sysctl", "server", "workstation"],
+        "net.ipv4.conf.default.mc_forwarding",
+        0
+    );
+    sysctl::add_sysctl_check!(
+        "SYS_104",
+        vec!["sysctl", "server", "workstation"],
+        "net.ipv6.conf.all.mc_forwarding",
+        0
+    );
+    sysctl::add_sysctl_check!(
+        "SYS_105",
+        vec!["sysctl", "server", "workstation"],
+        "net.ipv6.conf.default.mc_forwarding",
+        0
     );
 }

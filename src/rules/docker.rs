@@ -129,7 +129,7 @@ pub fn add_checks() {
             Some(path) => base::check_file_owner_id(&path, 0, 0),
             None => (
                 check::CheckState::Error,
-                Some("systemd docker file not found".to_string()),
+                Some("systemd docker service file not found".to_string()),
             ),
         },
         vec![],
@@ -149,7 +149,7 @@ pub fn add_checks() {
             Some(path) => base::check_file_permission(&path, 0o644),
             None => (
                 check::CheckState::Error,
-                Some("systemd docker file not found".to_string()),
+                Some("systemd docker service file not found".to_string()),
             ),
         },
         vec![],
@@ -169,7 +169,7 @@ pub fn add_checks() {
             Some(path) => base::check_file_owner_id(&path, 0, 0),
             None => (
                 check::CheckState::Error,
-                Some("systemd docker file not found".to_string()),
+                Some("systemd docker socket file not found".to_string()),
             ),
         },
         vec![],
@@ -189,7 +189,7 @@ pub fn add_checks() {
             Some(path) => base::check_file_permission(&path, 0o644),
             None => (
                 check::CheckState::Error,
-                Some("systemd docker file not found".to_string()),
+                Some("systemd docker socket file not found".to_string()),
             ),
         },
         vec![],

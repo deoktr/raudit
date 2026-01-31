@@ -71,6 +71,11 @@ def compare_checks(base, target) -> int:
     out = 0
     for index in range(len(base["checks"])):
         base_check = base["checks"][index]
+
+        if len(target["checks"]) < index + 1:
+            out += 1
+            continue
+
         target_check = target["checks"][index]
 
         if base_check["id"] != target_check["id"]:
