@@ -1,3 +1,6 @@
+// sources:
+// - tails: https://tails.net/contribute/design/kernel_hardening/
+
 use crate::*;
 
 pub fn add_checks() {
@@ -6,7 +9,7 @@ pub fn add_checks() {
     // the security
     sysctl::add_sysctl_check!(
         "SYS_001",
-        vec!["sysctl", "server", "workstation"],
+        vec!["sysctl", "server", "workstation", "tails"],
         "kernel.kptr_restrict",
         // TODO: allow for 1 as well
         2
@@ -78,7 +81,7 @@ pub fn add_checks() {
     );
     sysctl::add_sysctl_check!(
         "SYS_010",
-        vec!["sysctl", "server", "workstation"],
+        vec!["sysctl", "server", "workstation", "tails"],
         "kernel.kexec_load_disabled",
         1
     );
@@ -90,7 +93,7 @@ pub fn add_checks() {
     );
     sysctl::add_sysctl_check!(
         "SYS_012",
-        vec!["sysctl", "bpf", "server", "workstation"],
+        vec!["sysctl", "bpf", "server", "workstation", "tails"],
         "net.core.bpf_jit_harden",
         2
     );
@@ -121,7 +124,7 @@ pub fn add_checks() {
     );
     // check::add_check(
     //     "SYS_016",
-    //     "Ensure sysctl 'kernel.kptr_restrict' == 2",
+    //     "Ensure sysctl 'kernel.unprivileged_userns_clone' == 0",
     //     vec!["sysctl", "server", "workstation"],
     //     || sysctl::get_ssyctl_wrapper("kernel.unprivileged_userns_clone", 0),
     //     vec![sysctl::init_sysctl_config, os::init_os],
@@ -176,13 +179,13 @@ pub fn add_checks() {
     );
     sysctl::add_sysctl_check!(
         "SYS_022",
-        vec!["sysctl", "server", "workstation"],
+        vec!["sysctl", "server", "workstation", "tails"],
         "vm.mmap_rnd_bits",
         32
     );
     sysctl::add_sysctl_check!(
         "SYS_023",
-        vec!["sysctl", "server", "workstation"],
+        vec!["sysctl", "server", "workstation", "tails"],
         "vm.mmap_rnd_compat_bits",
         16
     );

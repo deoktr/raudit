@@ -1,3 +1,6 @@
+// sources:
+// - tails: https://tails.net/contribute/design/kernel_hardening/
+
 use crate::*;
 
 pub fn add_checks() {
@@ -5,7 +8,7 @@ pub fn add_checks() {
     check::add_check(
         "KNP_001",
         "Ensure that kernel flag \"slab_nomerge\" is present",
-        vec!["kernel", "server", "workstation"],
+        vec!["kernel", "server", "workstation", "tails"],
         || kernel::check_kernel_params("slab_nomerge"),
         vec![kernel::init_kernel_params],
     );
@@ -26,7 +29,7 @@ pub fn add_checks() {
     check::add_check(
         "KNP_004",
         "Ensure that kernel flag \"page_alloc.shuffle=1\" is present",
-        vec!["kernel", "server", "workstation"],
+        vec!["kernel", "server", "workstation", "tails"],
         || kernel::check_kernel_params("page_alloc.shuffle=1"),
         vec![kernel::init_kernel_params],
     );
@@ -40,7 +43,7 @@ pub fn add_checks() {
     check::add_check(
         "KNP_006",
         "Ensure that kernel flag \"init_on_free=1\" is present",
-        vec!["kernel", "server", "workstation"],
+        vec!["kernel", "server", "workstation", "tails"],
         || kernel::check_kernel_params("init_on_free=1"),
         vec![kernel::init_kernel_params],
     );
@@ -54,14 +57,14 @@ pub fn add_checks() {
     check::add_check(
         "KNP_008",
         "Ensure that kernel flag \"randomize_kstack_offset=on\" is present",
-        vec!["kernel", "server", "workstation"],
+        vec!["kernel", "server", "workstation", "tails"],
         || kernel::check_kernel_params("randomize_kstack_offset=on"),
         vec![kernel::init_kernel_params],
     );
     check::add_check(
         "KNP_009",
         "Ensure that kernel flag \"vsyscall=none\" is present",
-        vec!["kernel", "server", "workstation"],
+        vec!["kernel", "server", "workstation", "tails"],
         || kernel::check_kernel_params("vsyscall=none"),
         vec![kernel::init_kernel_params],
     );
@@ -100,7 +103,7 @@ pub fn add_checks() {
     check::add_check(
         "KNP_014",
         "Ensure that kernel flag \"mce=0\" is present",
-        vec!["kernel", "server", "workstation"],
+        vec!["kernel", "server", "workstation", "tails"],
         || kernel::check_kernel_params("mce=0"),
         vec![kernel::init_kernel_params],
     );
@@ -181,13 +184,13 @@ pub fn add_checks() {
         || kernel::check_kernel_params("extra_latent_entropy"),
         vec![kernel::init_kernel_params],
     );
-    check::add_check(
-        "KNP_028",
-        "Ensure that kernel flag \"ipv6.disable=1\" is present",
-        vec!["kernel", "server", "workstation"],
-        || kernel::check_kernel_params("ipv6.disable=1"),
-        vec![kernel::init_kernel_params],
-    );
+    // check::add_check(
+    //     "KNP_028",
+    //     "Ensure that kernel flag \"ipv6.disable=1\" is present",
+    //     vec!["kernel", "server", "workstation"],
+    //     || kernel::check_kernel_params("ipv6.disable=1"),
+    //     vec![kernel::init_kernel_params],
+    // );
     check::add_check(
         "KNP_029",
         "Ensure that kernel flag \"ia32_emulation=0\" is present",
@@ -274,10 +277,11 @@ pub fn add_checks() {
         || kernel::check_kernel_params("spectre_bhi=on"),
         vec![kernel::init_kernel_params],
     );
+    // Unconditionally disable the Speculative Store Bypass (SSB) on affected CPUs.
     check::add_check(
         "KNP_034",
         "Ensure that kernel flag \"spec_store_bypass_disable=on\" is present",
-        vec!["kernel", "server", "workstation"],
+        vec!["kernel", "server", "workstation", "tails"],
         || kernel::check_kernel_params("spec_store_bypass_disable=on"),
         vec![kernel::init_kernel_params],
     );
@@ -421,6 +425,13 @@ pub fn add_checks() {
         "Ensure that kernel flag \"quiet\" is present",
         vec!["kernel", "server", "workstation"],
         || kernel::check_kernel_params("quiet"),
+        vec![kernel::init_kernel_params],
+    );
+    check::add_check(
+        "KNP_062",
+        "Ensure that kernel flag \"slub_debug=FZ\" is present",
+        vec!["kernel", "server", "workstation", "tails"],
+        || kernel::check_kernel_params("slub_debug=FZ"),
         vec![kernel::init_kernel_params],
     );
 }

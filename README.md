@@ -221,6 +221,11 @@ Benchmark 1: ./target/release/raudit
   Range (min … max):   110.6 ms … 132.7 ms    24 runs
 ```
 
+## Sources
+
+- [Linux self-protection.rst](https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst)
+- [Tails kernel_hardening](https://tails.net/contribute/design/kernel_hardening/)
+
 ## Alternatives
 
 - [lynis](https://github.com/CISOfy/lynis)
