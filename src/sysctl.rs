@@ -94,10 +94,7 @@ impl SysctlValue for &str {
                     )
                 }
             }
-            None => (
-                check::CheckState::Error,
-                Some(format!("missing sysctl {:?} key", key)),
-            ),
+            None => (check::CheckState::Error, Some("missing key".to_string())),
         }
     }
 }
@@ -132,10 +129,7 @@ impl SysctlValue for i32 {
                     Some(format!("failed to convert {:?} to i32: {}", value, err)),
                 ),
             },
-            None => (
-                check::CheckState::Error,
-                Some(format!("missing sysctl {:?} key", key)),
-            ),
+            None => (check::CheckState::Error, Some("missing key".to_string())),
         }
     }
 }
@@ -155,7 +149,7 @@ pub fn get_sysctl_i32_value(key: &str) -> Result<i32, String> {
             Ok(val) => Ok(val),
             Err(err) => Err(err.to_string()),
         },
-        None => Err(format!("missing sysctl {:?} key", key)),
+        None => Err("missing key".to_string()),
     }
 }
 

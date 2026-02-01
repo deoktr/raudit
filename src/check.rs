@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::{config, consts};
+use crate::{config, consts, utils};
 
 use std::collections::HashSet;
 use std::fmt::{Display, Formatter, Result};
@@ -140,8 +140,14 @@ pub fn print_checks(skip_passed: bool, no_print_description: bool, no_print_fix:
         println!("{}", check);
 
         let mut add_new_line = false;
-        if !no_print_description && let Some(description) = &check.description {
-            println!("Description: {}", description);
+
+        if check.state != CheckState::Passed
+            && !no_print_description
+            && let Some(description) = &check.description
+        {
+            for line in utils::wrap_text(&format!("Description: {}", description), 80) {
+                println!("{}", line);
+            }
             add_new_line = true;
         }
 

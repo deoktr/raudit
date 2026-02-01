@@ -14,35 +14,45 @@ pub fn add_checks() {
         // TODO: allow for 1 as well
         2
     )
+    .with_description("Restrict kernel address visibility via /proc and other interfaces, regardless of user privileges, kernel pointers expose specific locations in kernel memory, will hide kernel symbol addresses in /proc/kallsyms.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_002",
         vec!["sysctl", "server", "workstation"],
         "kernel.ftrace_enabled",
         0
     )
+    .with_description("Disable ftrace debugging.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_003",
         vec!["sysctl", "CIS", "server", "workstation"],
         "kernel.randomize_va_space",
         2
     )
+    .with_description("Enable ASLR for mmap base, stack, VDSO pages, and heap, forces shared libraries to be loaded to random addresses start location. Can lead to breakages with legacy applications.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_004",
         vec!["sysctl", "server", "workstation"],
         "kernel.dmesg_restrict",
         1
     )
+    .with_description("Restrict access to the kernel log buffer to users with CAP_SYSLOG, kernel logs often contain sensitive information such as kernel pointers.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_005",
         vec!["sysctl", "server", "workstation"],
         "kernel.printk",
         "3\t3\t3\t3"
     )
+    .with_description("Prevent kernel information leaks in the console during boot must be used in conjunction with kernel boot parameters.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_006",
         vec!["sysctl", "server", "workstation"],
@@ -50,6 +60,7 @@ pub fn add_checks() {
         1
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_007",
         vec!["sysctl", "server", "workstation"],
@@ -80,42 +91,56 @@ pub fn add_checks() {
         },
         vec![sysctl::init_sysctl_config],
     )
+    .with_description("Restricts kernel profiling to users with CAP_PERFMON, the performance events system should not be accessible by unprivileged users, they add considerable kernel attack surface. Can be 2 or 3.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_009",
         vec!["sysctl", "server", "workstation"],
         "kernel.sysrq",
         0
     )
+    .with_description("Disable the SysRq key to prevent leakage of kernel information, the Secure Attention Key (SAK) can no longer be utilized.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_010",
         vec!["sysctl", "server", "workstation", "tails"],
         "kernel.kexec_load_disabled",
         1
     )
+    .with_description("Disables kexec, which can be used to replace the running kernel, which is only useful for live kernel patching without rebooting.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_011",
         vec!["sysctl", "bpf", "server", "workstation"],
         "kernel.unprivileged_bpf_disabled",
         1
     )
+    .with_description(
+        "Restrict eBPF access to CAP_BPF. This will prevent trace and the debug of BPF programs.",
+    )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_012",
         vec!["sysctl", "bpf", "server", "workstation", "tails"],
         "net.core.bpf_jit_harden",
         2
     )
+    .with_description("Enable eBPF associated JIT compiler hardening.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_013",
         vec!["sysctl", "server", "workstation"],
         "kernel.panic_on_oops",
         1
     )
+    .with_description("Force the kernel to panic on \"oopses\", can sometimes potentially indicate and thwart certain kernel exploitation attempts, also cause panics on machine check exceptions. Some bad drivers can cause harmless oopses which result in system crash.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_014",
         vec!["sysctl", "server", "workstation"],
@@ -131,6 +156,7 @@ pub fn add_checks() {
     )
     .register();
     // FIXME: only available on Debian, create custom rule to check if OS is debian, else ignore
+    // NOTE: prevents Podman from working rootless
     sysctl::add_sysctl_check!(
         "SYS_016",
         vec!["sysctl", "server", "workstation"],
@@ -169,119 +195,156 @@ pub fn add_checks() {
         },
         vec![sysctl::init_sysctl_config],
     )
+    .with_description("Limit ptrace() as it enables programs to inspect and modify other active processes, prevents native code debugging which some programs use as a method to detect tampering, may cause breakages in 'anti-cheat' software and programs running under Proton/WINE.
+  - 1: Avoid non-ancestor ptrace access to running processes and their creds.
+  - 2: Restrict ptrace access to processes with CAP_SYS_PTRACE.
+  - 3: Completely disable ptrace.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_018",
         vec!["sysctl", "server", "workstation"],
         "kernel.io_uring_disabled",
         2
     )
+    .with_description("Disable asynchronous I/O for all processes, leading cause of numerous kernel exploits disabling will reduce the read/write performance of storage devices. Applicable when using Linux kernel >= 6.6")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_019",
         vec!["sysctl", "server", "workstation"],
         "kernel.core_pattern",
         "|/bin/false"
     )
+    .with_description("Disable core dump files by preventing any pattern names, this setting may be overwritten by systemd and is not comprehensive core dumps are also disabled in security-misc via other means.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_020",
         vec!["sysctl", "server", "workstation"],
         "kernel.core_uses_pid",
         1
     )
+    .with_description("Set core dump file name to \"core.PID\" instead of \"core\" as a form of defense-in-depth, if core dumps are permitted, only useful if PID listings are hidden from non-root users.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_021",
         vec!["sysctl", "server", "workstation"],
         "vm.unprivileged_userfaultfd",
         0
     )
+    .with_description("Restrict the userfaultfd() syscall to users with SYS_CAP_PTRACE reduces the likelihood of use-after-free exploits from heap sprays.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_022",
         vec!["sysctl", "server", "workstation", "tails"],
         "vm.mmap_rnd_bits",
         32
     )
+    .with_description("Maximize bits of entropy for improved effectiveness of mmap ASLR the maximum number of bits depends on CPU architecture.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_023",
         vec!["sysctl", "server", "workstation", "tails"],
         "vm.mmap_rnd_compat_bits",
         16
     )
+    .with_description("Maximize bits of entropy for improved effectiveness of mmap ASLR the maximum number of bits depends on CPU architecture.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_024",
         vec!["sysctl", "server", "workstation"],
         "vm.mmap_min_addr",
         65536
     )
+    .with_description("A kernel null dereference bugs could accidentally operate based on the information in the first couple of pages of memory, userspace processes should not be allowed to write to them. Provide defense in depth against future potential kernel bugs.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_025",
         vec!["sysctl", "server", "workstation"],
         "dev.tty.ldisc_autoload",
         0
     )
+    .with_description("Restrict loading TTY line disciplines to users with CAP_SYS_MODULE.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_026",
         vec!["sysctl", "server", "workstation"],
         "dev.tty.legacy_tiocsti",
         0
     )
+    .with_description("Disable the use of legacy TIOCSTI operations which can be used to inject keypresses, can lead to privilege escalation by pushing characters into a controlling TTY. Will break out-dated screen readers that continue to rely on this legacy functionality.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_027",
         vec!["sysctl", "server", "workstation"],
         "vm.max_map_count",
         1048576
     )
+    .with_description("Increase the maximum number of memory map areas a process is permitted to utilize. Can lead to addresses performance, crash, and start-up issues for some memory-intensive applications. Required to accommodate the very large number of guard pages created by hardened_malloc.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_028",
         vec!["sysctl", "server", "workstation"],
         "vm.swappiness",
         1
     )
+    .with_description("Limit the copying of memory to the swap device only if absolutely necessary, minimizes the likelihood of writing potentially sensitive contents to disk, not recommended to set to zero since this disables periodic write behavior.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_029",
         vec!["sysctl", "fs", "CIS", "server", "workstation"],
         "fs.suid_dumpable",
         0
     )
+    .with_description("Prevent setuid processes or otherwise protected/tainted binaries from creating core dumps, any process which has changed privilege levels or is execute-only will not be dumped.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_030",
         vec!["sysctl", "fs", "server", "workstation"],
         "fs.protected_fifos",
         2
     )
+    .with_description("Disallow writes to files in world-writable sticky directories unless owned by the directory owner, also applies to group-writable sticky directories to make data spoofing attacks more difficult prevents unintentional writes to attacker-controlled files.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_031",
         vec!["sysctl", "fs", "server", "workstation"],
         "fs.protected_regular",
         2
     )
+    .with_description("Disallow writes to files in world-writable sticky directories unless owned by the directory owner, also applies to group-writable sticky directories to make data spoofing attacks more difficult prevents unintentional writes to attacker-controlled files.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_032",
         vec!["sysctl", "fs", "server", "workstation"],
         "fs.protected_symlinks",
         1
     )
+    .with_description("Prevent symlink creation by users who do not have read/write/ownership of source file, only allow symlinks to be followed when outside of world-writable sticky directories. Hardens cross-privilege boundaries if root process follows a hardlink/symlink belonging to another user, this mitigates many symlink-based TOCTOU races in world-writable directories like /tmp.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_033",
         vec!["sysctl", "fs", "server", "workstation"],
         "fs.protected_hardlinks",
         1
     )
+    .with_description("Prevent hardlink creation by users who do not have read/write/ownership of source file, only allow hardlink to be followed when outside of world-writable sticky directories. Hardens cross-privilege boundaries if root process follows a hardlink/symlink belonging to another user, this mitigates many hardlink-based TOCTOU races in world-writable directories like /tmp.")
     .register();
+
     check::Check::new(
         "SYS_034",
         "Ensure sysctl \"fs.binfmt_misc.status\" = 0",
@@ -297,7 +360,9 @@ pub fn add_checks() {
         },
         vec![sysctl::init_sysctl_config],
     )
+    .with_description("Disable the miscellaneous binary format virtual file system to prevent unintended code execution.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_035",
         vec!["sysctl", "CIS", "server", "workstation"],
@@ -713,7 +778,7 @@ pub fn add_checks() {
         2
     )
     .register();
-    // may break the upower daemon in Ubuntu
+
     check::Check::new(
         "SYS_094",
         "Ensure sysctl \"user.max_user_namespaces\" <= 31231",
@@ -736,7 +801,9 @@ pub fn add_checks() {
         },
         vec![sysctl::init_sysctl_config],
     )
+    .with_description("Cut attack surface by limiting the number of user namespaces. May break the upower daemon in Ubuntu.")
     .register();
+
     check::Check::new(
         "SYS_095",
         "Ensure sysctl \"kernel.warn_limit\" <= 100",
@@ -759,7 +826,9 @@ pub fn add_checks() {
         },
         vec![sysctl::init_sysctl_config],
     )
+    .with_description("Will have no effects if kernel param \"oops=panic\" is set, but is a better default if it's not.")
     .register();
+
     check::Check::new(
         "SYS_096",
         "Ensure sysctl \"kernel.oops_limit\" <= 100",
@@ -782,7 +851,9 @@ pub fn add_checks() {
         },
         vec![sysctl::init_sysctl_config],
     )
+    .with_description("Will have no effects if kernel param \"oops=panic\" is set, but is a better default if it's not.")
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_097",
         vec!["sysctl", "server", "workstation"],

@@ -12,7 +12,9 @@ pub fn add_checks() {
         || kernel::check_kernel_params("slab_nomerge"),
         vec![kernel::init_kernel_params],
     )
+    .with_description("Disable slab merging, increasing the difficulty of heap exploit implied by \"slub_debug=FZ\", but having \"slab_nomerge\" explicitly declared can help prevent regressions where disabling of debugging features is desired but re-enabling of merging is not.")
     .register();
+
     check::Check::new(
         "KNP_002",
         "Ensure that kernel flag \"slab_debug=FZ\" is present",
@@ -20,15 +22,19 @@ pub fn add_checks() {
         || kernel::check_kernel_params("slab_debug=FZ"),
         vec![kernel::init_kernel_params],
     )
+    .with_description("Enables front and end zone poisoning in slab allocator, helping detect memory corruption, buffer overflows, and use-after-free vulnerabilities by inserting canary values around memory allocations.")
     .register();
-    check::Check::new(
-        "KNP_003",
-        "Ensure that kernel flag \"page_poison=1\" is present",
-        vec!["kernel", "server", "workstation"],
-        || kernel::check_kernel_params("page_poison=1"),
-        vec![kernel::init_kernel_params],
-    )
-    .register();
+
+    // NOTE: after 5.3 replaced by `init_on_free=1`
+    // check::Check::new(
+    //     "KNP_003",
+    //     "Ensure that kernel flag \"page_poison=1\" is present",
+    //     vec!["kernel", "server", "workstation"],
+    //     || kernel::check_kernel_params("page_poison=1"),
+    //     vec![kernel::init_kernel_params],
+    // )
+    // .register();
+
     check::Check::new(
         "KNP_004",
         "Ensure that kernel flag \"page_alloc.shuffle=1\" is present",
@@ -36,7 +42,9 @@ pub fn add_checks() {
         || kernel::check_kernel_params("page_alloc.shuffle=1"),
         vec![kernel::init_kernel_params],
     )
+    .with_description("Enable the kernel page allocator to randomize free lists during early boot. Limits some data exfiltration and ROP attacks that rely on inferring sensitive data location, also improves performance by optimizing memory-side cache utilization.")
     .register();
+
     check::Check::new(
         "KNP_005",
         "Ensure that kernel flag \"init_on_alloc=1\" is present",
@@ -44,7 +52,9 @@ pub fn add_checks() {
         || kernel::check_kernel_params("init_on_alloc=1"),
         vec![kernel::init_kernel_params],
     )
+    .with_description("Zero memory at allocation time. Mitigates use-after-free exploits by erasing sensitive information in memory.")
     .register();
+
     check::Check::new(
         "KNP_006",
         "Ensure that kernel flag \"init_on_free=1\" is present",
@@ -52,7 +62,9 @@ pub fn add_checks() {
         || kernel::check_kernel_params("init_on_free=1"),
         vec![kernel::init_kernel_params],
     )
+    .with_description("Zero memory at free time. Mitigates use-after-free exploits by erasing sensitive information in memory.")
     .register();
+
     check::Check::new(
         "KNP_007",
         "Ensure that kernel flag \"pti=on\" is present",
@@ -60,7 +72,9 @@ pub fn add_checks() {
         || kernel::check_kernel_params("pti=on"),
         vec![kernel::init_kernel_params],
     )
+    .with_description("Enable kernel page table isolation to harden against kernel ASLR (KASLR) bypasses, mitigates the Meltdown CPU vulnerability.")
     .register();
+
     check::Check::new(
         "KNP_008",
         "Ensure that kernel flag \"randomize_kstack_offset=on\" is present",
@@ -68,7 +82,9 @@ pub fn add_checks() {
         || kernel::check_kernel_params("randomize_kstack_offset=on"),
         vec![kernel::init_kernel_params],
     )
+    .with_description("Enable randomization of the kernel stack offset on syscall entries. Hardens against memory corruption attacks due to increased entropy limits attacks relying on deterministic stack addresses or cross-syscall address exposure.")
     .register();
+
     check::Check::new(
         "KNP_009",
         "Ensure that kernel flag \"vsyscall=none\" is present",
@@ -76,7 +92,9 @@ pub fn add_checks() {
         || kernel::check_kernel_params("vsyscall=none"),
         vec![kernel::init_kernel_params],
     )
+    .with_description("Disable vsyscalls to reduce attack surface as they have been replaced by vDSO vulnerable to ROP attacks as vsyscalls are located at fixed addresses in memory. Specific to x86_64 arch.")
     .register();
+
     check::Check::new(
         "KNP_010",
         "Ensure that kernel flag \"debugfs=off\" is present",
@@ -84,7 +102,9 @@ pub fn add_checks() {
         || kernel::check_kernel_params("debugfs=off"),
         vec![kernel::init_kernel_params],
     )
+    .with_description("Restrict access to debugfs that can contain sensitive information.")
     .register();
+
     check::Check::new(
         "KNP_011",
         "Ensure that kernel flag \"oops=panic\" is present",
@@ -92,7 +112,10 @@ pub fn add_checks() {
         || kernel::check_kernel_params("oops=panic"),
         vec![kernel::init_kernel_params],
     )
+    .with_description("Force the kernel to panic on \"oopses\", can sometimes potentially indicate and thwart certain kernel exploitation attempts, also cause panics on machine check exceptions. Some bad drivers can cause harmless oopses which result in system crash.")
     .register();
+
+    // https://docs.kernel.org/admin-guide/module-signing.html
     check::Check::new(
         "KNP_012",
         "Ensure that kernel flag \"module.sig_enforce=1\" is present",
@@ -100,7 +123,9 @@ pub fn add_checks() {
         || kernel::check_kernel_params("module.sig_enforce=1"),
         vec![kernel::init_kernel_params],
     )
+    .with_description("Require every kernel module to be signed before being loaded. Any module that is unsigned or signed with an invalid key cannot be loaded. Prevents all out-of-tree kernel modules (including DKMS) unless signed, this makes it harder to load a malicious module.")
     .register();
+
     // https://man.archlinux.org/man/kernel_lockdown.7
     check::Check::new(
         "KNP_013",
