@@ -56,6 +56,14 @@ struct Cli {
     #[arg(long, action = clap::ArgAction::SetTrue, env = "NO_PRINT_PASSED")]
     no_print_passed: bool,
 
+    /// Disable print of check description
+    #[arg(long, action = clap::ArgAction::SetTrue, env = "NO_PRINT_DESCRIPTION")]
+    no_print_description: bool,
+
+    /// Disable print of check fix if it failed
+    #[arg(long, action = clap::ArgAction::SetTrue, env = "NO_PRINT_FIX")]
+    no_print_fix: bool,
+
     /// Disable print of stats
     #[arg(long, action = clap::ArgAction::SetTrue, env = "NO_STATS")]
     no_stats: bool,
@@ -141,7 +149,11 @@ pub fn cli() {
 
     if args.json == JsonMode::Off {
         if !args.no_print_checks {
-            check::print_checks(args.no_print_passed);
+            check::print_checks(
+                args.no_print_passed,
+                args.no_print_description,
+                args.no_print_fix,
+            );
         }
 
         if !args.no_stats {

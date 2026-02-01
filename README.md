@@ -56,13 +56,11 @@ raudit --json=pretty --filters USR_001,USR_002
     {
       "id": "USR_001",
       "title": "Ensure that root is the only user with UID 0",
-      "message": null,
       "state": "Passed"
     },
     {
       "id": "USR_002",
       "title": "Ensure no duplicate user names exist",
-      "message": null,
       "state": "Passed"
     }
   ],
@@ -101,6 +99,10 @@ Options:
           Disable print of individual checks [env: NO_PRINT_CHECKS=]
       --no-print-passed
           Disable print of passed checks [env: NO_PRINT_PASSED=]
+      --no-print-description
+          Disable print of check description [env: NO_PRINT_DESCRIPTION=]
+      --no-print-fix
+          Disable print of check fix if it failed [env: NO_PRINT_FIX=]
       --no-stats
           Disable print of stats [env: NO_STATS=]
       --no-colors

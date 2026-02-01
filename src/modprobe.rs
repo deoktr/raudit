@@ -283,13 +283,14 @@ macro_rules! add_module_blacklisted_check_list {
     ($($module:expr),* $(,)?) => {
         let mut __i_add_module_blacklisted_check_list = 0;
         $(
-            $crate::check::add_check(
+            $crate::check::Check::new(
                 format!("KMD_{:03}", __i_add_module_blacklisted_check_list).as_str(),
                 format!("Ensure that kernel module \"{}\" is blacklisted", $module).as_str(),
                 vec!["modprobe"],
                 || $crate::modprobe::check_module_blacklist($module),
                 vec![$crate::modprobe::init_modprobe],
-            );
+            )
+            .register();
             __i_add_module_blacklisted_check_list += 1;
         )*
     };
@@ -302,13 +303,14 @@ macro_rules! add_module_disabled_check_list {
     ($($module:expr),* $(,)?) => {
         let mut __i_add_module_disabled_check_list = 500;
         $(
-            $crate::check::add_check(
+            $crate::check::Check::new(
                 format!("KMD_{:03}", __i_add_module_disabled_check_list).as_str(),
                 format!("Ensure that kernel module \"{}\" is disabled", $module).as_str(),
                 vec!["modprobe"],
                 || $crate::modprobe::check_module_disabled($module),
                 vec![$crate::modprobe::init_modprobe],
-            );
+            )
+            .register();
             __i_add_module_disabled_check_list += 1;
         )*
     };

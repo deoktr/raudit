@@ -63,11 +63,20 @@ pub struct Check {
     /// Title shown in the check list
     title: String,
 
+    /// Description of the check
+    #[serde(skip_serializing_if = "Option::is_none")]
+    description: Option<String>,
+
+    /// Fix of the check
+    #[serde(skip_serializing_if = "Option::is_none")]
+    fix: Option<String>,
+
     /// List of tags, can be used to filter the list
     #[serde(skip_serializing)]
     tags: Vec<String>,
 
     /// Message to give result information
+    #[serde(skip_serializing_if = "Option::is_none")]
     message: Option<String>,
 
     /// State of the check
@@ -82,15 +91,71 @@ pub struct Check {
     dependencies: Vec<DependencyFunc>,
 }
 
+impl Check {
+    pub fn new(
+        id: &str,
+        title: &str,
+        tags: Vec<&str>,
+        check: CheckFunc,
+        dependencies: Vec<DependencyFunc>,
+    ) -> Self {
+        Check {
+            id: id.to_string(),
+            title: title.to_string(),
+            description: None,
+            fix: None,
+            state: CheckState::Waiting,
+            check,
+            message: None,
+            dependencies,
+            tags: tags.iter().map(|t| t.to_string()).collect(),
+        }
+    }
+
+    pub fn with_description(mut self, description: &str) -> Self {
+        self.description = Some(description.to_string());
+        self
+    }
+
+    pub fn with_fix(mut self, fix: &str) -> Self {
+        self.fix = Some(fix.to_string());
+        self
+    }
+
+    /// Adding a check to makes it available
+    pub fn register(self) {
+        REPORT.lock().unwrap().checks.push(self);
+    }
+}
+
 /// Print list of checks, with option to skip passed checks.
-pub fn print_checks(skip_passed: bool) {
+pub fn print_checks(skip_passed: bool, no_print_description: bool, no_print_fix: bool) {
     let report = REPORT.lock().expect("Checks not initialized");
 
     for check in report.checks.iter() {
         if skip_passed && check.state == CheckState::Passed {
             continue;
         }
+
         println!("{}", check);
+
+        let mut add_new_line = false;
+        if !no_print_description && let Some(description) = &check.description {
+            println!("Description: {}", description);
+            add_new_line = true;
+        }
+
+        if check.state == CheckState::Failed
+            && !no_print_fix
+            && let Some(fix) = &check.fix
+        {
+            println!("Fix: {}", fix);
+            add_new_line = true;
+        }
+
+        if add_new_line {
+            println!("");
+        }
     }
 }
 
@@ -287,29 +352,6 @@ impl Display for Check {
 
         write!(f, "{}", message)
     }
-}
-
-/// Helper function to register a new check.
-///
-/// Adding a new check only makes it available, it could be filtered out before
-/// execution.
-pub fn add_check(
-    id: &str,
-    title: &str,
-    tags: Vec<&str>,
-    check: CheckFunc,
-    dependencies: Vec<DependencyFunc>,
-) {
-    let mut report = REPORT.lock().unwrap();
-    report.checks.push(Check {
-        id: id.to_string(),
-        title: title.to_string(),
-        state: CheckState::Waiting,
-        check,
-        message: None,
-        dependencies,
-        tags: tags.iter().map(|t| t.to_string()).collect(),
-    });
 }
 
 #[derive(Serialize, Default)]
