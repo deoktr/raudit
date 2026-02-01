@@ -1,10 +1,10 @@
 // sources:
 // - tails: https://tails.net/contribute/design/kernel_hardening/
+// - https://github.com/Kicksecure/security-misc/blob/master/etc/default/grub.d/40_kernel_hardening.cfg
 
 use crate::*;
 
 pub fn add_checks() {
-    // https://github.com/Kicksecure/security-misc/blob/master/etc/default/grub.d/40_kernel_hardening.cfg
     check::Check::new(
         "KNP_001",
         "Ensure that kernel flag \"slab_nomerge\" is present",
@@ -115,7 +115,6 @@ pub fn add_checks() {
     .with_description("Force the kernel to panic on \"oopses\", can sometimes potentially indicate and thwart certain kernel exploitation attempts, also cause panics on machine check exceptions. Some bad drivers can cause harmless oopses which result in system crash.")
     .register();
 
-    // https://docs.kernel.org/admin-guide/module-signing.html
     check::Check::new(
         "KNP_012",
         "Ensure that kernel flag \"module.sig_enforce=1\" is present",
@@ -124,9 +123,9 @@ pub fn add_checks() {
         vec![kernel::init_kernel_params],
     )
     .with_description("Require every kernel module to be signed before being loaded. Any module that is unsigned or signed with an invalid key cannot be loaded. Prevents all out-of-tree kernel modules (including DKMS) unless signed, this makes it harder to load a malicious module.")
+    .with_link("https://docs.kernel.org/admin-guide/module-signing.html")
     .register();
 
-    // https://man.archlinux.org/man/kernel_lockdown.7
     check::Check::new(
         "KNP_013",
         "Ensure that kernel flag \"lockdown=integrity\" is present",
@@ -137,7 +136,9 @@ pub fn add_checks() {
         || kernel::check_kernel_params("lockdown=integrity"),
         vec![kernel::init_kernel_params],
     )
+    .with_link("https://man.archlinux.org/man/kernel_lockdown.7")
     .register();
+
     check::Check::new(
         "KNP_014",
         "Ensure that kernel flag \"mce=0\" is present",
@@ -267,7 +268,6 @@ pub fn add_checks() {
     .register();
 
     // from: kernel-hardening-checker
-    // https://lwn.net/Articles/695991/
     check::Check::new(
         "KNP_063",
         "Ensure that kernel flag \"hardened_usercopy=1\" is present",
@@ -275,6 +275,7 @@ pub fn add_checks() {
         || kernel::check_kernel_params("hardened_usercopy=1"),
         vec![kernel::init_kernel_params],
     )
+    .with_link("https://lwn.net/Articles/695991/")
     .register();
 
     // Remount secure
@@ -337,13 +338,15 @@ pub fn add_checks() {
         vec![kernel::init_kernel_params],
     )
     .register();
-    // Unconditionally disable the Speculative Store Bypass (SSB) on affected CPUs.
     check::Check::new(
         "KNP_034",
         "Ensure that kernel flag \"spec_store_bypass_disable=on\" is present",
         vec!["kernel", "server", "workstation", "tails"],
         || kernel::check_kernel_params("spec_store_bypass_disable=on"),
         vec![kernel::init_kernel_params],
+    )
+    .with_description(
+        "Unconditionally disable the Speculative Store Bypass (SSB) on affected CPUs.",
     )
     .register();
     check::Check::new(
@@ -389,11 +392,11 @@ pub fn add_checks() {
     check::Check::new(
         "KNP_066",
         "Ensure that kernel flag \"tsx_async_abort=full,nosmt\" is present",
-        vec!["kernel", "server", "workstation"],
+        vec!["kernel", "server", "workstation", "paranoid"],
         || kernel::check_kernel_params("tsx_async_abort=full,nosmt"),
         vec![kernel::init_kernel_params],
     )
-    .register(); // TODO: paranoid
+    .register();
     check::Check::new(
         "KNP_039",
         "Ensure that kernel flag \"kvm.nx_huge_pages=force\" is present",

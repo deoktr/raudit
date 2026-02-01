@@ -78,16 +78,19 @@ pub fn add_checks() {
     check::Check::new(
         "APT_010",
         "Ensure apt is configured with \"Unattended-Upgrade::Remove-Unused-Dependencies\" = \"1\"",
-        vec!["apt", "workstation"],
+        vec!["apt", "workstation", "unattended-upgrade"],
         || apt::check_apt("Unattended-Upgrade::Remove-Unused-Dependencies", "1"),
         vec![apt::init_apt_config],
     )
+    .with_link("https://wiki.debian.org/PeriodicUpdates")
     .register();
     check::Check::new(
         "APT_011",
         "Ensure apt is configured with \"Unattended-Upgrade::Remove-Unused-Kernel-Packages\" = \"1\"",
-        vec!["apt", "workstation"],
+        vec!["apt", "workstation", "unattended-upgrade"],
         || apt::check_apt("Unattended-Upgrade::Remove-Unused-Kernel-Packages", "1"),
         vec![apt::init_apt_config],
-    ).register();
+    )
+    .with_link("https://wiki.debian.org/PeriodicUpdates")
+    .register();
 }

@@ -71,6 +71,10 @@ pub struct Check {
     #[serde(skip_serializing_if = "Option::is_none")]
     fix: Option<String>,
 
+    /// List of links
+    #[serde(skip_serializing)]
+    links: Vec<String>,
+
     /// List of tags, can be used to filter the list
     #[serde(skip_serializing)]
     tags: Vec<String>,
@@ -108,6 +112,7 @@ impl Check {
             check,
             message: None,
             dependencies,
+            links: vec![],
             tags: tags.iter().map(|t| t.to_string()).collect(),
         }
     }
@@ -119,6 +124,11 @@ impl Check {
 
     pub fn with_fix(mut self, fix: &str) -> Self {
         self.fix = Some(fix.to_string());
+        self
+    }
+
+    pub fn with_link(mut self, link: &str) -> Self {
+        self.links.push(link.to_string());
         self
     }
 
@@ -156,6 +166,14 @@ pub fn print_checks(skip_passed: bool, no_print_description: bool, no_print_fix:
             && let Some(fix) = &check.fix
         {
             println!("Fix: {}", fix);
+            add_new_line = true;
+        }
+
+        if check.state == CheckState::Failed && check.links.len() > 0 {
+            println!("Links:");
+            for link in &check.links {
+                println!("- <{}>", link);
+            }
             add_new_line = true;
         }
 

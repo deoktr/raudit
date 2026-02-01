@@ -389,25 +389,27 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     // `hidepid=2` is not supported by systemd, breaks polkit, GDM, etc.
     // https://wiki.archlinux.org/title/Security#hidepid
     // https://github.com/systemd/systemd/issues/12955#issuecomment-508490893
     // https://github.com/systemd/systemd/issues/20848#issuecomment-930185888
-    check::Check::new(
-        "MNT_049",
-        "Ensure mount option \"hidepid=invisible\" is set for \"/proc\"",
-        vec![
-            "mount",
-            "fs",
-            "mount_option",
-            "paranoid",
-            "server",
-            "workstation",
-        ],
-        || mount::check_mount_option("/proc", "hidepid=invisible"),
-        vec![mount::init_mounts],
-    )
-    .register();
+    // check::Check::new(
+    //     "MNT_049",
+    //     "Ensure mount option \"hidepid=invisible\" is set for \"/proc\"",
+    //     vec![
+    //         "mount",
+    //         "fs",
+    //         "mount_option",
+    //         "paranoid",
+    //         "server",
+    //         "workstation",
+    //     ],
+    //     || mount::check_mount_option("/proc", "hidepid=invisible"),
+    //     vec![mount::init_mounts],
+    // )
+    // .register();
+
     check::Check::new(
         "MNT_050",
         "Ensure mount option \"nosuid\" is set for \"/dev\"",

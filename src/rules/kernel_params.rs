@@ -28,11 +28,11 @@ pub fn add_checks() {
     check::Check::new(
         "KNC_044",
         "Ensure kernel build option \"CONFIG_MODULES\" is not set",
-        vec!["kernel", "kernel_build_conf"],
+        vec!["kernel", "kernel_build_conf", "paranoid"],
         || kconfig::check_option_is_not_set("CONFIG_MODULES"),
         vec![kconfig::init_kernel_build_config],
     )
-    .register(); // TODO: paranoid
+    .register();
     check::Check::new(
         "KNC_045",
         "Ensure kernel build option \"CONFIG_DEVMEM\" is not set",

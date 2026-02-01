@@ -19,13 +19,13 @@ your specific needs:
 Workstation:
 
 ```bash
-raudit --tags workstation --tags-exclude paranoid
+raudit --tags workstation --tags-exclude paranoid,useless
 ```
 
 Server:
 
 ```bash
-raudit --tags server --tags-exclude paranoid
+raudit --tags server --tags-exclude paranoid,useless
 ```
 
 > [!NOTE]

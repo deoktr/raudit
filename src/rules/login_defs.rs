@@ -11,6 +11,7 @@ pub fn add_checks() {
         vec![login_defs::init_login_defs],
     )
     .register();
+
     // NOTE: YESCRYPT_COST_FACTOR is now used by PAM for yescrypt
     // https://github.com/linux-pam/linux-pam/issues/607
     check::Check::new(
@@ -48,6 +49,7 @@ pub fn add_checks() {
         vec![login_defs::init_login_defs],
     )
     .register();
+
     check::Check::new(
         "LDF_003",
         "Ensure that login.defs \"PASS_MAX_DAYS\" <= 365",

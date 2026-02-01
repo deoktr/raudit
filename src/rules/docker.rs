@@ -25,16 +25,18 @@ pub fn add_checks() {
         vec![docker::init_containers_inspect],
     )
     .register();
+
     check::Check::new(
         "CNT_004",
-        // this is to avoid DOS
         "Ensure docker mount point \"/var/lib/docker\" exist",
         vec!["container", "docker", "mount", "CIS", "server"], // CIS Docker 1.1.1
         // TODO: get path by running: docker info -f '{{ .DockerRootDir }}'
         || mount::check_mount_present("/var/lib/docker"),
         vec![mount::init_mounts],
     )
+    .with_description("Prevents DOS.")
     .register();
+
     check::Check::new(
         "CNT_005",
         "Ensure docker network traffic is restricted between containers on the default bridge",
