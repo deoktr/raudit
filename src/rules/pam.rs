@@ -1,6 +1,8 @@
 use crate::*;
 
 pub fn add_checks() {
+    // TODO: ensure yescrypt is used
+
     check::Check::new(
         "PAM_001",
         "Ensure PAM service \"passwd\" has rule \"account required pam_unix\"",

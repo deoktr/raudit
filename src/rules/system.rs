@@ -8,5 +8,6 @@ pub fn add_checks() {
         kernel::check_reboot_required,
         vec![],
     )
+    .with_fix("Reboot host.")
     .register();
 }

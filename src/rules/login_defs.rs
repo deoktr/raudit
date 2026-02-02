@@ -1,8 +1,6 @@
 use crate::*;
 
 pub fn add_checks() {
-    // NOTE: this only affect the generation of group passwords, which we also
-    // check for absence
     check::Check::new(
         "LDF_001",
         "Ensure that login.defs \"ENCRYPT_METHOD\" = \"YESCRYPT\"",
@@ -10,6 +8,7 @@ pub fn add_checks() {
         || login_defs::check_login_defs("ENCRYPT_METHOD", "YESCRYPT"),
         vec![login_defs::init_login_defs],
     )
+    .with_description("Strong password hash, requires both CPU and RAM to crack, making it more costly and thus stronger than alternatives. This only affect the generation of group passwords wich should not have password, a better default in case they are.")
     .register();
 
     check::Check::new(
@@ -53,6 +52,8 @@ pub fn add_checks() {
         },
         vec![login_defs::init_login_defs],
     )
+    .with_description("Increased password hash generation time making it harder to crack them.")
+    .with_link("https://github.com/linux-pam/linux-pam/issues/607")
     .register();
 
     check::Check::new(
@@ -87,6 +88,7 @@ pub fn add_checks() {
         vec![login_defs::init_login_defs],
     )
     .register();
+
     check::Check::new(
         "LDF_004",
         "Ensure that login.defs \"PASS_MIN_DAYS\" >= 1",
@@ -118,7 +120,9 @@ pub fn add_checks() {
         },
         vec![login_defs::init_login_defs],
     )
+    .with_description("Prevents immediate password reuse when asked to change it.")
     .register();
+
     check::Check::new(
         "LDF_005",
         "Ensure that login.defs \"PASS_WARN_AGE\" >= 7",

@@ -8,5 +8,7 @@ pub fn add_checks() {
         shell::check_shell_timeout,
         vec![],
     )
+    .with_description("Avoid leaving opened shells, potentially with elevated permissions.")
+    .with_link("https://wiki.archlinux.org/title/Security#Automatic_logout")
     .register();
 }

@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// TODO: check permission to be at most the value
+
 use regex::Regex;
 use std::fs;
 use std::os::unix::fs::MetadataExt;
@@ -80,10 +82,10 @@ pub fn check_file_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn
         }
     };
 
-    if metadata.is_dir() {
+    if !metadata.is_file() {
         return (
             check::CheckState::Error,
-            Some("path is a directory".to_string()),
+            Some("path is not a file".to_string()),
         );
     }
 
@@ -140,6 +142,50 @@ pub fn check_dir_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn 
     }
 }
 
+/// Check all directory files owner uid and gid.
+pub fn check_dir_files_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
+    match fs::read_dir(&path) {
+        Ok(entries) => {
+            for entry in entries {
+                match entry {
+                    Ok(entry) => {
+                        let path = entry.path();
+                        if !path.is_file() {
+                            continue;
+                        }
+
+                        if let Ok(metadata) = fs::metadata(&path) {
+                            let muid = metadata.uid();
+                            let mgid = metadata.gid();
+
+                            if muid != uid || mgid != gid {
+                                return (
+                                    check::CheckState::Failed,
+                                    Some(format!(
+                                        "file: {:?}: wanted \"{}:{}\" got \"{}:{}\"",
+                                        path, uid, gid, muid, mgid
+                                    )),
+                                );
+                            }
+                        }
+                    }
+                    Err(err) => {
+                        return (
+                            check::CheckState::Error,
+                            Some(format!("error on path {:?}: {}", path, err)),
+                        );
+                    }
+                }
+            }
+            (check::CheckState::Passed, None)
+        }
+        Err(err) => (
+            check::CheckState::Error,
+            Some(format!("failed to open directory {}: {}", path, err)),
+        ),
+    }
+}
+
 /// Check a file owner uid and gid, and ignore error if file is missing.
 pub fn check_file_owner_id_ignore_missing(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
     match fs::metadata(path) {
@@ -165,10 +211,10 @@ pub fn check_file_permission(path: &str, perms: u32) -> check::CheckReturn {
         }
     };
 
-    if metadata.is_dir() {
+    if !metadata.is_file() {
         return (
             check::CheckState::Error,
-            Some("path is a directory".to_string()),
+            Some("path is not a file".to_string()),
         );
     }
 
@@ -216,6 +262,50 @@ pub fn check_dir_permission(path: &str, perms: u32) -> check::CheckReturn {
         )
     } else {
         (check::CheckState::Passed, None)
+    }
+}
+
+/// Check permissions of all the files inside a directory.
+pub fn check_dir_files_permission(path: &str, perms: u32) -> check::CheckReturn {
+    match fs::read_dir(&path) {
+        Ok(entries) => {
+            for entry in entries {
+                match entry {
+                    Ok(entry) => {
+                        let path = entry.path();
+                        if !path.is_file() {
+                            continue;
+                        }
+
+                        if let Ok(metadata) = fs::metadata(&path) {
+                            let mode = metadata.mode() & 0o777;
+                            log_trace!("checking file mode for {:?}, got: {:o}", path, mode);
+
+                            if mode != perms {
+                                return (
+                                    check::CheckState::Failed,
+                                    Some(format!(
+                                        "file {:?} permission: wanted \"{:o}\" got \"{:o}\"",
+                                        path, perms, mode
+                                    )),
+                                );
+                            }
+                        }
+                    }
+                    Err(err) => {
+                        return (
+                            check::CheckState::Error,
+                            Some(format!("error on path {:?}: {}", path, err)),
+                        );
+                    }
+                }
+            }
+            (check::CheckState::Passed, None)
+        }
+        Err(err) => (
+            check::CheckState::Error,
+            Some(format!("failed to open directory {}: {}", path, err)),
+        ),
     }
 }
 

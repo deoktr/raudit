@@ -9,5 +9,6 @@ pub fn add_checks() {
         || bin::check_sid_bin("/usr/bin/"),
         vec![],
     )
+    .with_description("Set UID binaries could be exploited for privilege escalation.")
     .register();
 }

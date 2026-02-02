@@ -165,7 +165,9 @@ pub fn print_checks(skip_passed: bool, no_print_description: bool, no_print_fix:
             && !no_print_fix
             && let Some(fix) = &check.fix
         {
-            println!("Fix: {}", fix);
+            for line in utils::wrap_text(&format!("Fix: {}", fix), 80) {
+                println!("{}", line);
+            }
             add_new_line = true;
         }
 

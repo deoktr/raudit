@@ -78,6 +78,7 @@ pub fn add_checks() {
         "GRP_103",
         "Ensure \"/etc/gshadow\" file permissions are \"640\" or file is missing",
         vec!["group", "CIS", "server", "workstation"],
+        // FIXME: on non Debian OS set to 600
         || base::check_file_permission_ignore_missing("/etc/gshadow", 0o640),
         vec![],
     )
@@ -95,6 +96,7 @@ pub fn add_checks() {
         "GRP_105",
         "Ensure \"/etc/gshadow-\" file permissions are \"640\" or file is missing",
         vec!["group", "CIS", "server", "workstation"],
+        // FIXME: on non Debian OS set to 600
         || base::check_file_permission_ignore_missing("/etc/gshadow-", 0o640),
         vec![],
     )

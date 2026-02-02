@@ -14,18 +14,18 @@ Goals:
 ## Usage
 
 By default, all checks are running, you can reduce the number by filtering for
-your specific needs:
+your specific needs, and for cleaner outputs do not print checks that passed:
 
 Workstation:
 
 ```bash
-raudit --tags workstation --tags-exclude paranoid,useless
+raudit --tags workstation --tags-exclude paranoid,useless --no-print-passed
 ```
 
 Server:
 
 ```bash
-raudit --tags server --tags-exclude paranoid,useless
+raudit --tags server --tags-exclude paranoid,useless --no-print-passed
 ```
 
 > [!NOTE]
@@ -228,6 +228,7 @@ Benchmark 1: ./target/release/raudit
 
 - [Linux self-protection.rst](https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst)
 - [Tails kernel_hardening](https://tails.net/contribute/design/kernel_hardening/)
+- [Kicksecure/security-misc](https://github.com/Kicksecure/security-misc)
 
 ## Alternatives
 

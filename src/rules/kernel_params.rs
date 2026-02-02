@@ -73,6 +73,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .register();
+
     check::Check::new(
         "KNC_051",
         "Ensure kernel build option \"CONFIG_RANDOMIZE_BASE\" is set",
@@ -80,7 +81,10 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_RANDOMIZE_BASE"),
         vec![kconfig::init_kernel_build_config],
     )
+    .with_description("Enables Kernel Address Space Layout Randomization (KASLR).")
+    .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#kernel-address-space-layout-randomization-kaslr")
     .register();
+
     check::Check::new(
         "KNC_052",
         "Ensure kernel build option \"CONFIG_LIST_HARDENED\" is set",
@@ -396,6 +400,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .register();
+
     check::Check::new(
         "KNC_097",
         "Ensure kernel build option \"CONFIG_COMPAT\" is not set",
@@ -403,7 +408,10 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_COMPAT"),
         vec![kconfig::init_kernel_build_config],
     )
+    .with_description("Eliminate many syscalls for 64-bit systems. Limits the breadth of kernel code that can be reached, possibly reducing the availability of a given bug to an attack.")
+    .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#reduced-access-to-syscalls")
     .register();
+
     check::Check::new(
         "KNC_098",
         "Ensure kernel build option \"CONFIG_IA32_EMULATION\" is not set",
@@ -1170,5 +1178,49 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_LKDTM"),
         vec![kconfig::init_kernel_build_config],
     )
+    .register();
+
+    check::Check::new(
+        "KNC_202",
+        "Ensure kernel build option \"CONFIG_STRICT_KERNEL_RWX\" is set",
+        vec!["kernel", "kernel_build_conf"],
+        || kconfig::check_option_is_set("CONFIG_STRICT_KERNEL_RWX"),
+        vec![kconfig::init_kernel_build_config],
+    )
+    .with_description("Executable code and read-only data must not be writable.")
+    .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#executable-code-and-read-only-data-must-not-be-writable")
+    .register();
+
+    check::Check::new(
+        "KNC_203",
+        "Ensure kernel build option \"CONFIG_STRICT_MODULE_RWX\" is set",
+        vec!["kernel", "kernel_build_conf"],
+        || kconfig::check_option_is_set("CONFIG_STRICT_MODULE_RWX"),
+        vec![kconfig::init_kernel_build_config],
+    )
+    .with_description("Executable code and read-only data must not be writable.")
+    .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#executable-code-and-read-only-data-must-not-be-writable")
+    .register();
+
+    check::Check::new(
+        "KNC_204",
+        "Ensure kernel build option \"CONFIG_MODULE_SIG_FORCE\" is set",
+        vec!["kernel", "kernel_build_conf"],
+        || kconfig::check_option_is_set("CONFIG_MODULE_SIG_FORCE"),
+        vec![kconfig::init_kernel_build_config],
+    )
+    .with_description("Keep from having root load arbitrary kernel code via the module loader interface. Redundant with \"module.sig_enforce=1\" kernel boot params.")
+    .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#restricting-access-to-kernel-modules")
+    .register();
+
+    check::Check::new(
+        "KNC_205",
+        "Ensure kernel build option \"CONFIG_KSTACK_ERASE\" is set",
+        vec!["kernel", "kernel_build_conf"],
+        || kconfig::check_option_is_set("CONFIG_KSTACK_ERASE"),
+        vec![kconfig::init_kernel_build_config],
+    )
+    .with_description("When releasing memory poison the contents to avoid reuse attacks that rely on the old contents of memory.")
+    .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#memory-poisoning")
     .register();
 }

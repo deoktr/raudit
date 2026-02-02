@@ -8,6 +8,7 @@ pub fn add_checks() {
         || ps::is_running("auditd"),
         vec![ps::init_proc],
     )
+    .with_description("Kernel-level subsystem that provides detailed logging and monitoring of system activities. Allows detection of attacks.")
     .register();
     check::Check::new(
         "AUD_010",

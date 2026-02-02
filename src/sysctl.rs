@@ -162,6 +162,10 @@ macro_rules! add_sysctl_check {
             || $crate::sysctl::check_sysctl($key, $val),
             vec![$crate::sysctl::init_sysctl_config],
         )
+        .with_fix(&format!(
+            "Add \"{} = {}\" in a sysctl config file \"/etc/sysctl.d/*.conf\". Then run \"sysctl --system\".",
+            $key, $val,
+        ))
     };
 }
 

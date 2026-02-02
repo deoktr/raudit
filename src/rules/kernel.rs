@@ -1,6 +1,4 @@
-// sources:
 // - tails: https://tails.net/contribute/design/kernel_hardening/
-// - https://github.com/Kicksecure/security-misc/blob/master/etc/default/grub.d/40_kernel_hardening.cfg
 
 use crate::*;
 
@@ -72,7 +70,8 @@ pub fn add_checks() {
         || kernel::check_kernel_params("pti=on"),
         vec![kernel::init_kernel_params],
     )
-    .with_description("Enable kernel page table isolation to harden against kernel ASLR (KASLR) bypasses, mitigates the Meltdown CPU vulnerability.")
+    .with_description("Enable kernel page table isolation to harden against kernel ASLR (KASLR) bypasses, mitigates the Meltdown (CVE-2017-5754) CPU vulnerability.")
+    .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#kernel-address-space-layout-randomization-kaslr")
     .register();
 
     check::Check::new(
@@ -123,6 +122,7 @@ pub fn add_checks() {
         vec![kernel::init_kernel_params],
     )
     .with_description("Require every kernel module to be signed before being loaded. Any module that is unsigned or signed with an invalid key cannot be loaded. Prevents all out-of-tree kernel modules (including DKMS) unless signed, this makes it harder to load a malicious module.")
+    .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#restricting-access-to-kernel-modules")
     .with_link("https://docs.kernel.org/admin-guide/module-signing.html")
     .register();
 
@@ -314,14 +314,20 @@ pub fn add_checks() {
         vec![kernel::init_kernel_params],
     )
     .register();
+
     check::Check::new(
         "KNP_031",
         "Ensure that kernel flag \"nosmt=force\" is present",
-        vec!["kernel", "paranoid", "server", "workstation"],
+        vec!["kernel", "paranoid", "server", "workstation", "paranoid"],
         || kernel::check_kernel_params("nosmt=force"),
         vec![kernel::init_kernel_params],
     )
+    .with_description(
+        "Disabling will significantly decrease system performance on multi-threaded tasks.",
+    )
+    .with_link("https://www.kernel.org/doc/html/latest/admin-guide/hw-vuln/core-scheduling.html")
     .register();
+
     check::Check::new(
         "KNP_032",
         "Ensure that kernel flag \"spectre_v2=on\" is present",
@@ -329,7 +335,10 @@ pub fn add_checks() {
         || kernel::check_kernel_params("spectre_v2=on"),
         vec![kernel::init_kernel_params],
     )
+    .with_description("Enable mitigation for the Intel branch history injection vulnerability. Affecting both Intel and AMD CPUs.")
+    .with_link("https://www.kernel.org/doc/html/latest/admin-guide/hw-vuln/spectre.html")
     .register();
+
     check::Check::new(
         "KNP_033",
         "Ensure that kernel flag \"spectre_bhi=on\" is present",
@@ -337,7 +346,10 @@ pub fn add_checks() {
         || kernel::check_kernel_params("spectre_bhi=on"),
         vec![kernel::init_kernel_params],
     )
+    .with_description("Enable mitigation for the Intel branch history injection vulnerability. Affecting both Intel and AMD CPUs.")
+    .with_link("https://www.kernel.org/doc/html/latest/admin-guide/hw-vuln/spectre.html")
     .register();
+
     check::Check::new(
         "KNP_034",
         "Ensure that kernel flag \"spec_store_bypass_disable=on\" is present",
@@ -492,8 +504,6 @@ pub fn add_checks() {
     // "ssbd=force-on"
     // "rodata=full"
 
-    // Quiet boot
-    // https://github.com/Kicksecure/security-misc/blob/master/etc/default/grub.d/41_quiet_boot.cfg
     check::Check::new(
         "KNP_060",
         "Ensure that kernel flag \"loglevel=0\" is present",
@@ -501,7 +511,11 @@ pub fn add_checks() {
         || kernel::check_kernel_params("loglevel=0"),
         vec![kernel::init_kernel_params],
     )
+    .with_description("Prevent sensitive kernel information leaks in the console during boot.")
+    .with_link("https://wiki.archlinux.org/title/silent_boot")
+    .with_link("https://github.com/Kicksecure/security-misc/blob/master/etc/default/grub.d/41_quiet_boot.cfg%23security-misc-shared")
     .register();
+
     check::Check::new(
         "KNP_061",
         "Ensure that kernel flag \"quiet\" is present",
@@ -509,7 +523,11 @@ pub fn add_checks() {
         || kernel::check_kernel_params("quiet"),
         vec![kernel::init_kernel_params],
     )
+    .with_description("Prevent sensitive kernel information leaks in the console during boot.")
+    .with_link("https://wiki.archlinux.org/title/silent_boot")
+    .with_link("https://github.com/Kicksecure/security-misc/blob/master/etc/default/grub.d/41_quiet_boot.cfg%23security-misc-shared")
     .register();
+
     check::Check::new(
         "KNP_062",
         "Ensure that kernel flag \"slub_debug=FZ\" is present",

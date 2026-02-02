@@ -8,5 +8,6 @@ pub fn add_checks() {
         || uptime::uptime_bellow(7776000),
         vec![uptime::init_uptime],
     )
+    .with_fix("Reboot host.")
     .register();
 }

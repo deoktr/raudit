@@ -33,6 +33,7 @@ pub fn add_checks() {
         2
     )
     .with_description("Enable ASLR for mmap base, stack, VDSO pages, and heap, forces shared libraries to be loaded to random addresses start location. Can lead to breakages with legacy applications.")
+    .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#kernel-address-space-layout-randomization-kaslr")
     .register();
 
     sysctl::add_sysctl_check!(

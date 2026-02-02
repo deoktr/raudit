@@ -290,6 +290,8 @@ macro_rules! add_module_blacklisted_check_list {
                 || $crate::modprobe::check_module_blacklist($module),
                 vec![$crate::modprobe::init_modprobe],
             )
+            .with_description("Prevents kernel modules from automatically starting.")
+            .with_fix(&format!("Add entry in \"/etc/modprobe.d/blacklist.conf\" with: \"blacklist {}\"", $module))
             .register();
             __i_add_module_blacklisted_check_list += 1;
         )*
@@ -310,6 +312,8 @@ macro_rules! add_module_disabled_check_list {
                 || $crate::modprobe::check_module_disabled($module),
                 vec![$crate::modprobe::init_modprobe],
             )
+            .with_description("Prohibits kernel modules from starting.")
+            .with_fix(&format!("Add entry in \"/etc/modprobe.d/disabled.conf\" with: \"install {} /bin/true\"", $module))
             .register();
             __i_add_module_disabled_check_list += 1;
         )*

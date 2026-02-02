@@ -89,25 +89,51 @@ pub fn add_checks() {
         vec![users::init_passwd],
     )
     .register();
+
+    check::Check::new(
+        "USR_106",
+        "Ensure \"/etc/passwd\" file permissions are \"644\"",
+        vec!["group", "CIS", "server", "workstation"],
+        || base::check_file_permission("/etc/passwd", 0o644),
+        vec![],
+    )
+    .with_fix("chmod 644 /etc/passwd")
+    .register();
+
+    check::Check::new(
+        "USR_107",
+        "Ensure \"/etc/passwd\" file owner is \"root:root\" or file is missing",
+        vec!["group", "CIS", "server", "workstation"],
+        || base::check_file_owner_id_ignore_missing("/etc/passwd", 0, 0),
+        vec![],
+    )
+    .with_fix("chown root:root /etc/passwd")
+    .register();
+
     check::Check::new(
         "USR_100",
         // TODO: allow root:root
         "Ensure \"/etc/shadow\" file owner is \"root:shadow\"",
         vec!["group", "CIS", "server", "workstation"],
         // FIXME: use shadow gid instead of 42
+        // FIXME: on some distro is root:root
         || base::check_file_owner_id("/etc/shadow", 0, 42),
         vec![],
     )
+    .with_fix("chown root:shadow /etc/shadow")
     .register();
+
     check::Check::new(
         "USR_101",
         "Ensure \"/etc/shadow\" file permissions are \"640\"",
         vec!["group", "CIS", "server", "workstation"],
-        // TODO: accept less permissions, like 600
+        // FIXME: only on Debian 640 otherwise 600
         || base::check_file_permission("/etc/shadow", 0o640),
         vec![],
     )
+    .with_fix("chmod 640 /etc/shadow")
     .register();
+
     check::Check::new(
         "USR_102",
         "Ensure \"/etc/shadow-\" file owner is \"root:shadow\" or file is missing",
@@ -118,7 +144,9 @@ pub fn add_checks() {
         || base::check_file_owner_id_ignore_missing("/etc/shadow-", 0, 42),
         vec![],
     )
+    .with_fix("chown root:shadow /etc/shadow-")
     .register();
+
     check::Check::new(
         "USR_103",
         "Ensure \"/etc/shadow-\" file permissions are \"640\" or file is missing",
@@ -126,7 +154,9 @@ pub fn add_checks() {
         || base::check_file_permission_ignore_missing("/etc/shadow-", 0o640),
         vec![],
     )
+    .with_fix("chmod 640 /etc/shadow-")
     .register();
+
     check::Check::new(
         "USR_104",
         "Ensure \"/etc/security/opasswd\" file owner is \"root:root\" or file is missing",
@@ -134,7 +164,9 @@ pub fn add_checks() {
         || base::check_file_owner_id_ignore_missing("/etc/security/opasswd", 0, 0),
         vec![],
     )
+    .with_fix("chown root:root /etc/security/opasswd")
     .register();
+
     check::Check::new(
         "USR_105",
         "Ensure \"/etc/security/opasswd\" file permissions are \"600\" or file is missing",
@@ -142,5 +174,6 @@ pub fn add_checks() {
         || base::check_file_permission_ignore_missing("/etc/security/opasswd", 0o600),
         vec![],
     )
+    .with_fix("chmod 600 /etc/security/opasswd")
     .register();
 }
