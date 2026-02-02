@@ -138,7 +138,7 @@ What is supported:
 - Login.defs configuration.
 - Modprobe including blacklisted and disabled modules.
 - PAM rules.
-- OpenSSH server configuration.
+- OpenSSH server service and configuration.
 - Sudo configuration.
 - Users and groups.
 - Uptime.
@@ -152,6 +152,7 @@ What is supported:
 - Hosts configuration.
 - AppArmor.
 - Bin.
+- Cron service and configuration.
 
 Support planned:
 

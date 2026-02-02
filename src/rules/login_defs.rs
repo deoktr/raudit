@@ -12,12 +12,17 @@ pub fn add_checks() {
     )
     .register();
 
-    // NOTE: YESCRYPT_COST_FACTOR is now used by PAM for yescrypt
-    // https://github.com/linux-pam/linux-pam/issues/607
     check::Check::new(
         "LDF_002",
         "Ensure that login.defs \"YESCRYPT_COST_FACTOR\" >= 5",
-        vec!["login_defs", "server", "workstation"],
+        vec![
+            "login_defs",
+            // YESCRYPT_COST_FACTOR is now used by PAM for yescrypt
+            // https://github.com/linux-pam/linux-pam/issues/607
+            "pam",
+            "server",
+            "workstation",
+        ],
         || {
             const VAL: i32 = 5;
             match login_defs::get_login_defs_value("YESCRYPT_COST_FACTOR") {

@@ -32,16 +32,17 @@ pub fn format_duration(dur: Duration) -> String {
     }
 }
 
+/// Format text and wrap it on words at a specific width.
 pub fn wrap_text(text: &str, max_width: usize) -> Vec<String> {
     let mut wrapped_lines = Vec::new();
 
-    for line in text.split('\n') {
+    for line in text.split("\n") {
         let mut current_line = String::new();
 
         for word in line.split_whitespace() {
             if current_line.is_empty() {
                 current_line.push_str(word);
-            } else if current_line.len() + word.len() + 1 <= max_width {
+            } else if current_line.len() + word.len() < max_width {
                 current_line.push(' ');
                 current_line.push_str(word);
             } else {

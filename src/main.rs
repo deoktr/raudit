@@ -56,6 +56,7 @@ mod rules {
     pub mod audit;
     pub mod bin;
     pub mod clamav;
+    pub mod cron;
     pub mod docker;
     pub mod gdm;
     pub mod group;

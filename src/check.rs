@@ -169,7 +169,7 @@ pub fn print_checks(skip_passed: bool, no_print_description: bool, no_print_fix:
             add_new_line = true;
         }
 
-        if check.state == CheckState::Failed && check.links.len() > 0 {
+        if check.state == CheckState::Failed && !check.links.is_empty() {
             println!("Links:");
             for link in &check.links {
                 println!("- <{}>", link);
@@ -178,7 +178,7 @@ pub fn print_checks(skip_passed: bool, no_print_description: bool, no_print_fix:
         }
 
         if add_new_line {
-            println!("");
+            println!();
         }
     }
 }
