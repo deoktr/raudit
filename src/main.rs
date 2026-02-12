@@ -38,6 +38,7 @@ mod login_defs;
 mod malloc;
 mod modprobe;
 mod mount;
+mod os;
 mod pam;
 mod podman;
 mod ps;

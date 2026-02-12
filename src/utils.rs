@@ -61,9 +61,14 @@ pub fn wrap_text(text: &str, max_width: usize) -> Vec<String> {
 
 /// Run a command without failling.
 macro_rules! run {
-    ($bin:tt) => {
-        run!($bin,)
-    };
+    ($bin:tt) => {{
+        let mut cmd = std::process::Command::new($bin);
+        cmd.stdin(std::process::Stdio::null());
+        match cmd.output() {
+            Ok(output) => String::from_utf8_lossy(&output.stdout).to_string().replace("\n", ""),
+            Err(_) => "".to_string(),
+        }
+    }};
 
     ($bin:tt, $($params:expr),*) => {{
         let mut cmd = std::process::Command::new($bin);

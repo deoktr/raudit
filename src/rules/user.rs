@@ -113,48 +113,56 @@ pub fn add_checks() {
     check::Check::new(
         "USR_100",
         // TODO: allow root:root
-        "Ensure \"/etc/shadow\" file owner is \"root:shadow\"",
+        "Ensure \"/etc/shadow\" file owner is correct",
         vec!["group", "CIS", "server", "workstation"],
         // FIXME: use shadow gid instead of 42
-        // FIXME: on some distro is root:root
-        || base::check_file_owner_id("/etc/shadow", 0, 42),
-        vec![],
+        || base::check_file_owner_id("/etc/shadow", 0, if os::is_debian() { 42 } else { 0 }),
+        vec![os::init_os_release],
     )
-    .with_fix("chown root:shadow /etc/shadow")
+    .with_fix("On Debian: \"chown root:shadow /etc/shadow\"\nOn other distros: \"chown root:root /etc/shadow\"")
     .register();
 
     check::Check::new(
         "USR_101",
-        "Ensure \"/etc/shadow\" file permissions are \"640\"",
+        "Ensure \"/etc/shadow\" file permissions are correct",
         vec!["group", "CIS", "server", "workstation"],
-        // FIXME: only on Debian 640 otherwise 600
-        || base::check_file_permission("/etc/shadow", 0o640),
-        vec![],
+        || base::check_file_permission("/etc/shadow", if os::is_debian() { 0o640 } else { 0o600 }),
+        vec![os::init_os_release],
     )
-    .with_fix("chmod 640 /etc/shadow")
+    .with_fix("On Debian: \"chmod 640 /etc/shadow\"\nOn other distros: \"chmod 600 /etc/shadow\"")
     .register();
 
     check::Check::new(
         "USR_102",
-        "Ensure \"/etc/shadow-\" file owner is \"root:shadow\" or file is missing",
+        "Ensure \"/etc/shadow-\" file owner is correct or file is missing",
         vec!["group", "CIS", "server", "workstation"],
-        // TODO: allow root:root
         // FIXME: use shadow gid instead of 42
         // TODO: create util function to get UID fron username
-        || base::check_file_owner_id_ignore_missing("/etc/shadow-", 0, 42),
-        vec![],
+        || {
+            base::check_file_owner_id_ignore_missing(
+                "/etc/shadow-",
+                0,
+                if os::is_debian() { 42 } else { 0 },
+            )
+        },
+        vec![os::init_os_release],
     )
-    .with_fix("chown root:shadow /etc/shadow-")
+    .with_fix("On Debian: \"chown root:shadow /etc/shadow-\"\nOn other distros: \"chown root:root /etc/shadow-\"")
     .register();
 
     check::Check::new(
         "USR_103",
-        "Ensure \"/etc/shadow-\" file permissions are \"640\" or file is missing",
+        "Ensure \"/etc/shadow-\" file permissions are correct or file is missing",
         vec!["group", "CIS", "server", "workstation"],
-        || base::check_file_permission_ignore_missing("/etc/shadow-", 0o640),
-        vec![],
+        || {
+            base::check_file_permission_ignore_missing(
+                "/etc/shadow-",
+                if os::is_debian() { 0o640 } else { 0o600 },
+            )
+        },
+        vec![os::init_os_release],
     )
-    .with_fix("chmod 640 /etc/shadow-")
+    .with_fix("On Debian: \"chmod 640 /etc/shadow-\"\nOn other distros: \"chmod 600 /etc/shadow-\"")
     .register();
 
     check::Check::new(

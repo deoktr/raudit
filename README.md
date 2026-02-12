@@ -1,6 +1,6 @@
 # rAudit
 
-rAudit is a security audit tool to help you create your own security audit
+rAudit is a Linux security audit tool to help you create your own security audit
 checks.
 
 Goals:
