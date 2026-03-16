@@ -25,7 +25,7 @@ use crate::{check, log_debug, log_error};
 
 static SYSCTL_CONFIG: OnceLock<SysctlConfig> = OnceLock::new();
 
-/// Kenel params configuration from sysctl.
+/// Kernel params configuration from sysctl.
 pub type SysctlConfig = HashMap<String, String>;
 
 /// Parse `sysctl --all` command stdout.
@@ -77,7 +77,7 @@ impl SysctlValue for &str {
             Some(c) => c,
             None => {
                 return (
-                    check::CheckState::Error,
+                    check::CheckState::Warning,
                     Some("sysctl configuration not initialized".to_string()),
                 );
             }
@@ -86,15 +86,15 @@ impl SysctlValue for &str {
         match config.get(key) {
             Some(value) => {
                 if value == self {
-                    (check::CheckState::Passed, None)
+                    (check::CheckState::Pass, None)
                 } else {
                     (
-                        check::CheckState::Failed,
+                        check::CheckState::Fail,
                         Some(format!("{:?} != {:?}", value, self)),
                     )
                 }
             }
-            None => (check::CheckState::Error, Some("missing key".to_string())),
+            None => (check::CheckState::Warning, Some("missing key".to_string())),
         }
     }
 }
@@ -106,7 +106,7 @@ impl SysctlValue for i32 {
             Some(c) => c,
             None => {
                 return (
-                    check::CheckState::Error,
+                    check::CheckState::Warning,
                     Some("sysctl configuration not initialized".to_string()),
                 );
             }
@@ -116,20 +116,20 @@ impl SysctlValue for i32 {
             Some(value) => match value.parse::<i32>() {
                 Ok(val) => {
                     if val == *self {
-                        (check::CheckState::Passed, None)
+                        (check::CheckState::Pass, None)
                     } else {
                         (
-                            check::CheckState::Failed,
+                            check::CheckState::Fail,
                             Some(format!("{:?} != {:?}", val, self)),
                         )
                     }
                 }
                 Err(err) => (
-                    check::CheckState::Error,
+                    check::CheckState::Warning,
                     Some(format!("failed to convert {:?} to i32: {}", value, err)),
                 ),
             },
-            None => (check::CheckState::Error, Some("missing key".to_string())),
+            None => (check::CheckState::Warning, Some("missing key".to_string())),
         }
     }
 }

@@ -75,7 +75,7 @@ pub fn entry_present(addr: &str, value: &str) -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("hosts configuration not initialized".to_string()),
             );
         }
@@ -83,11 +83,11 @@ pub fn entry_present(addr: &str, value: &str) -> check::CheckReturn {
 
     for host in hosts {
         if host.addr == addr && host.value == value {
-            return (check::CheckState::Passed, None);
+            return (check::CheckState::Pass, None);
         }
     }
 
-    (check::CheckState::Failed, None)
+    (check::CheckState::Fail, None)
 }
 
 #[cfg(test)]

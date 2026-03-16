@@ -41,17 +41,17 @@ pub fn add_checks() {
                 Ok(str_value) => match str_value.parse::<i32>() {
                     Ok(value) => {
                         if value <= VAL {
-                            (check::CheckState::Passed, Some(format!("{}", value)))
+                            (check::CheckState::Pass, Some(format!("{}", value)))
                         } else {
                             (
-                                check::CheckState::Failed,
+                                check::CheckState::Fail,
                                 Some(format!("{} > {}", value, VAL)),
                             )
                         }
                     }
-                    Err(err) => (check::CheckState::Error, Some(err.to_string())),
+                    Err(err) => (check::CheckState::Warning, Some(err.to_string())),
                 },
-                Err(err) => (check::CheckState::Error, Some(err)),
+                Err(err) => (check::CheckState::Warning, Some(err)),
             }
         },
         vec![sshd::init_sshd_config],
@@ -89,17 +89,17 @@ pub fn add_checks() {
                 Ok(str_value) => match str_value.parse::<i32>() {
                     Ok(value) => {
                         if value <= VAL {
-                            (check::CheckState::Passed, Some(format!("{}", value)))
+                            (check::CheckState::Pass, Some(format!("{}", value)))
                         } else {
                             (
-                                check::CheckState::Failed,
+                                check::CheckState::Fail,
                                 Some(format!("{} > {}", value, VAL)),
                             )
                         }
                     }
-                    Err(err) => (check::CheckState::Error, Some(err.to_string())),
+                    Err(err) => (check::CheckState::Warning, Some(err.to_string())),
                 },
-                Err(err) => (check::CheckState::Error, Some(err)),
+                Err(err) => (check::CheckState::Warning, Some(err)),
             }
         },
         vec![sshd::init_sshd_config],
@@ -117,17 +117,17 @@ pub fn add_checks() {
                 Ok(str_value) => match str_value.parse::<i32>() {
                     Ok(value) => {
                         if value <= VAL {
-                            (check::CheckState::Passed, Some(format!("{}", value)))
+                            (check::CheckState::Pass, Some(format!("{}", value)))
                         } else {
                             (
-                                check::CheckState::Failed,
+                                check::CheckState::Fail,
                                 Some(format!("{} > {}", value, VAL)),
                             )
                         }
                     }
-                    Err(err) => (check::CheckState::Error, Some(err.to_string())),
+                    Err(err) => (check::CheckState::Warning, Some(err.to_string())),
                 },
-                Err(err) => (check::CheckState::Error, Some(err)),
+                Err(err) => (check::CheckState::Warning, Some(err)),
             }
         },
         vec![sshd::init_sshd_config],
@@ -335,17 +335,17 @@ pub fn add_checks() {
                 Ok(str_value) => match str_value.parse::<i32>() {
                     Ok(value) => {
                         if value <= VAL {
-                            (check::CheckState::Passed, Some(format!("{}", value)))
+                            (check::CheckState::Pass, Some(format!("{}", value)))
                         } else {
                             (
-                                check::CheckState::Failed,
+                                check::CheckState::Fail,
                                 Some(format!("{} > {}", value, VAL)),
                             )
                         }
                     }
-                    Err(err) => (check::CheckState::Error, Some(err.to_string())),
+                    Err(err) => (check::CheckState::Warning, Some(err.to_string())),
                 },
-                Err(err) => (check::CheckState::Error, Some(err)),
+                Err(err) => (check::CheckState::Warning, Some(err)),
             }
         },
         vec![sshd::init_sshd_config],
@@ -526,7 +526,7 @@ pub fn add_checks() {
         || match systemd::get_service_file("sshd") {
             Some(path) => base::check_file_owner_id(&path, 0, 0),
             None => (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("systemd sshd service file not found".to_string()),
             ),
         },
@@ -542,7 +542,7 @@ pub fn add_checks() {
         || match systemd::get_service_file("sshd") {
             Some(path) => base::check_file_permission(&path, 0o644),
             None => (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("systemd sshd service file not found".to_string()),
             ),
         },

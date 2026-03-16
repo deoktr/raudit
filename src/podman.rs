@@ -128,7 +128,7 @@ pub fn check_podman_info(pointer: &str, expected: Value) -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("podman info not initialized".to_string()),
             );
         }
@@ -138,15 +138,15 @@ pub fn check_podman_info(pointer: &str, expected: Value) -> check::CheckReturn {
         Some(val) => {
             if **val != expected {
                 (
-                    check::CheckState::Failed,
+                    check::CheckState::Fail,
                     Some(format!("{:?} != {:?}", val, expected)),
                 )
             } else {
-                (check::CheckState::Passed, None)
+                (check::CheckState::Pass, None)
             }
         }
         None => (
-            check::CheckState::Error,
+            check::CheckState::Warning,
             Some(format!("pointer {:?} not found", pointer)),
         ),
     }
@@ -162,14 +162,14 @@ pub fn podman_not_privileged() -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("containers inspect not initialized".to_string()),
             );
         }
     };
 
     if containers.is_empty() {
-        return (check::CheckState::Passed, Some("no containers".to_string()));
+        return (check::CheckState::Pass, Some("no containers".to_string()));
     }
 
     let ids: Vec<String> = containers
@@ -187,14 +187,14 @@ pub fn podman_not_privileged() -> check::CheckReturn {
         .collect();
 
     if ids.is_empty() {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     } else {
         log_debug!("containers running with `--privileged`: {:?}", ids);
-        (check::CheckState::Failed, Some(ids.join(", ")))
+        (check::CheckState::Fail, Some(ids.join(", ")))
     }
 }
 
-/// Ensure containers capabilities are dopped.
+/// Ensure containers capabilities are dropped.
 ///
 /// Start containers with `--cap-drop=all` to remove all capabilities.
 /// check manually with:
@@ -204,14 +204,14 @@ pub fn podman_cap_drop() -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("containers inspect not initialized".to_string()),
             );
         }
     };
 
     if containers.is_empty() {
-        return (check::CheckState::Passed, Some("no containers".to_string()));
+        return (check::CheckState::Pass, Some("no containers".to_string()));
     }
 
     let ids: Vec<String> = containers
@@ -229,10 +229,10 @@ pub fn podman_cap_drop() -> check::CheckReturn {
         .collect();
 
     if ids.is_empty() {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     } else {
         log_debug!("Missing cap drop on containers: {:?}", ids);
-        (check::CheckState::Failed, Some(ids.join(", ")))
+        (check::CheckState::Fail, Some(ids.join(", ")))
     }
 }
 
@@ -246,14 +246,14 @@ pub fn podman_user() -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("containers inspect not initialized".to_string()),
             );
         }
     };
 
     if containers.is_empty() {
-        return (check::CheckState::Passed, Some("no containers".to_string()));
+        return (check::CheckState::Pass, Some("no containers".to_string()));
     }
 
     let ids: Vec<String> = containers
@@ -270,10 +270,10 @@ pub fn podman_user() -> check::CheckReturn {
         .collect();
 
     if ids.is_empty() {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     } else {
         log_debug!("Running as root on containers: {:?}", ids);
-        (check::CheckState::Failed, Some(ids.join(", ")))
+        (check::CheckState::Fail, Some(ids.join(", ")))
     }
 }
 
@@ -286,14 +286,14 @@ pub fn podman_apparmor() -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("containers inspect not initialized".to_string()),
             );
         }
     };
 
     if containers.is_empty() {
-        return (check::CheckState::Passed, Some("no containers".to_string()));
+        return (check::CheckState::Pass, Some("no containers".to_string()));
     }
 
     let ids: Vec<String> = containers
@@ -310,9 +310,9 @@ pub fn podman_apparmor() -> check::CheckReturn {
         .collect();
 
     if ids.is_empty() {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     } else {
         log_debug!("Running without apparmor profile on containers: {:?}", ids);
-        (check::CheckState::Failed, Some(ids.join(", ")))
+        (check::CheckState::Fail, Some(ids.join(", ")))
     }
 }

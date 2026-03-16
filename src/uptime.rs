@@ -37,7 +37,7 @@ fn get_uptime() -> Result<u64, String> {
                 .parse::<u64>()
                 .map_err(|e| e.to_string())
         }
-        None => Err("invalide uptime file format".to_string()),
+        None => Err("invalid uptime file format".to_string()),
     }
 }
 
@@ -62,18 +62,18 @@ pub fn uptime_bellow(max_uptime: u64) -> check::CheckReturn {
         Some(uptime) => {
             if uptime < &max_uptime {
                 (
-                    check::CheckState::Passed,
+                    check::CheckState::Pass,
                     Some(format!("{} h", uptime / 3600)),
                 )
             } else {
                 (
-                    check::CheckState::Failed,
+                    check::CheckState::Fail,
                     Some(format!("{} h", uptime / 3600)),
                 )
             }
         }
         None => (
-            check::CheckState::Error,
+            check::CheckState::Warning,
             Some("uptime not initialized".to_string()),
         ),
     }

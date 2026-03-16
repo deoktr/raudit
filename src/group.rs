@@ -110,7 +110,7 @@ pub fn no_password_in_group() -> check::CheckReturn {
         Some(group) => group,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("group not initialized".to_string()),
             );
         }
@@ -123,9 +123,9 @@ pub fn no_password_in_group() -> check::CheckReturn {
         .collect();
 
     if !g.is_empty() {
-        (check::CheckState::Failed, Some(g.join(", ")))
+        (check::CheckState::Fail, Some(g.join(", ")))
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }
 
@@ -135,7 +135,7 @@ pub fn one_gid_zero() -> check::CheckReturn {
         Some(group) => group,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("group not initialized".to_string()),
             );
         }
@@ -148,9 +148,9 @@ pub fn one_gid_zero() -> check::CheckReturn {
         .collect();
 
     if !g.is_empty() {
-        (check::CheckState::Failed, Some(g.join(", ")))
+        (check::CheckState::Fail, Some(g.join(", ")))
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }
 
@@ -160,7 +160,7 @@ pub fn no_dup_gid() -> check::CheckReturn {
         Some(group) => group,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("group not initialized".to_string()),
             );
         }
@@ -173,9 +173,9 @@ pub fn no_dup_gid() -> check::CheckReturn {
         .collect();
 
     if !g.is_empty() {
-        (check::CheckState::Failed, Some(g.join(", ")))
+        (check::CheckState::Fail, Some(g.join(", ")))
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }
 
@@ -185,7 +185,7 @@ pub fn no_dup_name() -> check::CheckReturn {
         Some(group) => group,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("group not initialized".to_string()),
             );
         }
@@ -198,9 +198,9 @@ pub fn no_dup_name() -> check::CheckReturn {
         .collect();
 
     if !g.is_empty() {
-        (check::CheckState::Failed, Some(g.join(", ")))
+        (check::CheckState::Fail, Some(g.join(", ")))
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }
 
@@ -210,7 +210,7 @@ pub fn no_members(group_name: &str) -> check::CheckReturn {
         Some(group) => group,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("group not initialized".to_string()),
             );
         }
@@ -222,14 +222,14 @@ pub fn no_members(group_name: &str) -> check::CheckReturn {
         }
 
         if !group.user_list.is_empty() {
-            return (check::CheckState::Failed, Some(group.user_list.join(", ")));
+            return (check::CheckState::Fail, Some(group.user_list.join(", ")));
         } else {
-            return (check::CheckState::Passed, None);
+            return (check::CheckState::Pass, None);
         }
     }
 
     (
-        check::CheckState::Error,
+        check::CheckState::Warning,
         Some(format!("no \"{}\" group found", group_name)),
     )
 }

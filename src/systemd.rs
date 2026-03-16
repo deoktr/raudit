@@ -79,7 +79,7 @@ pub fn get_systemd_config_value(key: &str, value: &str) -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("systemd config not initialized".to_string()),
             );
         }
@@ -88,16 +88,16 @@ pub fn get_systemd_config_value(key: &str, value: &str) -> check::CheckReturn {
     match systemd_config.get(key) {
         Some(conf_value) => {
             if conf_value == value {
-                (check::CheckState::Passed, None)
+                (check::CheckState::Pass, None)
             } else {
                 (
-                    check::CheckState::Failed,
+                    check::CheckState::Fail,
                     Some(format!("{:?} != {:?}", conf_value, value)),
                 )
             }
         }
         None => (
-            check::CheckState::Failed,
+            check::CheckState::Fail,
             Some(format!("missing key {:?}", key)),
         ),
     }

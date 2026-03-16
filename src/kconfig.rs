@@ -43,7 +43,7 @@ fn parse_kernel_build_config(cmdline: String) -> KernelBuildConfig {
     cmdline
         .lines()
         .filter(|line| !line.is_empty())
-        // comments are usefull and gives informations about what flags where
+        // comments are useful and gives information about what flags where
         // not set, ex: `# CONFIG_EARLY_PRINTK_USB_XDBC is not set`
         .filter(|line| {
             !(line.starts_with("#")
@@ -102,7 +102,7 @@ pub fn check_option_is_set(param: &str) -> check::CheckReturn {
         Some(config) => config,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("kcompile config not initialized".to_string()),
             );
         }
@@ -111,13 +111,13 @@ pub fn check_option_is_set(param: &str) -> check::CheckReturn {
     match config.get(param) {
         Some(val) => {
             if val != "is not set" {
-                (check::CheckState::Passed, None)
+                (check::CheckState::Pass, None)
             } else {
-                (check::CheckState::Failed, Some("param not set".to_string()))
+                (check::CheckState::Fail, Some("param not set".to_string()))
             }
         }
         None => (
-            check::CheckState::Error,
+            check::CheckState::Warning,
             Some("param not present".to_string()),
         ),
     }
@@ -129,7 +129,7 @@ pub fn check_option_is_not_set(param: &str) -> check::CheckReturn {
         Some(config) => config,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("kcompile config not initialized".to_string()),
             );
         }
@@ -138,13 +138,13 @@ pub fn check_option_is_not_set(param: &str) -> check::CheckReturn {
     match config.get(param) {
         Some(val) => {
             if val == "is not set" {
-                (check::CheckState::Passed, None)
+                (check::CheckState::Pass, None)
             } else {
-                (check::CheckState::Failed, Some("param set".to_string()))
+                (check::CheckState::Fail, Some("param set".to_string()))
             }
         }
         None => (
-            check::CheckState::Error,
+            check::CheckState::Warning,
             Some("param not present".to_string()),
         ),
     }

@@ -32,22 +32,19 @@ pub fn add_checks() {
                             // should not cause any problems, it's still an
                             // invalide value
                             if val >= VAL {
-                                (check::CheckState::Passed, Some(format!("{}", val)))
+                                (check::CheckState::Pass, Some(format!("{}", val)))
                             } else {
-                                (
-                                    check::CheckState::Failed,
-                                    Some(format!("{} < {}", val, VAL)),
-                                )
+                                (check::CheckState::Fail, Some(format!("{} < {}", val, VAL)))
                             }
                         }
-                        Err(err) => (check::CheckState::Error, Some(err.to_string())),
+                        Err(err) => (check::CheckState::Warning, Some(err.to_string())),
                     },
                     None => (
-                        check::CheckState::Error,
+                        check::CheckState::Warning,
                         Some("key not present".to_string()),
                     ),
                 },
-                Err(err) => (check::CheckState::Error, Some(err)),
+                Err(err) => (check::CheckState::Warning, Some(err)),
             }
         },
         vec![login_defs::init_login_defs],
@@ -67,22 +64,19 @@ pub fn add_checks() {
                     Some(vl) => match vl.parse::<i32>() {
                         Ok(val) => {
                             if val <= VAL {
-                                (check::CheckState::Passed, Some(format!("{}", val)))
+                                (check::CheckState::Pass, Some(format!("{}", val)))
                             } else {
-                                (
-                                    check::CheckState::Failed,
-                                    Some(format!("{} > {}", val, VAL)),
-                                )
+                                (check::CheckState::Fail, Some(format!("{} > {}", val, VAL)))
                             }
                         }
-                        Err(err) => (check::CheckState::Error, Some(err.to_string())),
+                        Err(err) => (check::CheckState::Warning, Some(err.to_string())),
                     },
                     None => (
-                        check::CheckState::Error,
+                        check::CheckState::Warning,
                         Some("key not present".to_string()),
                     ),
                 },
-                Err(err) => (check::CheckState::Error, Some(err)),
+                Err(err) => (check::CheckState::Warning, Some(err)),
             }
         },
         vec![login_defs::init_login_defs],
@@ -100,22 +94,19 @@ pub fn add_checks() {
                     Some(vl) => match vl.parse::<i32>() {
                         Ok(val) => {
                             if val >= VAL {
-                                (check::CheckState::Passed, Some(format!("{}", val)))
+                                (check::CheckState::Pass, Some(format!("{}", val)))
                             } else {
-                                (
-                                    check::CheckState::Failed,
-                                    Some(format!("{} < {}", val, VAL)),
-                                )
+                                (check::CheckState::Fail, Some(format!("{} < {}", val, VAL)))
                             }
                         }
-                        Err(err) => (check::CheckState::Error, Some(err.to_string())),
+                        Err(err) => (check::CheckState::Warning, Some(err.to_string())),
                     },
                     None => (
-                        check::CheckState::Error,
+                        check::CheckState::Warning,
                         Some("key not present".to_string()),
                     ),
                 },
-                Err(err) => (check::CheckState::Error, Some(err)),
+                Err(err) => (check::CheckState::Warning, Some(err)),
             }
         },
         vec![login_defs::init_login_defs],
@@ -134,22 +125,19 @@ pub fn add_checks() {
                     Some(vl) => match vl.parse::<i32>() {
                         Ok(val) => {
                             if val >= VAL {
-                                (check::CheckState::Passed, Some(format!("{}", val)))
+                                (check::CheckState::Pass, Some(format!("{}", val)))
                             } else {
-                                (
-                                    check::CheckState::Failed,
-                                    Some(format!("{} < {}", val, VAL)),
-                                )
+                                (check::CheckState::Fail, Some(format!("{} < {}", val, VAL)))
                             }
                         }
-                        Err(err) => (check::CheckState::Error, Some(err.to_string())),
+                        Err(err) => (check::CheckState::Warning, Some(err.to_string())),
                     },
                     None => (
-                        check::CheckState::Error,
+                        check::CheckState::Warning,
                         Some("key not present".to_string()),
                     ),
                 },
-                Err(err) => (check::CheckState::Error, Some(err)),
+                Err(err) => (check::CheckState::Warning, Some(err)),
             }
         },
         vec![login_defs::init_login_defs],
@@ -190,22 +178,19 @@ pub fn add_checks() {
                     Some(vl) => match vl.parse::<i32>() {
                         Ok(val) => {
                             if val <= VAL {
-                                (check::CheckState::Passed, Some(format!("{}", val)))
+                                (check::CheckState::Pass, Some(format!("{}", val)))
                             } else {
-                                (
-                                    check::CheckState::Failed,
-                                    Some(format!("{} > {}", val, VAL)),
-                                )
+                                (check::CheckState::Fail, Some(format!("{} > {}", val, VAL)))
                             }
                         }
-                        Err(err) => (check::CheckState::Error, Some(err.to_string())),
+                        Err(err) => (check::CheckState::Warning, Some(err.to_string())),
                     },
                     None => (
-                        check::CheckState::Error,
+                        check::CheckState::Warning,
                         Some("key not present".to_string()),
                     ),
                 },
-                Err(err) => (check::CheckState::Error, Some(err)),
+                Err(err) => (check::CheckState::Warning, Some(err)),
             }
         },
         vec![login_defs::init_login_defs],
@@ -222,22 +207,19 @@ pub fn add_checks() {
                     Some(vl) => match vl.parse::<i32>() {
                         Ok(val) => {
                             if val <= VAL {
-                                (check::CheckState::Passed, Some(format!("{}", val)))
+                                (check::CheckState::Pass, Some(format!("{}", val)))
                             } else {
-                                (
-                                    check::CheckState::Failed,
-                                    Some(format!("{} > {}", val, VAL)),
-                                )
+                                (check::CheckState::Fail, Some(format!("{} > {}", val, VAL)))
                             }
                         }
-                        Err(err) => (check::CheckState::Error, Some(err.to_string())),
+                        Err(err) => (check::CheckState::Warning, Some(err.to_string())),
                     },
                     None => (
-                        check::CheckState::Error,
+                        check::CheckState::Warning,
                         Some("key not present".to_string()),
                     ),
                 },
-                Err(err) => (check::CheckState::Error, Some(err)),
+                Err(err) => (check::CheckState::Warning, Some(err)),
             }
         },
         vec![login_defs::init_login_defs],

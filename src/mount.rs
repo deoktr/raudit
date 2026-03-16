@@ -94,15 +94,15 @@ pub fn check_mount_present(target: &str) -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("mount configuration not initialized".to_string()),
             );
         }
     };
 
     match get_mount(mounts, target) {
-        Some(_) => (check::CheckState::Passed, None),
-        None => (check::CheckState::Failed, None),
+        Some(_) => (check::CheckState::Pass, None),
+        None => (check::CheckState::Fail, None),
     }
 }
 
@@ -117,7 +117,7 @@ pub fn check_mount_option(target: &str, option: &str) -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("mount configuration not initialized".to_string()),
             );
         }
@@ -126,16 +126,13 @@ pub fn check_mount_option(target: &str, option: &str) -> check::CheckReturn {
     match get_mount_options(mounts, target) {
         Some(options) => {
             if options.contains(&option.to_string()) {
-                (check::CheckState::Passed, None)
+                (check::CheckState::Pass, None)
             } else {
-                (
-                    check::CheckState::Failed,
-                    Some("missing option".to_string()),
-                )
+                (check::CheckState::Fail, Some("missing option".to_string()))
             }
         }
         None => (
-            check::CheckState::Failed,
+            check::CheckState::Fail,
             Some("not a mount point".to_string()),
         ),
     }

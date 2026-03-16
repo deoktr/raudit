@@ -30,17 +30,14 @@ pub fn empty_or_missing_file(path: &str) -> check::CheckReturn {
     match fs::metadata(path) {
         Ok(meta) => {
             if meta.len() == 0 {
-                (check::CheckState::Passed, None)
+                (check::CheckState::Pass, None)
             } else {
-                (
-                    check::CheckState::Failed,
-                    Some("file not empty".to_string()),
-                )
+                (check::CheckState::Fail, Some("file not empty".to_string()))
             }
         }
         Err(err) => match err.kind() {
-            std::io::ErrorKind::NotFound => (check::CheckState::Passed, None),
-            _ => (check::CheckState::Error, Some(err.to_string())),
+            std::io::ErrorKind::NotFound => (check::CheckState::Pass, None),
+            _ => (check::CheckState::Warning, Some(err.to_string())),
         },
     }
 }
@@ -50,15 +47,12 @@ pub fn empty_file(path: &str) -> check::CheckReturn {
     match fs::metadata(path) {
         Ok(meta) => {
             if meta.len() == 0 {
-                (check::CheckState::Passed, None)
+                (check::CheckState::Pass, None)
             } else {
-                (
-                    check::CheckState::Failed,
-                    Some("file not empty".to_string()),
-                )
+                (check::CheckState::Fail, Some("file not empty".to_string()))
             }
         }
-        Err(err) => (check::CheckState::Error, Some(err.to_string())),
+        Err(err) => (check::CheckState::Warning, Some(err.to_string())),
     }
 }
 
@@ -66,9 +60,9 @@ pub fn empty_file(path: &str) -> check::CheckReturn {
 pub fn directory_exist(path: &str) -> check::CheckReturn {
     let p = Path::new(path);
     if p.exists() && p.is_dir() {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     } else {
-        (check::CheckState::Failed, None)
+        (check::CheckState::Fail, None)
     }
 }
 
@@ -78,13 +72,13 @@ pub fn check_file_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn
     let metadata = match fs::metadata(path) {
         Ok(v) => v,
         Err(err) => {
-            return (check::CheckState::Error, Some(err.to_string()));
+            return (check::CheckState::Warning, Some(err.to_string()));
         }
     };
 
     if !metadata.is_file() {
         return (
-            check::CheckState::Error,
+            check::CheckState::Warning,
             Some("path is not a file".to_string()),
         );
     }
@@ -96,14 +90,14 @@ pub fn check_file_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn
 
     if muid != uid || mgid != gid {
         (
-            check::CheckState::Failed,
+            check::CheckState::Fail,
             Some(format!(
                 "wanted \"{}:{}\" got \"{}:{}\"",
                 uid, gid, muid, mgid
             )),
         )
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }
 
@@ -113,13 +107,13 @@ pub fn check_dir_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn 
     let metadata = match fs::metadata(path) {
         Ok(v) => v,
         Err(err) => {
-            return (check::CheckState::Error, Some(err.to_string()));
+            return (check::CheckState::Warning, Some(err.to_string()));
         }
     };
 
     if !metadata.is_dir() {
         return (
-            check::CheckState::Error,
+            check::CheckState::Warning,
             Some("path is not a directory".to_string()),
         );
     }
@@ -131,14 +125,14 @@ pub fn check_dir_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn 
 
     if muid != uid || mgid != gid {
         (
-            check::CheckState::Failed,
+            check::CheckState::Fail,
             Some(format!(
                 "wanted \"{}:{}\" got \"{}:{}\"",
                 uid, gid, muid, mgid
             )),
         )
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }
 
@@ -160,7 +154,7 @@ pub fn check_dir_files_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckR
 
                             if muid != uid || mgid != gid {
                                 return (
-                                    check::CheckState::Failed,
+                                    check::CheckState::Fail,
                                     Some(format!(
                                         "file: {:?}: wanted \"{}:{}\" got \"{}:{}\"",
                                         path, uid, gid, muid, mgid
@@ -171,16 +165,16 @@ pub fn check_dir_files_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckR
                     }
                     Err(err) => {
                         return (
-                            check::CheckState::Error,
+                            check::CheckState::Warning,
                             Some(format!("error on path {:?}: {}", path, err)),
                         );
                     }
                 }
             }
-            (check::CheckState::Passed, None)
+            (check::CheckState::Pass, None)
         }
         Err(err) => (
-            check::CheckState::Error,
+            check::CheckState::Warning,
             Some(format!("failed to open directory {}: {}", path, err)),
         ),
     }
@@ -192,9 +186,9 @@ pub fn check_file_owner_id_ignore_missing(path: &str, uid: u32, gid: u32) -> che
         Ok(_) => check_file_owner_id(path, uid, gid),
         Err(err) => match err.kind() {
             std::io::ErrorKind::NotFound => {
-                (check::CheckState::Passed, Some("file missing".to_string()))
+                (check::CheckState::Pass, Some("file missing".to_string()))
             }
-            _ => (check::CheckState::Error, Some(err.to_string())),
+            _ => (check::CheckState::Warning, Some(err.to_string())),
         },
     }
 }
@@ -207,13 +201,13 @@ pub fn check_file_permission(path: &str, perms: u32) -> check::CheckReturn {
     let metadata = match fs::metadata(path) {
         Ok(v) => v,
         Err(err) => {
-            return (check::CheckState::Error, Some(err.to_string()));
+            return (check::CheckState::Warning, Some(err.to_string()));
         }
     };
 
     if !metadata.is_file() {
         return (
-            check::CheckState::Error,
+            check::CheckState::Warning,
             Some("path is not a file".to_string()),
         );
     }
@@ -224,11 +218,11 @@ pub fn check_file_permission(path: &str, perms: u32) -> check::CheckReturn {
 
     if mode != perms {
         (
-            check::CheckState::Failed,
+            check::CheckState::Fail,
             Some(format!("wanted \"{:o}\" got \"{:o}\"", perms, mode)),
         )
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }
 
@@ -240,13 +234,13 @@ pub fn check_dir_permission(path: &str, perms: u32) -> check::CheckReturn {
     let metadata = match fs::metadata(path) {
         Ok(v) => v,
         Err(err) => {
-            return (check::CheckState::Error, Some(err.to_string()));
+            return (check::CheckState::Warning, Some(err.to_string()));
         }
     };
 
     if !metadata.is_dir() {
         return (
-            check::CheckState::Error,
+            check::CheckState::Warning,
             Some("path is not a directory".to_string()),
         );
     }
@@ -257,11 +251,11 @@ pub fn check_dir_permission(path: &str, perms: u32) -> check::CheckReturn {
 
     if mode != perms {
         (
-            check::CheckState::Failed,
+            check::CheckState::Fail,
             Some(format!("wanted \"{:o}\" got \"{:o}\"", perms, mode)),
         )
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }
 
@@ -283,7 +277,7 @@ pub fn check_dir_files_permission(path: &str, perms: u32) -> check::CheckReturn 
 
                             if mode != perms {
                                 return (
-                                    check::CheckState::Failed,
+                                    check::CheckState::Fail,
                                     Some(format!(
                                         "file {:?} permission: wanted \"{:o}\" got \"{:o}\"",
                                         path, perms, mode
@@ -294,16 +288,16 @@ pub fn check_dir_files_permission(path: &str, perms: u32) -> check::CheckReturn 
                     }
                     Err(err) => {
                         return (
-                            check::CheckState::Error,
+                            check::CheckState::Warning,
                             Some(format!("error on path {:?}: {}", path, err)),
                         );
                     }
                 }
             }
-            (check::CheckState::Passed, None)
+            (check::CheckState::Pass, None)
         }
         Err(err) => (
-            check::CheckState::Error,
+            check::CheckState::Warning,
             Some(format!("failed to open directory {}: {}", path, err)),
         ),
     }
@@ -315,9 +309,9 @@ pub fn check_file_permission_ignore_missing(path: &str, perms: u32) -> check::Ch
         Ok(_) => check_file_permission(path, perms),
         Err(err) => match err.kind() {
             std::io::ErrorKind::NotFound => {
-                (check::CheckState::Passed, Some("file missing".to_string()))
+                (check::CheckState::Pass, Some("file missing".to_string()))
             }
-            _ => (check::CheckState::Error, Some(err.to_string())),
+            _ => (check::CheckState::Warning, Some(err.to_string())),
         },
     }
 }
@@ -328,7 +322,7 @@ pub fn check_file_content_regex(path: &str, pattern: &str) -> check::CheckReturn
         Ok(re) => re,
         Err(err) => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some(format!("failed to compile shell timeout regex: {}", err)),
             );
         }
@@ -338,14 +332,11 @@ pub fn check_file_content_regex(path: &str, pattern: &str) -> check::CheckReturn
         Ok(content) => content,
         Err(err) => match err.kind() {
             std::io::ErrorKind::NotFound => {
-                return (
-                    check::CheckState::Failed,
-                    Some("file not found".to_string()),
-                );
+                return (check::CheckState::Fail, Some("file not found".to_string()));
             }
             _ => {
                 return (
-                    check::CheckState::Error,
+                    check::CheckState::Warning,
                     Some(format!("failed to read file: {}", err)),
                 );
             }
@@ -353,8 +344,8 @@ pub fn check_file_content_regex(path: &str, pattern: &str) -> check::CheckReturn
     };
 
     if re.is_match(&content) {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     } else {
-        (check::CheckState::Failed, Some("no match".to_string()))
+        (check::CheckState::Fail, Some("no match".to_string()))
     }
 }

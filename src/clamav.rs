@@ -24,8 +24,8 @@ use crate::utils::run;
 /// Ensure ClamAV is installed.
 pub fn clamav_installed() -> check::CheckReturn {
     if run!("clamscan", "--version") != "" {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     } else {
-        (check::CheckState::Failed, None)
+        (check::CheckState::Fail, None)
     }
 }

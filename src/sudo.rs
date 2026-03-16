@@ -51,9 +51,9 @@ pub fn init_sudo() {
     log_debug!("initialized sudo");
 }
 
-/// Initialize the sudoers configuration by reading it's config files.
 // FIXME: if not file could be red, print an error, and don't initialize sudo
 // configuration
+/// Initialize the sudoers configuration by reading it's config files.
 pub fn init_sudoer() {
     // TODO: there is an infinite amount of potential location for sudoers
     // configurations, we could try to read the content of `/etc/sudoers` and
@@ -170,16 +170,16 @@ pub fn check_sudo_defaults(defaults: &str) -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("sudo configuration defaults not initialized".to_string()),
             );
         }
     };
 
     if sudo_defaults.contains(&defaults.to_string()) {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     } else {
-        (check::CheckState::Failed, None)
+        (check::CheckState::Fail, None)
     }
 }
 
@@ -189,7 +189,7 @@ pub fn check_has_no_nopaswd() -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("sudo configuration not initialized".to_string()),
             );
         }
@@ -202,9 +202,9 @@ pub fn check_has_no_nopaswd() -> check::CheckReturn {
         .collect();
 
     if !g.is_empty() {
-        (check::CheckState::Failed, Some(g.join(", ")))
+        (check::CheckState::Fail, Some(g.join(", ")))
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }
 
@@ -214,7 +214,7 @@ pub fn check_re_authentication_not_disabled() -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("sudo configuration not initialized".to_string()),
             );
         }
@@ -227,8 +227,8 @@ pub fn check_re_authentication_not_disabled() -> check::CheckReturn {
         .collect();
 
     if !g.is_empty() {
-        (check::CheckState::Failed, Some(g.join(", ")))
+        (check::CheckState::Fail, Some(g.join(", ")))
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }

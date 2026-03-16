@@ -33,10 +33,8 @@ fn get_proc() -> Result<Proc, std::io::Error> {
     let mut output = Proc::new();
 
     let entries = fs::read_dir("/proc/")?;
-
     for entry in entries.flatten() {
         let path = entry.path();
-
         if !path.is_dir() {
             continue;
         }
@@ -49,9 +47,7 @@ fn get_proc() -> Result<Proc, std::io::Error> {
         if !pid.chars().all(char::is_numeric) {
             continue;
         }
-
         let mut name: String = String::new();
-
         match fs::read_to_string(format!("/proc/{pid}/status")) {
             Ok(status) => {
                 for line in status.lines() {
@@ -102,15 +98,15 @@ pub fn is_running(name: &str) -> check::CheckReturn {
         Some(kparams) => kparams,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("processes not initialized".to_string()),
             );
         }
     };
 
     match get_pids(procs, name) {
-        Some(pids) => (check::CheckState::Passed, Some(pids.join(", "))),
-        None => (check::CheckState::Failed, None),
+        Some(pids) => (check::CheckState::Pass, Some(pids.join(", "))),
+        None => (check::CheckState::Fail, None),
     }
 }
 
@@ -120,7 +116,7 @@ fn get_proc_flags(name: &str) -> Result<Vec<String>, check::CheckReturn> {
         Some(kparams) => kparams,
         None => {
             return Err((
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("processes not initialized".to_string()),
             ));
         }
@@ -130,7 +126,7 @@ fn get_proc_flags(name: &str) -> Result<Vec<String>, check::CheckReturn> {
         Some(pids) => pids,
         None => {
             return Err((
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some(format!("no {} process found", name)),
             ));
         }
@@ -138,7 +134,7 @@ fn get_proc_flags(name: &str) -> Result<Vec<String>, check::CheckReturn> {
 
     if pids.len() > 1 {
         return Err((
-            check::CheckState::Error,
+            check::CheckState::Warning,
             Some(format!(
                 "multiple process found with name {}: {}",
                 name,
@@ -152,7 +148,7 @@ fn get_proc_flags(name: &str) -> Result<Vec<String>, check::CheckReturn> {
         Ok(content) => content,
         Err(err) => {
             return Err((
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some(format!("failed to read file: {}", err)),
             ));
         }
@@ -173,7 +169,7 @@ fn get_proc_flag_value(name: &str, flag: &str) -> Result<String, check::CheckRet
                 return Ok(cmd[index + 1].clone());
             } else {
                 return Err((
-                    check::CheckState::Failed,
+                    check::CheckState::Fail,
                     Some(format!("missing flag {} value", flag)),
                 ));
             }
@@ -181,7 +177,7 @@ fn get_proc_flag_value(name: &str, flag: &str) -> Result<String, check::CheckRet
     }
 
     Err((
-        check::CheckState::Failed,
+        check::CheckState::Fail,
         Some(format!("missing flag {}", flag)),
     ))
 }
@@ -194,10 +190,10 @@ pub fn is_running_with_flag(name: &str, flag: &str) -> check::CheckReturn {
     };
 
     if cmd.contains(&flag.to_string()) {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     } else {
         (
-            check::CheckState::Failed,
+            check::CheckState::Fail,
             Some(format!("missing flag {}", flag)),
         )
     }
@@ -211,10 +207,10 @@ pub fn is_running_without_flag(name: &str, flag: &str) -> check::CheckReturn {
     };
 
     if !cmd.contains(&flag.to_string()) {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     } else {
         (
-            check::CheckState::Failed,
+            check::CheckState::Fail,
             Some(format!("missing flag {}", flag)),
         )
     }
@@ -229,14 +225,14 @@ pub fn is_running_with_flag_value(name: &str, flag: &str, value: &str) -> check:
 
     if flag_value != value {
         (
-            check::CheckState::Failed,
+            check::CheckState::Fail,
             Some(format!(
                 "wrong value for flag {} {} != {}",
                 flag, flag_value, value
             )),
         )
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }
 

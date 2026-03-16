@@ -96,7 +96,7 @@ pub fn check_sshd_config(key: &str, value: &str) -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("sshd configuration not initialized".to_string()),
             );
         }
@@ -105,11 +105,11 @@ pub fn check_sshd_config(key: &str, value: &str) -> check::CheckReturn {
     match sshd_config.get(key) {
         Some(val) => {
             if val == value {
-                (check::CheckState::Passed, None)
+                (check::CheckState::Pass, None)
             } else {
-                (check::CheckState::Failed, Some(val.to_string()))
+                (check::CheckState::Fail, Some(val.to_string()))
             }
         }
-        None => (check::CheckState::Failed, None),
+        None => (check::CheckState::Fail, None),
     }
 }

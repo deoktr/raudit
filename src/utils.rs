@@ -59,7 +59,7 @@ pub fn wrap_text(text: &str, max_width: usize) -> Vec<String> {
     wrapped_lines
 }
 
-/// Run a command without failling.
+/// Run a command without failing.
 macro_rules! run {
     ($bin:tt) => {{
         let mut cmd = std::process::Command::new($bin);

@@ -143,7 +143,7 @@ pub fn add_checks() {
         || match systemd::get_service_file("docker") {
             Some(path) => base::check_file_owner_id(&path, 0, 0),
             None => (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("systemd docker service file not found".to_string()),
             ),
         },
@@ -164,7 +164,7 @@ pub fn add_checks() {
         || match systemd::get_service_file("docker") {
             Some(path) => base::check_file_permission(&path, 0o644),
             None => (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("systemd docker service file not found".to_string()),
             ),
         },
@@ -185,7 +185,7 @@ pub fn add_checks() {
         || match systemd::get_socket_file("docker") {
             Some(path) => base::check_file_owner_id(&path, 0, 0),
             None => (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("systemd docker socket file not found".to_string()),
             ),
         },
@@ -206,7 +206,7 @@ pub fn add_checks() {
         || match systemd::get_socket_file("docker") {
             Some(path) => base::check_file_permission(&path, 0o644),
             None => (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("systemd docker socket file not found".to_string()),
             ),
         },

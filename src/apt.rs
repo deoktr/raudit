@@ -75,7 +75,7 @@ pub fn check_apt(key: &str, value: &str) -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("apt configuration not initialized".to_string()),
             );
         }
@@ -84,16 +84,16 @@ pub fn check_apt(key: &str, value: &str) -> check::CheckReturn {
     match config.get(key) {
         Some(conf_value) => {
             if conf_value == value {
-                (check::CheckState::Passed, None)
+                (check::CheckState::Pass, None)
             } else {
                 (
-                    check::CheckState::Failed,
+                    check::CheckState::Fail,
                     Some(format!("found: {}", conf_value)),
                 )
             }
         }
         None => (
-            check::CheckState::Failed,
+            check::CheckState::Fail,
             Some(format!("key {:?} not present", key)),
         ),
     }

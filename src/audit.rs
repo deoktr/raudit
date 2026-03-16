@@ -128,16 +128,16 @@ pub fn check_audit_rule(rule: &str) -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("audit rules not initialized".to_string()),
             );
         }
     };
 
     if audit_rules.contains(&rule.to_string()) {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     } else {
-        (check::CheckState::Failed, Some("not present".to_string()))
+        (check::CheckState::Fail, Some("not present".to_string()))
     }
 }
 
@@ -147,7 +147,7 @@ pub fn check_audit_config(key: &str, value: &str) -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("audit rules not initialized".to_string()),
             );
         }
@@ -156,16 +156,16 @@ pub fn check_audit_config(key: &str, value: &str) -> check::CheckReturn {
     match audit_config.get(key) {
         Some(conf_value) => {
             if conf_value == value {
-                (check::CheckState::Passed, None)
+                (check::CheckState::Pass, None)
             } else {
                 (
-                    check::CheckState::Failed,
+                    check::CheckState::Fail,
                     Some(format!("found: {}", conf_value)),
                 )
             }
         }
         None => (
-            check::CheckState::Failed,
+            check::CheckState::Fail,
             Some(format!("key {:?} not present", key)),
         ),
     }

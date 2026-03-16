@@ -75,13 +75,13 @@ pub fn check_sid_bin(root_str: &str) -> check::CheckReturn {
 
     if !sid_bin.is_empty() {
         (
-            check::CheckState::Failed,
+            check::CheckState::Fail,
             Some(format!(
                 "found {}, enable debug logging to see the list",
                 sid_bin.len()
             )),
         )
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }

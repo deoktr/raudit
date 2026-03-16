@@ -17,7 +17,7 @@
  */
 
 pub const RESET_COLOR: &str = "\x1b[39m";
-pub const PASSED_COLOR: &str = "\x1b[32m";
-pub const FAILED_COLOR: &str = "\x1b[31m";
-pub const ERROR_COLOR: &str = "\x1b[36m";
-pub const WAITING_COLOR: &str = "\x1b[36m";
+pub const PASS_COLOR: &str = "\x1b[32m";
+pub const FAIL_COLOR: &str = "\x1b[31m";
+pub const WARNING_COLOR: &str = "\x1b[36m";
+pub const UNKNOWN_COLOR: &str = "\x1b[36m";

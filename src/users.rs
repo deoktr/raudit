@@ -232,7 +232,7 @@ pub fn no_password_in_passwd() -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("passwd configuration not initialized".to_string()),
             );
         }
@@ -245,9 +245,9 @@ pub fn no_password_in_passwd() -> check::CheckReturn {
         .collect();
 
     if !g.is_empty() {
-        (check::CheckState::Failed, Some(g.join(", ")))
+        (check::CheckState::Fail, Some(g.join(", ")))
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }
 
@@ -257,7 +257,7 @@ pub fn no_uid_zero() -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("passwd configuration not initialized".to_string()),
             );
         }
@@ -270,9 +270,9 @@ pub fn no_uid_zero() -> check::CheckReturn {
         .collect();
 
     if !g.is_empty() {
-        (check::CheckState::Failed, Some(g.join(", ")))
+        (check::CheckState::Fail, Some(g.join(", ")))
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }
 
@@ -282,7 +282,7 @@ pub fn yescrypt_hashes() -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("shadow configuration not initialized".to_string()),
             );
         }
@@ -299,9 +299,9 @@ pub fn yescrypt_hashes() -> check::CheckReturn {
         .collect();
 
     if !usernames.is_empty() {
-        (check::CheckState::Failed, Some(usernames.join(", ")))
+        (check::CheckState::Fail, Some(usernames.join(", ")))
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }
 
@@ -311,7 +311,7 @@ pub fn no_locked_account() -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("shadow configuration not initialized".to_string()),
             );
         }
@@ -319,7 +319,7 @@ pub fn no_locked_account() -> check::CheckReturn {
 
     let now = match SystemTime::now().duration_since(UNIX_EPOCH) {
         Ok(c) => c,
-        Err(err) => return (check::CheckState::Error, Some(format!("{}", err))),
+        Err(err) => return (check::CheckState::Warning, Some(format!("{}", err))),
     };
 
     let days_since_epoch = now.as_secs() / 86400;
@@ -336,9 +336,9 @@ pub fn no_locked_account() -> check::CheckReturn {
         .collect();
 
     if !usernames.is_empty() {
-        (check::CheckState::Failed, Some(usernames.join(", ")))
+        (check::CheckState::Fail, Some(usernames.join(", ")))
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }
 
@@ -348,7 +348,7 @@ pub fn no_missing_home() -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("passwd configuration not initialized".to_string()),
             );
         }
@@ -370,9 +370,9 @@ pub fn no_missing_home() -> check::CheckReturn {
     }
 
     if !usernames.is_empty() {
-        (check::CheckState::Failed, Some(usernames.join(", ")))
+        (check::CheckState::Fail, Some(usernames.join(", ")))
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }
 
@@ -387,7 +387,7 @@ pub fn no_dup_uid() -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("passwd configuration not initialized".to_string()),
             );
         }
@@ -400,9 +400,9 @@ pub fn no_dup_uid() -> check::CheckReturn {
         .collect();
 
     if !usernames.is_empty() {
-        (check::CheckState::Failed, Some(usernames.join(", ")))
+        (check::CheckState::Fail, Some(usernames.join(", ")))
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }
 
@@ -412,7 +412,7 @@ pub fn no_dup_username() -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("passwd configuration not initialized".to_string()),
             );
         }
@@ -431,9 +431,9 @@ pub fn no_dup_username() -> check::CheckReturn {
         .collect();
 
     if !usernames.is_empty() {
-        (check::CheckState::Failed, Some(usernames.join(", ")))
+        (check::CheckState::Fail, Some(usernames.join(", ")))
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }
 
@@ -446,7 +446,7 @@ pub fn no_login_sys_users() -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("passwd configuration not initialized".to_string()),
             );
         }
@@ -465,9 +465,9 @@ pub fn no_login_sys_users() -> check::CheckReturn {
         .collect();
 
     if !usernames.is_empty() {
-        (check::CheckState::Failed, Some(usernames.join(", ")))
+        (check::CheckState::Fail, Some(usernames.join(", ")))
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }
 
@@ -480,7 +480,7 @@ pub fn no_empty_shadow_password() -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("shadow configuration not initialized".to_string()),
             );
         }
@@ -493,9 +493,9 @@ pub fn no_empty_shadow_password() -> check::CheckReturn {
         .collect();
 
     if !usernames.is_empty() {
-        (check::CheckState::Failed, Some(usernames.join(", ")))
+        (check::CheckState::Fail, Some(usernames.join(", ")))
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }
 
@@ -508,7 +508,7 @@ pub fn no_empty_passwd_password() -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("passwd configuration not initialized".to_string()),
             );
         }
@@ -521,9 +521,9 @@ pub fn no_empty_passwd_password() -> check::CheckReturn {
         .collect();
 
     if !usernames.is_empty() {
-        (check::CheckState::Failed, Some(usernames.join(", ")))
+        (check::CheckState::Fail, Some(usernames.join(", ")))
     } else {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     }
 }
 

@@ -66,7 +66,6 @@ fn parse_pam_rule(line: &str) -> Result<PamRule, String> {
     };
 
     let mut ws_split = clean_line.split_whitespace();
-
     let rule_type = match ws_split.next() {
         Some(t) => t.to_string(),
         None => return Err("Failed to split PAM rule".to_string()),
@@ -167,7 +166,6 @@ fn parse_pam_file(path: PathBuf, content: String) -> Vec<PamRule> {
             }
         }
     }
-
     pam_rules
 }
 
@@ -194,7 +192,6 @@ fn get_pam() -> Result<PamConfig, std::io::Error> {
         };
 
         let rules = parse_pam_file(path.clone(), content);
-
         config.insert(
             // get the file name, it represent the configured app
             path.file_name()
@@ -204,7 +201,6 @@ fn get_pam() -> Result<PamConfig, std::io::Error> {
             rules,
         );
     }
-
     Ok(config)
 }
 
@@ -263,7 +259,6 @@ fn get_pam_rule(
             } else if rules.len() > 1 {
                 return Err("more than one rule found".to_string());
             }
-
             Ok(())
         }
         None => Err("services not configured with pam".to_string()),
@@ -282,15 +277,15 @@ pub fn check_rule(
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("pam configuration not initialized".to_string()),
             );
         }
     };
 
     match get_pam_rule(config, service, rule_type, control, module) {
-        Ok(()) => (check::CheckState::Passed, None),
-        Err(err) => (check::CheckState::Failed, Some(err.to_string())),
+        Ok(()) => (check::CheckState::Pass, None),
+        Err(err) => (check::CheckState::Fail, Some(err.to_string())),
     }
 }
 

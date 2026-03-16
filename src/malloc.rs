@@ -53,13 +53,13 @@ pub fn has_scudo_malloc() -> check::CheckReturn {
     match LD_SO_PRELOAD.get() {
         Some(config) => {
             if config.contains("scudo") {
-                (check::CheckState::Passed, None)
+                (check::CheckState::Pass, None)
             } else {
-                (check::CheckState::Failed, None)
+                (check::CheckState::Fail, None)
             }
         }
         None => (
-            check::CheckState::Error,
+            check::CheckState::Warning,
             Some("ld.so.preload not initialized".to_string()),
         ),
     }

@@ -26,11 +26,11 @@ pub fn apparmor_enabled() -> check::CheckReturn {
     match fs::read_to_string("/sys/module/apparmor/parameters/enabled") {
         Ok(content) => {
             if content == "Y\n" {
-                (check::CheckState::Passed, None)
+                (check::CheckState::Pass, None)
             } else {
-                (check::CheckState::Failed, None)
+                (check::CheckState::Fail, None)
             }
         }
-        Err(err) => (check::CheckState::Error, Some(err.to_string())),
+        Err(err) => (check::CheckState::Warning, Some(err.to_string())),
     }
 }

@@ -133,7 +133,7 @@ fn get_modprobe_disabled(modprobe: &ModprobeConfig) -> ModprobeDisabled {
             // OR
             // `install mod_name /bin/true`
             // NOTE: technically it can be any other executable other then the
-            // actuall module
+            // actual module
             // You could for example add a custom executable to log every
             // loading attempts
             line.starts_with("install")
@@ -205,7 +205,7 @@ pub fn check_module_blacklist(module: &str) -> check::CheckReturn {
         Some(m_blacklist) => m_blacklist,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("modprobe blacklist not initialized".to_string()),
             );
         }
@@ -215,7 +215,7 @@ pub fn check_module_blacklist(module: &str) -> check::CheckReturn {
         Some(loaded) => loaded,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("loaded modules not initialized".to_string()),
             );
         }
@@ -223,16 +223,16 @@ pub fn check_module_blacklist(module: &str) -> check::CheckReturn {
 
     if m_blacklist.contains(&module.to_string()) {
         if !loaded.contains(&module.to_string()) {
-            (check::CheckState::Passed, None)
+            (check::CheckState::Pass, None)
         } else {
             (
-                check::CheckState::Failed,
+                check::CheckState::Fail,
                 Some("module blacklisted but loaded".to_string()),
             )
         }
     } else {
         (
-            check::CheckState::Failed,
+            check::CheckState::Fail,
             Some("module not blacklisted".to_string()),
         )
     }
@@ -244,7 +244,7 @@ pub fn check_module_disabled(module: &str) -> check::CheckReturn {
         Some(m_disabled) => m_disabled,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("modprobe disabled not initialized".to_string()),
             );
         }
@@ -254,7 +254,7 @@ pub fn check_module_disabled(module: &str) -> check::CheckReturn {
         Some(loaded) => loaded,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("loaded modules not initialized".to_string()),
             );
         }
@@ -263,16 +263,16 @@ pub fn check_module_disabled(module: &str) -> check::CheckReturn {
     if m_disabled.contains(&module.to_string()) {
         // TODO: should we even care about it being loaded since it's disabled
         if !loaded.contains(&module.to_string()) {
-            (check::CheckState::Passed, None)
+            (check::CheckState::Pass, None)
         } else {
             (
-                check::CheckState::Failed,
+                check::CheckState::Fail,
                 Some("module disabled but loaded".to_string()),
             )
         }
     } else {
         (
-            check::CheckState::Failed,
+            check::CheckState::Fail,
             Some("module not disabled".to_string()),
         )
     }

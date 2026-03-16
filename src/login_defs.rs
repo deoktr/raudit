@@ -78,20 +78,17 @@ pub fn check_login_defs(key: &str, value: &str) -> check::CheckReturn {
         Ok(v) => match v {
             Some(conf_value) => {
                 if conf_value == value {
-                    (check::CheckState::Passed, None)
+                    (check::CheckState::Pass, None)
                 } else {
                     (
-                        check::CheckState::Failed,
+                        check::CheckState::Fail,
                         Some(format!("{} != {}", value, conf_value)),
                     )
                 }
             }
-            None => (
-                check::CheckState::Failed,
-                Some("key not present".to_string()),
-            ),
+            None => (check::CheckState::Fail, Some("key not present".to_string())),
         },
-        Err(err) => (check::CheckState::Error, Some(err.to_string())),
+        Err(err) => (check::CheckState::Warning, Some(err.to_string())),
     }
 }
 

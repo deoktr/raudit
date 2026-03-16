@@ -26,7 +26,7 @@ const CMDLINE_PATH: &str = "/proc/cmdline";
 
 static KERNEL_PARAMS: OnceLock<KernelParams> = OnceLock::new();
 
-/// Kenel params from `/proc/cmdline`.
+/// Kernel params from `/proc/cmdline`.
 pub type KernelParams = Vec<String>;
 
 /// Parse content for `/proc/cmdline`.
@@ -65,16 +65,16 @@ pub fn check_kernel_params(variable: &str) -> check::CheckReturn {
         Some(kparams) => kparams,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("kernel params not initialized".to_string()),
             );
         }
     };
 
     if kparams.contains(&variable.to_string()) {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     } else {
-        (check::CheckState::Failed, None)
+        (check::CheckState::Fail, None)
     }
 }
 
@@ -86,8 +86,8 @@ pub fn check_reboot_required() -> check::CheckReturn {
         || Path::new("/var/run/reboot-required").exists()
         || Path::new("/var/run/needs_restarting").exists())
     {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     } else {
-        (check::CheckState::Failed, None)
+        (check::CheckState::Fail, None)
     }
 }

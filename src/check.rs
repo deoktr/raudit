@@ -44,14 +44,14 @@ pub struct Report {
 
 #[derive(PartialEq, Serialize)]
 pub enum CheckState {
-    /// Check passed
-    Passed,
-    /// Check failed
-    Failed,
-    /// Check function execution error
-    Error,
-    /// Check is yet to execute or in progress
-    Waiting,
+    /// Check is yet to execute or in progress.
+    Unknown,
+    /// Check passed.
+    Pass,
+    /// Check function execution error, usually missing permissions.
+    Warning,
+    /// Check failed.
+    Fail,
 }
 
 /// Check is a verification to perform on the host.
@@ -108,7 +108,7 @@ impl Check {
             title: title.to_string(),
             description: None,
             fix: None,
-            state: CheckState::Waiting,
+            state: CheckState::Unknown,
             check,
             message: None,
             dependencies,
@@ -143,7 +143,7 @@ pub fn print_checks(skip_passed: bool, no_print_description: bool, no_print_fix:
     let report = REPORT.lock().expect("Checks not initialized");
 
     for check in report.checks.iter() {
-        if skip_passed && check.state == CheckState::Passed {
+        if skip_passed && check.state == CheckState::Pass {
             continue;
         }
 
@@ -151,7 +151,7 @@ pub fn print_checks(skip_passed: bool, no_print_description: bool, no_print_fix:
 
         let mut add_new_line = false;
 
-        if check.state != CheckState::Passed
+        if check.state != CheckState::Pass
             && !no_print_description
             && let Some(description) = &check.description
         {
@@ -161,7 +161,7 @@ pub fn print_checks(skip_passed: bool, no_print_description: bool, no_print_fix:
             add_new_line = true;
         }
 
-        if check.state == CheckState::Failed
+        if check.state == CheckState::Fail
             && !no_print_fix
             && let Some(fix) = &check.fix
         {
@@ -171,7 +171,7 @@ pub fn print_checks(skip_passed: bool, no_print_description: bool, no_print_fix:
             add_new_line = true;
         }
 
-        if check.state == CheckState::Failed && !check.links.is_empty() {
+        if check.state == CheckState::Fail && !check.links.is_empty() {
             println!("Links:");
             for link in &check.links {
                 println!("- <{}>", link);
@@ -351,28 +351,25 @@ impl Display for Check {
 
         let message = if config::is_colored_output_enabled() {
             match self.state {
-                CheckState::Passed => {
-                    format!("{}{}{}", consts::PASSED_COLOR, out, consts::RESET_COLOR)
+                CheckState::Pass => {
+                    format!("{}{}{}", consts::PASS_COLOR, out, consts::RESET_COLOR)
                 }
-                CheckState::Failed => {
-                    format!("{}{}{}", consts::FAILED_COLOR, out, consts::RESET_COLOR)
+                CheckState::Fail => {
+                    format!("{}{}{}", consts::FAIL_COLOR, out, consts::RESET_COLOR)
                 }
-                CheckState::Error => {
-                    format!("{}{}{}", consts::ERROR_COLOR, out, consts::RESET_COLOR)
+                CheckState::Warning => {
+                    format!("{}{}{}", consts::WARNING_COLOR, out, consts::RESET_COLOR)
                 }
-                CheckState::Waiting => format!(
-                    "{}{} !NOT CHECKED!{}",
-                    consts::WAITING_COLOR,
-                    out,
-                    consts::RESET_COLOR
-                ),
+                CheckState::Unknown => {
+                    format!("{}{}{}", consts::UNKNOWN_COLOR, out, consts::RESET_COLOR)
+                }
             }
         } else {
             match self.state {
-                CheckState::Passed => format!("PASSED {}", out),
-                CheckState::Failed => format!("FAILED {}", out),
-                CheckState::Error => format!("ERROR {}", out),
-                CheckState::Waiting => format!("N/A {} !NOT CHECKED!", out),
+                CheckState::Pass => format!("PAS {}", out),
+                CheckState::Fail => format!("FAIL {}", out),
+                CheckState::Warning => format!("WARNING {}", out),
+                CheckState::Unknown => format!("UNKNOWN {}", out),
             }
         };
 
@@ -383,36 +380,36 @@ impl Display for Check {
 #[derive(Serialize, Default)]
 pub struct ReportStats {
     total: i32,
-    passed: i32,
-    failed: i32,
-    error: i32,
-    waiting: i32,
+    pass: i32,
+    fail: i32,
+    warning: i32,
+    unknown: i32,
 }
 
 pub fn calculate_stats() {
     let mut report = REPORT.lock().unwrap();
 
     let mut total = 0;
-    let mut passed = 0;
-    let mut failed = 0;
-    let mut error = 0;
-    let mut waiting = 0;
+    let mut pass = 0;
+    let mut fail = 0;
+    let mut warning = 0;
+    let mut unknown = 0;
 
     for check in report.checks.iter() {
         total += 1;
         match check.state {
-            CheckState::Passed => passed += 1,
-            CheckState::Failed => failed += 1,
-            CheckState::Error => error += 1,
-            CheckState::Waiting => waiting += 1,
+            CheckState::Pass => pass += 1,
+            CheckState::Fail => fail += 1,
+            CheckState::Warning => warning += 1,
+            CheckState::Unknown => unknown += 1,
         }
     }
 
     report.stats.total = total;
-    report.stats.passed = passed;
-    report.stats.failed = failed;
-    report.stats.error = error;
-    report.stats.waiting = waiting;
+    report.stats.pass = pass;
+    report.stats.fail = fail;
+    report.stats.warning = warning;
+    report.stats.unknown = unknown;
 }
 
 pub fn print_stats() {
@@ -430,31 +427,36 @@ fn format_percent(val: i32, tot: i32) -> String {
 
 impl ReportStats {
     pub fn print(&self) {
-        let mut passed = format!(
+        let mut pass = format!(
             "\tPASSED: {:4}/{} {:>9}",
-            self.passed,
+            self.pass,
             self.total,
-            format_percent(self.passed, self.total),
+            format_percent(self.pass, self.total),
         );
-        let mut failed = format!(
+        let mut fail = format!(
             "\tFAILED: {:4}/{} {:>9}",
-            self.failed,
+            self.fail,
             self.total,
-            format_percent(self.failed, self.total),
+            format_percent(self.fail, self.total),
         );
-        let mut error = format!(
-            "\tERROR:  {:4}/{} {:>9}",
-            self.error,
+        let mut warning = format!(
+            "\tWARNING:  {:4}/{} {:>9}",
+            self.warning,
             self.total,
-            format_percent(self.error, self.total),
+            format_percent(self.warning, self.total),
         );
 
         if config::is_colored_output_enabled() {
-            passed = format!("{}{}{}", consts::PASSED_COLOR, passed, consts::RESET_COLOR);
-            failed = format!("{}{}{}", consts::FAILED_COLOR, failed, consts::RESET_COLOR);
-            error = format!("{}{}{}", consts::ERROR_COLOR, error, consts::RESET_COLOR);
+            pass = format!("{}{}{}", consts::PASS_COLOR, pass, consts::RESET_COLOR);
+            fail = format!("{}{}{}", consts::FAIL_COLOR, fail, consts::RESET_COLOR);
+            warning = format!(
+                "{}{}{}",
+                consts::WARNING_COLOR,
+                warning,
+                consts::RESET_COLOR
+            );
         }
 
-        print!("\n\tResult:\n{}\n{}\n{}\n\n", passed, failed, error);
+        print!("\n\tResult:\n{}\n{}\n{}\n\n", pass, fail, warning);
     }
 }

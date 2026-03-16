@@ -79,15 +79,15 @@ pub fn add_checks() {
             match sysctl::get_sysctl_i32_value("kernel.perf_event_paranoid") {
                 Ok(value) => {
                     if value >= VAL {
-                        (check::CheckState::Passed, Some(format!("{}", value)))
+                        (check::CheckState::Pass, Some(format!("{}", value)))
                     } else {
                         (
-                            check::CheckState::Failed,
+                            check::CheckState::Fail,
                             Some(format!("{} > {}", value, VAL)),
                         )
                     }
                 }
-                Err(err) => (check::CheckState::Error, Some(err)),
+                Err(err) => (check::CheckState::Warning, Some(err)),
             }
         },
         vec![sysctl::init_sysctl_config],
@@ -156,14 +156,16 @@ pub fn add_checks() {
         1
     )
     .register();
-    // FIXME: only available on Debian, create custom rule to check if OS is debian, else ignore
-    // NOTE: prevents Podman from working rootless
+    // FIXME: only available on some kernels
+    // NOTE: prevents Docker and Podman from working rootless
     sysctl::add_sysctl_check!(
         "SYS_016",
         vec!["sysctl", "server", "workstation"],
         "kernel.unprivileged_userns_clone",
         0
     )
+    .with_description("'unprivileged_userns_clone' greatly increases the attack surface for local privilege escalation. Note that disabling this will prevent Docker and Podman from working rootless.")
+    .with_link("https://gitlab.com/apparmor/apparmor/-/wikis/unprivileged_userns_restriction")
     .register();
     // check::Check::new(
     //     "SYS_016",
@@ -183,15 +185,15 @@ pub fn add_checks() {
             match sysctl::get_sysctl_i32_value("kernel.yama.ptrace_scope") {
                 Ok(value) => {
                     if value >= VAL {
-                        (check::CheckState::Passed, Some(format!("{}", value)))
+                        (check::CheckState::Pass, Some(format!("{}", value)))
                     } else {
                         (
-                            check::CheckState::Failed,
+                            check::CheckState::Fail,
                             Some(format!("{} > {}", value, VAL)),
                         )
                     }
                 }
-                Err(err) => (check::CheckState::Error, Some(err)),
+                Err(err) => (check::CheckState::Warning, Some(err)),
             }
         },
         vec![sysctl::init_sysctl_config],
@@ -353,8 +355,8 @@ pub fn add_checks() {
         || {
             let (status, message) = sysctl::check_sysctl("fs.binfmt_misc.status", 0);
             // ignore if not present
-            if status == check::CheckState::Error {
-                (check::CheckState::Passed, None)
+            if status == check::CheckState::Warning {
+                (check::CheckState::Pass, None)
             } else {
                 (status, message)
             }
@@ -506,15 +508,15 @@ pub fn add_checks() {
             match sysctl::get_sysctl_i32_value("net.ipv4.icmp_ratelimit") {
                 Ok(value) => {
                     if value <= VAL {
-                        (check::CheckState::Passed, Some(format!("{}", value)))
+                        (check::CheckState::Pass, Some(format!("{}", value)))
                     } else {
                         (
-                            check::CheckState::Failed,
+                            check::CheckState::Fail,
                             Some(format!("{} > {}", value, VAL)),
                         )
                     }
                 }
-                Err(err) => (check::CheckState::Error, Some(err)),
+                Err(err) => (check::CheckState::Warning, Some(err)),
             }
         },
         vec![sysctl::init_sysctl_config],
@@ -789,15 +791,15 @@ pub fn add_checks() {
             match sysctl::get_sysctl_i32_value("user.max_user_namespaces") {
                 Ok(value) => {
                     if value <= VAL {
-                        (check::CheckState::Passed, Some(format!("{}", value)))
+                        (check::CheckState::Pass, Some(format!("{}", value)))
                     } else {
                         (
-                            check::CheckState::Failed,
+                            check::CheckState::Fail,
                             Some(format!("{} > {}", value, VAL)),
                         )
                     }
                 }
-                Err(err) => (check::CheckState::Error, Some(err)),
+                Err(err) => (check::CheckState::Warning, Some(err)),
             }
         },
         vec![sysctl::init_sysctl_config],
@@ -814,15 +816,15 @@ pub fn add_checks() {
             match sysctl::get_sysctl_i32_value("kernel.warn_limit") {
                 Ok(value) => {
                     if value <= VAL {
-                        (check::CheckState::Passed, Some(format!("{}", value)))
+                        (check::CheckState::Pass, Some(format!("{}", value)))
                     } else {
                         (
-                            check::CheckState::Failed,
+                            check::CheckState::Fail,
                             Some(format!("{} > {}", value, VAL)),
                         )
                     }
                 }
-                Err(err) => (check::CheckState::Error, Some(err)),
+                Err(err) => (check::CheckState::Warning, Some(err)),
             }
         },
         vec![sysctl::init_sysctl_config],
@@ -839,15 +841,15 @@ pub fn add_checks() {
             match sysctl::get_sysctl_i32_value("kernel.oops_limit") {
                 Ok(value) => {
                     if value <= VAL {
-                        (check::CheckState::Passed, Some(format!("{}", value)))
+                        (check::CheckState::Pass, Some(format!("{}", value)))
                     } else {
                         (
-                            check::CheckState::Failed,
+                            check::CheckState::Fail,
                             Some(format!("{} > {}", value, VAL)),
                         )
                     }
                 }
-                Err(err) => (check::CheckState::Error, Some(err)),
+                Err(err) => (check::CheckState::Warning, Some(err)),
             }
         },
         vec![sysctl::init_sysctl_config],

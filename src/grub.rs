@@ -54,7 +54,7 @@ pub fn password_is_set() -> check::CheckReturn {
         Some(c) => c,
         None => {
             return (
-                check::CheckState::Error,
+                check::CheckState::Warning,
                 Some("grub configuration not initialized".to_string()),
             );
         }
@@ -64,8 +64,8 @@ pub fn password_is_set() -> check::CheckReturn {
     if grub_cfg.contains(&"\nset superusers".to_string())
         && grub_cfg.contains(&"\npassword".to_string())
     {
-        (check::CheckState::Passed, None)
+        (check::CheckState::Pass, None)
     } else {
-        (check::CheckState::Failed, None)
+        (check::CheckState::Fail, None)
     }
 }
