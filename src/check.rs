@@ -440,7 +440,7 @@ impl ReportStats {
             format_percent(self.fail, self.total),
         );
         let mut warning = format!(
-            "\tWARNING:  {:4}/{} {:>9}",
+            "\tWARNING: {:3}/{} {:>9}",
             self.warning,
             self.total,
             format_percent(self.warning, self.total),

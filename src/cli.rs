@@ -191,6 +191,7 @@ fn add_all_checks() {
     rules::malloc::add_checks();
     rules::modprobe::add_checks();
     rules::mount::add_checks();
+    rules::nginx::add_checks();
     rules::pam::add_checks();
     rules::podman::add_checks();
     rules::shell::add_checks();

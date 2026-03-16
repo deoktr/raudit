@@ -38,6 +38,7 @@ mod login_defs;
 mod malloc;
 mod modprobe;
 mod mount;
+mod nginx;
 mod os;
 mod pam;
 mod podman;
@@ -69,6 +70,7 @@ mod rules {
     pub mod malloc;
     pub mod modprobe;
     pub mod mount;
+    pub mod nginx;
     pub mod pam;
     pub mod podman;
     pub mod shell;
