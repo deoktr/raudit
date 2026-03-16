@@ -238,8 +238,9 @@ Benchmark 1: ./target/release/raudit
 
 ## TODO
 
+- Filter checks by severity via the CLI
+- Add different colors to severity
 - Give much more detailed logs of the error
-- Add a "criticity", "hardening level" value linked to a check
 - Create custom parsers for complex configurations (sudo, nginx, etc.)
 - Give the user's the ability to specify config paths, with globing
 - Check permissions on startup (root or not) and warn user if needed

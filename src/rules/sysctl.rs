@@ -1,6 +1,7 @@
 // sources:
 // - tails: https://tails.net/contribute/design/kernel_hardening/
 
+use crate::check::Severity;
 use crate::*;
 
 pub fn add_checks() {
@@ -9,6 +10,7 @@ pub fn add_checks() {
     // the security
     sysctl::add_sysctl_check!(
         "SYS_001",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation", "tails"],
         "kernel.kptr_restrict",
         // TODO: allow for 1 as well
@@ -19,6 +21,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_002",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         "kernel.ftrace_enabled",
         0
@@ -28,6 +31,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_003",
+        Severity::Medium,
         vec!["sysctl", "CIS", "server", "workstation"],
         "kernel.randomize_va_space",
         2
@@ -38,6 +42,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_004",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         "kernel.dmesg_restrict",
         1
@@ -47,6 +52,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_005",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         "kernel.printk",
         "3\t3\t3\t3"
@@ -56,6 +62,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_006",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         "kernel.perf_cpu_time_max_percent",
         1
@@ -64,6 +71,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_007",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         "kernel.perf_event_max_sample_rate",
         1
@@ -73,6 +81,7 @@ pub fn add_checks() {
     check::Check::new(
         "SYS_008",
         "Ensure sysctl \"kernel.perf_event_paranoid\" >= 2",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         || {
             const VAL: i32 = 2;
@@ -97,6 +106,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_009",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         "kernel.sysrq",
         0
@@ -106,6 +116,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_010",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation", "tails"],
         "kernel.kexec_load_disabled",
         1
@@ -115,6 +126,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_011",
+        Severity::Medium,
         vec!["sysctl", "bpf", "server", "workstation"],
         "kernel.unprivileged_bpf_disabled",
         1
@@ -126,6 +138,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_012",
+        Severity::High,
         vec!["sysctl", "bpf", "server", "workstation", "tails"],
         "net.core.bpf_jit_harden",
         2
@@ -135,6 +148,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_013",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         "kernel.panic_on_oops",
         1
@@ -144,6 +158,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_014",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         "kernel.panic",
         "-1"
@@ -151,6 +166,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_015",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         "kernel.modules_disabled",
         1
@@ -160,6 +176,7 @@ pub fn add_checks() {
     // NOTE: prevents Docker and Podman from working rootless
     sysctl::add_sysctl_check!(
         "SYS_016",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "kernel.unprivileged_userns_clone",
         0
@@ -179,6 +196,7 @@ pub fn add_checks() {
     check::Check::new(
         "SYS_017",
         "Ensure sysctl \"kernel.yama.ptrace_scope\" >= 1",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         || {
             const VAL: i32 = 1;
@@ -206,6 +224,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_018",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         "kernel.io_uring_disabled",
         2
@@ -215,6 +234,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_019",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         "kernel.core_pattern",
         "|/bin/false"
@@ -224,6 +244,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_020",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         "kernel.core_uses_pid",
         1
@@ -233,6 +254,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_021",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         "vm.unprivileged_userfaultfd",
         0
@@ -242,6 +264,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_022",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation", "tails"],
         "vm.mmap_rnd_bits",
         32
@@ -251,6 +274,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_023",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation", "tails"],
         "vm.mmap_rnd_compat_bits",
         16
@@ -260,6 +284,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_024",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         "vm.mmap_min_addr",
         65536
@@ -269,6 +294,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_025",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         "dev.tty.ldisc_autoload",
         0
@@ -278,6 +304,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_026",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         "dev.tty.legacy_tiocsti",
         0
@@ -287,6 +314,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_027",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         "vm.max_map_count",
         1048576
@@ -296,6 +324,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_028",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         "vm.swappiness",
         1
@@ -305,6 +334,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_029",
+        Severity::Medium,
         vec!["sysctl", "fs", "CIS", "server", "workstation"],
         "fs.suid_dumpable",
         0
@@ -314,6 +344,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_030",
+        Severity::Medium,
         vec!["sysctl", "fs", "server", "workstation"],
         "fs.protected_fifos",
         2
@@ -323,6 +354,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_031",
+        Severity::Medium,
         vec!["sysctl", "fs", "server", "workstation"],
         "fs.protected_regular",
         2
@@ -332,6 +364,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_032",
+        Severity::Medium,
         vec!["sysctl", "fs", "server", "workstation"],
         "fs.protected_symlinks",
         1
@@ -341,6 +374,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_033",
+        Severity::Medium,
         vec!["sysctl", "fs", "server", "workstation"],
         "fs.protected_hardlinks",
         1
@@ -351,6 +385,7 @@ pub fn add_checks() {
     check::Check::new(
         "SYS_034",
         "Ensure sysctl \"fs.binfmt_misc.status\" = 0",
+        Severity::Medium,
         vec!["sysctl", "fs", "server", "workstation"],
         || {
             let (status, message) = sysctl::check_sysctl("fs.binfmt_misc.status", 0);
@@ -368,6 +403,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_035",
+        Severity::High,
         vec!["sysctl", "CIS", "server", "workstation"],
         "net.ipv4.ip_forward",
         0
@@ -375,6 +411,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_036",
+        Severity::High,
         vec!["sysctl", "CIS", "server", "workstation"],
         "net.ipv4.conf.all.accept_source_route",
         0
@@ -382,6 +419,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_037",
+        Severity::High,
         vec!["sysctl", "CIS", "STIG", "server", "workstation"],
         "net.ipv4.conf.default.accept_source_route",
         0
@@ -389,6 +427,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_038",
+        Severity::High,
         vec!["sysctl", "CIS", "server", "workstation"],
         "net.ipv6.conf.all.accept_source_route",
         0
@@ -396,6 +435,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_039",
+        Severity::High,
         vec!["sysctl", "CIS", "server", "workstation"],
         "net.ipv6.conf.default.accept_source_route",
         0
@@ -403,6 +443,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_040",
+        Severity::High,
         vec!["sysctl", "CIS", "server", "workstation"],
         "net.ipv4.conf.all.accept_redirects",
         0
@@ -410,6 +451,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_041",
+        Severity::High,
         vec!["sysctl", "CIS", "STIG", "server", "workstation"],
         "net.ipv4.conf.default.accept_redirects",
         0
@@ -417,6 +459,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_042",
+        Severity::High,
         vec!["sysctl", "CIS", "server", "workstation"],
         "net.ipv4.conf.all.secure_redirects",
         0
@@ -424,6 +467,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_043",
+        Severity::High,
         vec!["sysctl", "CIS", "server", "workstation"],
         "net.ipv4.conf.default.secure_redirects",
         0
@@ -431,6 +475,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_044",
+        Severity::High,
         vec!["sysctl", "CIS", "server", "workstation"],
         "net.ipv4.conf.all.send_redirects",
         0
@@ -438,6 +483,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_045",
+        Severity::High,
         vec!["sysctl", "CIS", "server", "workstation"],
         "net.ipv4.conf.default.send_redirects",
         0
@@ -445,6 +491,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_046",
+        Severity::High,
         vec!["sysctl", "CIS", "server", "workstation"],
         "net.ipv6.conf.all.accept_redirects",
         0
@@ -452,6 +499,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_047",
+        Severity::High,
         vec!["sysctl", "CIS", "server", "workstation"],
         "net.ipv6.conf.default.accept_redirects",
         0
@@ -459,6 +507,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_050",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.icmp_echo_ignore_all",
         1
@@ -466,6 +515,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_051",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv6.icmp.echo_ignore_all",
         1
@@ -473,6 +523,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_052",
+        Severity::High,
         vec!["sysctl", "CIS", "server", "workstation"],
         "net.ipv4.icmp_echo_ignore_broadcasts",
         1
@@ -480,6 +531,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_053",
+        Severity::High,
         vec!["sysctl", "CIS", "STIG", "server", "workstation"],
         "net.ipv4.conf.all.rp_filter",
         1
@@ -487,6 +539,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_054",
+        Severity::High,
         vec!["sysctl", "CIS", "server", "workstation"],
         "net.ipv4.conf.default.rp_filter",
         1
@@ -494,6 +547,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_055",
+        Severity::High,
         vec!["sysctl", "CIS", "STIG", "server", "workstation"],
         "net.ipv4.icmp_ignore_bogus_error_responses",
         1
@@ -502,6 +556,7 @@ pub fn add_checks() {
     check::Check::new(
         "SYS_056",
         "Ensure sysctl \"net.ipv4.icmp_ratelimit\" <= 100",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         || {
             const VAL: i32 = 100;
@@ -524,6 +579,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_057",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.icmp_ratemask",
         88089
@@ -531,6 +587,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_058",
+        Severity::High,
         vec!["sysctl", "CIS", "server", "workstation"],
         "net.ipv4.tcp_syncookies",
         1
@@ -538,6 +595,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_059",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.conf.all.accept_local",
         0
@@ -545,6 +603,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_060",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.conf.all.shared_media",
         0
@@ -552,6 +611,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_061",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.conf.default.shared_media",
         0
@@ -559,6 +619,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_062",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.conf.all.arp_filter",
         1
@@ -566,6 +627,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_063",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.conf.all.arp_ignore",
         2
@@ -573,6 +635,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_064",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.conf.default.arp_ignore",
         2
@@ -580,6 +643,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_065",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.conf.default.arp_announce",
         2
@@ -587,6 +651,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_066",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.conf.all.arp_announce",
         2
@@ -594,6 +659,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_067",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.conf.all.route_localnet",
         0
@@ -601,6 +667,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_068",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.conf.all.drop_gratuitous_arp",
         1
@@ -608,6 +675,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_069",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.ip_local_port_range",
         "32768\t65535"
@@ -615,6 +683,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_070",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.tcp_rfc1337",
         1
@@ -622,6 +691,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_071",
+        Severity::High,
         vec!["sysctl", "CIS", "server", "workstation"],
         "net.ipv6.conf.all.forwarding",
         0
@@ -629,6 +699,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_072",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv6.conf.default.forwarding",
         0
@@ -636,6 +707,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_073",
+        Severity::High,
         vec!["sysctl", "CIS", "server", "workstation"],
         "net.ipv6.conf.all.accept_ra",
         0
@@ -643,6 +715,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_074",
+        Severity::High,
         vec!["sysctl", "CIS", "server", "workstation"],
         "net.ipv6.conf.default.accept_ra",
         0
@@ -650,6 +723,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_075",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.tcp_timestamps",
         0
@@ -657,6 +731,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_076",
+        Severity::High,
         vec!["sysctl", "CIS", "STIG", "server", "workstation"],
         "net.ipv4.conf.all.log_martians",
         1
@@ -664,6 +739,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_077",
+        Severity::High,
         vec!["sysctl", "CIS", "STIG", "server", "workstation"],
         "net.ipv4.conf.default.log_martians",
         1
@@ -671,6 +747,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_078",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv6.conf.all.router_solicitations",
         0
@@ -678,6 +755,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_079",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv6.conf.default.router_solicitations",
         0
@@ -685,6 +763,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_080",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv6.conf.all.accept_ra_rtr_pref",
         0
@@ -692,6 +771,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_081",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv6.conf.default.accept_ra_rtr_pref",
         0
@@ -699,6 +779,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_082",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv6.conf.all.accept_ra_defrtr",
         0
@@ -706,6 +787,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_083",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv6.conf.default.accept_ra_defrtr",
         0
@@ -713,6 +795,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_084",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv6.conf.all.autoconf",
         0
@@ -720,6 +803,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_085",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv6.conf.default.autoconf",
         0
@@ -727,6 +811,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_086",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv6.conf.all.max_addresses",
         1
@@ -734,6 +819,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_087",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv6.conf.default.max_addresses",
         1
@@ -741,6 +827,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_088",
+        Severity::High,
         vec!["sysctl", "bpf", "paranoid", "server", "workstation"],
         "net.core.bpf_jit_enable",
         0
@@ -748,6 +835,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_089",
+        Severity::High,
         vec!["sysctl", "paranoid", "server", "workstation"],
         "net.ipv4.tcp_sack",
         0
@@ -755,6 +843,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_090",
+        Severity::High,
         vec!["sysctl", "paranoid", "server", "workstation"],
         "net.ipv4.tcp_dsack",
         0
@@ -762,6 +851,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_091",
+        Severity::High,
         vec!["sysctl", "paranoid", "server", "workstation"],
         "net.ipv4.tcp_fack",
         0
@@ -769,6 +859,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_092",
+        Severity::High,
         vec!["sysctl", "paranoid", "server", "workstation"],
         "net.ipv6.conf.all.use_tempaddr",
         2
@@ -776,6 +867,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_093",
+        Severity::High,
         vec!["sysctl", "paranoid", "server", "workstation"],
         "net.ipv6.conf.default.use_tempaddr",
         2
@@ -785,6 +877,7 @@ pub fn add_checks() {
     check::Check::new(
         "SYS_094",
         "Ensure sysctl \"user.max_user_namespaces\" <= 31231",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         || {
             const VAL: i32 = 31231;
@@ -810,6 +903,7 @@ pub fn add_checks() {
     check::Check::new(
         "SYS_095",
         "Ensure sysctl \"kernel.warn_limit\" <= 100",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         || {
             const VAL: i32 = 100;
@@ -835,6 +929,7 @@ pub fn add_checks() {
     check::Check::new(
         "SYS_096",
         "Ensure sysctl \"kernel.oops_limit\" <= 100",
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         || {
             const VAL: i32 = 100;
@@ -859,6 +954,7 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_097",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.tcp_synack_retries",
         5
@@ -866,6 +962,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_098",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv6.icmp.echo_ignore_anycast",
         1
@@ -873,6 +970,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_099",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv6.icmp.echo_ignore_multicast",
         1
@@ -880,6 +978,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_100",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.conf.all.forwarding",
         0
@@ -887,6 +986,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_101",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.conf.default.forwarding",
         0
@@ -894,6 +994,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_102",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.conf.all.mc_forwarding",
         0
@@ -901,6 +1002,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_103",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.conf.default.mc_forwarding",
         0
@@ -908,6 +1010,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_104",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv6.conf.all.mc_forwarding",
         0
@@ -915,6 +1018,7 @@ pub fn add_checks() {
     .register();
     sysctl::add_sysctl_check!(
         "SYS_105",
+        Severity::High,
         vec!["sysctl", "server", "workstation"],
         "net.ipv6.conf.default.mc_forwarding",
         0

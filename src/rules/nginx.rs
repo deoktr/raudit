@@ -1,9 +1,11 @@
+use crate::check::Severity;
 use crate::*;
 
 pub fn add_checks() {
     check::Check::new(
         "NGX_001",
         "Ensure nginx server_tokens is set to off",
+        Severity::Medium,
         vec!["nginx", "server"],
         || nginx::check_directive("server_tokens", "off"),
         vec![nginx::init_nginx_config],
@@ -15,6 +17,7 @@ pub fn add_checks() {
     check::Check::new(
         "NGX_002",
         "Ensure nginx X-Frame-Options header is set",
+        Severity::High,
         vec!["nginx", "server"],
         || nginx::check_header_present("X-Frame-Options"),
         vec![nginx::init_nginx_config],
@@ -27,6 +30,7 @@ pub fn add_checks() {
     check::Check::new(
         "NGX_003",
         "Ensure nginx X-Content-Type-Options header is set",
+        Severity::High,
         vec!["nginx", "server"],
         || nginx::check_header_present("X-Content-Type-Options"),
         vec![nginx::init_nginx_config],
@@ -39,6 +43,7 @@ pub fn add_checks() {
     check::Check::new(
         "NGX_005",
         "Ensure nginx Strict-Transport-Security header is set",
+        Severity::High,
         vec!["nginx", "server"],
         || nginx::check_header_present("Strict-Transport-Security"),
         vec![nginx::init_nginx_config],
@@ -51,6 +56,7 @@ pub fn add_checks() {
     check::Check::new(
         "NGX_006",
         "Ensure nginx HTTP to HTTPS redirect is configured",
+        Severity::High,
         vec!["nginx", "server"],
         nginx::check_https_redirect,
         vec![nginx::init_nginx_config],

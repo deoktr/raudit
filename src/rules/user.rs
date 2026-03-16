@@ -1,9 +1,11 @@
+use crate::check::Severity;
 use crate::*;
 
 pub fn add_checks() {
     check::Check::new(
         "USR_001",
         "Ensure that root is the only user with UID 0",
+        Severity::Critical,
         vec!["user", "passwd", "server", "workstation"],
         users::no_uid_zero,
         vec![users::init_passwd],
@@ -13,6 +15,7 @@ pub fn add_checks() {
     check::Check::new(
         "USR_002",
         "Ensure no duplicate user names exist",
+        Severity::Medium,
         vec!["user", "passwd", "server", "workstation"],
         users::no_dup_username,
         vec![users::init_passwd],
@@ -21,6 +24,7 @@ pub fn add_checks() {
     check::Check::new(
         "USR_003",
         "Ensure no duplicate UIDs exist",
+        Severity::Medium,
         vec!["user", "passwd", "server", "workstation"],
         users::no_dup_uid,
         vec![users::init_passwd],
@@ -29,6 +33,7 @@ pub fn add_checks() {
     check::Check::new(
         "USR_004",
         "Ensure that \"/etc/securetty\" is empty",
+        Severity::High,
         vec!["user", "server", "workstation"],
         users::empty_securetty,
         vec![],
@@ -37,6 +42,7 @@ pub fn add_checks() {
     check::Check::new(
         "USR_005",
         "Ensure no login is available on system accounts",
+        Severity::High,
         vec!["user", "passwd", "server", "workstation"],
         users::no_login_sys_users,
         vec![users::init_passwd],
@@ -45,6 +51,7 @@ pub fn add_checks() {
     check::Check::new(
         "USR_006",
         "Ensure all passwords are hashed with yescrypt",
+        Severity::High,
         vec!["user", "shadow", "server", "workstation"],
         users::yescrypt_hashes,
         vec![users::init_shadow],
@@ -53,6 +60,7 @@ pub fn add_checks() {
     check::Check::new(
         "USR_007",
         "Ensure no accounts are locked, delete them",
+        Severity::Low,
         vec!["user", "shadow", "server", "workstation"],
         users::no_locked_account,
         vec![users::init_shadow],
@@ -61,6 +69,7 @@ pub fn add_checks() {
     check::Check::new(
         "USR_008",
         "Ensure that all home directories exist",
+        Severity::Low,
         vec!["user", "passwd", "server", "workstation"],
         users::no_missing_home,
         vec![users::init_passwd],
@@ -69,6 +78,7 @@ pub fn add_checks() {
     check::Check::new(
         "USR_009",
         "Ensure \"/etc/shadow\" password fields are not empty",
+        Severity::Critical,
         vec!["user", "shadow", "server", "workstation"],
         users::no_empty_shadow_password,
         vec![users::init_shadow],
@@ -77,6 +87,7 @@ pub fn add_checks() {
     check::Check::new(
         "USR_010",
         "Ensure \"/etc/passwd\" password fields are not empty",
+        Severity::Critical,
         vec!["user", "passwd", "server", "workstation"],
         users::no_empty_passwd_password,
         vec![users::init_shadow],
@@ -85,6 +96,7 @@ pub fn add_checks() {
     check::Check::new(
         "USR_011",
         "Ensure accounts in \"/etc/passwd\" use shadowed passwords",
+        Severity::High,
         vec!["user", "passwd", "server", "workstation"],
         users::no_password_in_passwd,
         vec![users::init_passwd],
@@ -94,6 +106,7 @@ pub fn add_checks() {
     check::Check::new(
         "USR_106",
         "Ensure \"/etc/passwd\" file permissions are \"644\"",
+        Severity::High,
         vec!["group", "CIS", "server", "workstation"],
         || base::check_file_permission("/etc/passwd", 0o644),
         vec![],
@@ -104,6 +117,7 @@ pub fn add_checks() {
     check::Check::new(
         "USR_107",
         "Ensure \"/etc/passwd\" file owner is \"root:root\" or file is missing",
+        Severity::High,
         vec!["group", "CIS", "server", "workstation"],
         || base::check_file_owner_id_ignore_missing("/etc/passwd", 0, 0),
         vec![],
@@ -115,6 +129,7 @@ pub fn add_checks() {
         "USR_100",
         // TODO: allow root:root
         "Ensure \"/etc/shadow\" file owner is correct",
+        Severity::High,
         vec!["group", "CIS", "server", "workstation"],
         // FIXME: use shadow gid instead of 42
         || base::check_file_owner_id("/etc/shadow", 0, if os::is_debian() { 42 } else { 0 }),
@@ -126,6 +141,7 @@ pub fn add_checks() {
     check::Check::new(
         "USR_101",
         "Ensure \"/etc/shadow\" file permissions are correct",
+        Severity::High,
         vec!["group", "CIS", "server", "workstation"],
         || base::check_file_permission("/etc/shadow", if os::is_debian() { 0o640 } else { 0o600 }),
         vec![os::init_os_release],
@@ -136,6 +152,7 @@ pub fn add_checks() {
     check::Check::new(
         "USR_102",
         "Ensure \"/etc/shadow-\" file owner is correct or file is missing",
+        Severity::Medium,
         vec!["group", "CIS", "server", "workstation"],
         // FIXME: use shadow gid instead of 42
         // TODO: create util function to get UID fron username
@@ -154,6 +171,7 @@ pub fn add_checks() {
     check::Check::new(
         "USR_103",
         "Ensure \"/etc/shadow-\" file permissions are correct or file is missing",
+        Severity::Medium,
         vec!["group", "CIS", "server", "workstation"],
         || {
             base::check_file_permission_ignore_missing(
@@ -169,6 +187,7 @@ pub fn add_checks() {
     check::Check::new(
         "USR_104",
         "Ensure \"/etc/security/opasswd\" file owner is \"root:root\" or file is missing",
+        Severity::Medium,
         vec!["group", "server", "workstation"],
         || base::check_file_owner_id_ignore_missing("/etc/security/opasswd", 0, 0),
         vec![],
@@ -179,6 +198,7 @@ pub fn add_checks() {
     check::Check::new(
         "USR_105",
         "Ensure \"/etc/security/opasswd\" file permissions are \"600\" or file is missing",
+        Severity::Medium,
         vec!["group", "server", "workstation"],
         || base::check_file_permission_ignore_missing("/etc/security/opasswd", 0o600),
         vec![],

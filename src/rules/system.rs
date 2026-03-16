@@ -1,9 +1,11 @@
+use crate::check::Severity;
 use crate::*;
 
 pub fn add_checks() {
     check::Check::new(
         "SYT_001",
         "Ensure no reboot is required",
+        Severity::Informational,
         vec!["system", "server", "workstation"],
         kernel::check_reboot_required,
         vec![],

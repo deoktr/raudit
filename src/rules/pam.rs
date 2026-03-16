@@ -1,3 +1,4 @@
+use crate::check::Severity;
 use crate::*;
 
 pub fn add_checks() {
@@ -6,6 +7,7 @@ pub fn add_checks() {
     check::Check::new(
         "PAM_001",
         "Ensure PAM service \"passwd\" has rule \"account required pam_unix\"",
+        Severity::High,
         vec!["pam", "server", "workstation"],
         || pam::check_rule("passwd", "account", "required", "pam_unix"),
         vec![pam::init_pam],
@@ -14,6 +16,7 @@ pub fn add_checks() {
     check::Check::new(
         "PAM_002",
         "Ensure PAM service \"passwd\" has rule \"password required pam_pwquality\"",
+        Severity::High,
         vec!["pam", "server", "workstation"],
         || pam::check_rule("passwd", "password", "required", "pam_pwquality"),
         vec![pam::init_pam],
@@ -22,6 +25,7 @@ pub fn add_checks() {
     check::Check::new(
         "PAM_015",
         "Ensure PAM service \"su\" has rule \"auth required pam_wheel\"",
+        Severity::High,
         vec!["pam", "server", "workstation"],
         || pam::check_rule("su", "auth", "required", "pam_wheel"),
         vec![pam::init_pam],
@@ -30,6 +34,7 @@ pub fn add_checks() {
     check::Check::new(
         "PAM_024",
         "Ensure PAM service \"login\" has rule \"auth required pam_faillock\"",
+        Severity::High,
         vec!["pam", "server"],
         || pam::check_rule("login", "auth", "required", "pam_faillock"),
         vec![pam::init_pam],
@@ -38,6 +43,7 @@ pub fn add_checks() {
     check::Check::new(
         "PAM_030",
         "Ensure PAM service \"login\" has rule \"auth optional pam_faildelay\"",
+        Severity::Medium,
         vec!["pam", "server", "workstation"],
         || pam::check_rule("login", "auth", "optional", "pam_faildelay"),
         vec![pam::init_pam],

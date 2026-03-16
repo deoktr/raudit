@@ -42,6 +42,29 @@ pub struct Report {
     version: String,
 }
 
+/// Security impact classification for a check.
+#[derive(PartialEq, PartialOrd, Serialize)]
+#[repr(u8)]
+pub enum Severity {
+    Informational = 1,
+    Low = 2,
+    Medium = 3,
+    High = 4,
+    Critical = 5,
+}
+
+impl Display for Severity {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        match self {
+            Severity::Informational => write!(f, "Informational"),
+            Severity::Low => write!(f, "Low"),
+            Severity::Medium => write!(f, "Medium"),
+            Severity::High => write!(f, "High"),
+            Severity::Critical => write!(f, "Critical"),
+        }
+    }
+}
+
 #[derive(PartialEq, Serialize)]
 pub enum CheckState {
     /// Check is yet to execute or in progress.
@@ -86,6 +109,9 @@ pub struct Check {
     /// State of the check
     state: CheckState,
 
+    /// Security impact severity level
+    severity: Severity,
+
     /// Check function
     #[serde(skip_serializing)]
     check: CheckFunc,
@@ -99,6 +125,7 @@ impl Check {
     pub fn new(
         id: &str,
         title: &str,
+        severity: Severity,
         tags: Vec<&str>,
         check: CheckFunc,
         dependencies: Vec<DependencyFunc>,
@@ -109,6 +136,7 @@ impl Check {
             description: None,
             fix: None,
             state: CheckState::Unknown,
+            severity,
             check,
             message: None,
             dependencies,
@@ -340,8 +368,9 @@ impl Check {
 impl Display for Check {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         let out = format!(
-            "[{}] {}{}",
+            "[{}] [{}] {}{}",
             self.id,
+            self.severity,
             self.title,
             match &self.message {
                 Some(m) => format!(" ({})", m),
@@ -384,6 +413,11 @@ pub struct ReportStats {
     fail: i32,
     warning: i32,
     unknown: i32,
+    fail_critical: i32,
+    fail_high: i32,
+    fail_medium: i32,
+    fail_low: i32,
+    fail_informational: i32,
 }
 
 pub fn calculate_stats() {
@@ -394,12 +428,26 @@ pub fn calculate_stats() {
     let mut fail = 0;
     let mut warning = 0;
     let mut unknown = 0;
+    let mut fail_critical = 0;
+    let mut fail_high = 0;
+    let mut fail_medium = 0;
+    let mut fail_low = 0;
+    let mut fail_informational = 0;
 
     for check in report.checks.iter() {
         total += 1;
         match check.state {
             CheckState::Pass => pass += 1,
-            CheckState::Fail => fail += 1,
+            CheckState::Fail => {
+                fail += 1;
+                match check.severity {
+                    Severity::Critical => fail_critical += 1,
+                    Severity::High => fail_high += 1,
+                    Severity::Medium => fail_medium += 1,
+                    Severity::Low => fail_low += 1,
+                    Severity::Informational => fail_informational += 1,
+                }
+            }
             CheckState::Warning => warning += 1,
             CheckState::Unknown => unknown += 1,
         }
@@ -410,6 +458,11 @@ pub fn calculate_stats() {
     report.stats.fail = fail;
     report.stats.warning = warning;
     report.stats.unknown = unknown;
+    report.stats.fail_critical = fail_critical;
+    report.stats.fail_high = fail_high;
+    report.stats.fail_medium = fail_medium;
+    report.stats.fail_low = fail_low;
+    report.stats.fail_informational = fail_informational;
 }
 
 pub fn print_stats() {
@@ -428,19 +481,19 @@ fn format_percent(val: i32, tot: i32) -> String {
 impl ReportStats {
     pub fn print(&self) {
         let mut pass = format!(
-            "\tPASSED: {:4}/{} {:>9}",
+            "\tPass: {:6}/{} {:>9}",
             self.pass,
             self.total,
             format_percent(self.pass, self.total),
         );
         let mut fail = format!(
-            "\tFAILED: {:4}/{} {:>9}",
+            "\tFail: {:6}/{} {:>9}",
             self.fail,
             self.total,
             format_percent(self.fail, self.total),
         );
         let mut warning = format!(
-            "\tWARNING: {:3}/{} {:>9}",
+            "\tWarning: {:3}/{} {:>9}",
             self.warning,
             self.total,
             format_percent(self.warning, self.total),
@@ -457,6 +510,74 @@ impl ReportStats {
             );
         }
 
-        print!("\n\tResult:\n{}\n{}\n{}\n\n", pass, fail, warning);
+        print!("\n\tResult:\n{}\n{}\n{}\n", pass, fail, warning);
+
+        if self.fail > 0 {
+            let sev_lines = format!(
+                "\n\tFailed by severity:\n\
+                 \tCritical:      {:4}\n\
+                 \tHigh:          {:4}\n\
+                 \tMedium:        {:4}\n\
+                 \tLow:           {:4}\n\
+                 \tInformational: {:4}",
+                self.fail_critical,
+                self.fail_high,
+                self.fail_medium,
+                self.fail_low,
+                self.fail_informational,
+            );
+            print!("{}", sev_lines);
+        }
+        println!();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_check_display() {
+        fn dummy_check() -> CheckReturn {
+            (CheckState::Fail, Some("details".to_string()))
+        }
+        config::set_colored_output(false);
+        let mut check = Check::new(
+            "TST_002",
+            "My check",
+            Severity::Low,
+            vec![],
+            dummy_check,
+            vec![],
+        );
+        check.run();
+        let output = format!("{}", check);
+        assert!(output.contains("[TST_002] [Low] My check (details)"));
+    }
+
+    #[test]
+    fn test_severity_display_all_variants() {
+        assert_eq!(format!("{}", Severity::Informational), "Informational");
+        assert_eq!(format!("{}", Severity::Low), "Low");
+        assert_eq!(format!("{}", Severity::Medium), "Medium");
+        assert_eq!(format!("{}", Severity::High), "High");
+        assert_eq!(format!("{}", Severity::Critical), "Critical");
+    }
+
+    #[test]
+    fn test_severity_ordering() {
+        assert!(Severity::Informational < Severity::Low);
+        assert!(Severity::Low < Severity::Medium);
+        assert!(Severity::Medium < Severity::High);
+        assert!(Severity::High < Severity::Critical);
+    }
+
+    #[test]
+    fn test_severity_numeric_values() {
+        assert_eq!(Severity::Informational as u8, 1);
+        assert_eq!(Severity::Low as u8, 2);
+        assert_eq!(Severity::Medium as u8, 3);
+        assert_eq!(Severity::High as u8, 4);
+        assert_eq!(Severity::Critical as u8, 5);
     }
 }

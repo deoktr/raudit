@@ -1,3 +1,4 @@
+use crate::check::Severity;
 use crate::*;
 
 pub fn add_checks() {
@@ -5,6 +6,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_001",
         "Ensure mount point \"/boot\" exist",
+        Severity::Medium,
         vec!["mount", "server", "workstation"],
         || mount::check_mount_present("/boot"),
         vec![mount::init_mounts],
@@ -13,6 +15,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_002",
         "Ensure mount point \"/tmp\" exist",
+        Severity::Medium,
         vec!["mount", "fs", "CIS", "server", "workstation"],
         || mount::check_mount_present("/tmp"),
         vec![mount::init_mounts],
@@ -21,6 +24,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_003",
         "Ensure mount point \"/home\" exist",
+        Severity::Medium,
         vec!["mount", "fs", "CIS", "server", "workstation"],
         || mount::check_mount_present("/home"),
         vec![mount::init_mounts],
@@ -29,6 +33,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_004",
         "Ensure mount point \"/var\" exist",
+        Severity::Medium,
         vec!["mount", "fs", "CIS", "server", "workstation"],
         || mount::check_mount_present("/var"),
         vec![mount::init_mounts],
@@ -37,6 +42,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_005",
         "Ensure mount point \"/var/log\" exist",
+        Severity::Medium,
         vec!["mount", "fs", "CIS", "server", "workstation"],
         || mount::check_mount_present("/var/log"),
         vec![mount::init_mounts],
@@ -45,6 +51,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_006",
         "Ensure mount point \"/var/log/audit\" exist",
+        Severity::Medium,
         vec!["mount", "fs", "CIS", "server", "workstation"],
         || mount::check_mount_present("/var/log/audit"),
         vec![mount::init_mounts],
@@ -53,6 +60,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_007",
         "Ensure mount point \"/var/tmp\" exist",
+        Severity::Medium,
         vec!["mount", "fs", "CIS", "server", "workstation"],
         || mount::check_mount_present("/var/tmp"),
         vec![mount::init_mounts],
@@ -61,6 +69,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_008",
         "Ensure mount point \"/dev/shm\" exist",
+        Severity::Medium,
         vec!["mount", "fs", "CIS", "server", "workstation"],
         || mount::check_mount_present("/dev/shm"),
         vec![mount::init_mounts],
@@ -69,6 +78,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_020",
         "Ensure mount option \"nodev\" is set for \"/dev/shm\"",
+        Severity::High,
         vec!["mount", "fs", "mount_option", "server", "workstation"],
         || mount::check_mount_option("/dev/shm", "nodev"),
         vec![mount::init_mounts],
@@ -77,6 +87,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_024",
         "Ensure mount option \"nodev\" is set for \"/boot\"",
+        Severity::Medium,
         vec!["mount", "fs", "mount_option", "server", "workstation"],
         || mount::check_mount_option("/boot", "nodev"),
         vec![mount::init_mounts],
@@ -85,6 +96,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_025",
         "Ensure mount option \"nosuid\" is set for \"/boot\"",
+        Severity::Medium,
         vec!["mount", "fs", "mount_option", "server", "workstation"],
         || mount::check_mount_option("/boot", "nosuid"),
         vec![mount::init_mounts],
@@ -93,6 +105,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_026",
         "Ensure mount option \"noexec\" is set for \"/boot\"",
+        Severity::Medium,
         vec!["mount", "fs", "mount_option", "server", "workstation"],
         || mount::check_mount_option("/boot", "noexec"),
         vec![mount::init_mounts],
@@ -102,6 +115,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_027",
         "Ensure mount option \"noauto\" is set for \"/boot\"",
+        Severity::Medium,
         vec!["mount", "fs", "mount_option", "server", "workstation"],
         || mount::check_mount_option("/boot", "noauto"),
         vec![mount::init_mounts],
@@ -110,6 +124,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_028",
         "Ensure mount option \"nodev\" is set for \"/home\"",
+        Severity::Medium,
         vec![
             "mount",
             "fs",
@@ -125,6 +140,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_029",
         "Ensure mount option \"nosuid\" is set for \"/home\"",
+        Severity::Medium,
         vec![
             "mount",
             "fs",
@@ -141,6 +157,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_030",
         "Ensure mount option \"noexec\" is set for \"/home\"",
+        Severity::Medium,
         vec!["mount", "fs", "mount_option", "server", "workstation"],
         || mount::check_mount_option("/home", "noexec"),
         vec![mount::init_mounts],
@@ -149,6 +166,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_031",
         "Ensure mount option \"nodev\" is set for \"/tmp\"",
+        Severity::High,
         vec![
             "mount",
             "fs",
@@ -164,6 +182,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_032",
         "Ensure mount option \"nosuid\" is set for \"/tmp\"",
+        Severity::High,
         vec![
             "mount",
             "fs",
@@ -179,6 +198,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_033",
         "Ensure mount option \"noexec\" is set for \"/tmp\"",
+        Severity::High,
         vec![
             "mount",
             "fs",
@@ -194,6 +214,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_034",
         "Ensure mount option \"nodev\" is set for \"/var\"",
+        Severity::Medium,
         vec![
             "mount",
             "fs",
@@ -209,6 +230,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_035",
         "Ensure mount option \"nosuid\" is set for \"/var\"",
+        Severity::Medium,
         vec![
             "mount",
             "fs",
@@ -225,6 +247,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_036",
         "Ensure mount option \"noexec\" is set for \"/var\"",
+        Severity::Medium,
         vec!["mount", "fs", "mount_option", "server", "workstation"],
         || mount::check_mount_option("/var", "noexec"),
         vec![mount::init_mounts],
@@ -233,6 +256,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_037",
         "Ensure mount option \"nodev\" is set for \"/var/log\"",
+        Severity::Medium,
         vec![
             "mount",
             "fs",
@@ -248,6 +272,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_038",
         "Ensure mount option \"nosuid\" is set for \"/var/log\"",
+        Severity::Medium,
         vec![
             "mount",
             "fs",
@@ -263,6 +288,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_039",
         "Ensure mount option \"noexec\" is set for \"/var/log\"",
+        Severity::Medium,
         vec![
             "mount",
             "fs",
@@ -278,6 +304,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_040",
         "Ensure mount option \"nodev\" is set for \"/var/log/audit\"",
+        Severity::Medium,
         vec![
             "mount",
             "fs",
@@ -293,6 +320,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_041",
         "Ensure mount option \"nosuid\" is set for \"/var/log/audit\"",
+        Severity::Medium,
         vec![
             "mount",
             "fs",
@@ -308,6 +336,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_042",
         "Ensure mount option \"noexec\" is set for \"/var/log/audit\"",
+        Severity::Medium,
         vec![
             "mount",
             "fs",
@@ -323,6 +352,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_043",
         "Ensure mount option \"nodev\" is set for \"/var/tmp\"",
+        Severity::High,
         vec![
             "mount",
             "fs",
@@ -338,6 +368,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_044",
         "Ensure mount option \"nosuid\" is set for \"/var/tmp\"",
+        Severity::High,
         vec![
             "mount",
             "fs",
@@ -353,6 +384,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_045",
         "Ensure mount option \"noexec\" is set for \"/var/tmp\"",
+        Severity::High,
         vec![
             "mount",
             "fs",
@@ -368,6 +400,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_046",
         "Ensure mount option \"nodev\" is set for \"/proc\"",
+        Severity::Medium,
         vec!["mount", "fs", "mount_option", "server", "workstation"],
         || mount::check_mount_option("/proc", "nodev"),
         vec![mount::init_mounts],
@@ -376,6 +409,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_047",
         "Ensure mount option \"nosuid\" is set for \"/proc\"",
+        Severity::Medium,
         vec!["mount", "fs", "mount_option", "server", "workstation"],
         || mount::check_mount_option("/proc", "nosuid"),
         vec![mount::init_mounts],
@@ -384,6 +418,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_048",
         "Ensure mount option \"noexec\" is set for \"/proc\"",
+        Severity::Medium,
         vec!["mount", "fs", "mount_option", "server", "workstation"],
         || mount::check_mount_option("/proc", "noexec"),
         vec![mount::init_mounts],
@@ -413,6 +448,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_050",
         "Ensure mount option \"nosuid\" is set for \"/dev\"",
+        Severity::Medium,
         vec!["mount", "fs", "mount_option", "server", "workstation"],
         || mount::check_mount_option("/dev", "nosuid"),
         vec![mount::init_mounts],
@@ -421,6 +457,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_051",
         "Ensure mount option \"noexec\" is set for \"/dev\"",
+        Severity::Medium,
         vec!["mount", "fs", "mount_option", "server", "workstation"],
         || mount::check_mount_option("/dev", "noexec"),
         vec![mount::init_mounts],
@@ -429,6 +466,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_052",
         "Ensure mount option \"nodev\" is set for \"/dev/shm\"",
+        Severity::High,
         vec![
             "mount",
             "fs",
@@ -444,6 +482,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_053",
         "Ensure mount option \"nosuid\" is set for \"/dev/shm\"",
+        Severity::High,
         vec![
             "mount",
             "fs",
@@ -459,6 +498,7 @@ pub fn add_checks() {
     check::Check::new(
         "MNT_054",
         "Ensure mount option \"noexec\" is set for \"/dev/shm\"",
+        Severity::High,
         vec![
             "mount",
             "fs",

@@ -1,9 +1,11 @@
+use crate::check::Severity;
 use crate::*;
 
 pub fn add_checks() {
     check::Check::new(
         "SHL_001",
         "Ensure automatic logout from shells is configured",
+        Severity::Medium,
         vec!["server", "shell", "server"],
         shell::check_shell_timeout,
         vec![],

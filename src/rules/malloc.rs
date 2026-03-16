@@ -1,3 +1,4 @@
+use crate::check::Severity;
 use crate::*;
 
 pub fn add_checks() {
@@ -11,6 +12,7 @@ pub fn add_checks() {
     check::Check::new(
         "LIB_001",
         "Ensure \"scudo\" hardened malloc is used system wide",
+        Severity::Medium,
         vec!["malloc", "workstation"],
         malloc::has_scudo_malloc,
         vec![malloc::init_ld_so_preload],

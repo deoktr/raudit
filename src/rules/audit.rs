@@ -1,9 +1,11 @@
+use crate::check::Severity;
 use crate::*;
 
 pub fn add_checks() {
     check::Check::new(
         "AUD_001",
         "Ensure \"auditd\" is running",
+        Severity::High,
         vec!["audit", "server", "workstation"],
         || ps::is_running("auditd"),
         vec![ps::init_proc],
@@ -14,6 +16,7 @@ pub fn add_checks() {
     check::Check::new(
         "AUD_010",
         "Ensure that audit is configured with \"disk_full_action\" = \"HALT\"",
+        Severity::Medium,
         vec!["audit", "paranoid"],
         || audit::check_audit_config("disk_full_action", "HALT"),
         vec![audit::init_audit_config],
@@ -24,6 +27,7 @@ pub fn add_checks() {
     check::Check::new(
         "AUD_100",
         "Ensure audit rules are immutable",
+        Severity::Medium,
         vec!["audit", "STIG", "server", "workstation"],
         || audit::check_audit_rule("-e 2"),
         vec![audit::init_audit_rules],
@@ -34,6 +38,7 @@ pub fn add_checks() {
     check::Check::new(
         "AUD_101",
         "Ensure audit rule for sudo log file is present",
+        Severity::Medium,
         vec!["audit"],
         || audit::check_audit_rule("-w /var/log/sudo.log -p wa -k log_file"),
         vec![audit::init_audit_rules],

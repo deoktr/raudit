@@ -1,9 +1,11 @@
+use crate::check::Severity;
 use crate::*;
 
 pub fn add_checks() {
     check::Check::new(
         "SYD_001",
         "Ensure that systemd config \"CtrlAltDelBurstAction=none\"",
+        Severity::Medium,
         vec!["systemd", "server", "workstation"],
         || systemd::get_systemd_config_value("CtrlAltDelBurstAction", "none"),
         vec![systemd::init_systemd_config],
@@ -15,6 +17,7 @@ pub fn add_checks() {
     check::Check::new(
         "SYD_002",
         "Ensure /etc/systemd/system/ files permissions are owned by root",
+        Severity::Medium,
         vec!["systemd", "server", "workstation"],
         || base::check_dir_files_owner_id("/etc/systemd/system", 0, 0),
         vec![],

@@ -1,9 +1,11 @@
+use crate::check::Severity;
 use crate::*;
 
 pub fn add_checks() {
     check::Check::new(
         "LDF_001",
         "Ensure that login.defs \"ENCRYPT_METHOD\" = \"YESCRYPT\"",
+        Severity::High,
         vec!["login_defs", "server", "workstation"],
         || login_defs::check_login_defs("ENCRYPT_METHOD", "YESCRYPT"),
         vec![login_defs::init_login_defs],
@@ -14,6 +16,7 @@ pub fn add_checks() {
     check::Check::new(
         "LDF_002",
         "Ensure that login.defs \"YESCRYPT_COST_FACTOR\" >= 5",
+        Severity::High,
         vec![
             "login_defs",
             // YESCRYPT_COST_FACTOR is now used by PAM for yescrypt
@@ -56,6 +59,7 @@ pub fn add_checks() {
     check::Check::new(
         "LDF_003",
         "Ensure that login.defs \"PASS_MAX_DAYS\" <= 365",
+        Severity::High,
         vec!["login_defs", "server"],
         || {
             const VAL: i32 = 365;
@@ -86,6 +90,7 @@ pub fn add_checks() {
     check::Check::new(
         "LDF_004",
         "Ensure that login.defs \"PASS_MIN_DAYS\" >= 1",
+        Severity::Medium,
         vec!["login_defs", "server"],
         || {
             const VAL: i32 = 1;
@@ -117,6 +122,7 @@ pub fn add_checks() {
     check::Check::new(
         "LDF_005",
         "Ensure that login.defs \"PASS_WARN_AGE\" >= 7",
+        Severity::Medium,
         vec!["login_defs", "server", "workstation"],
         || {
             const VAL: i32 = 7;
@@ -146,6 +152,7 @@ pub fn add_checks() {
     check::Check::new(
         "LDF_006",
         "Ensure that login.defs \"SYSLOG_SU_ENAB\" = \"yes\"",
+        Severity::Medium,
         vec!["login_defs", "server", "workstation"],
         || login_defs::check_login_defs("SYSLOG_SU_ENAB", "yes"),
         vec![login_defs::init_login_defs],
@@ -154,6 +161,7 @@ pub fn add_checks() {
     check::Check::new(
         "LDF_007",
         "Ensure that login.defs \"SYSLOG_SG_ENAB\" = \"yes\"",
+        Severity::Medium,
         vec!["login_defs", "server", "workstation"],
         || login_defs::check_login_defs("SYSLOG_SG_ENAB", "yes"),
         vec![login_defs::init_login_defs],
@@ -162,6 +170,7 @@ pub fn add_checks() {
     check::Check::new(
         "LDF_008",
         "Ensure that login.defs \"UMASK\" = \"077\"",
+        Severity::Medium,
         vec!["login_defs", "server", "workstation"],
         || login_defs::check_login_defs("UMASK", "077"),
         vec![login_defs::init_login_defs],
@@ -170,6 +179,7 @@ pub fn add_checks() {
     check::Check::new(
         "LDF_009",
         "Ensure that login.defs \"LOGIN_RETRIES\" <= 10",
+        Severity::Medium,
         vec!["login_defs", "server", "workstation"],
         || {
             const VAL: i32 = 10;
@@ -199,6 +209,7 @@ pub fn add_checks() {
     check::Check::new(
         "LDF_010",
         "Ensure that login.defs \"LOGIN_TIMEOUT\" <= 60",
+        Severity::Medium,
         vec!["login_defs", "server", "workstation"],
         || {
             const VAL: i32 = 60;
@@ -228,6 +239,7 @@ pub fn add_checks() {
     check::Check::new(
         "LDF_011",
         "Ensure that login.defs \"FAILLOG_ENAB\" = \"yes\"",
+        Severity::Medium,
         vec!["login_defs", "server", "workstation"],
         || login_defs::check_login_defs("FAILLOG_ENAB", "yes"),
         vec![login_defs::init_login_defs],
@@ -236,6 +248,7 @@ pub fn add_checks() {
     check::Check::new(
         "LDF_012",
         "Ensure that login.defs \"LOG_OK_LOGINS\" = \"yes\"",
+        Severity::Medium,
         vec!["login_defs", "server", "workstation"],
         || login_defs::check_login_defs("LOG_OK_LOGINS", "yes"),
         vec![login_defs::init_login_defs],
