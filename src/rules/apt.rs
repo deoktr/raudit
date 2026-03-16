@@ -8,7 +8,9 @@ pub fn add_checks() {
         || apt::check_apt("Acquire::http::AllowRedirect", "0"),
         vec![apt::init_apt_config],
     )
+    .with_description("Disabling HTTP redirects prevents man-in-the-middle attacks that could redirect package downloads to malicious servers.")
     .with_fix("In \"/etc/apt/apt.conf\" add: 'Acquire::http::AllowRedirect = \"0\";'")
+    .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
@@ -20,6 +22,7 @@ pub fn add_checks() {
     )
     .with_description("Blocks installation of packages without proper authentication.")
     .with_fix("In \"/etc/apt/apt.conf\" add: 'APT::Get::AllowUnauthenticated = \"0\";'")
+    .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
@@ -31,6 +34,7 @@ pub fn add_checks() {
     )
     .with_description("Automatically cleans package cache every 7 days, reducing disk space usage and potential stale package vulnerabilities.")
     .with_fix("In \"/etc/apt/apt.conf\" add: 'APT::Periodic::AutocleanInterval = \"7\";'")
+    .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
@@ -40,7 +44,9 @@ pub fn add_checks() {
         || apt::check_apt("APT::Get::AutomaticRemove", "1"),
         vec![apt::init_apt_config],
     )
+    .with_description("Automatically removes orphaned packages that are no longer needed, reducing the number of installed packages and the attack surface.")
     .with_fix("In \"/etc/apt/apt.conf\" add: 'APT::Get::AutomaticRemove = \"1\";'")
+    .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
@@ -54,6 +60,7 @@ pub fn add_checks() {
         "Prevents automatic installation of recommended packages, minimizing attack surface.",
     )
     .with_fix("In \"/etc/apt/apt.conf\" add: 'APT::Install-Recommends = \"0\";'")
+    .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
@@ -67,6 +74,7 @@ pub fn add_checks() {
         "Prevents automatic installation of suggested packages, minimizing attack surface.",
     )
     .with_fix("In \"/etc/apt/apt.conf\" add: 'APT::Install-Suggests = \"0\";'")
+    .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
@@ -76,7 +84,9 @@ pub fn add_checks() {
         || apt::check_apt("Acquire::AllowInsecureRepositories", "0"),
         vec![apt::init_apt_config],
     )
+    .with_description("Blocks use of repositories without valid cryptographic signatures, preventing installation of tampered packages.")
     .with_fix("In \"/etc/apt/apt.conf\" add: 'Acquire::AllowInsecureRepositories = \"0\";'")
+    .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
@@ -86,9 +96,11 @@ pub fn add_checks() {
         || apt::check_apt("Acquire::AllowDowngradeToInsecureRepositories", "0"),
         vec![apt::init_apt_config],
     )
+    .with_description("Prevents downgrading a previously authenticated repository to an insecure one, blocking a potential supply chain attack vector.")
     .with_fix(
         "In \"/etc/apt/apt.conf\" add: 'Acquire::AllowDowngradeToInsecureRepositories = \"0\";'",
     )
+    .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
@@ -100,6 +112,7 @@ pub fn add_checks() {
     )
     .with_description("Enables Seccomp sandboxing for package management, providing additional process isolation.")
     .with_fix("In \"/etc/apt/apt.conf\" add: 'APT::Sandbox::Seccomp = \"1\";'")
+    .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     // unattended-upgrade
@@ -137,6 +150,7 @@ pub fn add_checks() {
     )
     .with_description("Prevents unauthorized modification of package repositories. Could be exploited to download packages from attacker controled servers.")
     .with_fix("chmod 644 /etc/apt/source.list")
+    .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
@@ -148,6 +162,7 @@ pub fn add_checks() {
     )
     .with_description("Prevents unauthorized modification of package repositories. Could be exploited to download packages from attacker controled servers.")
     .with_fix("chown root:root /etc/apt/source.list")
+    .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
@@ -159,6 +174,7 @@ pub fn add_checks() {
     )
     .with_description("Prevents unauthorized modification of package repositories. Could be exploited to download packages from attacker controled servers.")
     .with_fix("chmod -R 644 /etc/apt/source.list.d/*")
+    .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
@@ -170,6 +186,7 @@ pub fn add_checks() {
     )
     .with_description("Prevents unauthorized modification of package repositories. Could be exploited to download packages from attacker controled servers.")
     .with_fix("chown -R root:root /etc/apt/source.list.d/*")
+    .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
@@ -181,6 +198,7 @@ pub fn add_checks() {
     )
     .with_description("Could be exploited to modify package installation behavior, and could lead to a wide range of impacts.")
     .with_fix("chmod 644 /etc/apt/apt.conf")
+    .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
@@ -192,6 +210,7 @@ pub fn add_checks() {
     )
     .with_description("Could be exploited to modify package installation behavior, and could lead to a wide range of impacts.")
     .with_fix("chown root:root /etc/apt/apt.conf")
+    .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
@@ -203,6 +222,7 @@ pub fn add_checks() {
     )
     .with_description("Could be exploited to modify package installation behavior, and could lead to a wide range of impacts.")
     .with_fix("chmod -R 644 /etc/apt/apt.conf.d/*")
+    .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
@@ -214,5 +234,6 @@ pub fn add_checks() {
     )
     .with_description("Could be exploited to modify package installation behavior, and could lead to a wide range of impacts.")
     .with_fix("chown -R root:root /etc/apt/apt.conf.d/*")
+    .with_link("https://wiki.debian.org/SecureApt")
     .register();
 }

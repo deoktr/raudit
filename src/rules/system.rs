@@ -8,6 +8,7 @@ pub fn add_checks() {
         kernel::check_reboot_required,
         vec![],
     )
+    .with_description("A pending reboot indicates that security updates have been installed but are not yet active, leaving the system potentially vulnerable.")
     .with_fix("Reboot host.")
     .register();
 }

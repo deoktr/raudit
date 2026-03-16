@@ -8,15 +8,19 @@ pub fn add_checks() {
         podman::podman_not_privileged,
         vec![podman::init_containers_inspect],
     )
+    .with_description("Privileged containers have full access to the host system, effectively disabling all security isolation and allowing container escape to root on the host.")
     .register();
+
     check::Check::new(
         "CNT_502",
-        "Ensure podman containers capabilities are dopped",
+        "Ensure podman containers capabilities are dropped",
         vec!["container", "podman", "server", "workstation"],
         podman::podman_cap_drop,
         vec![podman::init_containers_inspect],
     )
+    .with_description("Dropping Linux capabilities reduces the kernel attack surface available to a compromised container, limiting the damage an attacker can do if they gain code execution.")
     .register();
+
     check::Check::new(
         "CNT_503",
         "Ensure podman containers are started with a user",

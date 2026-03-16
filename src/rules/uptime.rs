@@ -8,6 +8,7 @@ pub fn add_checks() {
         || uptime::uptime_bellow(7776000),
         vec![uptime::init_uptime],
     )
+    .with_description("Long-running systems may be missing critical kernel and security patches that require a reboot to take effect.")
     .with_fix("Reboot host.")
     .register();
 }

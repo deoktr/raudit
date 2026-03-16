@@ -8,6 +8,7 @@ pub fn add_checks() {
         users::no_uid_zero,
         vec![users::init_passwd],
     )
+    .with_description("Multiple accounts with UID 0 have unrestricted root-level access, making it impossible to trace privileged actions to a specific user.")
     .register();
     check::Check::new(
         "USR_002",

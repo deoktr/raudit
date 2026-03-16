@@ -56,12 +56,12 @@ raudit --json=pretty --filters USR_001,USR_002
     {
       "id": "USR_001",
       "title": "Ensure that root is the only user with UID 0",
-      "state": "Passed"
+      "state": "Pass"
     },
     {
       "id": "USR_002",
       "title": "Ensure no duplicate user names exist",
-      "state": "Passed"
+      "state": "Pass"
     }
   ],
   "stats": {
@@ -71,7 +71,7 @@ raudit --json=pretty --filters USR_001,USR_002
     "error": 0,
     "waiting": 0
   },
-  "version": "0.21.0"
+  "version": "0.29.0"
 }
 ```
 

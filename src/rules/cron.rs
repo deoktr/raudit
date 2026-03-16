@@ -1,5 +1,7 @@
 use crate::*;
 
+const CRON_DESCRIPTION: &str = "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation.";
+
 pub fn add_checks() {
     // TODO: add security rule to use systemd timers instead of cron jobs
 
@@ -16,6 +18,7 @@ pub fn add_checks() {
         },
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .with_fix("chown root:root /etc/systemd/system/cron.service")
     .register();
 
@@ -32,7 +35,9 @@ pub fn add_checks() {
         },
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .register();
+
     check::Check::new(
         "CRN_003",
         "Ensure /etc/cron.d directory is owned by root",
@@ -40,6 +45,7 @@ pub fn add_checks() {
         || base::check_dir_owner_id("/etc/cron.d", 0, 0),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .with_fix("chown root:root /etc/cron.d/")
     .register();
 
@@ -50,6 +56,7 @@ pub fn add_checks() {
         || base::check_dir_permission("/etc/cron.d", 0o755),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .register();
 
     check::Check::new(
@@ -59,6 +66,7 @@ pub fn add_checks() {
         || base::check_dir_files_permission("/etc/cron.d", 0o644),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .register();
 
     check::Check::new(
@@ -68,6 +76,7 @@ pub fn add_checks() {
         || base::check_dir_files_owner_id("/etc/cron.d/", 0, 0),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .with_fix("chown -R root:root /etc/cron.d/*")
     .register();
 
@@ -78,6 +87,7 @@ pub fn add_checks() {
         || base::check_dir_owner_id("/etc/cron.hourly", 0, 0),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .with_fix("chown root:root /etc/cron.d/")
     .register();
 
@@ -88,7 +98,9 @@ pub fn add_checks() {
         || base::check_dir_permission("/etc/cron.hourly", 0o755),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .register();
+
     check::Check::new(
         "CRN_009",
         "Ensure all /etc/cron.hourly/ files have 644 permissions",
@@ -96,6 +108,7 @@ pub fn add_checks() {
         || base::check_dir_files_permission("/etc/cron.hourly/", 0o644),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .register();
 
     check::Check::new(
@@ -105,6 +118,7 @@ pub fn add_checks() {
         || base::check_dir_files_owner_id("/etc/cron.hourly/", 0, 0),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .with_fix("chown -R root:root /etc/cron.hourly/*")
     .register();
 
@@ -115,6 +129,7 @@ pub fn add_checks() {
         || base::check_dir_owner_id("/etc/cron.daily", 0, 0),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .with_fix("chown root:root /etc/cron.daily/")
     .register();
 
@@ -125,7 +140,9 @@ pub fn add_checks() {
         || base::check_dir_permission("/etc/cron.daily", 0o755),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .register();
+
     check::Check::new(
         "CRN_013",
         "Ensure all /etc/cron.daily/ files have 644 permissions",
@@ -133,6 +150,7 @@ pub fn add_checks() {
         || base::check_dir_files_permission("/etc/cron.daily/", 0o644),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .register();
 
     check::Check::new(
@@ -142,6 +160,7 @@ pub fn add_checks() {
         || base::check_dir_files_owner_id("/etc/cron.daily/", 0, 0),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .with_fix("chown -R root:root /etc/cron.daily/*")
     .register();
 
@@ -152,6 +171,7 @@ pub fn add_checks() {
         || base::check_dir_owner_id("/etc/cron.weekly", 0, 0),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .with_fix("chown root:root /etc/cron.weekly/")
     .register();
 
@@ -162,7 +182,9 @@ pub fn add_checks() {
         || base::check_dir_permission("/etc/cron.weekly", 0o755),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .register();
+
     check::Check::new(
         "CRN_017",
         "Ensure all /etc/cron.weekly/ files have 644 permissions",
@@ -170,6 +192,7 @@ pub fn add_checks() {
         || base::check_dir_files_permission("/etc/cron.weekly/", 0o644),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .register();
 
     check::Check::new(
@@ -179,6 +202,7 @@ pub fn add_checks() {
         || base::check_dir_files_owner_id("/etc/cron.weekly/", 0, 0),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .with_fix("chown -R root:root /etc/cron.monthly/*")
     .register();
 
@@ -189,6 +213,7 @@ pub fn add_checks() {
         || base::check_dir_owner_id("/etc/cron.monthly", 0, 0),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .with_fix("chown root:root /etc/cron.monthly")
     .register();
 
@@ -199,7 +224,9 @@ pub fn add_checks() {
         || base::check_dir_permission("/etc/cron.monthly", 0o755),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .register();
+
     check::Check::new(
         "CRN_021",
         "Ensure all /etc/cron.monthly/ files have 644 permissions",
@@ -207,7 +234,9 @@ pub fn add_checks() {
         || base::check_dir_files_permission("/etc/cron.monthly/", 0o644),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .register();
+
     check::Check::new(
         "CRN_022",
         "Ensure all /etc/cron.monthly/ files are owned by root",
@@ -215,6 +244,7 @@ pub fn add_checks() {
         || base::check_dir_files_owner_id("/etc/cron.monthly/", 0, 0),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .with_fix("chown -R root:root /etc/cron.monthly/*")
     .register();
 
@@ -225,6 +255,7 @@ pub fn add_checks() {
         || base::check_dir_owner_id("/etc/cron.yearly", 0, 0),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .with_fix("chown root:root /etc/cron.yearly")
     .register();
 
@@ -235,6 +266,7 @@ pub fn add_checks() {
         || base::check_dir_permission("/etc/cron.yearly", 0o755),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .register();
 
     check::Check::new(
@@ -244,6 +276,7 @@ pub fn add_checks() {
         || base::check_dir_files_permission("/etc/cron.yearly/", 0o644),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .register();
 
     check::Check::new(
@@ -253,6 +286,7 @@ pub fn add_checks() {
         || base::check_dir_files_owner_id("/etc/cron.yearly/", 0, 0),
         vec![],
     )
+    .with_description(CRON_DESCRIPTION)
     .with_fix("chown -R root:root /etc/cron.yearly/*")
     .register();
 }
