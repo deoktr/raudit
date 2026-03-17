@@ -17,7 +17,14 @@
  */
 
 pub const RESET_COLOR: &str = "\x1b[39m";
-pub const PASS_COLOR: &str = "\x1b[32m";
-pub const FAIL_COLOR: &str = "\x1b[31m";
-pub const WARNING_COLOR: &str = "\x1b[36m";
-pub const UNKNOWN_COLOR: &str = "\x1b[36m";
+
+pub const CHK_PASS_COLOR: &str = "\x1b[32m";
+pub const CHK_FAIL_COLOR: &str = "\x1b[31m";
+pub const CHK_WARNING_COLOR: &str = "\x1b[36m";
+pub const CHK_UNKNOWN_COLOR: &str = "\x1b[36m";
+
+pub const SEV_INFORMATIONAL_COLOR: &str = "\x1b[34m";
+pub const SEV_LOW_COLOR: &str = "\x1b[36m";
+pub const SEV_MEDIUM_COLOR: &str = "\x1b[33m";
+pub const SEV_HIGH_COLOR: &str = "\x1b[31m";
+pub const SEV_CRITICAL_COLOR: &str = "\x1b[91m";

@@ -238,7 +238,6 @@ Benchmark 1: ./target/release/raudit
 
 ## TODO
 
-- Add different colors to severity
 - Build in CI for Github release
 - Give much more detailed logs of the error
 - Create custom parsers for complex configurations (sudo, nginx, etc.)

@@ -68,6 +68,16 @@ impl Severity {
             )),
         }
     }
+
+    pub fn color(&self) -> &'static str {
+        match self {
+            Severity::Informational => consts::SEV_INFORMATIONAL_COLOR,
+            Severity::Low => consts::SEV_LOW_COLOR,
+            Severity::Medium => consts::SEV_MEDIUM_COLOR,
+            Severity::High => consts::SEV_HIGH_COLOR,
+            Severity::Critical => consts::SEV_CRITICAL_COLOR,
+        }
+    }
 }
 
 impl Display for Severity {
@@ -405,39 +415,40 @@ impl Check {
 
 impl Display for Check {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        let out = format!(
-            "[{}] [{}] {}{}",
-            self.id,
-            self.severity,
-            self.title,
-            match &self.message {
-                Some(m) => format!(" ({})", m),
-                None => "".to_string(),
-            }
-        );
+        let msg_suffix = match &self.message {
+            Some(m) => format!(" ({})", m),
+            None => "".to_string(),
+        };
 
         let message = if config::is_colored_output_enabled() {
-            match self.state {
-                CheckState::Pass => {
-                    format!("{}{}{}", consts::PASS_COLOR, out, consts::RESET_COLOR)
-                }
-                CheckState::Fail => {
-                    format!("{}{}{}", consts::FAIL_COLOR, out, consts::RESET_COLOR)
-                }
-                CheckState::Warning => {
-                    format!("{}{}{}", consts::WARNING_COLOR, out, consts::RESET_COLOR)
-                }
-                CheckState::Unknown => {
-                    format!("{}{}{}", consts::UNKNOWN_COLOR, out, consts::RESET_COLOR)
-                }
-            }
+            let state_color = match self.state {
+                CheckState::Pass => consts::CHK_PASS_COLOR,
+                CheckState::Fail => consts::CHK_FAIL_COLOR,
+                CheckState::Warning => consts::CHK_WARNING_COLOR,
+                CheckState::Unknown => consts::CHK_UNKNOWN_COLOR,
+            };
+            format!(
+                "{}[{}] {}[{}]{} {}{}{}",
+                state_color,
+                self.id,
+                self.severity.color(),
+                self.severity,
+                consts::RESET_COLOR,
+                state_color,
+                self.title,
+                msg_suffix,
+            )
         } else {
-            match self.state {
-                CheckState::Pass => format!("PAS {}", out),
-                CheckState::Fail => format!("FAIL {}", out),
-                CheckState::Warning => format!("WARNING {}", out),
-                CheckState::Unknown => format!("UNKNOWN {}", out),
-            }
+            let state_label = match self.state {
+                CheckState::Pass => "PASS",
+                CheckState::Fail => "FAIL",
+                CheckState::Warning => "WARNING",
+                CheckState::Unknown => "UNKNOWN",
+            };
+            format!(
+                "{} [{}] [{}] {}{}",
+                state_label, self.id, self.severity, self.title, msg_suffix,
+            )
         };
 
         write!(f, "{}", message)
@@ -538,33 +549,58 @@ impl ReportStats {
         );
 
         if config::is_colored_output_enabled() {
-            pass = format!("{}{}{}", consts::PASS_COLOR, pass, consts::RESET_COLOR);
-            fail = format!("{}{}{}", consts::FAIL_COLOR, fail, consts::RESET_COLOR);
+            pass = format!("{}{}{}", consts::CHK_PASS_COLOR, pass, consts::RESET_COLOR);
+            fail = format!("{}{}{}", consts::CHK_FAIL_COLOR, fail, consts::RESET_COLOR);
             warning = format!(
                 "{}{}{}",
-                consts::WARNING_COLOR,
+                consts::CHK_WARNING_COLOR,
                 warning,
                 consts::RESET_COLOR
             );
         }
 
-        print!("\n\tResult:\n{}\n{}\n{}\n", pass, fail, warning);
+        print!(
+            "\n\t{}Result:\n{}\n{}\n{}\n",
+            consts::RESET_COLOR,
+            pass,
+            fail,
+            warning
+        );
 
         if self.fail > 0 {
-            let sev_lines = format!(
-                "\n\tFailed by severity:\n\
-                 \tCritical:      {:4}\n\
-                 \tHigh:          {:4}\n\
-                 \tMedium:        {:4}\n\
-                 \tLow:           {:4}\n\
-                 \tInformational: {:4}",
-                self.fail_critical,
-                self.fail_high,
-                self.fail_medium,
-                self.fail_low,
-                self.fail_informational,
+            let mut critical = format!("\tCritical: {:8}", self.fail_critical,);
+            let mut high = format!("\tHigh: {:12}", self.fail_high,);
+            let mut medium = format!("\tMedium: {:10}", self.fail_medium,);
+            let mut low = format!("\tLow: {:13}", self.fail_low,);
+            let mut informational = format!("\tInformational: {:3}", self.fail_informational,);
+
+            if config::is_colored_output_enabled() {
+                critical = format!(
+                    "{}{}{}",
+                    consts::SEV_CRITICAL_COLOR,
+                    critical,
+                    consts::RESET_COLOR
+                );
+                high = format!("{}{}{}", consts::SEV_HIGH_COLOR, high, consts::RESET_COLOR);
+                medium = format!(
+                    "{}{}{}",
+                    consts::SEV_MEDIUM_COLOR,
+                    medium,
+                    consts::RESET_COLOR
+                );
+                low = format!("{}{}{}", consts::SEV_LOW_COLOR, low, consts::RESET_COLOR);
+                informational = format!(
+                    "{}{}{}",
+                    consts::SEV_INFORMATIONAL_COLOR,
+                    informational,
+                    consts::RESET_COLOR
+                );
+            }
+
+            print!(
+                "\n\tFailed by severity:\n{}\n{}\n{}\n{}\n{}\n",
+                critical, high, medium, low, informational
             );
-            print!("{}", sev_lines);
         }
         println!();
     }
