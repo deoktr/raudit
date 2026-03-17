@@ -53,6 +53,23 @@ pub enum Severity {
     Critical = 5,
 }
 
+impl Severity {
+    /// Parse a severity level from a string (case-insensitive).
+    pub fn from_str(s: &str) -> std::result::Result<Self, String> {
+        match s.to_lowercase().as_str() {
+            "informational" => Ok(Severity::Informational),
+            "low" => Ok(Severity::Low),
+            "medium" => Ok(Severity::Medium),
+            "high" => Ok(Severity::High),
+            "critical" => Ok(Severity::Critical),
+            _ => Err(format!(
+                "Invalid severity '{}'. Valid: informational, low, medium, high, critical",
+                s
+            )),
+        }
+    }
+}
+
 impl Display for Severity {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match self {
@@ -215,13 +232,11 @@ pub fn print_checks(skip_passed: bool, no_print_description: bool, no_print_fix:
 
 pub fn print_json(pretty: bool) {
     let report = REPORT.lock().expect("Checks not initialized");
-
     let json = if pretty {
         serde_json::to_string_pretty(&*report).expect("Failed to serialize report")
     } else {
         serde_json::to_string(&*report).expect("Failed to serialize report")
     };
-
     println!("{}", json);
 }
 
@@ -317,6 +332,29 @@ pub fn filter_id_exclude(prefixes: Vec<String>) {
     report
         .checks
         .retain(|check| !prefixes.iter().any(|prefix| check.id.starts_with(prefix)));
+}
+
+/// Print list of available severity levels.
+pub fn print_severities() {
+    println!("Available severities: informational, low, medium, high, critical.");
+}
+
+/// Filter checks by minimum severity level.
+pub fn filter_severity(min: Severity) {
+    let mut report = REPORT.lock().unwrap();
+    report.checks.retain(|check| check.severity >= min);
+}
+
+/// Filter checks by exact severity levels.
+pub fn filter_severity_exact(levels: Vec<Severity>) {
+    if levels.is_empty() {
+        return;
+    }
+
+    let mut report = REPORT.lock().unwrap();
+    report
+        .checks
+        .retain(|check| levels.contains(&check.severity));
 }
 
 /// Run dependencies in sequence.

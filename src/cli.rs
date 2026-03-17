@@ -40,6 +40,14 @@ struct Cli {
     #[arg(long, value_delimiter = ',', num_args(0..), env = "FILTERS_EXCLUDE")]
     filters_exclude: Option<Vec<String>>,
 
+    /// Minimum severity level to include (includes specified level and above)
+    #[arg(long, conflicts_with = "severity_exact", env = "SEVERITY")]
+    severity: Option<String>,
+
+    /// Comma-separated list of exact severity levels to include
+    #[arg(long, value_delimiter = ',', num_args(0..), conflicts_with = "severity", env = "SEVERITY_EXACT")]
+    severity_exact: Option<Vec<String>>,
+
     /// Log level
     #[arg(long, value_enum, default_value_t = logger::DEFAULT_LOG_LEVEL, env = "LOG_LEVEL")]
     log_level: logger::LogLevel,
@@ -133,6 +141,42 @@ pub fn cli() {
             return;
         }
         Some(filters_exclude) => check::filter_id_exclude(filters_exclude),
+    }
+
+    match args.severity {
+        None => (),
+        Some(severity) => match check::Severity::from_str(&severity) {
+            Ok(min) => check::filter_severity(min),
+            Err(e) => {
+                eprintln!("{}", e);
+                std::process::exit(1);
+            }
+        },
+    }
+
+    match args.severity_exact {
+        None => (),
+        Some(ref severity_exact) if severity_exact.is_empty() => {
+            check::print_severities();
+            return;
+        }
+        Some(ref severity_exact) => {
+            let mut levels = Vec::new();
+            for s in severity_exact {
+                match check::Severity::from_str(s) {
+                    Ok(level) => {
+                        if !levels.contains(&level) {
+                            levels.push(level);
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!("{}", e);
+                        std::process::exit(1);
+                    }
+                }
+            }
+            check::filter_severity_exact(levels);
+        }
     }
 
     if args.no_parallelization {
