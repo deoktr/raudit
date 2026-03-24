@@ -39,6 +39,7 @@ mod malloc;
 mod modprobe;
 mod mount;
 mod nginx;
+mod ocsf;
 mod os;
 mod pam;
 mod podman;

@@ -7,9 +7,11 @@ Goals:
 
 - Fast and reliable audits.
 - Easy to extend and create your own checks.
-- JSON output.
 - Easy to maintain.
 - Work for both servers and workstations.
+- Human readable or
+  [OCSF Compliance Finding](https://schema.ocsf.io/1.7.0/classes/compliance_finding)
+  JSON output format.
 
 ## Usage
 
@@ -31,49 +33,88 @@ raudit --tags server --tags-exclude paranoid,useless --no-print-passed
 > [!NOTE]
 > Some checks requires root permissions to run.
 
-Generate JSON report:
+Generate JSON report following
+[OCSF Compliance Finding (class 2003, schema 1.7.0)](https://schema.ocsf.io/1.7.0/classes/compliance_finding):
 
 ```bash
-raudit --json=pretty > report.json
+raudit --json > report.json
 ```
 
 > [!NOTE]
 > You can also use env vars to control CLI flags:
 >
 > ```bash
-> JSON=pretty raudit > report.json
+> JSON=true raudit > report.json
 > ```
 
-Example JSON output:
+<details>
+
+<summary>Example JSON output:</summary>
 
 ```bash
-raudit --json=pretty --filters USR_001,USR_002
+raudit --json --filters USR_001
 ```
 
 ```json
 {
-  "checks": [
+  "findings": [
     {
-      "id": "USR_001",
-      "title": "Ensure that root is the only user with UID 0",
-      "state": "Pass"
-    },
-    {
-      "id": "USR_002",
-      "title": "Ensure no duplicate user names exist",
-      "state": "Pass"
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_001",
+        "title": "Ensure that root is the only user with UID 0",
+        "desc": "Multiple accounts with UID 0 have unrestricted root-level access, making it impossible to trace privileged actions to a specific user."
+      },
+      "compliance": {
+        "standards": [
+          "rAudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": "0.30.0"
+        }
+      },
+      "severity_id": 5,
+      "severity": "Critical",
+      "status_id": 4,
+      "status": "Resolved",
+      "time": 1773777067196
     }
   ],
   "stats": {
-    "total": 2,
-    "passed": 2,
-    "failed": 0,
-    "error": 0,
-    "waiting": 0
+    "total": 1,
+    "pass": 1,
+    "fail": 0,
+    "warning": 0,
+    "unknown": 0,
+    "fail_critical": 0,
+    "fail_high": 0,
+    "fail_medium": 0,
+    "fail_low": 0,
+    "fail_informational": 0
   },
-  "version": "0.29.0"
+  "metadata": {
+    "version": "1.7.0",
+    "product": {
+      "name": "raudit",
+      "version": "0.30.0"
+    }
+  }
 }
 ```
+
+</details>
 
 Usage:
 
@@ -123,7 +164,7 @@ Options:
 
 ## Rules
 
-Default rules are based on various sources including CIS, STIG, Mozilla,
+Default builtin rules are based on various sources including CIS, STIG, Mozilla,
 ArchLinux wiki. You should customize them to suit your own needs.
 
 Some modules help with specific configuration checks.
@@ -248,8 +289,6 @@ Benchmark 1: ./target/release/raudit
 - Add metadata to JSON report, like start/end time, elapsed, version, username,
   hostname etc.
 - Add documentation, both user and dev
-- Add option to only have `id`, `message` and `state` in JSON output of checks
-  maybe with a `--format` cli flag
 - Add check timeout, if they take too long just stop them, maybe even with
   ctrl+c?
 - Build in CI on release

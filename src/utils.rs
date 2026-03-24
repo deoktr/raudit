@@ -20,15 +20,19 @@ use std::time::Duration;
 
 /// Format short duration, under an hour.
 pub fn format_duration(dur: Duration) -> String {
-    let secs = dur.as_secs();
-    if secs >= 60 {
-        format!("{} m", secs / 60)
-    } else if secs >= 1 {
-        format!("{} s", secs)
-    } else if dur.as_millis() >= 1 {
-        format!("{} ms", dur.as_millis())
+    let total_secs = dur.as_secs_f64();
+    if total_secs >= 60.0 {
+        format!("{:.2} m", total_secs / 60.0)
+    } else if total_secs >= 1.0 {
+        format!("{:.2} s", total_secs)
     } else {
-        format!("{} μs", dur.as_micros())
+        let millis = total_secs * 1000.0;
+        if millis >= 1.0 {
+            format!("{:.2} ms", millis)
+        } else {
+            let micros = total_secs * 1_000_000.0;
+            format!("{:.2} μs", micros)
+        }
     }
 }
 

@@ -4,54 +4,121 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Raudit</title>
   <style>
-    body { padding: 10px; }
-    table { border-collapse: collapse; }
-    th, td { border: 1px solid black; }
-    .check { padding: 4px; }
-    .check-id { font-family: monospace; font-weight: bold; }
-    .check-message { font-style: italic; }
-    .state-Passed { background-color: oklch(87.1% 0.15 154.449); }
-    .state-Failed { background-color: oklch(80.8% 0.114 19.571); }
-    .state-Error { background-color: oklch(80.9% 0.105 251.813); }
-    .state-Waiting { background-color: oklch(86.9% 0.022 252.894); }
+    body { padding: 10px; font-family: sans-serif; }
+    table { border-collapse: collapse; margin-bottom: 16px; }
+    th, td { border: 1px solid black; padding: 4px 8px; }
+    .finding { padding: 4px; }
+    .finding-id { font-family: monospace; font-weight: bold; }
+    .finding-message { font-style: italic; }
+    .finding-detail { font-size: 0.9em; color: #444; }
+    .finding-remediation { font-size: 0.9em; color: #1a5276; }
+    .finding-compliance { font-size: 0.85em; color: #666; }
+    .status-Resolved { background-color: oklch(87.1% 0.15 154.449); }
+    .status-New { background-color: oklch(80.8% 0.114 19.571); }
+    .status-Unknown { background-color: oklch(80.9% 0.105 251.813); }
+    .severity-Critical { color: #d32f2f; font-weight: bold; }
+    .severity-High { color: #e65100; }
+    .severity-Medium { color: #f9a825; }
+    .severity-Low { color: #1565c0; }
+    .severity-Informational { color: #757575; }
+    .no-findings { text-align: center; color: #666; padding: 16px; }
   </style>
 </head>
 <body>
-  <h3>Raudit {{ version }}</h3>
+  <h3>{{ metadata.product.name }} {{ metadata.product.version }}</h3>
+  <p>OCSF Schema {{ metadata.version }}</p>
   <h4>Stats:</h4>
   <table>
     <thead>
       <tr>
-        <th>Passed</th>
-        <th>Failed</th>
-        <th>Error</th>
-        <th>Waiting</th>
+        <th>Pass</th>
+        <th>Fail</th>
+        <th>Warning</th>
+        <th>Unknown</th>
         <th>Total</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td class="state-Passed">{{ '%0.2f' % ((stats["passed"] / stats["total"]) * 100) }}% ({{ stats["passed"] }})</td>
-        <td class="state-Failed">{{ '%0.2f' % ((stats["failed"] / stats["total"]) * 100) }}% ({{ stats["failed"] }})</td>
-        <td class="state-Error">{{ '%0.2f' % ((stats["error"] / stats["total"]) * 100) }}% ({{ stats["error"] }})</td>
-        <td class="state-Waiting">{{ '%0.2f' % ((stats["waiting"] / stats["total"]) * 100) }}% ({{ stats["waiting"] }})</td>
-        <td>{{ stats["total"] }}</td>
+        {% if stats.total > 0 %}
+        <td class="status-Resolved">{{ '%0.2f' % ((stats.pass / stats.total) * 100) }}% ({{ stats.pass }})</td>
+        <td class="status-New">{{ '%0.2f' % ((stats.fail / stats.total) * 100) }}% ({{ stats.fail }})</td>
+        <td class="status-Unknown">{{ '%0.2f' % ((stats.warning / stats.total) * 100) }}% ({{ stats.warning }})</td>
+        <td>{{ '%0.2f' % ((stats.unknown / stats.total) * 100) }}% ({{ stats.unknown }})</td>
+        {% else %}
+        <td class="status-Resolved">0.00% (0)</td>
+        <td class="status-New">0.00% (0)</td>
+        <td class="status-Unknown">0.00% (0)</td>
+        <td>0.00% (0)</td>
+        {% endif %}
+        <td>{{ stats.total }}</td>
       </tr>
     </tbody>
   </table>
-  <h4>Checks:</h4>
+  {% if stats.fail > 0 %}
+  <h4>Failed by Severity:</h4>
   <table>
+    <thead>
+      <tr>
+        <th class="severity-Critical">Critical</th>
+        <th class="severity-High">High</th>
+        <th class="severity-Medium">Medium</th>
+        <th class="severity-Low">Low</th>
+        <th class="severity-Informational">Informational</th>
+      </tr>
+    </thead>
     <tbody>
-      {% for check in checks %}
-      <tr class="check state-{{ check.state }}">
-        <td class="check-id">[{{ check.id }}]</td>
-        <td>
-          {{ check.title }}
-          {% if check.message %}<span class="check-message">({{ check.message }})</span>{% endif %}
-        </td>
+      <tr>
+        <td>{{ stats.fail_critical }}</td>
+        <td>{{ stats.fail_high }}</td>
+        <td>{{ stats.fail_medium }}</td>
+        <td>{{ stats.fail_low }}</td>
+        <td>{{ stats.fail_informational }}</td>
       </tr>
     </tbody>
-  {% endfor %}
+  </table>
+  {% endif %}
+  <h4>Findings:</h4>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Severity</th>
+        <th>Title</th>
+        <th>Status</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if findings %}
+      {% for finding in findings %}
+      <tr class="finding status-{{ finding.status }}">
+        <td class="finding-id">[{{ finding.finding_info.uid }}]</td>
+        <td class="severity-{{ finding.severity }}">{{ finding.severity }}</td>
+        <td>
+          {{ finding.finding_info.title }}
+          {% if finding.finding_info.desc %}
+          <br><span class="finding-detail">{{ finding.finding_info.desc }}</span>
+          {% endif %}
+        </td>
+        <td>{{ finding.status }}</td>
+        <td>
+          {% if finding.message %}<span class="finding-message">{{ finding.message }}</span>{% endif %}
+          {% if finding.compliance and finding.compliance.standards %}
+          <br><span class="finding-compliance">Standards: {{ finding.compliance.standards | join(", ") }}</span>
+          {% endif %}
+          {% if finding.remediation %}
+          <br><span class="finding-remediation">Fix: {{ finding.remediation.desc }}</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      {% else %}
+      <tr>
+        <td colspan="5" class="no-findings">No findings</td>
+      </tr>
+      {% endif %}
+    </tbody>
   </table>
 </body>
 </html>

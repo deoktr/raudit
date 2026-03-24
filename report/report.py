@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 import argparse
+import json
 import logging
 import sys
-import json
 
 try:
     from jinja2 import DictLoader, Environment
@@ -17,6 +17,11 @@ def handle(args) -> int:
     logging.info(f"reading raudit json result from {args.raudit_json.name}")
     input = args.raudit_json.read()
     result = json.loads(input)
+
+    for key in ("findings", "stats", "metadata"):
+        if key not in result:
+            logging.error(f"invalid OCSF JSON: missing '{key}' field")
+            return 1
 
     logging.info(f"loading template file {args.template.name}")
     template_content = args.template.read()

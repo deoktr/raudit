@@ -17,8 +17,8 @@
  */
 
 use crate::*;
-use clap::{Parser, ValueEnum};
-use std::time::Instant;
+use clap::Parser;
+use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
 /// Audit Linux systems security configurations
 #[derive(Debug, Parser)]
@@ -85,19 +85,16 @@ struct Cli {
     no_time: bool,
 
     /// Generate JSON output
-    #[arg(long, value_enum, default_value_t = JsonMode::Off, env = "JSON")]
-    json: JsonMode,
-}
-
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
-enum JsonMode {
-    Short,
-    Pretty,
-    Off,
+    #[arg(long, action = clap::ArgAction::SetTrue, env = "JSON")]
+    json: bool,
 }
 
 pub fn cli() {
     let now = Instant::now();
+    let timestamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("System clock before UNIX epoch")
+        .as_millis() as i64;
 
     let args = Cli::parse();
 
@@ -191,7 +188,7 @@ pub fn cli() {
         check::par_run_checks();
     }
 
-    if args.json == JsonMode::Off {
+    if !args.json {
         if !args.no_print_checks {
             check::print_checks(
                 args.no_print_passed,
@@ -207,7 +204,7 @@ pub fn cli() {
     } else {
         check::calculate_stats();
 
-        check::print_json(args.json == JsonMode::Pretty);
+        check::print_json(timestamp);
     }
 
     if !args.no_time {

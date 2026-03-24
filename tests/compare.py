@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
-import shutil
 import argparse
-import logging
-import sys
 import json
-
+import logging
+import shutil
+import sys
 
 SKIP_MESSAGE = ["UPT_001"]
 
@@ -40,87 +39,97 @@ def compare_stat(base, target, stat_name) -> int:
         return 0
 
 
-def compare_number_of_checks(base, target) -> int:
-    """Compare the total ammount of checks."""
+def compare_number_of_findings(base, target) -> int:
+    """Compare the total amount of findings."""
 
-    if "checks" not in base:
-        logging.error("wrong json format, missing checks from base")
+    if "findings" not in base:
+        logging.error("wrong json format, missing findings from base")
         return 1
-    if "checks" not in target:
-        logging.error("wrong json format, missing checks from target")
+    if "findings" not in target:
+        logging.error("wrong json format, missing findings from target")
         return 1
 
-    num_base = len(base["checks"])
-    num_target = len(target["checks"])
+    num_base = len(base["findings"])
+    num_target = len(target["findings"])
     if num_base != num_target:
         logging.warning(
-            f"number of checks are not the same: '{num_base}' != '{num_target}'"
+            f"number of findings are not the same: '{num_base}' != '{num_target}'"
         )
         return 1
     else:
-        logging.debug(f"valid number of checks '{num_base}'")
+        logging.debug(f"valid number of findings '{num_base}'")
         return 0
 
 
-def compare_checks(base, target) -> int:
-    """Compare all checks, one by one.
+def compare_findings(base, target) -> int:
+    """Compare all findings, one by one.
 
-    Ensure they have the same id, title, message, and state.
+    Ensure they have the same id, title, message, status, and severity.
     """
 
     out = 0
-    for index in range(len(base["checks"])):
-        base_check = base["checks"][index]
+    for index in range(len(base["findings"])):
+        base_finding = base["findings"][index]
 
-        if len(target["checks"]) < index + 1:
+        if len(target["findings"]) < index + 1:
             out += 1
             continue
 
-        target_check = target["checks"][index]
+        target_finding = target["findings"][index]
 
-        if base_check["id"] != target_check["id"]:
+        base_id = base_finding["finding_info"]["uid"]
+        target_id = target_finding["finding_info"]["uid"]
+
+        if base_id != target_id:
             logging.warning(
-                f"check at index {index} do not have same id: '{base_check['id']}' != '{target_check['id']}'"
+                f"finding at index {index} do not have same id: '{base_id}' != '{target_id}'"
             )
             out += 1
             continue
 
-        check_id = base_check["id"]
+        finding_id = base_id
 
-        if base_check["title"] != target_check["title"]:
+        base_title = base_finding["finding_info"]["title"]
+        target_title = target_finding["finding_info"]["title"]
+        if base_title != target_title:
             logging.warning(
-                f"check {check_id} do not have same title: '{base_check['title']}' != '{target_check['title']}'"
+                f"finding {finding_id} do not have same title: '{base_title}' != '{target_title}'"
             )
             out += 1
 
-        if (
-            check_id not in SKIP_MESSAGE
-            and base_check["message"] != target_check["message"]
-        ):
+        base_message = base_finding.get("message")
+        target_message = target_finding.get("message")
+        if finding_id not in SKIP_MESSAGE and base_message != target_message:
             logging.warning(
-                f"check {check_id} do not have same message: '{base_check['message']}' != '{target_check['message']}'"
+                f"finding {finding_id} do not have same message: '{base_message}' != '{target_message}'"
             )
             out += 1
 
-        if base_check["state"] != target_check["state"]:
+        if base_finding["status"] != target_finding["status"]:
             logging.warning(
-                f"check {check_id} do not have same state: '{base_check['state']}' != '{target_check['state']}'"
+                f"finding {finding_id} do not have same status: '{base_finding['status']}' != '{target_finding['status']}'"
+            )
+            out += 1
+
+        if base_finding["severity"] != target_finding["severity"]:
+            logging.warning(
+                f"finding {finding_id} do not have same severity: '{base_finding['severity']}' != '{target_finding['severity']}'"
             )
             out += 1
 
     return out
 
 
-def unique_check_id(base) -> int:
+def unique_finding_id(base) -> int:
     out = 0
     ids = []
-    for check in base["checks"]:
-        id = check["id"]
-        if id in ids:
-            logging.warning(f"duplicate check id: {id}")
+    for finding in base["findings"]:
+        finding_id = finding["finding_info"]["uid"]
+        if finding_id in ids:
+            logging.warning(f"duplicate finding id: {finding_id}")
             out += 1
         else:
-            ids.append(id)
+            ids.append(finding_id)
     return out
 
 
@@ -128,13 +137,18 @@ def compare(base, target) -> int:
     check_sum = sum(
         [
             compare_stat(base, target, "total"),
-            compare_stat(base, target, "passed"),
-            compare_stat(base, target, "failed"),
-            compare_stat(base, target, "error"),
-            compare_stat(base, target, "waiting"),
-            compare_number_of_checks(base, target),
-            compare_checks(base, target),
-            unique_check_id(base),
+            compare_stat(base, target, "pass"),
+            compare_stat(base, target, "fail"),
+            compare_stat(base, target, "warning"),
+            compare_stat(base, target, "unknown"),
+            compare_stat(base, target, "fail_critical"),
+            compare_stat(base, target, "fail_high"),
+            compare_stat(base, target, "fail_medium"),
+            compare_stat(base, target, "fail_low"),
+            compare_stat(base, target, "fail_informational"),
+            compare_number_of_findings(base, target),
+            compare_findings(base, target),
+            unique_finding_id(base),
         ]
     )
     return check_sum
@@ -166,6 +180,7 @@ def handle(args) -> int:
     if not args.no_ask_changes:
         if input("\nDo you want to accept changes? y/[n] ").lower() == "y":
             shutil.copyfile(args.target_json.name, args.base_json.name)
+    return 0
 
 
 def setup_logging(log_level: str = "INFO"):

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::{config, consts, utils};
+use crate::{config, consts, ocsf, utils};
 
 use std::collections::HashSet;
 use std::fmt::{Display, Formatter, Result};
@@ -43,7 +43,7 @@ pub struct Report {
 }
 
 /// Security impact classification for a check.
-#[derive(PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Copy, PartialEq, PartialOrd, Serialize)]
 #[repr(u8)]
 pub enum Severity {
     Informational = 1,
@@ -108,44 +108,34 @@ pub enum CheckState {
 #[derive(Serialize)]
 pub struct Check {
     /// ID of the check, can be used to filter the list
-    id: String,
-
+    pub id: String,
     /// Title shown in the check list
-    title: String,
-
+    pub title: String,
     /// Description of the check
     #[serde(skip_serializing_if = "Option::is_none")]
-    description: Option<String>,
-
+    pub description: Option<String>,
     /// Fix of the check
     #[serde(skip_serializing_if = "Option::is_none")]
-    fix: Option<String>,
-
+    pub fix: Option<String>,
     /// List of links
     #[serde(skip_serializing)]
-    links: Vec<String>,
-
+    pub links: Vec<String>,
     /// List of tags, can be used to filter the list
     #[serde(skip_serializing)]
-    tags: Vec<String>,
-
+    pub tags: Vec<String>,
     /// Message to give result information
     #[serde(skip_serializing_if = "Option::is_none")]
-    message: Option<String>,
-
+    pub message: Option<String>,
     /// State of the check
-    state: CheckState,
-
+    pub state: CheckState,
     /// Security impact severity level
-    severity: Severity,
-
+    pub severity: Severity,
     /// Check function
     #[serde(skip_serializing)]
-    check: CheckFunc,
-
+    pub check: CheckFunc,
     /// List of dependencies to run before the check
     #[serde(skip_serializing)]
-    dependencies: Vec<DependencyFunc>,
+    pub dependencies: Vec<DependencyFunc>,
 }
 
 impl Check {
@@ -240,13 +230,12 @@ pub fn print_checks(skip_passed: bool, no_print_description: bool, no_print_fix:
     }
 }
 
-pub fn print_json(pretty: bool) {
-    let report = REPORT.lock().expect("Checks not initialized");
-    let json = if pretty {
-        serde_json::to_string_pretty(&*report).expect("Failed to serialize report")
-    } else {
-        serde_json::to_string(&*report).expect("Failed to serialize report")
-    };
+/// Print OCSF-compliant JSON output.
+pub fn print_json(timestamp: i64) {
+    let mut report = REPORT.lock().expect("Checks not initialized");
+    let stats = std::mem::take(&mut report.stats);
+    let ocsf_report = ocsf::build_ocsf_report(&report.checks, stats, timestamp);
+    let json = serde_json::to_string(&ocsf_report).expect("Failed to serialize OCSF report");
     println!("{}", json);
 }
 
@@ -406,7 +395,7 @@ impl Default for Report {
 }
 
 impl Check {
-    fn run(&mut self) {
+    pub fn run(&mut self) {
         let (state, message) = (self.check)();
         self.state = state;
         self.message = message;
@@ -457,16 +446,16 @@ impl Display for Check {
 
 #[derive(Serialize, Default)]
 pub struct ReportStats {
-    total: i32,
-    pass: i32,
-    fail: i32,
-    warning: i32,
-    unknown: i32,
-    fail_critical: i32,
-    fail_high: i32,
-    fail_medium: i32,
-    fail_low: i32,
-    fail_informational: i32,
+    pub total: i32,
+    pub pass: i32,
+    pub fail: i32,
+    pub warning: i32,
+    pub unknown: i32,
+    pub fail_critical: i32,
+    pub fail_high: i32,
+    pub fail_medium: i32,
+    pub fail_low: i32,
+    pub fail_informational: i32,
 }
 
 pub fn calculate_stats() {

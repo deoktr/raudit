@@ -1,6 +1,6 @@
 # Raudit HTML
 
-Convert raudit JSON to HTML.
+Convert raudit OCSF JSON to an HTML report.
 
 ## Usage
 
