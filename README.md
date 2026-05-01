@@ -153,6 +153,10 @@ Options:
           Comma-separated list of ID prefixes to include [env: FILTERS=]
       --filters-exclude [<FILTERS_EXCLUDE>...]
           Comma-separated list of ID prefixes to exclude [env: FILTERS_EXCLUDE=]
+      --severity <SEVERITY>
+          Minimum severity level to include (includes specified level and above) [env: SEVERITY=]
+      --severity-exact [<SEVERITY_EXACT>...]
+          Comma-separated list of exact severity levels to include [env: SEVERITY_EXACT=]
       --log-level <LOG_LEVEL>
           Log level [env: LOG_LEVEL=] [default: info] [possible values: error, warn, info, debug, trace]
       --no-parallelization
@@ -171,8 +175,10 @@ Options:
           Disable colored output [env: NO_COLORS=]
       --no-time
           Disable timer [env: NO_TIME=]
-      --json <JSON>
-          Generate JSON output [env: JSON=] [default: off] [possible values: short, pretty, off]
+      --no-skip
+          Disable automatic skipping of rules [env: NO_SKIP=]
+      --json
+          Generate JSON output [env: JSON=]
   -h, --help
           Print help
   -V, --version

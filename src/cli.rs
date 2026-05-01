@@ -84,6 +84,10 @@ struct Cli {
     #[arg(long, action = clap::ArgAction::SetTrue, env = "NO_TIME")]
     no_time: bool,
 
+    /// Disable automatic skipping of rules
+    #[arg(long, action = clap::ArgAction::SetTrue, env = "NO_SKIP")]
+    no_skip: bool,
+
     /// Generate JSON output
     #[arg(long, action = clap::ArgAction::SetTrue, env = "JSON")]
     json: bool,
@@ -176,7 +180,9 @@ pub fn cli() {
         }
     }
 
-    check::remove_skipped(!args.no_parallelization);
+    if !args.no_skip {
+        check::remove_skipped(!args.no_parallelization);
+    }
 
     check::run_dependencies(!args.no_parallelization);
     check::run_checks(!args.no_parallelization);
