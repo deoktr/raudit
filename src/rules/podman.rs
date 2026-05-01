@@ -10,6 +10,7 @@ pub fn add_checks() {
         podman::podman_not_privileged,
         vec![podman::init_containers_inspect],
     )
+    .skip_when(podman::skip_no_podman)
     .with_description("Privileged containers have full access to the host system, effectively disabling all security isolation and allowing container escape to root on the host.")
     .register();
 
@@ -21,6 +22,7 @@ pub fn add_checks() {
         podman::podman_cap_drop,
         vec![podman::init_containers_inspect],
     )
+    .skip_when(podman::skip_no_podman)
     .with_description("Dropping Linux capabilities reduces the kernel attack surface available to a compromised container, limiting the damage an attacker can do if they gain code execution.")
     .with_fix("Start containers with flag \"--cap-drop all\"")
     .register();
@@ -33,6 +35,7 @@ pub fn add_checks() {
         podman::podman_user,
         vec![podman::init_containers_inspect],
     )
+    .skip_when(podman::skip_no_podman)
     .with_description(
         "Limit impact of a container process compromise. Follow principle of least privilege.",
     )
@@ -47,6 +50,7 @@ pub fn add_checks() {
         || mount::check_mount_present("/var/lib/containers"),
         vec![mount::init_mounts],
     )
+    .skip_when(podman::skip_no_podman)
     .register();
 
     check::Check::new(
@@ -62,6 +66,7 @@ pub fn add_checks() {
         },
         vec![podman::init_podman_info],
     )
+    .skip_when(podman::skip_no_podman)
     .register();
 
     check::Check::new(
@@ -72,5 +77,6 @@ pub fn add_checks() {
         podman::podman_apparmor,
         vec![podman::init_containers_inspect],
     )
+    .skip_when(podman::skip_no_podman)
     .register();
 }

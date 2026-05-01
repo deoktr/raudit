@@ -18,11 +18,16 @@
 
 use std::fs;
 
-use crate::check;
+use crate::{check, utils};
 
 // FIXME: On Ubuntu it is in:
 // "/etc/gdm3/custom.conf"
 const GDM_CFG_PATH: &str = "/etc/gdm/custom.conf";
+
+/// Skip when GDM is not installed (no gdm/gdm3 bin).
+pub fn skip_no_gdm() -> bool {
+    utils::which("gdm").is_none() && utils::which("gdm3").is_none()
+}
 
 /// Ensure no automatic logon to the system via a GUI is possible.
 ///

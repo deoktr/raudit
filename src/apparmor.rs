@@ -18,8 +18,14 @@
 
 // TODO: parse apparmor profiles
 use std::fs;
+use std::path::Path;
 
 use crate::check;
+
+/// Skip when AppArmor LSM is not present in the running kernel.
+pub fn skip_no_apparmor() -> bool {
+    !Path::new("/sys/module/apparmor").exists()
+}
 
 /// Ensure AppArmor is enabled.
 pub fn apparmor_enabled() -> check::CheckReturn {

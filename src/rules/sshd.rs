@@ -10,6 +10,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("fingerprinthash", "SHA256"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"FingerprintHash SHA256\"")
     .register();
 
@@ -21,6 +22,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("syslogfacility", "AUTH"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"SyslogFacility AUTH\"")
     .register();
 
@@ -32,6 +34,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("loglevel", "VERBOSE"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"LogLevel VERBOSE\"")
     .register();
 
@@ -61,6 +64,7 @@ pub fn add_checks() {
         },
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"LoginGraceTime 60\"")
     .register();
 
@@ -72,6 +76,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("permitrootlogin", "no"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"PermitRootLogin no\"")
     .register();
 
@@ -83,6 +88,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("strictmodes", "yes"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"StrictModes yes\"")
     .register();
 
@@ -112,6 +118,7 @@ pub fn add_checks() {
         },
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"MaxAuthTries 4\"")
     .register();
 
@@ -141,6 +148,7 @@ pub fn add_checks() {
         },
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"MaxSessions 5\"")
     .register();
 
@@ -152,6 +160,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("hostbasedauthentication", "no"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"HostbasedAuthentication no\"")
     .register();
 
@@ -173,6 +182,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("ignoreuserknownhosts", "yes"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"IgnoreUserKnownHosts yes\"")
     .register();
 
@@ -184,6 +194,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("pubkeyauthentication", "yes"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"AuthenticationMethods publickey\"")
     .register();
 
@@ -195,6 +206,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("passwordauthentication", "no"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"PasswordAuthentication no\"")
     .register();
 
@@ -206,6 +218,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("kbdinteractiveauthentication", "no"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"KbdInteractiveAuthentication no\"")
     .register();
 
@@ -217,6 +230,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("permitemptypasswords", "no"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" remove: \"PermitEmptyPasswords yes\"")
     .register();
 
@@ -228,6 +242,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("kerberosauthentication", "no"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" remove: \"KerberosAuthentication yes\"")
     .register();
 
@@ -239,6 +254,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("kerberosorlocalpasswd", "no"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"KerberosOrLocalPasswd no\"")
     .register();
 
@@ -250,6 +266,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("kerberosticketcleanup", "yes"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"KerberosTicketCleanup yes\"")
     .register();
 
@@ -261,6 +278,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("gssapiauthentication", "no"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" remove: \"GSSAPIAuthentication yes\"")
     .register();
 
@@ -272,6 +290,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("gssapicleanupcredentials", "yes"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" remove: \"GSSAPICleanupCredentials no\"")
     .register();
 
@@ -283,6 +302,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("usepam", "yes"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"UsePAM yes\"")
     .register();
 
@@ -294,6 +314,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("disableforwarding", "yes"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"DisableForwarding yes\"")
     .register();
 
@@ -305,6 +326,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("x11forwarding", "no"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"DisableForwarding yes\"")
     .register();
 
@@ -316,6 +338,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("gatewayports", "no"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" remove: \"Gatewayports yes\"")
     .register();
 
@@ -327,6 +350,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("x11uselocalhost", "yes"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" remove: \"X11UseLocalhost no\"")
     .register();
 
@@ -338,6 +362,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("printmotd", "no"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"PrintMotd no\"")
     .register();
 
@@ -349,6 +374,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("permituserenvironment", "no"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" remove: \"PermitUserEnvironment yes\"")
     .register();
 
@@ -378,6 +404,7 @@ pub fn add_checks() {
         },
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"ClientAliveInterval 15\"")
     .register();
 
@@ -389,6 +416,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("clientalivecountmax", "3"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" remove: \"ClientAliveCountMax *\"")
     .register();
 
@@ -400,6 +428,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("tcpkeepalive", "no"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"TCPKeepAlive no\"")
     .register();
 
@@ -411,6 +440,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("usedns", "no"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" remove: \"UseDNS yes\"")
     .register();
 
@@ -422,6 +452,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("permittunnel", "no"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" remove: \"PermitTunnel yes\"")
     .register();
 
@@ -433,6 +464,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("maxstartups", "10:30:60"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"MaxStartups 10:30:60\"")
     .register();
 
@@ -444,6 +476,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("printlastlog", "no"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"PrintLastLog no\"")
     .register();
 
@@ -456,6 +489,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("allowgroups", "sshusers"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_description("SSH access should be restricted to a group of users.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"AllowGroups sshusers\"")
     .register();
@@ -487,6 +521,7 @@ pub fn add_checks() {
         },
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"KexAlgorithms mlkem768x25519-sha256,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521\"")
     .register();
 
@@ -503,6 +538,7 @@ pub fn add_checks() {
         },
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr\"")
     .register();
 
@@ -519,6 +555,7 @@ pub fn add_checks() {
         },
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com\"")
     .register();
 
@@ -530,6 +567,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("authenticationmethods", "publickey"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"AuthenticationMethods publickey\"")
     .register();
 
@@ -546,6 +584,7 @@ pub fn add_checks() {
         },
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"Subsystem sftp /usr/lib/openssh/sftp-server -f AUTHPRIV -l INFO\"")
     .register();
 
@@ -557,6 +596,7 @@ pub fn add_checks() {
         || sshd::check_sshd_config("kbdinteractiveauthentication", "no"),
         vec![sshd::init_sshd_config],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"KbdInteractiveAuthentication no\"")
     .register();
 
@@ -574,6 +614,7 @@ pub fn add_checks() {
         },
         vec![],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("chown root:root /etc/systemd/system/sshd.service")
     .register();
 
@@ -591,6 +632,7 @@ pub fn add_checks() {
         },
         vec![],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("chmod 644 /etc/systemd/system/sshd.service")
     .register();
 
@@ -602,6 +644,7 @@ pub fn add_checks() {
         || base::check_dir_owner_id("/etc/ssh", 0, 0),
         vec![],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("chown root:root /etc/ssh")
     .register();
 
@@ -613,6 +656,7 @@ pub fn add_checks() {
         || base::check_dir_permission("/etc/ssh", 0o755),
         vec![],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("chmod 755 /etc/ssh")
     .register();
 
@@ -624,6 +668,7 @@ pub fn add_checks() {
         || base::check_file_owner_id("/etc/ssh/sshd_config", 0, 0),
         vec![],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("chown root:root /etc/ssh/sshd_config")
     .register();
 
@@ -635,6 +680,7 @@ pub fn add_checks() {
         || base::check_file_permission("/etc/ssh/sshd_config", 0o644),
         vec![],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("chmod 644 /etc/ssh/sshd_config")
     .register();
 
@@ -646,6 +692,7 @@ pub fn add_checks() {
         || base::check_dir_owner_id("/etc/ssh/sshd_config.d", 0, 0),
         vec![],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("chown root:root /etc/ssh/sshd_config.d")
     .register();
 
@@ -657,6 +704,7 @@ pub fn add_checks() {
         || base::check_dir_files_owner_id("/etc/ssh/sshd_config.d/", 0, 0),
         vec![],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("chown -R root:root /etc/ssh/sshd_config.d/*")
     .register();
 
@@ -668,6 +716,7 @@ pub fn add_checks() {
         || base::check_dir_files_permission("/etc/ssh/sshd_config.d/", 0o644),
         vec![],
     )
+    .skip_when(sshd::skip_no_sshd)
     .with_fix("chmod -R 644 /etc/ssh/sshd_config.d/*")
     .register();
 

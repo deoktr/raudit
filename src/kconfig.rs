@@ -27,6 +27,14 @@ static KERNEL_BUILD_CONFIG: OnceLock<KernelBuildConfig> = OnceLock::new();
 /// Kernel build configuration from `/lib/modules/$(uname -r)/build/.config`.
 pub type KernelBuildConfig = HashMap<String, String>;
 
+/// Skip a check when the running kernel's build config is not available.
+pub fn skip_no_kbuild_config() -> bool {
+    match get_kernel_build_config_path() {
+        Ok(p) => !p.exists(),
+        Err(_) => true,
+    }
+}
+
 /// Get path `/lib/modules/$(uname -r)/build/.config`.
 fn get_kernel_build_config_path() -> Result<PathBuf, io::Error> {
     let kernel_version = fs::read_to_string("/proc/sys/kernel/osrelease")?

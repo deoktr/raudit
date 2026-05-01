@@ -176,17 +176,10 @@ pub fn cli() {
         }
     }
 
-    if args.no_parallelization {
-        check::run_dependencies();
-    } else {
-        check::par_run_dependencies();
-    }
+    check::remove_skipped(!args.no_parallelization);
 
-    if args.no_parallelization {
-        check::run_checks();
-    } else {
-        check::par_run_checks();
-    }
+    check::run_dependencies(!args.no_parallelization);
+    check::run_checks(!args.no_parallelization);
 
     if !args.json {
         if !args.no_print_checks {
@@ -215,7 +208,6 @@ pub fn cli() {
 // add checks for all modules
 fn add_all_checks() {
     rules::apparmor::add_checks();
-    // TODO: automatically filter out if not on Debian based distro
     rules::apt::add_checks();
     rules::audit::add_checks();
     rules::bin::add_checks();

@@ -20,7 +20,7 @@ use std::process;
 use std::process::Stdio;
 use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_error};
+use crate::{check, log_debug, log_error, utils};
 
 const NGINX_CONF_PATH: &str = "/etc/nginx/nginx.conf";
 
@@ -47,6 +47,11 @@ pub struct NginxBlock {
 pub struct NginxConfig {
     pub directives: Vec<NginxDirective>,
     pub blocks: Vec<NginxBlock>,
+}
+
+/// Skip if nginx is not installed
+pub fn skip_no_nginx() -> bool {
+    utils::which("nginx").is_none()
 }
 
 /// Parse nginx -T output into a structured config.

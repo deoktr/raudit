@@ -98,6 +98,15 @@ pub fn is_debian() -> bool {
     };
 
     os_release.get("ID").is_some_and(|v| v == "debian")
+        || os_release
+            .get("ID_LIKE")
+            .is_some_and(|v| v.split_whitespace().any(|w| w == "debian"))
+}
+
+/// Skip when the host is not part of the Debian family.
+pub fn skip_not_debian() -> bool {
+    init_os_release();
+    !is_debian()
 }
 
 /// Helper to check if current distro is ArchLinux.

@@ -17,6 +17,7 @@
  */
 
 use std::fs;
+use std::path::Path;
 use std::sync::OnceLock;
 
 use crate::{check, log_debug, log_error};
@@ -27,6 +28,11 @@ static GRUB_CFG: OnceLock<GrubCfg> = OnceLock::new();
 
 /// Raw grub config from `/boot/grub/grub.cfg`.
 pub type GrubCfg = String;
+
+/// Skip if grub is not the bootloader.
+pub fn skip_no_grub() -> bool {
+    !Path::new("/boot/grub").is_dir() && !Path::new("/boot/grub2").is_dir()
+}
 
 /// Get the system's grub config from `/boot/grub/grub.cfg`.
 fn get_grub_cfg() -> Result<String, std::io::Error> {

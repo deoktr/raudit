@@ -20,7 +20,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_error, log_warn};
+use crate::{check, log_debug, log_error, log_warn, utils};
 
 const SUDOERS_PATH: &str = "/etc/sudoers";
 const SUDOERS_DIR_PATH: &str = "/etc/sudoers.d";
@@ -42,6 +42,11 @@ fn parse_sudoer(content: String) -> SudoConfig {
         .filter(|line| !line.is_empty())
         .map(|line| line.to_string())
         .collect()
+}
+
+/// Skip when sudo is not installed.
+pub fn skip_no_sudo() -> bool {
+    utils::which("sudo").is_none()
 }
 
 pub fn init_sudo() {

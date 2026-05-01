@@ -16,7 +16,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use std::env;
+use std::path::PathBuf;
 use std::time::Duration;
+
+/// Resolve an executable name against `$PATH`. Returns the first matching
+/// absolute path, or None if the binary is not found.
+pub fn which(bin: &str) -> Option<PathBuf> {
+    let path = env::var_os("PATH")?;
+    for dir in env::split_paths(&path) {
+        let candidate = dir.join(bin);
+        if candidate.is_file() {
+            return Some(candidate);
+        }
+    }
+    None
+}
 
 /// Format short duration, under an hour.
 pub fn format_duration(dur: Duration) -> String {

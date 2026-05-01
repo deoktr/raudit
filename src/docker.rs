@@ -33,13 +33,18 @@ use std::process;
 use std::process::Stdio;
 use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_error};
+use crate::{check, log_debug, log_error, utils};
 
 static DOCKER_INFO: OnceLock<DockerInfo> = OnceLock::new();
 static CONTAINERS: OnceLock<Containers> = OnceLock::new();
 
 pub type DockerInfo = Value;
 pub type Containers = HashMap<String, Value>;
+
+/// Skip when the docker is not installed.
+pub fn skip_no_docker() -> bool {
+    utils::which("docker").is_none()
+}
 
 /// Get docker info by running `docker info -f json`.
 fn get_docker_info() -> Result<DockerInfo, String> {

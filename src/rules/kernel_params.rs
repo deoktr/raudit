@@ -10,6 +10,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_EFI"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -20,6 +21,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_CPU_SUP_AMD"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -30,6 +32,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_CPU_SUP_INTEL"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -40,6 +43,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_MODULES"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -50,6 +54,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_DEVMEM"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -60,6 +65,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_BPF_SYSCALL"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -70,6 +76,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_BUG"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -80,6 +87,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_THREAD_INFO_IN_TASK"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -90,6 +98,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_IOMMU_SUPPORT"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -100,6 +109,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_RANDOMIZE_BASE"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .with_description("Enables Kernel Address Space Layout Randomization (KASLR).")
     .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#kernel-address-space-layout-randomization-kaslr")
     .register();
@@ -112,6 +122,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_LIST_HARDENED"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -122,6 +133,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_RANDOM_KMALLOC_CACHES"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -132,6 +144,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_SLAB_MERGE_DEFAULT"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -142,6 +155,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_PAGE_TABLE_CHECK"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -152,6 +166,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_PAGE_TABLE_CHECK_ENFORCED"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -162,6 +177,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_BUG_ON_DATA_CORRUPTION"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -172,6 +188,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_SLAB_FREELIST_HARDENED"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -182,6 +199,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_SLAB_FREELIST_RANDOM"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -192,6 +210,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_SHUFFLE_PAGE_ALLOCATOR"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -202,6 +221,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_FORTIFY_SOURCE"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -212,6 +232,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_INIT_ON_ALLOC_DEFAULT_ON"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -222,6 +243,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_STATIC_USERMODEHELPER"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -232,6 +254,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_SCHED_CORE"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -242,6 +265,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_SECURITY_LOCKDOWN_LSM"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -252,6 +276,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_SECURITY_LOCKDOWN_LSM_EARLY"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -262,6 +287,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_LOCK_DOWN_KERNEL_FORCE_CONFIDENTIALITY"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     // security policy
@@ -273,6 +299,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_SECURITY"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -283,6 +310,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_SECURITY_YAMA"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -293,6 +321,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_SECURITY_LANDLOCK"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -303,6 +332,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_SECURITY_SELINUX_DISABLE"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -313,6 +343,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_SECURITY_SELINUX_BOOTPARAM"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
     // TODO: set N
     check::Check::new(
@@ -323,6 +354,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_SECURITY_SELINUX_DEVELOP"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -333,6 +365,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_SECURITY_WRITABLE_HOOKS"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -343,6 +376,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_SECURITY_SELINUX_DEBUG"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -353,6 +387,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_SECCOMP"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -363,6 +398,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_SECCOMP_FILTER"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -373,6 +409,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_BPF_UNPRIV_DEFAULT_OFF"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -383,6 +420,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_STRICT_DEVMEM"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -393,6 +431,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_X86_INTEL_TSX_MODE_OFF"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -403,6 +442,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_SECURITY_DMESG_RESTRICT"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -413,6 +453,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_ACPI_CUSTOM_METHOD"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -423,6 +464,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_COMPAT_BRK"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -433,6 +475,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_DEVKMEM"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -443,6 +486,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_BINFMT_MISC"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -453,6 +497,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_INET_DIAG"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -463,6 +508,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_KEXEC"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -473,6 +519,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_PROC_KCORE"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -483,6 +530,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_LEGACY_PTYS"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -493,6 +541,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_HIBERNATION"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -503,6 +552,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_COMPAT"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .with_description("Eliminate many syscalls for 64-bit systems. Limits the breadth of kernel code that can be reached, possibly reducing the availability of a given bug to an attack.")
     .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#reduced-access-to-syscalls")
     .register();
@@ -515,6 +565,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_IA32_EMULATION"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -525,6 +576,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_X86_X32"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -535,6 +587,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_X86_X32_ABI"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -545,6 +598,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_MODIFY_LDT_SYSCALL"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -555,6 +609,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_OABI_COMPAT"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -565,6 +620,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_X86_MSR"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -575,6 +631,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_LEGACY_TIOCSTI"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -585,6 +642,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_MODULE_FORCE_LOAD"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -595,6 +653,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_DRM_LEGACY"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -605,6 +664,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_FB"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -615,6 +675,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_VT"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -625,6 +686,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_BLK_DEV_FD"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -635,6 +697,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_BLK_DEV_FD_RAWCMD"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -645,6 +708,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_NOUVEAU_LEGACY_CTX_SUPPORT"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -655,6 +719,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_N_GSM"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     // grsec
@@ -666,6 +731,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_ZSMALLOC_STAT"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -676,6 +742,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_DEBUG_KMEMLEAK"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -686,6 +753,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_BINFMT_AOUT"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -696,6 +764,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_KPROBE_EVENTS"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -706,6 +775,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_UPROBE_EVENTS"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -716,6 +786,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_GENERIC_TRACER"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -726,6 +797,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_FUNCTION_TRACER"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -736,6 +808,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_STACK_TRACER"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -746,6 +819,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_HIST_TRIGGERS"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -756,6 +830,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_BLK_DEV_IO_TRACE"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -766,6 +841,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_PROC_VMCORE"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -776,6 +852,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_PROC_PAGE_MONITOR"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -786,6 +863,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_USELIB"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -796,6 +874,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_CHECKPOINT_RESTORE"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -806,6 +885,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_USERFAULTFD"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -816,6 +896,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_HWPOISON_INJECT"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -826,6 +907,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_MEM_SOFT_DIRTY"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -836,6 +918,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_DEVPORT"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -846,6 +929,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_DEBUG_FS"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -856,6 +940,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_NOTIFIER_ERROR_INJECTION"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -866,6 +951,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_FAIL_FUTEX"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -876,6 +962,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_PUNIT_ATOM_DEBUG"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -886,6 +973,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_ACPI_CONFIGFS"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -896,6 +984,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_EDAC_DEBUG"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -906,6 +995,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_DRM_I915_DEBUG"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -916,6 +1006,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_BCACHE_CLOSURES_DEBUG"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -926,6 +1017,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_DVB_C8SECTPFE"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -936,6 +1028,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_MTD_SLRAM"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -946,6 +1039,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_MTD_PHRAM"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -956,6 +1050,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_IO_URING"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -966,6 +1061,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_KCMP"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -976,6 +1072,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_RSEQ"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -986,6 +1083,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_LATENCYTOP"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -996,6 +1094,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_KCOV"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1006,6 +1105,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_PROVIDE_OHCI1394_DMA_INIT"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1016,6 +1116,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_SUNRPC_DEBUG"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1026,6 +1127,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_X86_16BIT"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1036,6 +1138,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_BLK_DEV_UBLK"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1046,6 +1149,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_SMB_SERVER"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1056,6 +1160,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_XFS_ONLINE_SCRUB_STATS"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1066,6 +1171,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_CACHESTAT_SYSCALL"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1076,6 +1182,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_PREEMPTIRQ_TRACEPOINTS"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1086,6 +1193,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_ENABLE_DEFAULT_TRACERS"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1096,6 +1204,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_PROVE_LOCKING"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1106,6 +1215,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_TEST_DEBUG_VIRTUAL"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1116,6 +1226,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_MPTCP"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1126,6 +1237,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_TLS"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1136,6 +1248,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_TIPC"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1146,6 +1259,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_IP_SCTP"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1156,6 +1270,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_KGDB"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1166,6 +1281,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_PTDUMP_DEBUGFS"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1176,6 +1292,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_X86_PTDUMP"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     // clipos
@@ -1187,6 +1304,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_STAGING"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1197,6 +1315,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_KSM"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1207,6 +1326,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_KALLSYMS"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1217,6 +1337,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_KEXEC_FILE"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1227,6 +1348,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_CRASH_DUMP"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1237,6 +1359,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_USER_NS"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1247,6 +1370,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_X86_CPUID"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1257,6 +1381,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_X86_IOPL_IOPERM"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1267,6 +1392,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_ACPI_TABLE_UPGRADE"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1277,6 +1403,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_EFI_CUSTOM_SSDT_OVERLAYS"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1287,6 +1414,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_AIO"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1297,6 +1425,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_MAGIC_SYSRQ"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1307,6 +1436,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_MAGIC_SYSRQ_DEFAULT_ENABLE"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1317,6 +1447,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_MAGIC_SYSRQ_SERIAL"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     // grapheneos
@@ -1328,6 +1459,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_EFI_TEST"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1338,6 +1470,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_MMIOTRACE_TEST"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1348,6 +1481,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_KPROBES"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1358,6 +1492,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_MMIOTRACE"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1368,6 +1503,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_LIVEPATCH"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1378,6 +1514,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_IP_DCCP"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1388,6 +1525,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_FTRACE"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1398,6 +1536,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_VIDEO_VIVID"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1408,6 +1547,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_INPUT_EVBUG"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1418,6 +1558,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_CORESIGHT"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1428,6 +1569,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_XFS_SUPPORT_V4"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1438,6 +1580,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_BLK_DEV_WRITE_MOUNTED"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1448,6 +1591,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_FAULT_INJECTION"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1458,6 +1602,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_not_set("CONFIG_LKDTM"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .register();
 
     check::Check::new(
@@ -1468,6 +1613,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_STRICT_KERNEL_RWX"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .with_description("Executable code and read-only data must not be writable.")
     .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#executable-code-and-read-only-data-must-not-be-writable")
     .register();
@@ -1480,6 +1626,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_STRICT_MODULE_RWX"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .with_description("Executable code and read-only data must not be writable.")
     .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#executable-code-and-read-only-data-must-not-be-writable")
     .register();
@@ -1492,6 +1639,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_MODULE_SIG_FORCE"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .with_description("Keep from having root load arbitrary kernel code via the module loader interface. Redundant with \"module.sig_enforce=1\" kernel boot params.")
     .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#restricting-access-to-kernel-modules")
     .register();
@@ -1504,6 +1652,7 @@ pub fn add_checks() {
         || kconfig::check_option_is_set("CONFIG_KSTACK_ERASE"),
         vec![kconfig::init_kernel_build_config],
     )
+    .skip_when(kconfig::skip_no_kbuild_config)
     .with_description("When releasing memory poison the contents to avoid reuse attacks that rely on the old contents of memory.")
     .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#memory-poisoning")
     .register();

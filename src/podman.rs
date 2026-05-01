@@ -33,13 +33,18 @@ use std::process;
 use std::process::Stdio;
 use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_error};
+use crate::{check, log_debug, log_error, utils};
 
 static PODMAN_INFO: OnceLock<PodmanInfo> = OnceLock::new();
 static CONTAINERS: OnceLock<Containers> = OnceLock::new();
 
 pub type PodmanInfo = Value;
 pub type Containers = HashMap<String, Value>;
+
+/// Skip if Podman is not installed.
+pub fn skip_no_podman() -> bool {
+    utils::which("podman").is_none()
+}
 
 /// Get podman info by running `podman info -f json`.
 fn get_podman_info() -> Result<PodmanInfo, String> {

@@ -10,6 +10,7 @@ pub fn add_checks() {
         gdm::no_gdm_auto_logon,
         vec![],
     )
+    .skip_when(gdm::skip_no_gdm)
     .with_description("Automatic GUI login bypasses authentication, allowing anyone with physical access to gain immediate access to the system.")
     .register();
 }

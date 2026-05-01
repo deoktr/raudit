@@ -193,7 +193,7 @@ Some modules help with specific configuration checks.
 What is supported:
 
 - Mounts including options.
-- Kenel params.
+- Kernel params.
 - Kernel compilation params.
 - Sysctl params.
 - Docker and Podman.
@@ -303,15 +303,14 @@ Benchmark 1: ./target/release/raudit
 - Add check timeout, if they take too long just stop them, maybe even with
   ctrl+c?
 - Add configurations for whitelist on some rules, for example whitelist trusted
-  users in a docker group, instead of failling the check that would force admins
+  users in a docker group, instead of failing the check that would force admins
   to create config
 - Add check to avoid check name collision
 - Use macro `run!()` to log commands
-- Add way more details to checks, an explaination of why it's a problem, and
+- Add way more details to checks, an explanation of why it's a problem, and
   details on how to fix it, that way on failed checks the user would have
   effective info on what to do
 - Fix all TODO and FIXME in code
-- Skip tests based on distro or installed application: sshd, podman, docker, apt
 
 Rules:
 

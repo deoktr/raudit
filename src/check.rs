@@ -18,7 +18,7 @@
 
 use crate::{config, consts, ocsf, utils};
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::fmt::{Display, Formatter, Result};
 use std::sync::Mutex;
 
@@ -27,8 +27,11 @@ use rayon::prelude::*;
 use serde::Serialize;
 
 pub type CheckReturn = (CheckState, Option<String>);
-type CheckFunc = fn() -> CheckReturn;
-type DependencyFunc = fn() -> ();
+type CheckFn = fn() -> CheckReturn;
+type DependencyFn = fn() -> ();
+
+/// Skip a check if returns true
+pub type SkipFn = fn() -> bool;
 
 static REPORT: Lazy<Mutex<Report>> = Lazy::new(|| Mutex::new(Report::default()));
 
@@ -132,10 +135,13 @@ pub struct Check {
     pub severity: Severity,
     /// Check function
     #[serde(skip_serializing)]
-    pub check: CheckFunc,
+    pub check: CheckFn,
     /// List of dependencies to run before the check
     #[serde(skip_serializing)]
-    pub dependencies: Vec<DependencyFunc>,
+    pub dependencies: Vec<DependencyFn>,
+    /// List of skip rules, if a check is skipped it will not appear in output
+    #[serde(skip_serializing)]
+    pub skip_if: Vec<SkipFn>,
 }
 
 impl Check {
@@ -144,8 +150,8 @@ impl Check {
         title: &str,
         severity: Severity,
         tags: Vec<&str>,
-        check: CheckFunc,
-        dependencies: Vec<DependencyFunc>,
+        check: CheckFn,
+        dependencies: Vec<DependencyFn>,
     ) -> Self {
         Check {
             id: id.to_string(),
@@ -157,9 +163,15 @@ impl Check {
             check,
             message: None,
             dependencies,
+            skip_if: vec![],
             links: vec![],
             tags: tags.iter().map(|t| t.to_string()).collect(),
         }
+    }
+
+    pub fn skip_when(mut self, predicate: SkipFn) -> Self {
+        self.skip_if.push(predicate);
+        self
     }
 
     pub fn with_description(mut self, description: &str) -> Self {
@@ -272,17 +284,44 @@ pub fn print_id_prefixes() {
 }
 
 /// Run checks in sequence.
-pub fn run_checks() {
+pub fn run_checks(parallel: bool) {
     let mut report = REPORT.lock().unwrap();
-    report.checks.iter_mut().for_each(|check| check.run());
+
+    if parallel {
+        report.checks.par_iter_mut().for_each(|check| check.run());
+    } else {
+        report.checks.iter_mut().for_each(|check| check.run());
+    }
 }
 
-/// Run checks in parallel.
-pub fn par_run_checks() {
+/// Evaluate every distinct skip predicate (deduplicated by function pointer)
+/// across the currently-registered checks, then drop any check whose
+/// predicate returns `true`.
+pub fn remove_skipped(parallel: bool) {
     let mut report = REPORT.lock().unwrap();
 
-    // use rayon to run checks in parallel
-    report.checks.par_iter_mut().for_each(|check| check.run());
+    let unique: HashSet<SkipFn> = report
+        .checks
+        .iter()
+        .flat_map(|c| c.skip_if.iter().copied())
+        .collect();
+
+    if unique.is_empty() {
+        return;
+    }
+
+    let cache: HashMap<usize, bool> = if parallel {
+        unique.par_iter().map(|f| (*f as usize, f())).collect()
+    } else {
+        unique.iter().map(|f| (*f as usize, f())).collect()
+    };
+
+    report.checks.retain(|check| {
+        !check
+            .skip_if
+            .iter()
+            .any(|f| cache.get(&(*f as usize)).copied().unwrap_or(false))
+    });
 }
 
 /// Filter checks by their tags.
@@ -357,9 +396,9 @@ pub fn filter_severity_exact(levels: Vec<Severity>) {
 }
 
 /// Run dependencies in sequence.
-pub fn run_dependencies() {
+pub fn run_dependencies(parallel: bool) {
     let report = REPORT.lock().unwrap();
-    let mut unique_deps: HashSet<DependencyFunc> = HashSet::new();
+    let mut unique_deps: HashSet<DependencyFn> = HashSet::new();
 
     for check in report.checks.iter() {
         for dep in &check.dependencies {
@@ -367,21 +406,11 @@ pub fn run_dependencies() {
         }
     }
 
-    unique_deps.iter().for_each(|dep| dep());
-}
-
-/// Run dependencies in parallel.
-pub fn par_run_dependencies() {
-    let report = REPORT.lock().unwrap();
-    let mut unique_deps: HashSet<DependencyFunc> = HashSet::new();
-
-    for check in report.checks.iter() {
-        for dep in &check.dependencies {
-            unique_deps.insert(*dep);
-        }
+    if parallel {
+        unique_deps.par_iter().for_each(|dep| dep());
+    } else {
+        unique_deps.iter().for_each(|dep| dep());
     }
-
-    unique_deps.par_iter().for_each(|dep| dep());
 }
 
 impl Default for Report {
@@ -553,7 +582,7 @@ impl ReportStats {
             consts::RESET_COLOR,
             pass,
             fail,
-            warning
+            warning,
         );
 
         if self.fail > 0 {

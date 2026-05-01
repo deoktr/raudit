@@ -21,12 +21,17 @@ use std::process;
 use std::process::Stdio;
 use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_error};
+use crate::{check, log_debug, log_error, utils};
 
 static SSHD_CONFIG: OnceLock<SshdConfig> = OnceLock::new();
 
 /// OpenSSH (sshd) configuration.
 pub type SshdConfig = HashMap<String, String>;
+
+/// Skip if sshd is not installed
+pub fn skip_no_sshd() -> bool {
+    utils::which("sshd").is_none()
+}
 
 /// Parse OpenSSH configuration from `sshd -T` command stdout.
 fn parse_sshd_config(sshd_t: String) -> SshdConfig {
