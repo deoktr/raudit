@@ -221,6 +221,7 @@ What is supported:
 - AppArmor.
 - Bin.
 - Cron service and configuration.
+- Exploits mitigations.
 
 Support planned:
 

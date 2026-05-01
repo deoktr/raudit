@@ -22,10 +22,6 @@ pub fn add_checks() {
 
     // TODO: have two lists, one for servers and one for workstations
     modprobe::add_module_disabled_check_list!(
-        // Mitigation for CopyFail CVE-2026-31431
-        "algif_aead",
-        //
-
         // Ubuntu: either duplicates, or disabled
         // https://git.launchpad.net/ubuntu/+source/kmod/tree/debian/modprobe.d/blacklist.conf?h=ubuntu/disco
 

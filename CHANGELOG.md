@@ -10,6 +10,8 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+- Add rule `EXP_001`.
+- Add exploit mitigation rules.
 - Internal refactoring, update project layout.
 
 ## [0.32.1] - 2026-05-01

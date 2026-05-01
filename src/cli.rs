@@ -220,6 +220,7 @@ fn add_all_checks() {
     rules::clamav::add_checks();
     rules::cron::add_checks();
     rules::docker::add_checks();
+    rules::exploit::add_checks();
     rules::gdm::add_checks();
     rules::group::add_checks();
     rules::grub::add_checks();

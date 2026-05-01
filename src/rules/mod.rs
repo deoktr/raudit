@@ -5,6 +5,7 @@ pub mod bin;
 pub mod clamav;
 pub mod cron;
 pub mod docker;
+pub mod exploit;
 pub mod gdm;
 pub mod group;
 pub mod grub;
