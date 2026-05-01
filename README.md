@@ -279,7 +279,6 @@ Benchmark 1: ./target/release/raudit
 
 ## TODO
 
-- Build in CI for Github release
 - Give much more detailed logs of the error
 - Create custom parsers for complex configurations (sudo, nginx, etc.)
 - Give the user's the ability to specify config paths, with globing
@@ -291,7 +290,6 @@ Benchmark 1: ./target/release/raudit
 - Add documentation, both user and dev
 - Add check timeout, if they take too long just stop them, maybe even with
   ctrl+c?
-- Build in CI on release
 - Add configurations for whitelist on some rules, for example whitelist trusted
   users in a docker group, instead of failling the check that would force admins
   to create config
