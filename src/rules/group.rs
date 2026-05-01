@@ -1,6 +1,7 @@
 use crate::check;
 use crate::check::Severity;
 use crate::modules::{base, group, os};
+use crate::utils;
 
 pub fn add_checks() {
     check::Check::new(
@@ -95,8 +96,7 @@ pub fn add_checks() {
                 "/etc/gshadow",
                 0,
                 if os::is_debian() {
-                    // FIXME: use gid of group shadow instead of 42
-                    42
+                    utils::gid_from_name("shadow").unwrap_or(42)
                 } else {
                     0
                 },
@@ -136,8 +136,7 @@ pub fn add_checks() {
                 "/etc/gshadow-",
                 0,
                 if os::is_debian() {
-                    // FIXME: use gid of group shadow instead of 42
-                    42
+                    utils::gid_from_name("shadow").unwrap_or(42)
                 } else {
                     0
                 },

@@ -222,13 +222,13 @@ What is supported:
 - Bin.
 - Cron service and configuration.
 - Exploits mitigations.
+- Nginx.
 
 Support planned:
 
 - SELinux.
 - IP and nftables.
 - Systemd units.
-- Nginx.
 - Apache.
 - Redis.
 - MySQL.
@@ -314,9 +314,6 @@ Benchmark 1: ./target/release/raudit
   to create config
 - Add check to avoid check name collision
 - Use macro `run!()` to log commands
-- Add way more details to checks, an explanation of why it's a problem, and
-  details on how to fix it, that way on failed checks the user would have
-  effective info on what to do
 - Fix all TODO and FIXME in code
 
 Rules:

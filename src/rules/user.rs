@@ -1,6 +1,7 @@
 use crate::check;
 use crate::check::Severity;
 use crate::modules::{base, os, users};
+use crate::utils;
 
 pub fn add_checks() {
     check::Check::new(
@@ -147,9 +148,7 @@ pub fn add_checks() {
                 "/etc/shadow",
                 0,
                 if os::is_debian() {
-                    // FIXME: use shadow gid instead of 42
-                    // TODO: create util function to get UID from username
-                    42
+                    utils::gid_from_name("shadow").unwrap_or(42)
                 } else {
                     0
                 },
@@ -181,9 +180,7 @@ pub fn add_checks() {
                 "/etc/shadow-",
                 0,
                 if os::is_debian() {
-                    // FIXME: use shadow gid instead of 42
-                    // TODO: create util function to get UID fron username
-                    42
+                    utils::gid_from_name("shadow").unwrap_or(42)
                 } else {
                     0
                 },
