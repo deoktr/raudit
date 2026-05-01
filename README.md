@@ -13,6 +13,27 @@ Goals:
   [OCSF Compliance Finding](https://schema.ocsf.io/1.7.0/classes/compliance_finding)
   JSON output format.
 
+## Install
+
+Install for pre-compiled Github release:
+
+```bash
+# download and verify
+curl -fsSL -O https://github.com/deoktr/raudit/releases/latest/download/raudit-x86_64-unknown-linux-gnu.tar.gz
+curl -fsSL -O https://github.com/deoktr/raudit/releases/latest/download/raudit-x86_64-unknown-linux-gnu.sha256
+sha256sum -c raudit-x86_64-unknown-linux-gnu.sha256
+
+# install
+tar -xzf raudit-x86_64-unknown-linux-gnu.tar.gz
+sudo install -m 0755 raudit /usr/local/bin/raudit
+
+# verify install
+raudit --version
+
+# clean
+rm raudit raudit-x86_64-unknown-linux-gnu.sha256 raudit-x86_64-unknown-linux-gnu.tar.gz
+```
+
 ## Usage
 
 By default, all checks are running, you can reduce the number by filtering for
@@ -209,7 +230,7 @@ Support planned:
 - ProFTPD.
 - Firejail.
 
-## Build
+## Build Locally
 
 Build from source with `cargo`:
 
@@ -219,15 +240,6 @@ cargo build --release
 
 Will generate executable in `./target/release/raudit`.
 
-Build inside a container:
-
-```bash
-podman build -t raudit-build .
-podman run --rm --network none -v ./target:/src/target raudit-build
-```
-
-This will generate in `./target/x86_64-unknown-linux-gnu/release/raudit`.
-
 ## Develop
 
 Test:
@@ -236,10 +248,10 @@ Test:
 cargo test
 ```
 
-Build updated version inside the container:
+Run locally:
 
 ```bash
-podman run --rm --network none -v ./:/src raudit-build
+cargo run -- --help
 ```
 
 ## Security
