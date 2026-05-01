@@ -28,12 +28,14 @@ pub fn add_checks() {
     check::Check::new(
         "CNT_003",
         "Ensure docker containers are running with a user",
-        Severity::Critical,
+        Severity::High,
         vec!["container", "docker", "server", "workstation"],
         docker::docker_container_user,
         vec![docker::init_containers_inspect],
     )
-    .with_description("Running containers as root means a container escape vulnerability grants immediate root access on the host. Running as a non-root user limits the impact of such breakouts.")
+    .with_description(
+        "Limit impact of a container process compromise. Follow principle of least privilege.",
+    )
     .with_link("https://docs.docker.com/engine/security/")
     .register();
 
@@ -64,7 +66,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "CNT_006",
-        "Ensure docker logging level is set info",
+        "Ensure docker logging level is set to info",
         Severity::Medium,
         vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.3
         // TODO: can also be short '-l'
@@ -75,14 +77,16 @@ pub fn add_checks() {
     .with_link("https://docs.docker.com/engine/security/")
     .register();
 
-    // TODO: add helper function
-    // check::Check::new(
-    //     "CNT_007",
-    //     "Ensure docker is allowed to make changes to iptables",
-    //     vec!["container", "docker", "ps", "CIS, "server", "workstation""], // CIS Docker 2.4
-    //     || ps::is_running_without_flag_value("dockerd", "--iptables", "false"),
-    //     vec![ps::init_proc],
-    // ).register();
+    check::Check::new(
+        "CNT_007",
+        "Ensure docker is allowed to make changes to iptables",
+        Severity::High,
+        vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.4
+        || ps::is_running_without_flag_value("dockerd", "--iptables", "false"),
+        vec![ps::init_proc],
+    )
+    .register();
+
     check::Check::new(
         "CNT_008",
         "Ensure docker does not allow insecure registry",
@@ -108,14 +112,15 @@ pub fn add_checks() {
     .with_link("https://docs.docker.com/engine/security/")
     .register();
 
-    // check::Check::new(
-    //     "CNT_010",
-    //     "Ensure docker storage options dm.basesize are not set",
-    //     vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.10
-    //     // TODO: only check fo dm-basesize
-    //     || ps::is_running_without_flag("dockerd", "--storage-opt"),
-    //     vec![ps::init_proc],
-    // ).register();
+    check::Check::new(
+        "CNT_010",
+        "Ensure docker storage options \"dm.basesize\" are not set",
+        Severity::Medium,
+        vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.10
+        || ps::is_running_without_flag_value("dockerd", "--storage-opt", "dm-basesize"),
+        vec![ps::init_proc],
+    )
+    .register();
 
     // TODO: ensure TLS authentication for Docker daemon is used
     // TODO: add rule to ensure Docker is up to date (CIS 1.2.2)

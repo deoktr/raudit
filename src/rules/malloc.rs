@@ -9,6 +9,7 @@ pub fn add_checks() {
     //     malloc::has_libhardened_malloc,
     //     vec![malloc::init_ld_so_preload],
     // ).register();
+
     check::Check::new(
         "LIB_001",
         "Ensure \"scudo\" hardened malloc is used system wide",

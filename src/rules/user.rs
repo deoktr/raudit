@@ -12,6 +12,7 @@ pub fn add_checks() {
     )
     .with_description("Multiple accounts with UID 0 have unrestricted root-level access, making it impossible to trace privileged actions to a specific user.")
     .register();
+
     check::Check::new(
         "USR_002",
         "Ensure no duplicate user names exist",
@@ -21,6 +22,7 @@ pub fn add_checks() {
         vec![users::init_passwd],
     )
     .register();
+
     check::Check::new(
         "USR_003",
         "Ensure no duplicate UIDs exist",
@@ -30,6 +32,7 @@ pub fn add_checks() {
         vec![users::init_passwd],
     )
     .register();
+
     check::Check::new(
         "USR_004",
         "Ensure that \"/etc/securetty\" is empty",
@@ -39,6 +42,7 @@ pub fn add_checks() {
         vec![],
     )
     .register();
+
     check::Check::new(
         "USR_005",
         "Ensure no login is available on system accounts",
@@ -48,6 +52,7 @@ pub fn add_checks() {
         vec![users::init_passwd],
     )
     .register();
+
     check::Check::new(
         "USR_006",
         "Ensure all passwords are hashed with yescrypt",
@@ -57,6 +62,7 @@ pub fn add_checks() {
         vec![users::init_shadow],
     )
     .register();
+
     check::Check::new(
         "USR_007",
         "Ensure no accounts are locked, delete them",
@@ -66,6 +72,7 @@ pub fn add_checks() {
         vec![users::init_shadow],
     )
     .register();
+
     check::Check::new(
         "USR_008",
         "Ensure that all home directories exist",
@@ -75,6 +82,7 @@ pub fn add_checks() {
         vec![users::init_passwd],
     )
     .register();
+
     check::Check::new(
         "USR_009",
         "Ensure \"/etc/shadow\" password fields are not empty",
@@ -84,6 +92,7 @@ pub fn add_checks() {
         vec![users::init_shadow],
     )
     .register();
+
     check::Check::new(
         "USR_010",
         "Ensure \"/etc/passwd\" password fields are not empty",
@@ -93,6 +102,7 @@ pub fn add_checks() {
         vec![users::init_shadow],
     )
     .register();
+
     check::Check::new(
         "USR_011",
         "Ensure accounts in \"/etc/passwd\" use shadowed passwords",
@@ -131,8 +141,19 @@ pub fn add_checks() {
         "Ensure \"/etc/shadow\" file owner is correct",
         Severity::High,
         vec!["group", "CIS", "server", "workstation"],
-        // FIXME: use shadow gid instead of 42
-        || base::check_file_owner_id("/etc/shadow", 0, if os::is_debian() { 42 } else { 0 }),
+        || {
+            base::check_file_owner_id(
+                "/etc/shadow",
+                0,
+                if os::is_debian() {
+                    // FIXME: use shadow gid instead of 42
+                    // TODO: create util function to get UID from username
+                    42
+                } else {
+                    0
+                },
+            )
+        },
         vec![os::init_os_release],
     )
     .with_fix("On Debian: \"chown root:shadow /etc/shadow\"\nOn other distros: \"chown root:root /etc/shadow\"")
@@ -154,13 +175,17 @@ pub fn add_checks() {
         "Ensure \"/etc/shadow-\" file owner is correct or file is missing",
         Severity::Medium,
         vec!["group", "CIS", "server", "workstation"],
-        // FIXME: use shadow gid instead of 42
-        // TODO: create util function to get UID fron username
         || {
             base::check_file_owner_id_ignore_missing(
                 "/etc/shadow-",
                 0,
-                if os::is_debian() { 42 } else { 0 },
+                if os::is_debian() {
+                    // FIXME: use shadow gid instead of 42
+                    // TODO: create util function to get UID fron username
+                    42
+                } else {
+                    0
+                },
             )
         },
         vec![os::init_os_release],
@@ -176,7 +201,12 @@ pub fn add_checks() {
         || {
             base::check_file_permission_ignore_missing(
                 "/etc/shadow-",
-                if os::is_debian() { 0o640 } else { 0o600 },
+                if os::is_debian() {
+                    // on Debian there is the shadow group owner of the file
+                    0o640
+                } else {
+                    0o600
+                },
             )
         },
         vec![os::init_os_release],

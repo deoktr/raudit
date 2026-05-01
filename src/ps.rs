@@ -158,9 +158,7 @@ fn get_proc_flags(name: &str) -> Result<Vec<String>, check::CheckReturn> {
 }
 
 /// Get process flag value.
-fn get_proc_flag_value(name: &str, flag: &str) -> Result<String, check::CheckReturn> {
-    let cmd = get_proc_flags(name)?;
-
+fn get_proc_flag_value(cmd: Vec<String>, flag: &str) -> Result<String, check::CheckReturn> {
     for (index, item) in cmd.iter().enumerate() {
         if item.starts_with(&format!("{}=", flag)) {
             return Ok(item.trim_start_matches(&format!("{}=", flag)).to_string());
@@ -218,7 +216,12 @@ pub fn is_running_without_flag(name: &str, flag: &str) -> check::CheckReturn {
 
 /// Check if a process is running with the specified flag with value.
 pub fn is_running_with_flag_value(name: &str, flag: &str, value: &str) -> check::CheckReturn {
-    let flag_value = match get_proc_flag_value(name, flag) {
+    let cmd = match get_proc_flags(name) {
+        Ok(c) => c,
+        Err(err) => return err,
+    };
+
+    let flag_value = match get_proc_flag_value(cmd, flag) {
         Ok(f) => f,
         Err(err) => return err,
     };
@@ -236,5 +239,27 @@ pub fn is_running_with_flag_value(name: &str, flag: &str, value: &str) -> check:
     }
 }
 
-// TODO: add 'is_running_without_flag_value' but would need to modify function
-// get_proc_flag_value since it would not matter if the flag is missing
+/// Check if a process is running without the specified flag with value.
+pub fn is_running_without_flag_value(name: &str, flag: &str, value: &str) -> check::CheckReturn {
+    let cmd = match get_proc_flags(name) {
+        Ok(c) => c,
+        Err(err) => return err,
+    };
+
+    let flag_value = match get_proc_flag_value(cmd, flag) {
+        Ok(f) => f,
+        Err(_err) => return (check::CheckState::Pass, None),
+    };
+
+    if flag_value == value {
+        (
+            check::CheckState::Fail,
+            Some(format!(
+                "wrong value for flag {} {} == {}",
+                flag, flag_value, value
+            )),
+        )
+    } else {
+        (check::CheckState::Pass, None)
+    }
+}

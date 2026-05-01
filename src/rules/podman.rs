@@ -22,6 +22,7 @@ pub fn add_checks() {
         vec![podman::init_containers_inspect],
     )
     .with_description("Dropping Linux capabilities reduces the kernel attack surface available to a compromised container, limiting the damage an attacker can do if they gain code execution.")
+    .with_fix("Start containers with flag \"--cap-drop all\"")
     .register();
 
     check::Check::new(
@@ -32,7 +33,11 @@ pub fn add_checks() {
         podman::podman_user,
         vec![podman::init_containers_inspect],
     )
+    .with_description(
+        "Limit impact of a container process compromise. Follow principle of least privilege.",
+    )
     .register();
+
     check::Check::new(
         "CNT_504",
         "Ensure podman mount point \"/var/lib/containers\" exist",
@@ -43,10 +48,11 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "CNT_505",
         "Ensure apparmor is enabled for podman",
-        Severity::Medium,
+        Severity::Low,
         vec!["container", "podman", "apparmor", "server", "workstation"],
         || {
             podman::check_podman_info(
@@ -57,10 +63,11 @@ pub fn add_checks() {
         vec![podman::init_podman_info],
     )
     .register();
+
     check::Check::new(
         "CNT_506",
         "Ensure podman containers are started with an apparmor profile",
-        Severity::Medium,
+        Severity::Low,
         vec!["container", "podman", "apparmor", "server", "workstation"],
         podman::podman_apparmor,
         vec![podman::init_containers_inspect],

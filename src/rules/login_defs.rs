@@ -10,7 +10,7 @@ pub fn add_checks() {
         || login_defs::check_login_defs("ENCRYPT_METHOD", "YESCRYPT"),
         vec![login_defs::init_login_defs],
     )
-    .with_description("Strong password hash, requires both CPU and RAM to crack, making it more costly and thus stronger than alternatives. This only affect the generation of group passwords wich should not have password, a better default in case they are.")
+    .with_description("Strong password hash, requires both CPU and RAM to crack, making it more costly and thus stronger than alternatives. This only affect the generation of group passwords which should not have password, a better default in case they are.")
     .register();
 
     check::Check::new(
@@ -31,9 +31,9 @@ pub fn add_checks() {
                 Ok(value) => match value {
                     Some(vl) => match vl.parse::<i32>() {
                         Ok(val) => {
-                            // TODO: also check to see if <= 11? even thos this
+                            // TODO: also check to see if <= 11? even tho this
                             // should not cause any problems, it's still an
-                            // invalide value
+                            // invalid value
                             if val >= VAL {
                                 (check::CheckState::Pass, Some(format!("{}", val)))
                             } else {
@@ -149,6 +149,7 @@ pub fn add_checks() {
         vec![login_defs::init_login_defs],
     )
     .register();
+
     check::Check::new(
         "LDF_006",
         "Ensure that login.defs \"SYSLOG_SU_ENAB\" = \"yes\"",
@@ -158,6 +159,7 @@ pub fn add_checks() {
         vec![login_defs::init_login_defs],
     )
     .register();
+
     check::Check::new(
         "LDF_007",
         "Ensure that login.defs \"SYSLOG_SG_ENAB\" = \"yes\"",
@@ -167,6 +169,7 @@ pub fn add_checks() {
         vec![login_defs::init_login_defs],
     )
     .register();
+
     check::Check::new(
         "LDF_008",
         "Ensure that login.defs \"UMASK\" = \"077\"",
@@ -176,6 +179,7 @@ pub fn add_checks() {
         vec![login_defs::init_login_defs],
     )
     .register();
+
     check::Check::new(
         "LDF_009",
         "Ensure that login.defs \"LOGIN_RETRIES\" <= 10",
@@ -206,6 +210,7 @@ pub fn add_checks() {
         vec![login_defs::init_login_defs],
     )
     .register();
+
     check::Check::new(
         "LDF_010",
         "Ensure that login.defs \"LOGIN_TIMEOUT\" <= 60",
@@ -236,6 +241,7 @@ pub fn add_checks() {
         vec![login_defs::init_login_defs],
     )
     .register();
+
     check::Check::new(
         "LDF_011",
         "Ensure that login.defs \"FAILLOG_ENAB\" = \"yes\"",
@@ -245,6 +251,7 @@ pub fn add_checks() {
         vec![login_defs::init_login_defs],
     )
     .register();
+
     check::Check::new(
         "LDF_012",
         "Ensure that login.defs \"LOG_OK_LOGINS\" = \"yes\"",

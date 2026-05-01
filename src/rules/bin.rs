@@ -7,7 +7,7 @@ pub fn add_checks() {
         "Ensure all SUID/SGID executables are allowed",
         Severity::Medium,
         vec!["bin", "slow", "server", "workstation"],
-        // TODO: ideally should check the entire fs, but could be extremly slow
+        // TODO: ideally should check the entire fs, but could be extremely slow
         || bin::check_sid_bin("/usr/bin/"),
         vec![],
     )

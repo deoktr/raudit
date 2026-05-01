@@ -139,7 +139,7 @@ pub fn check_podman_info(pointer: &str, expected: Value) -> check::CheckReturn {
             if **val != expected {
                 (
                     check::CheckState::Fail,
-                    Some(format!("{:?} != {:?}", val, expected)),
+                    Some(format!("{} != {}", val, expected)),
                 )
             } else {
                 (check::CheckState::Pass, None)
@@ -147,7 +147,7 @@ pub fn check_podman_info(pointer: &str, expected: Value) -> check::CheckReturn {
         }
         None => (
             check::CheckState::Warning,
-            Some(format!("pointer {:?} not found", pointer)),
+            Some(format!("pointer {} not found", pointer)),
         ),
     }
 }

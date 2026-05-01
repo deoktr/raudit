@@ -77,22 +77,22 @@ pub fn add_checks() {
         1
     )
     .register();
+
     // 2 or 3
     check::Check::new(
         "SYS_008",
-        "Ensure sysctl \"kernel.perf_event_paranoid\" >= 2",
+        "Ensure sysctl \"kernel.perf_event_paranoid\" = 2 or 3",
         Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         || {
-            const VAL: i32 = 2;
             match sysctl::get_sysctl_i32_value("kernel.perf_event_paranoid") {
                 Ok(value) => {
-                    if value >= VAL {
+                    if value == 2 || value == 3 {
                         (check::CheckState::Pass, Some(format!("{}", value)))
                     } else {
                         (
                             check::CheckState::Fail,
-                            Some(format!("{} > {}", value, VAL)),
+                            Some(format!("{} != 2 or 3", value)),
                         )
                     }
                 }
@@ -153,7 +153,7 @@ pub fn add_checks() {
         "kernel.panic_on_oops",
         1
     )
-    .with_description("Force the kernel to panic on \"oopses\", can sometimes potentially indicate and thwart certain kernel exploitation attempts, also cause panics on machine check exceptions. Some bad drivers can cause harmless oopses which result in system crash.")
+    .with_description("Force the kernel to panic on oopses, can sometimes potentially indicate and thwart certain kernel exploitation attempts, also cause panics on machine check exceptions. Some bad drivers can cause harmless oopses which result in system crash.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -164,6 +164,7 @@ pub fn add_checks() {
         "-1"
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_015",
         Severity::Medium,
@@ -172,6 +173,7 @@ pub fn add_checks() {
         1
     )
     .register();
+
     // FIXME: only available on some kernels
     // NOTE: prevents Docker and Podman from working rootless
     sysctl::add_sysctl_check!(
@@ -184,6 +186,7 @@ pub fn add_checks() {
     .with_description("'unprivileged_userns_clone' greatly increases the attack surface for local privilege escalation. Note that disabling this will prevent Docker and Podman from working rootless.")
     .with_link("https://gitlab.com/apparmor/apparmor/-/wikis/unprivileged_userns_restriction")
     .register();
+
     // check::Check::new(
     //     "SYS_016",
     //     "Ensure sysctl 'kernel.unprivileged_userns_clone' == 0",
@@ -216,7 +219,7 @@ pub fn add_checks() {
         },
         vec![sysctl::init_sysctl_config],
     )
-    .with_description("Limit ptrace() as it enables programs to inspect and modify other active processes, prevents native code debugging which some programs use as a method to detect tampering, may cause breakages in 'anti-cheat' software and programs running under Proton/WINE.
+    .with_description("Limit ptrace() as it enables programs to inspect and modify other active processes, prevents native code debugging which some programs use as a method to detect tampering, may cause breakages in anti-cheat software and programs running under Proton/WINE.
   - 1: Avoid non-ancestor ptrace access to running processes and their creds.
   - 2: Restrict ptrace access to processes with CAP_SYS_PTRACE.
   - 3: Completely disable ptrace.")
@@ -239,7 +242,7 @@ pub fn add_checks() {
         "kernel.core_pattern",
         "|/bin/false"
     )
-    .with_description("Disable core dump files by preventing any pattern names, this setting may be overwritten by systemd and is not comprehensive core dumps are also disabled in security-misc via other means.")
+    .with_description("Disable core dump files by preventing any pattern names, this setting may be overwritten by systemd.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -272,6 +275,7 @@ pub fn add_checks() {
     .with_description("Maximize bits of entropy for improved effectiveness of mmap ASLR the maximum number of bits depends on CPU architecture.")
     .register();
 
+    // TODO: either set vm.mmap_rnd_bits or vm.mmap_rnd_compat_bits ?
     sysctl::add_sysctl_check!(
         "SYS_023",
         Severity::Medium,
@@ -339,7 +343,7 @@ pub fn add_checks() {
         "fs.suid_dumpable",
         0
     )
-    .with_description("Prevent setuid processes or otherwise protected/tainted binaries from creating core dumps, any process which has changed privilege levels or is execute-only will not be dumped.")
+    .with_description("Prevent setuid processes or otherwise protected/tainted binaries from creating core dumps, any process which has changed privilege levels or is execute-only will not be dumped. Defense-in-depth, if core dumps are permitted.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -409,6 +413,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_036",
         Severity::High,
@@ -417,6 +422,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_037",
         Severity::High,
@@ -425,6 +431,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_038",
         Severity::High,
@@ -433,6 +440,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_039",
         Severity::High,
@@ -441,6 +449,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_040",
         Severity::High,
@@ -449,6 +458,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_041",
         Severity::High,
@@ -457,6 +467,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_042",
         Severity::High,
@@ -465,6 +476,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_043",
         Severity::High,
@@ -473,6 +485,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_044",
         Severity::High,
@@ -481,6 +494,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_045",
         Severity::High,
@@ -489,6 +503,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_046",
         Severity::High,
@@ -497,6 +512,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_047",
         Severity::High,
@@ -505,6 +521,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_050",
         Severity::High,
@@ -513,6 +530,7 @@ pub fn add_checks() {
         1
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_051",
         Severity::High,
@@ -521,6 +539,7 @@ pub fn add_checks() {
         1
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_052",
         Severity::High,
@@ -529,6 +548,7 @@ pub fn add_checks() {
         1
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_053",
         Severity::High,
@@ -537,6 +557,7 @@ pub fn add_checks() {
         1
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_054",
         Severity::High,
@@ -545,6 +566,7 @@ pub fn add_checks() {
         1
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_055",
         Severity::High,
@@ -553,6 +575,7 @@ pub fn add_checks() {
         1
     )
     .register();
+
     check::Check::new(
         "SYS_056",
         "Ensure sysctl \"net.ipv4.icmp_ratelimit\" <= 100",
@@ -577,6 +600,7 @@ pub fn add_checks() {
         vec![sysctl::init_sysctl_config],
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_057",
         Severity::High,
@@ -585,6 +609,7 @@ pub fn add_checks() {
         88089
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_058",
         Severity::High,
@@ -593,6 +618,7 @@ pub fn add_checks() {
         1
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_059",
         Severity::High,
@@ -601,6 +627,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_060",
         Severity::High,
@@ -609,6 +636,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_061",
         Severity::High,
@@ -617,6 +645,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_062",
         Severity::High,
@@ -625,6 +654,7 @@ pub fn add_checks() {
         1
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_063",
         Severity::High,
@@ -633,6 +663,7 @@ pub fn add_checks() {
         2
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_064",
         Severity::High,
@@ -641,6 +672,7 @@ pub fn add_checks() {
         2
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_065",
         Severity::High,
@@ -649,6 +681,7 @@ pub fn add_checks() {
         2
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_066",
         Severity::High,
@@ -657,6 +690,7 @@ pub fn add_checks() {
         2
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_067",
         Severity::High,
@@ -665,6 +699,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_068",
         Severity::High,
@@ -673,6 +708,7 @@ pub fn add_checks() {
         1
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_069",
         Severity::High,
@@ -681,6 +717,7 @@ pub fn add_checks() {
         "32768\t65535"
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_070",
         Severity::High,
@@ -689,6 +726,7 @@ pub fn add_checks() {
         1
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_071",
         Severity::High,
@@ -697,6 +735,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_072",
         Severity::High,
@@ -705,6 +744,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_073",
         Severity::High,
@@ -713,6 +753,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_074",
         Severity::High,
@@ -721,6 +762,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_075",
         Severity::High,
@@ -729,6 +771,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_076",
         Severity::High,
@@ -737,6 +780,7 @@ pub fn add_checks() {
         1
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_077",
         Severity::High,
@@ -745,6 +789,7 @@ pub fn add_checks() {
         1
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_078",
         Severity::High,
@@ -753,6 +798,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_079",
         Severity::High,
@@ -761,6 +807,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_080",
         Severity::High,
@@ -769,6 +816,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_081",
         Severity::High,
@@ -777,6 +825,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_082",
         Severity::High,
@@ -785,6 +834,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_083",
         Severity::High,
@@ -793,6 +843,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_084",
         Severity::High,
@@ -801,6 +852,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_085",
         Severity::High,
@@ -809,6 +861,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_086",
         Severity::High,
@@ -817,6 +870,7 @@ pub fn add_checks() {
         1
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_087",
         Severity::High,
@@ -825,6 +879,7 @@ pub fn add_checks() {
         1
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_088",
         Severity::High,
@@ -833,6 +888,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_089",
         Severity::High,
@@ -841,6 +897,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_090",
         Severity::High,
@@ -849,6 +906,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_091",
         Severity::High,
@@ -857,6 +915,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_092",
         Severity::High,
@@ -865,6 +924,7 @@ pub fn add_checks() {
         2
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_093",
         Severity::High,
@@ -960,6 +1020,7 @@ pub fn add_checks() {
         5
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_098",
         Severity::High,
@@ -968,6 +1029,7 @@ pub fn add_checks() {
         1
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_099",
         Severity::High,
@@ -976,6 +1038,7 @@ pub fn add_checks() {
         1
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_100",
         Severity::High,
@@ -984,6 +1047,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_101",
         Severity::High,
@@ -992,6 +1056,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_102",
         Severity::High,
@@ -1000,6 +1065,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_103",
         Severity::High,
@@ -1008,6 +1074,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_104",
         Severity::High,
@@ -1016,6 +1083,7 @@ pub fn add_checks() {
         0
     )
     .register();
+
     sysctl::add_sysctl_check!(
         "SYS_105",
         Severity::High,

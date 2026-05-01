@@ -13,6 +13,7 @@ pub fn add_checks() {
         vec![pam::init_pam],
     )
     .register();
+
     check::Check::new(
         "PAM_002",
         "Ensure PAM service \"passwd\" has rule \"password required pam_pwquality\"",
@@ -22,6 +23,7 @@ pub fn add_checks() {
         vec![pam::init_pam],
     )
     .register();
+
     check::Check::new(
         "PAM_015",
         "Ensure PAM service \"su\" has rule \"auth required pam_wheel\"",
@@ -31,6 +33,7 @@ pub fn add_checks() {
         vec![pam::init_pam],
     )
     .register();
+
     check::Check::new(
         "PAM_024",
         "Ensure PAM service \"login\" has rule \"auth required pam_faillock\"",
@@ -40,6 +43,7 @@ pub fn add_checks() {
         vec![pam::init_pam],
     )
     .register();
+
     check::Check::new(
         "PAM_030",
         "Ensure PAM service \"login\" has rule \"auth optional pam_faildelay\"",

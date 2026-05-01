@@ -2,7 +2,6 @@ use crate::check::Severity;
 use crate::*;
 
 pub fn add_checks() {
-    // mounts
     check::Check::new(
         "MNT_001",
         "Ensure mount point \"/boot\" exist",
@@ -12,6 +11,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_002",
         "Ensure mount point \"/tmp\" exist",
@@ -21,6 +21,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_003",
         "Ensure mount point \"/home\" exist",
@@ -30,6 +31,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_004",
         "Ensure mount point \"/var\" exist",
@@ -39,6 +41,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_005",
         "Ensure mount point \"/var/log\" exist",
@@ -48,6 +51,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_006",
         "Ensure mount point \"/var/log/audit\" exist",
@@ -57,6 +61,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_007",
         "Ensure mount point \"/var/tmp\" exist",
@@ -66,6 +71,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_008",
         "Ensure mount point \"/dev/shm\" exist",
@@ -75,6 +81,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_020",
         "Ensure mount option \"nodev\" is set for \"/dev/shm\"",
@@ -84,6 +91,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_024",
         "Ensure mount option \"nodev\" is set for \"/boot\"",
@@ -93,6 +101,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_025",
         "Ensure mount option \"nosuid\" is set for \"/boot\"",
@@ -102,6 +111,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_026",
         "Ensure mount option \"noexec\" is set for \"/boot\"",
@@ -111,6 +121,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     // TODO: optional
     check::Check::new(
         "MNT_027",
@@ -121,6 +132,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_028",
         "Ensure mount option \"nodev\" is set for \"/home\"",
@@ -137,6 +149,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_029",
         "Ensure mount option \"nosuid\" is set for \"/home\"",
@@ -153,6 +166,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     // TODO: optional
     check::Check::new(
         "MNT_030",
@@ -163,6 +177,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_031",
         "Ensure mount option \"nodev\" is set for \"/tmp\"",
@@ -179,6 +194,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_032",
         "Ensure mount option \"nosuid\" is set for \"/tmp\"",
@@ -195,6 +211,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_033",
         "Ensure mount option \"noexec\" is set for \"/tmp\"",
@@ -211,6 +228,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_034",
         "Ensure mount option \"nodev\" is set for \"/var\"",
@@ -227,6 +245,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_035",
         "Ensure mount option \"nosuid\" is set for \"/var\"",
@@ -243,6 +262,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     // TODO: optional
     check::Check::new(
         "MNT_036",
@@ -253,6 +273,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_037",
         "Ensure mount option \"nodev\" is set for \"/var/log\"",
@@ -269,6 +290,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_038",
         "Ensure mount option \"nosuid\" is set for \"/var/log\"",
@@ -285,6 +307,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_039",
         "Ensure mount option \"noexec\" is set for \"/var/log\"",
@@ -301,6 +324,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_040",
         "Ensure mount option \"nodev\" is set for \"/var/log/audit\"",
@@ -317,6 +341,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_041",
         "Ensure mount option \"nosuid\" is set for \"/var/log/audit\"",
@@ -333,6 +358,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_042",
         "Ensure mount option \"noexec\" is set for \"/var/log/audit\"",
@@ -349,6 +375,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_043",
         "Ensure mount option \"nodev\" is set for \"/var/tmp\"",
@@ -365,6 +392,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_044",
         "Ensure mount option \"nosuid\" is set for \"/var/tmp\"",
@@ -381,6 +409,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_045",
         "Ensure mount option \"noexec\" is set for \"/var/tmp\"",
@@ -397,6 +426,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_046",
         "Ensure mount option \"nodev\" is set for \"/proc\"",
@@ -406,6 +436,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_047",
         "Ensure mount option \"nosuid\" is set for \"/proc\"",
@@ -415,6 +446,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_048",
         "Ensure mount option \"noexec\" is set for \"/proc\"",
@@ -454,6 +486,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_051",
         "Ensure mount option \"noexec\" is set for \"/dev\"",
@@ -463,6 +496,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_052",
         "Ensure mount option \"nodev\" is set for \"/dev/shm\"",
@@ -479,6 +513,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_053",
         "Ensure mount option \"nosuid\" is set for \"/dev/shm\"",
@@ -495,6 +530,7 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .register();
+
     check::Check::new(
         "MNT_054",
         "Ensure mount option \"noexec\" is set for \"/dev/shm\"",

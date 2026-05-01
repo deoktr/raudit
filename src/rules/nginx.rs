@@ -5,12 +5,12 @@ pub fn add_checks() {
     check::Check::new(
         "NGX_001",
         "Ensure nginx server_tokens is set to off",
-        Severity::Medium,
+        Severity::Low,
         vec!["nginx", "server"],
         || nginx::check_directive("server_tokens", "off"),
         vec![nginx::init_nginx_config],
     )
-    .with_description("The server_tokens directive controls whether nginx sends its version number in error pages and the Server response header. Disabling it reduces information leakage.")
+    .with_description("The server_tokens directive controls whether nginx sends its version number in error pages and the Server response header. This is not directly a security measure as it offer no protection against attacks, but prevent information leakage about update management that could reflect a company security and operational posture.")
     .with_fix("Add \"server_tokens off;\" in the http block.")
     .register();
 
@@ -42,7 +42,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "NGX_005",
-        "Ensure nginx Strict-Transport-Security header is set",
+        "Ensure nginx Strict-Transport-Security (HSTS) header is set",
         Severity::High,
         vec!["nginx", "server"],
         || nginx::check_header_present("Strict-Transport-Security"),
