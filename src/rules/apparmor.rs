@@ -1,5 +1,6 @@
+use crate::check;
 use crate::check::Severity;
-use crate::*;
+use crate::modules::apparmor;
 
 // TODO: have "generic" LSM rule to either have AppArmor or SELinux installed.
 

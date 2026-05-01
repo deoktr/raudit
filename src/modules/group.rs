@@ -19,7 +19,7 @@
 use std::fs;
 use std::sync::OnceLock;
 
-use crate::base::empty_or_missing_file;
+use crate::modules::base;
 use crate::{check, log_debug, log_error};
 
 const GROUP_PATH: &str = "/etc/group";
@@ -101,7 +101,7 @@ pub fn init_group() {
 ///
 /// File `/etc/gshadow` must either be empty or missing.
 pub fn empty_gshadow() -> check::CheckReturn {
-    empty_or_missing_file(SHADOW_PATH)
+    base::empty_or_missing_file(SHADOW_PATH)
 }
 
 /// Ensure no group has a password set (not set to `x`).

@@ -1,5 +1,7 @@
+use crate::check;
 use crate::check::Severity;
-use crate::*;
+use crate::modules::{base, systemd};
+use crate::utils;
 
 const CRON_DESCRIPTION: &str = "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation.";
 

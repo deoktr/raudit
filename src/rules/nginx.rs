@@ -1,5 +1,8 @@
+use crate::check;
 use crate::check::Severity;
-use crate::*;
+use crate::modules::nginx;
+
+// TODO: add rules on config file permissions and owner
 
 pub fn add_checks() {
     check::Check::new(

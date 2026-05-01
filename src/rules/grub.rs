@@ -1,5 +1,6 @@
+use crate::check;
 use crate::check::Severity;
-use crate::*;
+use crate::modules::grub;
 
 pub fn add_checks() {
     check::Check::new(

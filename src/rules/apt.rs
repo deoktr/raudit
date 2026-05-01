@@ -1,5 +1,6 @@
+use crate::check;
 use crate::check::Severity;
-use crate::*;
+use crate::modules::{apt, base, os};
 
 pub fn add_checks() {
     check::Check::new(
@@ -173,7 +174,7 @@ pub fn add_checks() {
         vec![],
     )
     .skip_when(os::skip_not_debian)
-    .with_description("Prevents unauthorized modification of package repositories. Could be exploited to download packages from attacker controled servers.")
+    .with_description("Prevents unauthorized modification of package repositories. Could be exploited to download packages from attacker controlled servers.")
     .with_fix("chmod 644 /etc/apt/source.list")
     .with_link("https://wiki.debian.org/SecureApt")
     .register();
@@ -187,7 +188,7 @@ pub fn add_checks() {
         vec![],
     )
     .skip_when(os::skip_not_debian)
-    .with_description("Prevents unauthorized modification of package repositories. Could be exploited to download packages from attacker controled servers.")
+    .with_description("Prevents unauthorized modification of package repositories. Could be exploited to download packages from attacker controlled servers.")
     .with_fix("chown root:root /etc/apt/source.list")
     .with_link("https://wiki.debian.org/SecureApt")
     .register();
@@ -201,7 +202,7 @@ pub fn add_checks() {
         vec![],
     )
     .skip_when(os::skip_not_debian)
-    .with_description("Prevents unauthorized modification of package repositories. Could be exploited to download packages from attacker controled servers.")
+    .with_description("Prevents unauthorized modification of package repositories. Could be exploited to download packages from attacker controlled servers.")
     .with_fix("chmod -R 644 /etc/apt/source.list.d/*")
     .with_link("https://wiki.debian.org/SecureApt")
     .register();
@@ -215,7 +216,7 @@ pub fn add_checks() {
         vec![],
     )
     .skip_when(os::skip_not_debian)
-    .with_description("Prevents unauthorized modification of package repositories. Could be exploited to download packages from attacker controled servers.")
+    .with_description("Prevents unauthorized modification of package repositories. Could be exploited to download packages from attacker controlled servers.")
     .with_fix("chown -R root:root /etc/apt/source.list.d/*")
     .with_link("https://wiki.debian.org/SecureApt")
     .register();

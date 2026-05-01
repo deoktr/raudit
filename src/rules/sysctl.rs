@@ -1,8 +1,9 @@
 // sources:
 // - tails: https://tails.net/contribute/design/kernel_hardening/
 
+use crate::check;
 use crate::check::Severity;
-use crate::*;
+use crate::modules::sysctl;
 
 pub fn add_checks() {
     // Note disabling IPv6 via 'net.ipv6.conf.all.disable_ipv6' is not included

@@ -1,5 +1,6 @@
+use crate::check;
 use crate::check::Severity;
-use crate::*;
+use crate::modules::pam;
 
 pub fn add_checks() {
     // TODO: ensure yescrypt is used

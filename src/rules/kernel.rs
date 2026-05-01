@@ -1,7 +1,8 @@
 // - tails: https://tails.net/contribute/design/kernel_hardening/
 
+use crate::check;
 use crate::check::Severity;
-use crate::*;
+use crate::modules::kernel;
 
 pub fn add_checks() {
     check::Check::new(

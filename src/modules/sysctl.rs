@@ -160,8 +160,8 @@ macro_rules! add_sysctl_check {
             format!("Ensure sysctl {:?} = {:?}", $key, $val).as_str(),
             $severity,
             $tags,
-            || $crate::sysctl::check_sysctl($key, $val),
-            vec![$crate::sysctl::init_sysctl_config],
+            || $crate::modules::sysctl::check_sysctl($key, $val),
+            vec![$crate::modules::sysctl::init_sysctl_config],
         )
         .with_fix(&format!(
             "Add \"{} = {}\" in a sysctl config file \"/etc/sysctl.d/*.conf\". Then run \"sysctl --system\".",

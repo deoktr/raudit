@@ -16,73 +16,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-mod apparmor;
-mod apt;
-mod audit;
-mod base;
-mod bin;
 mod check;
-mod clamav;
 mod cli;
 mod config;
 mod consts;
-mod docker;
-mod gdm;
-mod group;
-mod grub;
-mod hosts;
-mod kconfig;
-mod kernel;
 mod logger;
-mod login_defs;
-mod malloc;
-mod modprobe;
-mod mount;
-mod nginx;
+mod modules;
 mod ocsf;
-mod os;
-mod pam;
-mod podman;
-mod ps;
-mod shell;
-mod sshd;
-mod sudo;
-mod sysctl;
-mod systemd;
-mod uptime;
-mod users;
+mod rules;
 mod utils;
-
-mod rules {
-    pub mod apparmor;
-    pub mod apt;
-    pub mod audit;
-    pub mod bin;
-    pub mod clamav;
-    pub mod cron;
-    pub mod docker;
-    pub mod gdm;
-    pub mod group;
-    pub mod grub;
-    pub mod hosts;
-    pub mod kernel;
-    pub mod kernel_params;
-    pub mod login_defs;
-    pub mod malloc;
-    pub mod modprobe;
-    pub mod mount;
-    pub mod nginx;
-    pub mod pam;
-    pub mod podman;
-    pub mod shell;
-    pub mod sshd;
-    pub mod sudo;
-    pub mod sysctl;
-    pub mod system;
-    pub mod systemd;
-    pub mod uptime;
-    pub mod user;
-}
 
 fn main() {
     cli::cli()

@@ -16,7 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::{base, check};
+use crate::check;
+use crate::modules::base;
 
 /// Ensure automatic logout from shells is configured.
 ///

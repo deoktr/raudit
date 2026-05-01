@@ -288,8 +288,8 @@ macro_rules! add_module_blacklisted_check_list {
                 format!("Ensure that kernel module \"{}\" is blacklisted", $module).as_str(),
                 $crate::check::Severity::Medium,
                 vec!["modprobe"],
-                || $crate::modprobe::check_module_blacklist($module),
-                vec![$crate::modprobe::init_modprobe],
+                || $crate::modules::modprobe::check_module_blacklist($module),
+                vec![$crate::modules::modprobe::init_modprobe],
             )
             .with_description("Prevents kernel modules from automatically starting.")
             .with_fix(&format!("Add entry in \"/etc/modprobe.d/blacklist.conf\" with: \"blacklist {}\"", $module))
@@ -311,8 +311,8 @@ macro_rules! add_module_disabled_check_list {
                 format!("Ensure that kernel module \"{}\" is disabled", $module).as_str(),
                 $crate::check::Severity::Medium,
                 vec!["modprobe"],
-                || $crate::modprobe::check_module_disabled($module),
-                vec![$crate::modprobe::init_modprobe],
+                || $crate::modules::modprobe::check_module_disabled($module),
+                vec![$crate::modules::modprobe::init_modprobe],
             )
             .with_description("Prohibits kernel modules from starting.")
             .with_fix(&format!("Add entry in \"/etc/modprobe.d/disabled.conf\" with: \"install {} /bin/true\"", $module))

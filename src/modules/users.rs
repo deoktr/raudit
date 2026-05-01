@@ -22,7 +22,8 @@ use std::sync::OnceLock;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::check;
-use crate::{base, log_debug, log_error};
+use crate::modules::base;
+use crate::{log_debug, log_error};
 
 const PASSWD_PATH: &str = "/etc/passwd";
 const SHADOW_PATH: &str = "/etc/shadow";

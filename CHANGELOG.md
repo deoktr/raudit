@@ -10,6 +10,8 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+- Internal refactoring, update project layout.
+
 ## [0.32.1] - 2026-05-01
 
 - Add `--no-skip` CLI flag to disable automatic check skipping.

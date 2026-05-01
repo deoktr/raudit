@@ -1,4 +1,4 @@
-use crate::*;
+use crate::modules::modprobe;
 
 pub fn add_checks() {
     // TODO: have two lists, one for servers and one for workstations
