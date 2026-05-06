@@ -37,9 +37,8 @@ pub fn add_checks() {
         vec![docker::init_containers_inspect],
     )
     .skip_when(docker::skip_no_docker)
-    .with_description(
-        "Limit impact of a container process compromise. Follow principle of least privilege.",
-    )
+    .with_description("Containers running as root inside the namespace can exploit any kernel bug, capability loophole, or shared mount to escape the container. Running as a non-root UID forces an attacker to find an additional escalation primitive first. Limit impact of a container process compromise and follow principle of least privilege.")
+    .with_fix("Set `USER` in the Dockerfile to a non-root UID, or pass `--user <uid>` at run time.")
     .with_link("https://docs.docker.com/engine/security/")
     .register();
 
@@ -53,8 +52,9 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .skip_when(docker::skip_no_docker)
-    .with_description("Prevents DOS.")
+    .with_description("A separate filesystem for /var/lib/containers lets the operator apply hardened mount options (e.g. nodev, quotas) to container storage and prevents a runaway container from filling the root filesystem and breaking host services.")
     .with_link("https://docs.docker.com/engine/security/")
+    .with_fix("Mount /var/lib/containers as a dedicated filesystem in /etc/fstab, consider `nodev` and disk quotas.")
     .register();
 
     check::Check::new(

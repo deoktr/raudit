@@ -6,7 +6,7 @@ pub fn add_checks() {
     check::Check::new(
         "SHL_001",
         "Ensure automatic logout from shells is configured",
-        Severity::Medium,
+        Severity::High,
         vec!["server", "shell", "server"],
         shell::check_shell_timeout,
         vec![],

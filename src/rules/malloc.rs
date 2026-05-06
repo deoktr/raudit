@@ -19,5 +19,6 @@ pub fn add_checks() {
         malloc::has_scudo_malloc,
         vec![malloc::init_ld_so_preload],
     )
+    .with_description("Scudo hardened allocators deterministically detect or mitigate common heap-corruption primitives: use-after-free, double-free, out-of-bounds writes, type confusion across slabs; that the default glibc allocator leaves exploitable. Without one, heap bugs in any setuid or network-facing process are far easier to weaponize. Defense-in-depth to prevent bug exploitation.")
     .register();
 }

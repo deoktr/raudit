@@ -12,6 +12,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_EFI\" disabled (\"# CONFIG_EFI is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -23,6 +24,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_CPU_SUP_AMD\" disabled (\"# CONFIG_CPU_SUP_AMD is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -34,6 +36,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_CPU_SUP_INTEL\" disabled (\"# CONFIG_CPU_SUP_INTEL is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -45,6 +48,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_MODULES\" disabled (\"# CONFIG_MODULES is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -56,6 +60,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_DEVMEM\" disabled (\"# CONFIG_DEVMEM is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -67,6 +72,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_BPF_SYSCALL\" disabled (\"# CONFIG_BPF_SYSCALL is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -78,6 +84,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_BUG=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -89,6 +96,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_THREAD_INFO_IN_TASK=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -100,6 +108,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_IOMMU_SUPPORT=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -112,6 +121,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .with_description("Enables Kernel Address Space Layout Randomization (KASLR).")
+    .with_fix("Recompile the kernel with \"CONFIG_RANDOMIZE_BASE=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#kernel-address-space-layout-randomization-kaslr")
     .register();
 
@@ -124,6 +134,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_LIST_HARDENED=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -135,6 +146,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_RANDOM_KMALLOC_CACHES=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -146,6 +158,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_SLAB_MERGE_DEFAULT=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -168,6 +181,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_PAGE_TABLE_CHECK_ENFORCED=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -179,6 +193,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_BUG_ON_DATA_CORRUPTION=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -190,6 +205,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_SLAB_FREELIST_HARDENED=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -201,6 +217,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_SLAB_FREELIST_RANDOM=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -212,6 +229,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_SHUFFLE_PAGE_ALLOCATOR=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -223,6 +241,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_FORTIFY_SOURCE=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -234,6 +253,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_INIT_ON_ALLOC_DEFAULT_ON=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -245,6 +265,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_STATIC_USERMODEHELPER=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -256,6 +277,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_SCHED_CORE=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -267,6 +289,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_SECURITY_LOCKDOWN_LSM=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -278,6 +301,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_SECURITY_LOCKDOWN_LSM_EARLY=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -289,6 +313,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_LOCK_DOWN_KERNEL_FORCE_CONFIDENTIALITY=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     // security policy
@@ -301,6 +326,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_SECURITY=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -312,6 +338,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_SECURITY_YAMA=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -323,6 +350,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_SECURITY_LANDLOCK=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -334,6 +362,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"# CONFIG_SECURITY_SELINUX_DISABLE is not set\" in .config and reboot.")
     .register();
 
     check::Check::new(
@@ -345,7 +374,9 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_SECURITY_SELINUX_BOOTPARAM\" disabled (\"# CONFIG_SECURITY_SELINUX_BOOTPARAM is not set\" in .config) and reboot.")
     .register();
+
     // TODO: set N
     check::Check::new(
         "KNC_078",
@@ -356,6 +387,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_SECURITY_SELINUX_DEVELOP\" disabled (\"# CONFIG_SECURITY_SELINUX_DEVELOP is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -367,6 +399,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_SECURITY_WRITABLE_HOOKS\" disabled (\"# CONFIG_SECURITY_WRITABLE_HOOKS is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -378,6 +411,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_SECURITY_SELINUX_DEBUG\" disabled (\"# CONFIG_SECURITY_SELINUX_DEBUG is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -389,6 +423,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_SECCOMP=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -400,6 +435,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_SECCOMP_FILTER=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -411,6 +447,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_BPF_UNPRIV_DEFAULT_OFF=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -422,6 +459,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_STRICT_DEVMEM=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -433,6 +471,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_X86_INTEL_TSX_MODE_OFF=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -444,6 +483,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_SECURITY_DMESG_RESTRICT=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
     check::Check::new(
@@ -455,6 +495,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"# CONFIG_ACPI_CUSTOM_METHOD is not set\" in .config and reboot.")
     .register();
 
     check::Check::new(
@@ -466,6 +507,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_COMPAT_BRK\" disabled (\"# CONFIG_COMPAT_BRK is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -477,6 +519,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_DEVKMEM\" disabled (\"# CONFIG_DEVKMEM is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -488,6 +531,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_BINFMT_MISC\" disabled (\"# CONFIG_BINFMT_MISC is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -499,6 +543,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_INET_DIAG\" disabled (\"# CONFIG_INET_DIAG is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -510,6 +555,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_KEXEC\" disabled (\"# CONFIG_KEXEC is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -521,6 +567,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_PROC_KCORE\" disabled (\"# CONFIG_PROC_KCORE is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -532,6 +579,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_LEGACY_PTYS\" disabled (\"# CONFIG_LEGACY_PTYS is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -543,6 +591,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_HIBERNATION\" disabled (\"# CONFIG_HIBERNATION is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -555,6 +604,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .with_description("Eliminate many syscalls for 64-bit systems. Limits the breadth of kernel code that can be reached, possibly reducing the availability of a given bug to an attack.")
+    .with_fix("Recompile the kernel with \"CONFIG_COMPAT\" disabled (\"# CONFIG_COMPAT is not set\" in .config) and reboot.")
     .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#reduced-access-to-syscalls")
     .register();
 
@@ -567,6 +617,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_IA32_EMULATION\" disabled (\"# CONFIG_IA32_EMULATION is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -578,6 +629,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_X86_X32\" disabled (\"# CONFIG_X86_X32 is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -589,6 +641,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_X86_X32_ABI\" disabled (\"# CONFIG_X86_X32_ABI is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -600,6 +653,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_MODIFY_LDT_SYSCALL\" disabled (\"# CONFIG_MODIFY_LDT_SYSCALL is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -611,6 +665,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_OABI_COMPAT\" disabled (\"# CONFIG_OABI_COMPAT is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -622,6 +677,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_X86_MSR\" disabled (\"# CONFIG_X86_MSR is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -633,6 +689,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_LEGACY_TIOCSTI\" disabled (\"# CONFIG_LEGACY_TIOCSTI is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -644,6 +701,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_MODULE_FORCE_LOAD\" disabled (\"# CONFIG_MODULE_FORCE_LOAD is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -655,6 +713,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_DRM_LEGACY\" disabled (\"# CONFIG_DRM_LEGACY is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -666,6 +725,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_FB\" disabled (\"# CONFIG_FB is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -677,6 +737,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_VT\" disabled (\"# CONFIG_VT is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -688,6 +749,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_BLK_DEV_FD\" disabled (\"# CONFIG_BLK_DEV_FD is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -699,6 +761,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_BLK_DEV_FD_RAWCMD\" disabled (\"# CONFIG_BLK_DEV_FD_RAWCMD is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -710,6 +773,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_NOUVEAU_LEGACY_CTX_SUPPORT\" disabled (\"# CONFIG_NOUVEAU_LEGACY_CTX_SUPPORT is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -721,6 +785,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_N_GSM\" disabled (\"# CONFIG_N_GSM is not set\" in .config) and reboot.")
     .register();
 
     // grsec
@@ -733,6 +798,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_ZSMALLOC_STAT\" disabled (\"# CONFIG_ZSMALLOC_STAT is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -744,6 +810,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_DEBUG_KMEMLEAK\" disabled (\"# CONFIG_DEBUG_KMEMLEAK is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -766,6 +833,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_KPROBE_EVENTS\" disabled (\"# CONFIG_KPROBE_EVENTS is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -777,6 +845,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_UPROBE_EVENTS\" disabled (\"# CONFIG_UPROBE_EVENTS is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -788,6 +857,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_GENERIC_TRACER\" disabled (\"# CONFIG_GENERIC_TRACER is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -799,6 +869,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_FUNCTION_TRACER\" disabled (\"# CONFIG_FUNCTION_TRACER is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -810,6 +881,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_STACK_TRACER\" disabled (\"# CONFIG_STACK_TRACER is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -821,6 +893,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_HIST_TRIGGERS\" disabled (\"# CONFIG_HIST_TRIGGERS is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -832,6 +905,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_BLK_DEV_IO_TRACE\" disabled (\"# CONFIG_BLK_DEV_IO_TRACE is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -843,6 +917,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_PROC_VMCORE\" disabled (\"# CONFIG_PROC_VMCORE is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -854,6 +929,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_PROC_PAGE_MONITOR\" disabled (\"# CONFIG_PROC_PAGE_MONITOR is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -865,6 +941,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_USELIB\" disabled (\"# CONFIG_USELIB is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -876,6 +953,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_CHECKPOINT_RESTORE\" disabled (\"# CONFIG_CHECKPOINT_RESTORE is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -887,6 +965,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_USERFAULTFD\" disabled (\"# CONFIG_USERFAULTFD is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -898,6 +977,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_HWPOISON_INJECT\" disabled (\"# CONFIG_HWPOISON_INJECT is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -909,6 +989,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_MEM_SOFT_DIRTY\" disabled (\"# CONFIG_MEM_SOFT_DIRTY is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -920,6 +1001,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_DEVPORT\" disabled (\"# CONFIG_DEVPORT is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -931,6 +1013,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_DEBUG_FS\" disabled (\"# CONFIG_DEBUG_FS is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -942,6 +1025,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_NOTIFIER_ERROR_INJECTION\" disabled (\"# CONFIG_NOTIFIER_ERROR_INJECTION is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -953,6 +1037,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_FAIL_FUTEX\" disabled (\"# CONFIG_FAIL_FUTEX is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -964,6 +1049,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_PUNIT_ATOM_DEBUG\" disabled (\"# CONFIG_PUNIT_ATOM_DEBUG is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -975,6 +1061,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_ACPI_CONFIGFS\" disabled (\"# CONFIG_ACPI_CONFIGFS is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -986,6 +1073,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_EDAC_DEBUG\" disabled (\"# CONFIG_EDAC_DEBUG is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -997,6 +1085,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_DRM_I915_DEBUG\" disabled (\"# CONFIG_DRM_I915_DEBUG is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1008,6 +1097,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_BCACHE_CLOSURES_DEBUG\" disabled (\"# CONFIG_BCACHE_CLOSURES_DEBUG is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1019,6 +1109,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_DVB_C8SECTPFE\" disabled (\"# CONFIG_DVB_C8SECTPFE is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1030,6 +1121,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_MTD_SLRAM\" disabled (\"# CONFIG_MTD_SLRAM is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1041,6 +1133,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_MTD_PHRAM\" disabled (\"# CONFIG_MTD_PHRAM is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1052,6 +1145,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_IO_URING\" disabled (\"# CONFIG_IO_URING is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1063,6 +1157,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_KCMP\" disabled (\"# CONFIG_KCMP is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1074,6 +1169,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_RSEQ\" disabled (\"# CONFIG_RSEQ is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1085,6 +1181,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_LATENCYTOP\" disabled (\"# CONFIG_LATENCYTOP is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1096,6 +1193,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_KCOV\" disabled (\"# CONFIG_KCOV is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1107,6 +1205,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_PROVIDE_OHCI1394_DMA_INIT\" disabled (\"# CONFIG_PROVIDE_OHCI1394_DMA_INIT is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1118,6 +1217,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_SUNRPC_DEBUG\" disabled (\"# CONFIG_SUNRPC_DEBUG is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1129,6 +1229,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_X86_16BIT\" disabled (\"# CONFIG_X86_16BIT is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1140,6 +1241,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_BLK_DEV_UBLK\" disabled (\"# CONFIG_BLK_DEV_UBLK is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1151,6 +1253,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_SMB_SERVER\" disabled (\"# CONFIG_SMB_SERVER is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1162,6 +1265,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_XFS_ONLINE_SCRUB_STATS\" disabled (\"# CONFIG_XFS_ONLINE_SCRUB_STATS is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1173,6 +1277,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_CACHESTAT_SYSCALL\" disabled (\"# CONFIG_CACHESTAT_SYSCALL is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1184,6 +1289,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_PREEMPTIRQ_TRACEPOINTS\" disabled (\"# CONFIG_PREEMPTIRQ_TRACEPOINTS is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1195,6 +1301,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_ENABLE_DEFAULT_TRACERS\" disabled (\"# CONFIG_ENABLE_DEFAULT_TRACERS is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1206,6 +1313,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_PROVE_LOCKING\" disabled (\"# CONFIG_PROVE_LOCKING is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1217,6 +1325,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_TEST_DEBUG_VIRTUAL\" disabled (\"# CONFIG_TEST_DEBUG_VIRTUAL is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1228,6 +1337,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_MPTCP\" disabled (\"# CONFIG_MPTCP is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1239,6 +1349,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_TLS\" disabled (\"# CONFIG_TLS is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1250,6 +1361,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_TIPC\" disabled (\"# CONFIG_TIPC is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1261,6 +1373,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_IP_SCTP\" disabled (\"# CONFIG_IP_SCTP is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1272,6 +1385,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_KGDB\" disabled (\"# CONFIG_KGDB is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1283,6 +1397,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_PTDUMP_DEBUGFS\" disabled (\"# CONFIG_PTDUMP_DEBUGFS is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1294,6 +1409,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_X86_PTDUMP\" disabled (\"# CONFIG_X86_PTDUMP is not set\" in .config) and reboot.")
     .register();
 
     // clipos
@@ -1306,6 +1422,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_STAGING\" disabled (\"# CONFIG_STAGING is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1317,6 +1434,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_KSM\" disabled (\"# CONFIG_KSM is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1328,6 +1446,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_KALLSYMS\" disabled (\"# CONFIG_KALLSYMS is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1339,6 +1458,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_KEXEC_FILE\" disabled (\"# CONFIG_KEXEC_FILE is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1350,6 +1470,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_CRASH_DUMP\" disabled (\"# CONFIG_CRASH_DUMP is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1361,6 +1482,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_USER_NS\" disabled (\"# CONFIG_USER_NS is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1372,6 +1494,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_X86_CPUID\" disabled (\"# CONFIG_X86_CPUID is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1383,6 +1506,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_X86_IOPL_IOPERM\" disabled (\"# CONFIG_X86_IOPL_IOPERM is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1394,6 +1518,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_ACPI_TABLE_UPGRADE\" disabled (\"# CONFIG_ACPI_TABLE_UPGRADE is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1405,6 +1530,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_EFI_CUSTOM_SSDT_OVERLAYS\" disabled (\"# CONFIG_EFI_CUSTOM_SSDT_OVERLAYS is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1416,6 +1542,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_AIO\" disabled (\"# CONFIG_AIO is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1427,6 +1554,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_MAGIC_SYSRQ\" disabled (\"# CONFIG_MAGIC_SYSRQ is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1438,6 +1566,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_MAGIC_SYSRQ_DEFAULT_ENABLE\" disabled (\"# CONFIG_MAGIC_SYSRQ_DEFAULT_ENABLE is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1449,6 +1578,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_MAGIC_SYSRQ_SERIAL\" disabled (\"# CONFIG_MAGIC_SYSRQ_SERIAL is not set\" in .config) and reboot.")
     .register();
 
     // grapheneos
@@ -1461,6 +1591,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_EFI_TEST\" disabled (\"# CONFIG_EFI_TEST is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1472,6 +1603,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_MMIOTRACE_TEST\" disabled (\"# CONFIG_MMIOTRACE_TEST is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1483,6 +1615,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_KPROBES\" disabled (\"# CONFIG_KPROBES is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1494,6 +1627,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_MMIOTRACE\" disabled (\"# CONFIG_MMIOTRACE is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1505,6 +1639,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_LIVEPATCH\" disabled (\"# CONFIG_LIVEPATCH is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1516,6 +1651,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_IP_DCCP\" disabled (\"# CONFIG_IP_DCCP is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1527,6 +1663,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_FTRACE\" disabled (\"# CONFIG_FTRACE is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1538,6 +1675,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_VIDEO_VIVID\" disabled (\"# CONFIG_VIDEO_VIVID is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1549,6 +1687,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_INPUT_EVBUG\" disabled (\"# CONFIG_INPUT_EVBUG is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1560,6 +1699,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_CORESIGHT\" disabled (\"# CONFIG_CORESIGHT is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1571,6 +1711,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_XFS_SUPPORT_V4\" disabled (\"# CONFIG_XFS_SUPPORT_V4 is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1582,6 +1723,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_BLK_DEV_WRITE_MOUNTED\" disabled (\"# CONFIG_BLK_DEV_WRITE_MOUNTED is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1593,6 +1735,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_FAULT_INJECTION\" disabled (\"# CONFIG_FAULT_INJECTION is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1604,6 +1747,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_fix("Recompile the kernel with \"CONFIG_LKDTM\" disabled (\"# CONFIG_LKDTM is not set\" in .config) and reboot.")
     .register();
 
     check::Check::new(
@@ -1616,6 +1760,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .with_description("Executable code and read-only data must not be writable.")
+    .with_fix("Recompile the kernel with \"CONFIG_STRICT_KERNEL_RWX=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#executable-code-and-read-only-data-must-not-be-writable")
     .register();
 
@@ -1629,6 +1774,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .with_description("Executable code and read-only data must not be writable.")
+    .with_fix("Recompile the kernel with \"CONFIG_STRICT_MODULE_RWX=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#executable-code-and-read-only-data-must-not-be-writable")
     .register();
 
@@ -1642,6 +1788,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .with_description("Keep from having root load arbitrary kernel code via the module loader interface. Redundant with \"module.sig_enforce=1\" kernel boot params.")
+    .with_fix("Recompile the kernel with \"CONFIG_MODULE_SIG_FORCE=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#restricting-access-to-kernel-modules")
     .register();
 
@@ -1655,6 +1802,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .with_description("When releasing memory poison the contents to avoid reuse attacks that rely on the old contents of memory.")
+    .with_fix("Recompile the kernel with \"CONFIG_KSTACK_ERASE=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#memory-poisoning")
     .register();
 }

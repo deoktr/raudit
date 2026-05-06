@@ -12,5 +12,6 @@ pub fn add_checks() {
         vec![],
     )
     .with_description("ClamAV provides open-source antivirus scanning to detect malware, trojans, and other threats on the system. Only needed in as a regulatory requirement.")
+    .with_fix("Install via the distro package manager (e.g. `apt install clamav clamav-daemon`) and enable signature updates with `freshclam`.")
     .register();
 }

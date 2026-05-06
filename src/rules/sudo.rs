@@ -1,6 +1,6 @@
 use crate::check;
 use crate::check::Severity;
-use crate::modules::{base, sudo};
+use crate::modules::{audit, base, sudo};
 
 pub fn add_checks() {
     check::Check::new(
@@ -64,6 +64,7 @@ pub fn add_checks() {
         vec![sudo::init_sudo],
     )
     .skip_when(sudo::skip_no_sudo)
+    .with_description("Skip \".\" when searching PATH for the target binary. Without it, an attacker who drops a malicious binary into a sudo'd user's CWD can have it executed as root simply because PATH started with \".\".")
     .with_fix("In \"/etc/sudoers\", or \"/etc/sudoers.d/*\", add: \"Defaults ignore_dot\"")
     .register();
 
@@ -154,7 +155,7 @@ pub fn add_checks() {
         vec![sudo::init_sudo],
     )
     .skip_when(sudo::skip_no_sudo)
-    .with_fix("In \"/etc/sudoers\", or \"/etc/sudoers.d/*\", add: \"lecture_file=\"/usr/share/doc/sudo_lecture.txt\"\"")
+    .with_fix("In \"/etc/sudoers\", or \"/etc/sudoers.d/*\", add: \"Defaults lecture_file=\"/usr/share/doc/sudo_lecture.txt\"\" and provide that file with the org's warning text.")
     .register();
 
     check::Check::new(
@@ -166,6 +167,7 @@ pub fn add_checks() {
         vec![sudo::init_sudo],
     )
     .skip_when(sudo::skip_no_sudo)
+    .with_description("\"NOPASSWD\" lets a sudo-able account escalate to root with no password prompt at all. An attacker who steals only the user's session token (no password) immediately becomes root. Defeats the whole point of sudo's auth gate.")
     .with_fix(
         "In \"/etc/sudoers\", and \"/etc/sudoers.d/*\", remove all instances with \"NOPASSWD\"",
     )
@@ -180,6 +182,7 @@ pub fn add_checks() {
         vec![sudo::init_sudo],
     )
     .skip_when(sudo::skip_no_sudo)
+    .with_description("\"!authenticate\" disables the password prompt entirely for matching rules, the same effect as \"NOPASSWD\" via the negated tag form, often missed by NOPASSWD-only audits. Removes the auth gate that protects every sudo invocation.")
     .with_fix("In \"/etc/sudoers\", and \"/etc/sudoers.d/*\", remove all instances with \"!authenticate\"")
     .register();
 
@@ -192,6 +195,7 @@ pub fn add_checks() {
         vec![],
     )
     .skip_when(sudo::skip_no_sudo)
+    .with_description("Looser permissions on \"/etc/sudoers\" let unauthorized users read or modify the privilege policy: reading reveals exploitable rules, writing grants instant root via a self-added \"NOPASSWD ALL\" line.")
     .with_fix("chmod 440 /etc/sudoers")
     .register();
 
@@ -204,6 +208,7 @@ pub fn add_checks() {
         vec![],
     )
     .skip_when(sudo::skip_no_sudo)
+    .with_description("If \"/etc/sudoers\" is owned by a non-root user, that user can edit the privilege policy and grant themselves root.")
     .with_fix("chown root:root /etc/sudoers")
     .register();
 
@@ -216,6 +221,7 @@ pub fn add_checks() {
         vec![],
     )
     .skip_when(sudo::skip_no_sudo)
+    .with_description("Looser permissions on \"/etc/sudoers.d/\" let unauthorized users read or modify the privilege policy: reading reveals exploitable rules, writing grants instant root via a self-added \"NOPASSWD ALL\" line.")
     .with_fix("chmod -R 440 /etc/sudoers.d/*")
     .register();
 
@@ -228,6 +234,19 @@ pub fn add_checks() {
         vec![],
     )
     .skip_when(sudo::skip_no_sudo)
+    .with_description("If \"/etc/sudoers.d/\" is owned by a non-root user, that user can edit the privilege policy and grant themselves root.")
     .with_fix("chown -R root:root /etc/sudoers.d/*")
+    .register();
+
+    check::Check::new(
+        "SUD_100",
+        "Ensure audit rule for sudo log file is present",
+        Severity::Medium,
+        vec!["sudo", "audit"],
+        || audit::check_audit_rule("-w /var/log/sudo.log -p wa -k log_file"),
+        vec![audit::init_audit_rules],
+    )
+    .with_description("Monitoring the sudo log file for writes and attribute changes detects attempts to tamper with privilege escalation records.")
+    .with_fix("Add \"-w /var/log/sudo.log -p wa -k log_file\" to a file under \"/etc/audit/rules.d/\" and \"augenrules --load\".")
     .register();
 }

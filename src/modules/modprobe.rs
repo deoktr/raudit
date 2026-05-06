@@ -291,7 +291,7 @@ macro_rules! add_module_blacklisted_check_list {
                 || $crate::modules::modprobe::check_module_blacklist($module),
                 vec![$crate::modules::modprobe::init_modprobe],
             )
-            .with_description("Prevents kernel modules from automatically starting.")
+            .with_description("Prevents the kernel from auto-loading the module on hardware probe or subsystem request, reducing kernel attack surface from rarely-exercised drivers and protocol parsers that are common exploit targets. Module remains loadable manually by root.")
             .with_fix(&format!("Add entry in \"/etc/modprobe.d/blacklist.conf\" with: \"blacklist {}\"", $module))
             .register();
             __i_add_module_blacklisted_check_list += 1;
@@ -314,7 +314,7 @@ macro_rules! add_module_disabled_check_list {
                 || $crate::modules::modprobe::check_module_disabled($module),
                 vec![$crate::modules::modprobe::init_modprobe],
             )
-            .with_description("Prohibits kernel modules from starting.")
+            .with_description("Prohibits the module from loading at all (not just from auto-loading), eliminating its kernel attack surface entirely. Required for modules an attacker who reaches root must not be able to bring in.")
             .with_fix(&format!("Add entry in \"/etc/modprobe.d/disabled.conf\" with: \"install {} /bin/true\"", $module))
             .register();
             __i_add_module_disabled_check_list += 1;

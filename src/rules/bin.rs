@@ -13,5 +13,6 @@ pub fn add_checks() {
         vec![],
     )
     .with_description("Set UID binaries could be exploited for privilege escalation.")
+    .with_fix("For each SUID/SGID binary, verify legitimate use, and either strip the SUID/SGID bit (`chmod u-s`/`g-s`) or remove the binary.")
     .register();
 }

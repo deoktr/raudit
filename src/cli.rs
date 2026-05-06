@@ -106,7 +106,7 @@ pub fn cli() {
 
     logger::set_log_level(args.log_level);
 
-    add_all_checks();
+    rules::add_all_checks();
 
     match args.tags {
         None => (),
@@ -209,37 +209,4 @@ pub fn cli() {
     if !args.no_time {
         eprintln!("took: {}", utils::format_duration(now.elapsed()));
     }
-}
-
-// add checks for all modules
-fn add_all_checks() {
-    rules::apparmor::add_checks();
-    rules::apt::add_checks();
-    rules::audit::add_checks();
-    rules::bin::add_checks();
-    rules::clamav::add_checks();
-    rules::cron::add_checks();
-    rules::docker::add_checks();
-    rules::exploit::add_checks();
-    rules::gdm::add_checks();
-    rules::group::add_checks();
-    rules::grub::add_checks();
-    rules::hosts::add_checks();
-    rules::kernel::add_checks();
-    rules::kernel_params::add_checks();
-    rules::login_defs::add_checks();
-    rules::malloc::add_checks();
-    rules::modprobe::add_checks();
-    rules::mount::add_checks();
-    rules::nginx::add_checks();
-    rules::pam::add_checks();
-    rules::podman::add_checks();
-    rules::shell::add_checks();
-    rules::sshd::add_checks();
-    rules::sudo::add_checks();
-    rules::sysctl::add_checks();
-    rules::system::add_checks();
-    rules::systemd::add_checks();
-    rules::uptime::add_checks();
-    rules::user::add_checks();
 }

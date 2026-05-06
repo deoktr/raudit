@@ -27,3 +27,35 @@ pub mod system;
 pub mod systemd;
 pub mod uptime;
 pub mod user;
+
+pub fn add_all_checks() {
+    apparmor::add_checks();
+    apt::add_checks();
+    audit::add_checks();
+    bin::add_checks();
+    clamav::add_checks();
+    cron::add_checks();
+    docker::add_checks();
+    exploit::add_checks();
+    gdm::add_checks();
+    group::add_checks();
+    grub::add_checks();
+    hosts::add_checks();
+    kernel::add_checks();
+    kernel_params::add_checks();
+    login_defs::add_checks();
+    malloc::add_checks();
+    modprobe::add_checks();
+    mount::add_checks();
+    nginx::add_checks();
+    pam::add_checks();
+    podman::add_checks();
+    shell::add_checks();
+    sshd::add_checks();
+    sudo::add_checks();
+    sysctl::add_checks();
+    system::add_checks();
+    systemd::add_checks();
+    uptime::add_checks();
+    user::add_checks();
+}

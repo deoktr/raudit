@@ -66,6 +66,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("A long LoginGraceTime lets an attacker hold open many half-finished auth attempts that consume sshd connection slots, enabling slow-DoS or password-spray campaigns. 60s is enough for legitimate logins. Increase on very slow connection if you timeout.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"LoginGraceTime 60\"")
     .register();
 
@@ -78,6 +79,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Direct SSH login as root collapses two security barriers into one: an attacker who phishes or cracks the root password gets immediate full control with no intermediate user account, and audit logs cannot attribute the action to a specific user.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"PermitRootLogin no\"")
     .register();
 
@@ -90,6 +92,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("StrictModes makes sshd refuse to read authorized_keys/.ssh files that are world- or group-writable. Without it, an attacker who gains any write access to a user's home dir can append a key to authorized_keys and gain persistent SSH login.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"StrictModes yes\"")
     .register();
 
@@ -120,6 +123,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Capping authentication attempts per TCP connection, increasing the protection against brute-force attacks.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"MaxAuthTries 4\"")
     .register();
 
@@ -162,6 +166,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("HostbasedAuthentication trusts the client host's identity rather than a user credential, an attacker who compromises any trusted client can hop into the server as any user without further authentication.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"HostbasedAuthentication no\"")
     .register();
 
@@ -190,7 +195,7 @@ pub fn add_checks() {
     check::Check::new(
         "SSH_012",
         "Ensure that sshd is configured with \"pubkeyauthentication yes\"",
-        Severity::High,
+        Severity::Critical,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("pubkeyauthentication", "yes"),
         vec![sshd::init_sshd_config],
@@ -208,6 +213,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Use key authentication instead of password based.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"PasswordAuthentication no\"")
     .register();
 
@@ -232,6 +238,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("PermitEmptyPasswords yes lets accounts with empty password fields log in over SSH with no password. Use as security in depth if password authentication must be enabled.")
     .with_fix("In \"/etc/ssh/sshd_config\" remove: \"PermitEmptyPasswords yes\"")
     .register();
 
@@ -244,30 +251,33 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Unless the host is on a Kerberos realm, KerberosAuthentication just adds attack surface and a parser exposed to network input. Disabling it removes that surface entirely.")
     .with_fix("In \"/etc/ssh/sshd_config\" remove: \"KerberosAuthentication yes\"")
     .register();
 
     check::Check::new(
         "SSH_017",
         "Ensure that sshd is configured with \"kerberosorlocalpasswd no\"",
-        Severity::Medium,
+        Severity::High,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("kerberosorlocalpasswd", "no"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("KerberosOrLocalPasswd yes lets sshd silently fall back to \"/etc/passwd-style\" authentication when Kerberos fails, defeating the intent to require Kerberos and re-exposing local password attacks. Defence-in-depth in case Kerberos is used.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"KerberosOrLocalPasswd no\"")
     .register();
 
     check::Check::new(
         "SSH_018",
         "Ensure that sshd is configured with \"kerberosticketcleanup yes\"",
-        Severity::Low,
+        Severity::Medium,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("kerberosticketcleanup", "yes"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Without ticket cleanup, Kerberos credentials linger after the SSH session ends, a later attacker who reaches the host can reuse them to access other Kerberized services as the ticket's principal. Defence-in-depth in case Kerberos is used.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"KerberosTicketCleanup yes\"")
     .register();
 
@@ -280,6 +290,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("GSSAPI exposes additional code and parsers to remote attackers before authentication completes, on hosts not on a GSSAPI/Kerberos realm it is pure attack surface.")
     .with_fix("In \"/etc/ssh/sshd_config\" remove: \"GSSAPIAuthentication yes\"")
     .register();
 
@@ -292,18 +303,20 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Leftover GSSAPI credentials after a session ends are reusable by anyone who later reaches the host as that user. Security in depth in case Kerberos is used.")
     .with_fix("In \"/etc/ssh/sshd_config\" remove: \"GSSAPICleanupCredentials no\"")
     .register();
 
     check::Check::new(
         "SSH_044",
         "Ensure that sshd is configured with \"usepam yes\"",
-        Severity::High,
+        Severity::Critical,
         vec!["sshd", "CIS", "STIG", "server"],
         || sshd::check_sshd_config("usepam", "yes"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("\"UsePAM yes\" routes sshd through PAM, picking up account-lockout, faillock, lecturing, and other PAM-stack hardening. Without it, those controls are bypassed entirely on the SSH path.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"UsePAM yes\"")
     .register();
 
@@ -418,7 +431,8 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
-    .with_fix("In \"/etc/ssh/sshd_config\" remove: \"ClientAliveCountMax *\"")
+    .with_description("Together with ClientAliveInterval, this caps how many missed keepalives a session can survive before sshd terminates it, closing dead sessions denies attackers a parked authenticated channel to reuse.")
+    .with_fix("In \"/etc/ssh/sshd_config\" set: \"ClientAliveCountMax 3\"")
     .register();
 
     check::Check::new(
@@ -454,6 +468,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Prevent SSH session from creating a tun/tap device, making it a bit harder for an attacker to bridge networks.")
     .with_fix("In \"/etc/ssh/sshd_config\" remove: \"PermitTunnel yes\"")
     .register();
 
@@ -471,14 +486,17 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_036",
-        "Ensure that sshd is configured with \"printlastlog no\"",
+        "Ensure that sshd is configured with \"printlastlog yes\"",
         Severity::Low,
         vec!["sshd", "server"],
-        || sshd::check_sshd_config("printlastlog", "no"),
+        || sshd::check_sshd_config("printlastlog", "yes"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"PrintLastLog no\"")
+    .with_description(
+        "Could help detect an unauthorized connection if the last login is not recognized.",
+    )
+    .with_fix("In \"/etc/ssh/sshd_config\" add: \"PrintLastLog yes\"")
     .register();
 
     check::Check::new(
@@ -523,6 +541,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Pinning key-exchange algorithms to a vetted modern set blocks downgrade to weak/legacy KEX (e.g. SHA-1-based DH groups) and includes post-quantum hybrids (mlkem, sntrup) so today's recorded sessions cannot be decrypted by future quantum-capable adversaries.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"KexAlgorithms mlkem768x25519-sha256,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521\"")
     .register();
 
@@ -540,6 +559,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Pinning ciphers to authenticated-encryption (AEAD) and CTR-with-MAC modes blocks downgrade to CBC, RC4, and 3DES, historically broken to recover plaintext from captured SSH traffic.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr\"")
     .register();
 
@@ -557,6 +577,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Pinning MACs to encrypt-then-MAC (ETM) SHA-2 family blocks the historically-broken MD5/SHA-1 MACs and the encrypt-and-MAC ordering that has produced timing oracles in OpenSSH.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com\"")
     .register();
 
@@ -569,6 +590,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Enforces the use of publickey for authentication, eliminating fall-back paths to credential auth.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"AuthenticationMethods publickey\"")
     .register();
 
@@ -586,6 +608,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Configure SFTP to log to AUTHPRIV at INFO, every file transfer over SFTP appears in the auth log, turning otherwise-silent file exfil over SSH into something that can be detected and audited.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"Subsystem sftp /usr/lib/openssh/sftp-server -f AUTHPRIV -l INFO\"")
     .register();
 
@@ -616,6 +639,7 @@ pub fn add_checks() {
         vec![],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("If a non-root user owns the sshd systemd unit file, they can edit it and have that wrapper run as root the next time sshd is started, would allow for full local privilege escalation.")
     .with_fix("chown root:root /etc/systemd/system/sshd.service")
     .register();
 
@@ -634,90 +658,98 @@ pub fn add_checks() {
         vec![],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("If a non-root user as permissions on the sshd systemd unit file, they can edit it and have that wrapper run as root the next time sshd is started, would allow for full local privilege escalation.")
     .with_fix("chmod 644 /etc/systemd/system/sshd.service")
     .register();
 
     check::Check::new(
         "SSH_047",
-        "Ensure /etc/ssh directory is owned by root",
+        "Ensure \"/etc/ssh\" directory is owned by root",
         Severity::High,
         vec!["sshd", "server"],
         || base::check_dir_owner_id("/etc/ssh", 0, 0),
         vec![],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("/etc/ssh holds host private keys and sshd_config, non-root ownership lets that user steal host keys or rewrite sshd_config to weaken the security policy.")
     .with_fix("chown root:root /etc/ssh")
     .register();
 
     check::Check::new(
         "SSH_048",
-        "Ensure /etc/ssh directory permissions is 755",
+        "Ensure \"/etc/ssh\" directory permissions is 755",
         Severity::High,
         vec!["sshd", "server"],
         || base::check_dir_permission("/etc/ssh", 0o755),
         vec![],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("/etc/ssh holds host private keys and sshd_config, open permissions lets users steal host keys or rewrite sshd_config to weaken the security policy.")
     .with_fix("chmod 755 /etc/ssh")
     .register();
 
     check::Check::new(
         "SSH_049",
-        "Ensure /etc/ssh/sshd_config file is owned by root",
+        "Ensure \"/etc/ssh/sshd_config\" file is owned by root",
         Severity::High,
         vec!["sshd", "server"],
         || base::check_file_owner_id("/etc/ssh/sshd_config", 0, 0),
         vec![],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Could allow an attacker to reconfigure sshd.")
     .with_fix("chown root:root /etc/ssh/sshd_config")
     .register();
 
     check::Check::new(
         "SSH_050",
-        "Ensure /etc/ssh/sshd_config file permissions is 644",
+        "Ensure \"/etc/ssh/sshd_config\" file permissions is 644",
         Severity::High,
         vec!["sshd", "server"],
         || base::check_file_permission("/etc/ssh/sshd_config", 0o644),
         vec![],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Could allow an attacker to reconfigure sshd.")
     .with_fix("chmod 644 /etc/ssh/sshd_config")
     .register();
 
     check::Check::new(
         "SSH_051",
-        "Ensure /etc/ssh/sshd_config.d/ directory is owned by root",
+        "Ensure \"/etc/ssh/sshd_config.d/\" directory is owned by root",
         Severity::High,
         vec!["sshd", "server"],
         || base::check_dir_owner_id("/etc/ssh/sshd_config.d", 0, 0),
         vec![],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Could allow an attacker to reconfigure sshd.")
     .with_fix("chown root:root /etc/ssh/sshd_config.d")
     .register();
 
     check::Check::new(
         "SSH_052",
-        "Ensure /etc/ssh/sshd_config.d/ files are owned by root",
+        "Ensure \"/etc/ssh/sshd_config.d/\" files are owned by root",
         Severity::High,
         vec!["sshd", "server"],
         || base::check_dir_files_owner_id("/etc/ssh/sshd_config.d/", 0, 0),
         vec![],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Could allow an attacker to reconfigure sshd.")
     .with_fix("chown -R root:root /etc/ssh/sshd_config.d/*")
     .register();
 
     check::Check::new(
         "SSH_053",
-        "Ensure /etc/ssh/sshd_config.d/ files permissions are 644",
+        "Ensure \"/etc/ssh/sshd_config.d/\" files permissions are 644",
         Severity::High,
         vec!["sshd", "server"],
         || base::check_dir_files_permission("/etc/ssh/sshd_config.d/", 0o644),
         vec![],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Could allow an attacker to reconfigure sshd.")
     .with_fix("chmod -R 644 /etc/ssh/sshd_config.d/*")
     .register();
 

@@ -103,6 +103,7 @@ pub fn add_checks() {
         vec![sysctl::init_sysctl_config],
     )
     .with_description("Restricts kernel profiling to users with CAP_PERFMON, the performance events system should not be accessible by unprivileged users, they add considerable kernel attack surface. Can be 2 or 3.")
+    .with_fix("Add \"kernel.perf_event_paranoid = 2\" (or 3) in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -159,11 +160,12 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_014",
-        Severity::Medium,
+        Severity::Low,
         vec!["sysctl", "server", "workstation"],
         "kernel.panic",
         "-1"
     )
+    .with_description("\"kernel.panic = -1\" makes the kernel reboot immediately on panic. A panic could indicate an exploitation attempt, appropriate for security-critical hosts where the safe response to a corruption-detected event is reboot, not stay-up.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -184,7 +186,7 @@ pub fn add_checks() {
         "kernel.unprivileged_userns_clone",
         0
     )
-    .with_description("'unprivileged_userns_clone' greatly increases the attack surface for local privilege escalation. Note that disabling this will prevent Docker and Podman from working rootless.")
+    .with_description("\"unprivileged_userns_clone\" greatly increases the attack surface for local privilege escalation. Note that disabling this will prevent Docker and Podman from working rootless.")
     .with_link("https://gitlab.com/apparmor/apparmor/-/wikis/unprivileged_userns_restriction")
     .register();
 
@@ -224,6 +226,7 @@ pub fn add_checks() {
   - 1: Avoid non-ancestor ptrace access to running processes and their creds.
   - 2: Restrict ptrace access to processes with CAP_SYS_PTRACE.
   - 3: Completely disable ptrace.")
+    .with_fix("Add \"kernel.yama.ptrace_scope = 1\" (or 2 or 3) in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -404,6 +407,7 @@ pub fn add_checks() {
         vec![sysctl::init_sysctl_config],
     )
     .with_description("Disable the miscellaneous binary format virtual file system to prevent unintended code execution.")
+    .with_fix("Add \"fs.binfmt_misc.status = 0\" in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -525,20 +529,22 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_050",
-        Severity::High,
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         "net.ipv4.icmp_echo_ignore_all",
         1
     )
+    .with_description("Drop all incoming ICMP echo (ping), reduces network-based fingerprinting at the cost of ping-based diagnostics.")
     .register();
 
     sysctl::add_sysctl_check!(
         "SYS_051",
-        Severity::High,
+        Severity::Medium,
         vec!["sysctl", "server", "workstation"],
         "net.ipv6.icmp.echo_ignore_all",
         1
     )
+    .with_description("Drop all incoming ICMP echo (ping) for ICMPv6, reduces network-based fingerprinting at the cost of ping-based diagnostics.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -600,6 +606,8 @@ pub fn add_checks() {
         },
         vec![sysctl::init_sysctl_config],
     )
+    .with_description("Rate-limits outgoing ICMP error replies, blocks ICMP-rate side channels and slows network-scan reconnaissance.")
+    .with_fix("Add \"net.ipv4.icmp_ratelimit = 100\" (or lower) in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -609,6 +617,7 @@ pub fn add_checks() {
         "net.ipv4.icmp_ratemask",
         88089
     )
+    .with_description("Selects which ICMP types are subject to ratelimit, mask 88089 covers the common reconnaissance-aiding types.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -717,6 +726,7 @@ pub fn add_checks() {
         "net.ipv4.ip_local_port_range",
         "32768\t65535"
     )
+    .with_description("Setting the ephemeral port range to the full 32768–65535 reserves more ports for the kernel and reduces accidental conflicts with low-numbered service ports.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -959,6 +969,7 @@ pub fn add_checks() {
         vec![sysctl::init_sysctl_config],
     )
     .with_description("Cut attack surface by limiting the number of user namespaces. May break the upower daemon in Ubuntu.")
+    .with_fix("Add \"user.max_user_namespaces = 31231\" (or lower) in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
     .register();
 
     check::Check::new(
@@ -985,6 +996,7 @@ pub fn add_checks() {
         vec![sysctl::init_sysctl_config],
     )
     .with_description("Will have no effects if kernel param \"oops=panic\" is set, but is a better default if it's not.")
+    .with_fix("Add \"kernel.warn_limit = 100\" (or lower) in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
     .register();
 
     check::Check::new(
@@ -1011,6 +1023,7 @@ pub fn add_checks() {
         vec![sysctl::init_sysctl_config],
     )
     .with_description("Will have no effects if kernel param \"oops=panic\" is set, but is a better default if it's not.")
+    .with_fix("Add \"kernel.oops_limit = 100\" (or lower) in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
     .register();
 
     sysctl::add_sysctl_check!(
