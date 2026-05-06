@@ -10,7 +10,7 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
-## [0.32.2] - 2026-05-06
+## [0.32.2](https://github.com/deoktr/raudit/releases/tag/v0.32.2) - 2026-05-06
 
 - Add rules `HST_003` to `HST_007`.
 - Add rule `EXP_001`.
@@ -20,6 +20,6 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 - Add UID/GID resolution helper function.
 - Internal refactoring, update project layout.
 
-## [0.32.1] - 2026-05-01
+## [0.32.1](https://github.com/deoktr/raudit/releases/tag/v0.32.1) - 2026-05-01
 
 - Add `--no-skip` CLI flag to disable automatic check skipping.
