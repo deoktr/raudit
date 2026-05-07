@@ -54,15 +54,11 @@ pub fn init_kernel_os_release() -> Result<String, std::io::Error> {
 fn parse_os_release(content: String) -> OSRelease {
     content
         .lines()
-        .filter_map(|line| match line.split_once("=") {
-            Some((key, value)) => Some((
+        .filter_map(|line| line.split_once("=").map(|(key, value)| (
                 key.to_string(),
                 // parse the value, can be inside quotes single or double
                 value.to_string().replace("'", "").replace("\"", ""),
-            )),
-            // should never happen, don't even log it
-            None => None,
-        })
+            )))
         .collect()
 }
 

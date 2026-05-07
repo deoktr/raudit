@@ -319,12 +319,11 @@ fn get_nginx_config() -> Result<NginxConfig, String> {
 
     let output = cmd.output().map_err(|e| e.to_string())?;
 
-    if let Some(code) = output.status.code() {
-        if code != 0 {
+    if let Some(code) = output.status.code()
+        && code != 0 {
             let stderr = String::from_utf8_lossy(&output.stderr);
             return Err(format!("nginx -T exited with code {}: {}", code, stderr));
         }
-    }
 
     Ok(parse_nginx_config(&String::from_utf8_lossy(&output.stdout)))
 }

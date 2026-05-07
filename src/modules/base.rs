@@ -138,7 +138,7 @@ pub fn check_dir_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn 
 
 /// Check all directory files owner uid and gid.
 pub fn check_dir_files_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
-    match fs::read_dir(&path) {
+    match fs::read_dir(path) {
         Ok(entries) => {
             for entry in entries {
                 match entry {
@@ -261,7 +261,7 @@ pub fn check_dir_permission(path: &str, perms: u32) -> check::CheckReturn {
 
 /// Check permissions of all the files inside a directory.
 pub fn check_dir_files_permission(path: &str, perms: u32) -> check::CheckReturn {
-    match fs::read_dir(&path) {
+    match fs::read_dir(path) {
         Ok(entries) => {
             for entry in entries {
                 match entry {

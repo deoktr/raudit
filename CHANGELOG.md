@@ -10,6 +10,8 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+- Internal refactoring, update checks.
+
 ## [0.32.2](https://github.com/deoktr/raudit/releases/tag/v0.32.2) - 2026-05-06
 
 - Add rules `HST_003` to `HST_007`.
