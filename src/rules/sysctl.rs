@@ -12,7 +12,7 @@ pub fn add_checks() {
     sysctl::add_sysctl_check!(
         "SYS_001",
         Severity::Medium,
-        vec!["sysctl", "server", "workstation", "tails"],
+        vec!["sysctl", "KSPP", "server", "workstation", "tails"],
         "kernel.kptr_restrict",
         // TODO: allow for 1 as well
         2
@@ -33,7 +33,7 @@ pub fn add_checks() {
     sysctl::add_sysctl_check!(
         "SYS_003",
         Severity::Medium,
-        vec!["sysctl", "CIS", "server", "workstation"],
+        vec!["sysctl", "KSPP", "CIS", "server", "workstation"],
         "kernel.randomize_va_space",
         2
     )
@@ -44,7 +44,7 @@ pub fn add_checks() {
     sysctl::add_sysctl_check!(
         "SYS_004",
         Severity::Medium,
-        vec!["sysctl", "server", "workstation"],
+        vec!["sysctl", "KSPP", "server", "workstation"],
         "kernel.dmesg_restrict",
         1
     )
@@ -84,7 +84,7 @@ pub fn add_checks() {
         "SYS_008",
         "Ensure sysctl \"kernel.perf_event_paranoid\" = 2 or 3",
         Severity::Medium,
-        vec!["sysctl", "server", "workstation"],
+        vec!["sysctl", "KSPP", "server", "workstation"],
         || {
             match sysctl::get_sysctl_i32_value("kernel.perf_event_paranoid") {
                 Ok(value) => {
@@ -119,7 +119,7 @@ pub fn add_checks() {
     sysctl::add_sysctl_check!(
         "SYS_010",
         Severity::Medium,
-        vec!["sysctl", "server", "workstation", "tails"],
+        vec!["sysctl", "KSPP", "server", "workstation", "tails"],
         "kernel.kexec_load_disabled",
         1
     )
@@ -129,7 +129,7 @@ pub fn add_checks() {
     sysctl::add_sysctl_check!(
         "SYS_011",
         Severity::Medium,
-        vec!["sysctl", "bpf", "server", "workstation"],
+        vec!["sysctl", "bpf", "KSPP", "server", "workstation"],
         "kernel.unprivileged_bpf_disabled",
         1
     )
@@ -141,7 +141,7 @@ pub fn add_checks() {
     sysctl::add_sysctl_check!(
         "SYS_012",
         Severity::High,
-        vec!["sysctl", "bpf", "server", "workstation", "tails"],
+        vec!["sysctl", "bpf", "KSPP", "server", "workstation", "tails"],
         "net.core.bpf_jit_harden",
         2
     )
@@ -171,7 +171,7 @@ pub fn add_checks() {
     sysctl::add_sysctl_check!(
         "SYS_015",
         Severity::Medium,
-        vec!["sysctl", "server", "workstation"],
+        vec!["sysctl", "KSPP", "server", "workstation"],
         "kernel.modules_disabled",
         1
     )
@@ -203,7 +203,7 @@ pub fn add_checks() {
         "SYS_017",
         "Ensure sysctl \"kernel.yama.ptrace_scope\" >= 1",
         Severity::Medium,
-        vec!["sysctl", "server", "workstation"],
+        vec!["sysctl", "KSPP", "server", "workstation"],
         || {
             const VAL: i32 = 1;
             match sysctl::get_sysctl_i32_value("kernel.yama.ptrace_scope") {
@@ -262,7 +262,7 @@ pub fn add_checks() {
     sysctl::add_sysctl_check!(
         "SYS_021",
         Severity::Medium,
-        vec!["sysctl", "server", "workstation"],
+        vec!["sysctl", "KSPP", "server", "workstation"],
         "vm.unprivileged_userfaultfd",
         0
     )
@@ -303,7 +303,7 @@ pub fn add_checks() {
     sysctl::add_sysctl_check!(
         "SYS_025",
         Severity::Medium,
-        vec!["sysctl", "server", "workstation"],
+        vec!["sysctl", "KSPP", "server", "workstation"],
         "dev.tty.ldisc_autoload",
         0
     )
@@ -313,7 +313,7 @@ pub fn add_checks() {
     sysctl::add_sysctl_check!(
         "SYS_026",
         Severity::Medium,
-        vec!["sysctl", "server", "workstation"],
+        vec!["sysctl", "KSPP", "server", "workstation"],
         "dev.tty.legacy_tiocsti",
         0
     )
@@ -343,7 +343,7 @@ pub fn add_checks() {
     sysctl::add_sysctl_check!(
         "SYS_029",
         Severity::Medium,
-        vec!["sysctl", "fs", "CIS", "server", "workstation"],
+        vec!["sysctl", "fs", "KSPP", "CIS", "server", "workstation"],
         "fs.suid_dumpable",
         0
     )
@@ -353,7 +353,7 @@ pub fn add_checks() {
     sysctl::add_sysctl_check!(
         "SYS_030",
         Severity::Medium,
-        vec!["sysctl", "fs", "server", "workstation"],
+        vec!["sysctl", "fs", "KSPP", "server", "workstation"],
         "fs.protected_fifos",
         2
     )
@@ -363,7 +363,7 @@ pub fn add_checks() {
     sysctl::add_sysctl_check!(
         "SYS_031",
         Severity::Medium,
-        vec!["sysctl", "fs", "server", "workstation"],
+        vec!["sysctl", "fs", "KSPP", "server", "workstation"],
         "fs.protected_regular",
         2
     )
@@ -373,7 +373,7 @@ pub fn add_checks() {
     sysctl::add_sysctl_check!(
         "SYS_032",
         Severity::Medium,
-        vec!["sysctl", "fs", "server", "workstation"],
+        vec!["sysctl", "fs", "KSPP", "server", "workstation"],
         "fs.protected_symlinks",
         1
     )
@@ -383,7 +383,7 @@ pub fn add_checks() {
     sysctl::add_sysctl_check!(
         "SYS_033",
         Severity::Medium,
-        vec!["sysctl", "fs", "server", "workstation"],
+        vec!["sysctl", "fs", "KSPP", "server", "workstation"],
         "fs.protected_hardlinks",
         1
     )
@@ -949,7 +949,7 @@ pub fn add_checks() {
         "SYS_094",
         "Ensure sysctl \"user.max_user_namespaces\" <= 31231",
         Severity::Medium,
-        vec!["sysctl", "server", "workstation"],
+        vec!["sysctl", "KSPP", "server", "workstation"],
         || {
             const VAL: i32 = 31231;
             match sysctl::get_sysctl_i32_value("user.max_user_namespaces") {
@@ -968,15 +968,16 @@ pub fn add_checks() {
         },
         vec![sysctl::init_sysctl_config],
     )
-    .with_description("Cut attack surface by limiting the number of user namespaces. May break the upower daemon in Ubuntu.")
+    .with_description("Cut attack surface by limiting the number of user namespaces. May break the upower daemon in Ubuntu. KSPP recommends 0 to completely disable user namespaces.")
     .with_fix("Add \"user.max_user_namespaces = 31231\" (or lower) in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
     .register();
 
+    // TODO: after v6.2
     check::Check::new(
         "SYS_095",
         "Ensure sysctl \"kernel.warn_limit\" <= 100",
         Severity::Medium,
-        vec!["sysctl", "server", "workstation"],
+        vec!["sysctl", "KSPP", "server", "workstation"],
         || {
             const VAL: i32 = 100;
             match sysctl::get_sysctl_i32_value("kernel.warn_limit") {
@@ -995,7 +996,7 @@ pub fn add_checks() {
         },
         vec![sysctl::init_sysctl_config],
     )
-    .with_description("Will have no effects if kernel param \"oops=panic\" is set, but is a better default if it's not.")
+    .with_description("Reboot after n WARN. Will have no effects if kernel param \"oops=panic\" is set, but is a better default if it's not. Adjust to your tolerance, KSPP default to 1.")
     .with_fix("Add \"kernel.warn_limit = 100\" (or lower) in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
     .register();
 
@@ -1003,7 +1004,7 @@ pub fn add_checks() {
         "SYS_096",
         "Ensure sysctl \"kernel.oops_limit\" <= 100",
         Severity::Medium,
-        vec!["sysctl", "server", "workstation"],
+        vec!["sysctl", "KSPP", "server", "workstation"],
         || {
             const VAL: i32 = 100;
             match sysctl::get_sysctl_i32_value("kernel.oops_limit") {
@@ -1022,7 +1023,7 @@ pub fn add_checks() {
         },
         vec![sysctl::init_sysctl_config],
     )
-    .with_description("Will have no effects if kernel param \"oops=panic\" is set, but is a better default if it's not.")
+    .with_description("Reboot after n BUG/Oops. Will have no effects if kernel param \"oops=panic\" is set, but is a better default if it's not. Adjust to your tolerance, KSPP default to 1.")
     .with_fix("Add \"kernel.oops_limit = 100\" (or lower) in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
     .register();
 

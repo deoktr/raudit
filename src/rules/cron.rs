@@ -48,6 +48,7 @@ pub fn add_checks() {
     )
     .skip_when(skip_no_cron)
     .with_description(CRON_DESCRIPTION)
+    .with_fix("chmod 644 /etc/systemd/system/cron.service")
     .register();
 
     check::Check::new(
@@ -73,6 +74,7 @@ pub fn add_checks() {
     )
     .skip_when(skip_no_cron)
     .with_description(CRON_DESCRIPTION)
+    .with_fix("chmod 755 /etc/cron.d")
     .register();
 
     check::Check::new(
@@ -85,6 +87,7 @@ pub fn add_checks() {
     )
     .skip_when(skip_no_cron)
     .with_description(CRON_DESCRIPTION)
+    .with_fix("chmod 644 /etc/cron.d/*")
     .register();
 
     check::Check::new(
@@ -123,6 +126,7 @@ pub fn add_checks() {
     )
     .skip_when(skip_no_cron)
     .with_description(CRON_DESCRIPTION)
+    .with_fix("chmod 755 /etc/cron.hourly")
     .register();
 
     check::Check::new(
@@ -135,6 +139,7 @@ pub fn add_checks() {
     )
     .skip_when(skip_no_cron)
     .with_description(CRON_DESCRIPTION)
+    .with_fix("chmod 644 /etc/cron.hourly/*")
     .register();
 
     check::Check::new(
@@ -173,6 +178,7 @@ pub fn add_checks() {
     )
     .skip_when(skip_no_cron)
     .with_description(CRON_DESCRIPTION)
+    .with_fix("chmod 755 /etc/cron.daily")
     .register();
 
     check::Check::new(
@@ -185,6 +191,7 @@ pub fn add_checks() {
     )
     .skip_when(skip_no_cron)
     .with_description(CRON_DESCRIPTION)
+    .with_fix("chmod 644 /etc/cron.daily/*")
     .register();
 
     check::Check::new(
@@ -223,6 +230,7 @@ pub fn add_checks() {
     )
     .skip_when(skip_no_cron)
     .with_description(CRON_DESCRIPTION)
+    .with_fix("chmod 755 /etc/cron.weekly")
     .register();
 
     check::Check::new(
@@ -235,6 +243,7 @@ pub fn add_checks() {
     )
     .skip_when(skip_no_cron)
     .with_description(CRON_DESCRIPTION)
+    .with_fix("chmod 644 /etc/cron.weekly/*")
     .register();
 
     check::Check::new(
@@ -273,6 +282,7 @@ pub fn add_checks() {
     )
     .skip_when(skip_no_cron)
     .with_description(CRON_DESCRIPTION)
+    .with_fix("chmod 755 /etc/cron.monthly")
     .register();
 
     check::Check::new(
@@ -285,6 +295,7 @@ pub fn add_checks() {
     )
     .skip_when(skip_no_cron)
     .with_description(CRON_DESCRIPTION)
+    .with_fix("chmod 644 /etc/cron.monthly/*")
     .register();
 
     check::Check::new(
@@ -323,6 +334,7 @@ pub fn add_checks() {
     )
     .skip_when(skip_no_cron)
     .with_description(CRON_DESCRIPTION)
+    .with_fix("chmod 755 /etc/cron.yearly")
     .register();
 
     check::Check::new(
@@ -335,6 +347,7 @@ pub fn add_checks() {
     )
     .skip_when(skip_no_cron)
     .with_description(CRON_DESCRIPTION)
+    .with_fix("chmod 644 /etc/cron.yearly/*")
     .register();
 
     check::Check::new(

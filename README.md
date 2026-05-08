@@ -191,8 +191,8 @@ Options:
 
 ## Rules
 
-Default builtin rules are based on various sources including CIS, STIG, Mozilla,
-ArchLinux wiki. You should customize them to suit your own needs.
+Default builtin rules are based on various sources including KSPP, CIS, STIG,
+Mozilla, ArchLinux wiki. You should customize them to suit your own needs.
 
 Some modules help with specific configuration checks.
 

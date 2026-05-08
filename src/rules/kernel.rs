@@ -9,7 +9,7 @@ pub fn add_checks() {
         "KNP_001",
         "Ensure that kernel flag \"slab_nomerge\" is present",
         Severity::Medium,
-        vec!["kernel", "server", "workstation", "tails"],
+        vec!["kernel", "KSPP", "server", "workstation", "tails"],
         || kernel::check_kernel_params("slab_nomerge"),
         vec![kernel::init_kernel_params],
     )
@@ -33,7 +33,7 @@ pub fn add_checks() {
     // check::Check::new(
     //     "KNP_003",
     //     "Ensure that kernel flag \"page_poison=1\" is present",
-    //     vec!["kernel", "server", "workstation"],
+    //     vec!["kernel", "KSPP", "server", "workstation"],
     //     || kernel::check_kernel_params("page_poison=1"),
     //     vec![kernel::init_kernel_params],
     // )
@@ -43,11 +43,11 @@ pub fn add_checks() {
         "KNP_004",
         "Ensure that kernel flag \"page_alloc.shuffle=1\" is present",
         Severity::Medium,
-        vec!["kernel", "server", "workstation", "tails"],
+        vec!["kernel", "KSPP", "server", "workstation", "tails"],
         || kernel::check_kernel_params("page_alloc.shuffle=1"),
         vec![kernel::init_kernel_params],
     )
-    .with_description("Enable the kernel page allocator to randomize free lists during early boot. Limits some data exfiltration and ROP attacks that rely on inferring sensitive data location, also improves performance by optimizing memory-side cache utilization.")
+    .with_description("Enable the kernel page allocator to randomize free lists during early boot. Limits some data exfiltration and ROP attacks that rely on inferring sensitive data location, also improves performance by optimizing memory-side cache utilization. Needs CONFIG_SHUFFLE_PAGE_ALLOCATOR=y kernel build config too.")
     .with_fix("Add \"page_alloc.shuffle=1\" to bootloader kernel params.")
     .register();
 
@@ -55,7 +55,7 @@ pub fn add_checks() {
         "KNP_005",
         "Ensure that kernel flag \"init_on_alloc=1\" is present",
         Severity::Medium,
-        vec!["kernel", "server", "workstation"],
+        vec!["kernel", "KSPP", "server", "workstation"],
         || kernel::check_kernel_params("init_on_alloc=1"),
         vec![kernel::init_kernel_params],
     )
@@ -67,7 +67,7 @@ pub fn add_checks() {
         "KNP_006",
         "Ensure that kernel flag \"init_on_free=1\" is present",
         Severity::Medium,
-        vec!["kernel", "server", "workstation", "tails"],
+        vec!["kernel", "KSPP", "server", "workstation", "tails"],
         || kernel::check_kernel_params("init_on_free=1"),
         vec![kernel::init_kernel_params],
     )
@@ -79,7 +79,7 @@ pub fn add_checks() {
         "KNP_007",
         "Ensure that kernel flag \"pti=on\" is present",
         Severity::High,
-        vec!["kernel", "server", "workstation"],
+        vec!["kernel", "KSPP", "server", "workstation"],
         || kernel::check_kernel_params("pti=on"),
         vec![kernel::init_kernel_params],
     )
@@ -88,11 +88,12 @@ pub fn add_checks() {
     .with_fix("Add \"pti=on\" to bootloader kernel params.")
     .register();
 
+    // TODO: since v5.13
     check::Check::new(
         "KNP_008",
         "Ensure that kernel flag \"randomize_kstack_offset=on\" is present",
         Severity::Medium,
-        vec!["kernel", "server", "workstation", "tails"],
+        vec!["kernel", "KSPP", "server", "workstation", "tails"],
         || kernel::check_kernel_params("randomize_kstack_offset=on"),
         vec![kernel::init_kernel_params],
     )
@@ -100,11 +101,12 @@ pub fn add_checks() {
     .with_fix("Add \"randomize_kstack_offset=on\" to bootloader kernel params.")
     .register();
 
+    // TODO: only for x86_64
     check::Check::new(
         "KNP_009",
         "Ensure that kernel flag \"vsyscall=none\" is present",
         Severity::Medium,
-        vec!["kernel", "server", "workstation", "tails"],
+        vec!["kernel", "KSPP", "server", "workstation", "tails"],
         || kernel::check_kernel_params("vsyscall=none"),
         vec![kernel::init_kernel_params],
     )
@@ -161,8 +163,9 @@ pub fn add_checks() {
         || kernel::check_kernel_params("lockdown=integrity"),
         vec![kernel::init_kernel_params],
     )
-    .with_link("https://man.archlinux.org/man/kernel_lockdown.7")
+    .with_description("Enable kernel lockdown to enforce security boundary between user and kernel space, enforces module signature verification kernel lockdown LSM can eliminate many methods that user space code could abuse for privilege escalation. Some applications may cease to work which rely on low-level access to either hardware or the kernel.")
     .with_fix("Add \"lockdown=integrity\" to bootloader kernel params.")
+    .with_link("https://man.archlinux.org/man/kernel_lockdown.7")
     .register();
 
     check::Check::new(
@@ -173,6 +176,7 @@ pub fn add_checks() {
         || kernel::check_kernel_params("mce=0"),
         vec![kernel::init_kernel_params],
     )
+    .with_description("Keeps the kernel from logging machine check exception (MCE) events that an attacker could correlate with covert side-channel work. Unnecessary for systems without ECC memory.")
     .with_fix("Add \"mce=0\" to bootloader kernel params.")
     .register();
 
@@ -180,21 +184,25 @@ pub fn add_checks() {
         "KNP_015",
         "Ensure that kernel flag \"kfence.sample_interval=100\" is present",
         Severity::Medium,
-        vec!["kernel", "server", "workstation"],
+        vec!["kernel", "KSPP", "server", "workstation"],
         || kernel::check_kernel_params("kfence.sample_interval=100"),
         vec![kernel::init_kernel_params],
     )
+    .with_description("KFENCE detects heap out-of-bounds access, use-after-free, and invalid-free errors. Sampling interval is set to occur every 100 ms as per KSPP recommendation.")
     .with_fix("Add \"kfence.sample_interval=100\" to bootloader kernel params.")
+    .with_link("https://docs.kernel.org/dev-tools/kfence.html")
     .register();
 
+    // TODO: only for x86_64
     check::Check::new(
         "KNP_017",
         "Ensure that kernel flag \"vdso32=0\" is present",
         Severity::Medium,
-        vec!["kernel", "server", "workstation"],
+        vec!["kernel", "KSPP", "server", "workstation"],
         || kernel::check_kernel_params("vdso32=0"),
         vec![kernel::init_kernel_params],
     )
+    .with_description("Disables the 32-bit vDSO, removing a small fixed-address ROP-friendly mapping from 64-bit processes that don't need it. Reduces predictable kernel-exposed addresses available to exploits.")
     .with_fix("Add \"vdso32=0\" to bootloader kernel params.")
     .register();
 
@@ -206,6 +214,7 @@ pub fn add_checks() {
         || kernel::check_kernel_params("amd_iommu=force_isolation"),
         vec![kernel::init_kernel_params],
     )
+    .with_description("Forces AMD IOMMU into per-device isolation domains, blocking DMA attacks from peripherals (Thunderbolt, PCIe, FireWire) that would otherwise let a malicious or compromised device read/write arbitrary host memory.")
     .with_fix("Add \"amd_iommu=force_isolation\" to bootloader kernel params.")
     .register();
 
@@ -217,6 +226,7 @@ pub fn add_checks() {
         || kernel::check_kernel_params("intel_iommu=on"),
         vec![kernel::init_kernel_params],
     )
+    .with_description("Enables Intel VT-d/IOMMU , blocking DMA attacks from peripherals (Thunderbolt, PCIe, FireWire) that would otherwise let a malicious or compromised device read/write arbitrary host memory.")
     .with_fix("Add \"intel_iommu=on\" to bootloader kernel params.")
     .register();
 
@@ -235,7 +245,7 @@ pub fn add_checks() {
         "KNP_021",
         "Ensure that kernel flag \"iommu.passthrough=0\" is present",
         Severity::High,
-        vec!["kernel", "server", "workstation"],
+        vec!["kernel", "KSPP", "server", "workstation"],
         || kernel::check_kernel_params("iommu.passthrough=0"),
         vec![kernel::init_kernel_params],
     )
@@ -246,7 +256,7 @@ pub fn add_checks() {
         "KNP_022",
         "Ensure that kernel flag \"iommu.strict=1\" is present",
         Severity::High,
-        vec!["kernel", "server", "workstation"],
+        vec!["kernel", "KSPP", "server", "workstation"],
         || kernel::check_kernel_params("iommu.strict=1"),
         vec![kernel::init_kernel_params],
     )
@@ -316,14 +326,16 @@ pub fn add_checks() {
     .with_fix("Add \"ia32_emulation=0\" to bootloader kernel params.")
     .register();
 
+    // TODO: only for x86_64
     check::Check::new(
         "KNP_016",
         "Ensure that kernel flag \"cfi=kcfi\" is present",
         Severity::Medium,
-        vec!["kernel", "paranoid", "server", "workstation"],
+        vec!["kernel", "KSPP", "server", "workstation"],
         || kernel::check_kernel_params("cfi=kcfi"),
         vec![kernel::init_kernel_params],
     )
+    .with_description("Disable FineIBT since it is weaker than pure KCFI.")
     .with_fix("Add \"cfi=kcfi\" to bootloader kernel params.")
     .register();
 
@@ -343,7 +355,7 @@ pub fn add_checks() {
         "KNP_063",
         "Ensure that kernel flag \"hardened_usercopy=1\" is present",
         Severity::Medium,
-        vec!["kernel", "server", "workstation"],
+        vec!["kernel", "KSPP", "server", "workstation"],
         || kernel::check_kernel_params("hardened_usercopy=1"),
         vec![kernel::init_kernel_params],
     )
@@ -377,7 +389,7 @@ pub fn add_checks() {
         "KNP_030",
         "Ensure that kernel flag \"mitigations=auto\" is present",
         Severity::High,
-        vec!["kernel", "server", "workstation"],
+        vec!["kernel", "KSPP", "server", "workstation"],
         || kernel::check_kernel_params("mitigations=auto"),
         vec![kernel::init_kernel_params],
     )
@@ -397,16 +409,23 @@ pub fn add_checks() {
 
     check::Check::new(
         "KNP_031",
-        "Ensure that kernel flag \"nosmt=force\" is present",
+        "Ensure that kernel flag \"nosmt\" is present",
         Severity::High,
-        vec!["kernel", "paranoid", "server", "workstation", "paranoid"],
-        || kernel::check_kernel_params("nosmt=force"),
+        vec![
+            "kernel",
+            "KSPP",
+            "paranoid",
+            "server",
+            "workstation",
+            "paranoid",
+        ],
+        || kernel::check_kernel_params("nosmt"),
         vec![kernel::init_kernel_params],
     )
     .with_description(
         "Disabling will significantly decrease system performance on multi-threaded tasks.",
     )
-    .with_fix("Add \"nosmt=force\" to bootloader kernel params.")
+    .with_fix("Add \"nosmt\" to bootloader kernel params.")
     .with_link("https://www.kernel.org/doc/html/latest/admin-guide/hw-vuln/core-scheduling.html")
     .register();
 
@@ -671,14 +690,27 @@ pub fn add_checks() {
     .with_link("https://github.com/Kicksecure/security-misc/blob/master/etc/default/grub.d/41_quiet_boot.cfg%23security-misc-shared")
     .register();
 
+    // TODO: fron v5.14 to v6.16
+    // check::Check::new(
+    //     "KNP_062",
+    //     "Ensure that kernel flag \"slub_debug=FZ\" is present",
+    //     Severity::Medium,
+    //     vec!["kernel", "KSPP", "server", "workstation", "tails"],
+    //     || kernel::check_kernel_params("slub_debug=FZ"),
+    //     vec![kernel::init_kernel_params],
+    // )
+    // .with_fix("Add \"slub_debug=FZ\" to bootloader kernel params.")
+    // .register();
+
+    // TODO: since v6.17
     check::Check::new(
-        "KNP_062",
-        "Ensure that kernel flag \"slub_debug=FZ\" is present",
+        "KNP_063",
+        "Ensure that kernel flag \"hash_pointers=always\" is present",
         Severity::Medium,
-        vec!["kernel", "server", "workstation", "tails"],
-        || kernel::check_kernel_params("slub_debug=FZ"),
+        vec!["kernel", "KSPP", "server", "workstation", "tails"],
+        || kernel::check_kernel_params("hash_pointers=always"),
         vec![kernel::init_kernel_params],
     )
-    .with_fix("Add \"slub_debug=FZ\" to bootloader kernel params.")
+    .with_fix("Add \"hash_pointers=always\" to bootloader kernel params.")
     .register();
 }

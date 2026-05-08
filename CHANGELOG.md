@@ -10,6 +10,9 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+- Improve kernel rules descriptions.
+- Add KSPP tags.
+
 ## [0.32.3](https://github.com/deoktr/raudit/releases/tag/v0.32.3) - 2026-05-08
 
 - Update Docker checks to verify from `docker info` directly.
