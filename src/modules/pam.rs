@@ -47,6 +47,7 @@ pub struct PamRule {
 
     /// library parameters the key and the value are separated by `=`
     /// if it has no value (is just a flag) then the value is empty
+    #[allow(dead_code)]
     pub settings: HashMap<String, String>,
 }
 

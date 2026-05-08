@@ -36,7 +36,9 @@ pub struct NginxDirective {
 /// A named block context (http, server, location, events, etc.).
 #[derive(Debug, Clone)]
 pub struct NginxBlock {
+    #[allow(dead_code)]
     pub name: String,
+    #[allow(dead_code)]
     pub args: String,
     pub directives: Vec<NginxDirective>,
     pub blocks: Vec<NginxBlock>,
@@ -122,6 +124,7 @@ fn parse_block_contents(lines: &[&str], pos: &mut usize) -> (Vec<NginxDirective>
 }
 
 /// Get the first directive with the given name, searching recursively.
+#[allow(dead_code)]
 pub fn get_directive(name: &str) -> Option<String> {
     let config = NGINX_CONFIG.get()?;
     find_directive_in_config(config, name)
@@ -158,6 +161,7 @@ fn find_directive_in_block(block: &NginxBlock, name: &str) -> Option<String> {
 }
 
 /// Get all directives with the given name, searching recursively.
+#[allow(dead_code)]
 pub fn get_directives(name: &str) -> Vec<String> {
     let config = match NGINX_CONFIG.get() {
         Some(c) => c,
@@ -193,12 +197,14 @@ fn collect_directives_from_block(block: &NginxBlock, name: &str, results: &mut V
 }
 
 /// Check if an add_header directive exists with the given header name.
+#[allow(dead_code)]
 pub fn has_header(header_name: &str) -> bool {
     let headers = get_directives("add_header");
     headers.iter().any(|v| v.starts_with(header_name))
 }
 
 /// Check a directive value against an expected value.
+#[allow(dead_code)]
 pub fn check_directive(name: &str, expected: &str) -> check::CheckReturn {
     let config = match NGINX_CONFIG.get() {
         Some(c) => c,
@@ -229,6 +235,7 @@ pub fn check_directive(name: &str, expected: &str) -> check::CheckReturn {
 }
 
 /// Check that a directive does NOT contain a forbidden substring.
+#[allow(dead_code)]
 pub fn check_directive_not_contains(name: &str, forbidden: &str) -> check::CheckReturn {
     let config = match NGINX_CONFIG.get() {
         Some(c) => c,

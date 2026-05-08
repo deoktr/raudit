@@ -156,7 +156,7 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Without an authorization plugin, any user with access to the Docker daemon can execute any Docker command, including privileged operations that could compromise the host. Some attackers use containers to evade security tools like EDR.")
-    .with_fix("Start Docker deamon with `--authorization-plugin ...` flag.")
+    .with_fix("Start Docker daemon with `--authorization-plugin ...` flag.")
     .with_link("https://docs.docker.com/engine/extend/plugins_authorization/")
     .with_link("https://docs.docker.com/reference/cli/dockerd/")
     .register();
@@ -708,7 +708,7 @@ pub fn add_checks() {
         vec![audit::init_audit_rules],
     )
     .skip_when(docker::skip_no_docker)
-    .with_description("Auditing the runc binary detects unauthorized replacement or modification of the low-level container runtime, which has been the target of critical container escape vulnerabilities like CVE-2019-5736.")
+    .with_description("Auditing the runc binary detects unauthorized replacement or modification of the low-level container runtime.")
     .register();
 
     // TODO: what is this rule?

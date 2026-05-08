@@ -22,12 +22,14 @@ use std::sync::OnceLock;
 use crate::{log_debug, log_error};
 
 const KOSTYPE_PATH: &str = "/proc/sys/kernel/ostype";
+#[allow(dead_code)]
 const KOSRELEASE_PATH: &str = "/proc/sys/kernel/osrelease";
 const OS_RELEASE_PATH: &str = "/etc/os-release";
 
 static OS_RELEASE: OnceLock<OSRelease> = OnceLock::new();
 
 /// OS.
+#[allow(dead_code)]
 pub struct OS {
     os: String,
     name: String,
@@ -39,12 +41,14 @@ pub struct OS {
 pub type OSRelease = HashMap<String, String>;
 
 /// Init system OS type by reading `/proc/sys/kernel/ostype`.
+#[allow(dead_code)]
 pub fn init_kernel_os_type() -> Result<String, std::io::Error> {
     let content = fs::read_to_string(KOSTYPE_PATH)?;
     Ok(content.trim_end().to_string())
 }
 
 /// Init system OS release by reading `/proc/sys/kernel/osrelease`.
+#[allow(dead_code)]
 pub fn init_kernel_os_release() -> Result<String, std::io::Error> {
     let content = fs::read_to_string(KOSRELEASE_PATH)?;
     Ok(content.trim_end().to_string())
@@ -110,6 +114,7 @@ pub fn skip_not_debian() -> bool {
 }
 
 /// Helper to check if current distro is ArchLinux.
+#[allow(dead_code)]
 pub fn is_arch() -> bool {
     let os_release = match OS_RELEASE.get() {
         Some(c) => c,

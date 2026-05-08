@@ -43,6 +43,7 @@ pub fn empty_or_missing_file(path: &str) -> check::CheckReturn {
 }
 
 /// Check if file exist and is empty.
+#[allow(dead_code)]
 pub fn empty_file(path: &str) -> check::CheckReturn {
     match fs::metadata(path) {
         Ok(meta) => {
@@ -57,6 +58,7 @@ pub fn empty_file(path: &str) -> check::CheckReturn {
 }
 
 /// Check if a directory exist.
+#[allow(dead_code)]
 pub fn directory_exist(path: &str) -> check::CheckReturn {
     let p = Path::new(path);
     if p.exists() && p.is_dir() {
