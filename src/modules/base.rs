@@ -66,7 +66,56 @@ pub fn directory_exist(path: &str) -> check::CheckReturn {
     }
 }
 
+/// Check a socket file permissions.
+///
+/// Permissions should be defined like: 0o644.
+/// <https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.mode>
+fn check_entry_permission(metadata: fs::Metadata, path: &str, perms: u32) -> check::CheckReturn {
+    let mode = metadata.mode() & 0o777;
+
+    log_trace!("checking entry mode for {:?}, got: {:o}", path, mode);
+
+    if mode != perms {
+        (
+            check::CheckState::Fail,
+            Some(format!("wanted \"{:o}\" got \"{:o}\"", perms, mode)),
+        )
+    } else {
+        (check::CheckState::Pass, None)
+    }
+}
+
 // TODO: have an alternative function that takes in a username and group name
+/// Check a socket file owner uid and gid.
+fn check_entry_owner_id(
+    metadata: fs::Metadata,
+    path: &str,
+    uid: u32,
+    gid: u32,
+) -> check::CheckReturn {
+    let muid = metadata.uid();
+    let mgid = metadata.gid();
+
+    log_trace!(
+        "checking entry owner for {:?}, got: {}:{}",
+        path,
+        muid,
+        mgid
+    );
+
+    if muid != uid || mgid != gid {
+        (
+            check::CheckState::Fail,
+            Some(format!(
+                "wanted \"{}:{}\" got \"{}:{}\"",
+                uid, gid, muid, mgid
+            )),
+        )
+    } else {
+        (check::CheckState::Pass, None)
+    }
+}
+
 /// Check a file owner uid and gid.
 pub fn check_file_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
     let metadata = match fs::metadata(path) {
@@ -83,25 +132,9 @@ pub fn check_file_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn
         );
     }
 
-    let muid = metadata.uid();
-    let mgid = metadata.gid();
-
-    log_trace!("checking file owner for {:?}, got: {}:{}", path, muid, mgid);
-
-    if muid != uid || mgid != gid {
-        (
-            check::CheckState::Fail,
-            Some(format!(
-                "wanted \"{}:{}\" got \"{}:{}\"",
-                uid, gid, muid, mgid
-            )),
-        )
-    } else {
-        (check::CheckState::Pass, None)
-    }
+    check_entry_owner_id(metadata, path, uid, gid)
 }
 
-// TODO: have an alternative function that takes in a username and group name
 /// Check a directory owner uid and gid.
 pub fn check_dir_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
     let metadata = match fs::metadata(path) {
@@ -118,22 +151,7 @@ pub fn check_dir_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn 
         );
     }
 
-    let muid = metadata.uid();
-    let mgid = metadata.gid();
-
-    log_trace!("checking file owner for {:?}, got: {}:{}", path, muid, mgid);
-
-    if muid != uid || mgid != gid {
-        (
-            check::CheckState::Fail,
-            Some(format!(
-                "wanted \"{}:{}\" got \"{}:{}\"",
-                uid, gid, muid, mgid
-            )),
-        )
-    } else {
-        (check::CheckState::Pass, None)
-    }
+    check_entry_owner_id(metadata, path, uid, gid)
 }
 
 /// Check all directory files owner uid and gid.
@@ -212,18 +230,7 @@ pub fn check_file_permission(path: &str, perms: u32) -> check::CheckReturn {
         );
     }
 
-    let mode = metadata.mode() & 0o777;
-
-    log_trace!("checking file mode for {:?}, got: {:o}", path, mode);
-
-    if mode != perms {
-        (
-            check::CheckState::Fail,
-            Some(format!("wanted \"{:o}\" got \"{:o}\"", perms, mode)),
-        )
-    } else {
-        (check::CheckState::Pass, None)
-    }
+    check_entry_permission(metadata, path, perms)
 }
 
 /// Check a directory permissions.
@@ -245,18 +252,7 @@ pub fn check_dir_permission(path: &str, perms: u32) -> check::CheckReturn {
         );
     }
 
-    let mode = metadata.mode() & 0o777;
-
-    log_trace!("checking dir mode for {:?}, got: {:o}", path, mode);
-
-    if mode != perms {
-        (
-            check::CheckState::Fail,
-            Some(format!("wanted \"{:o}\" got \"{:o}\"", perms, mode)),
-        )
-    } else {
-        (check::CheckState::Pass, None)
-    }
+    check_entry_permission(metadata, path, perms)
 }
 
 /// Check permissions of all the files inside a directory.
@@ -347,5 +343,79 @@ pub fn check_file_content_regex(path: &str, pattern: &str) -> check::CheckReturn
         (check::CheckState::Pass, None)
     } else {
         (check::CheckState::Fail, Some("no match".to_string()))
+    }
+}
+
+/// Check a socket file permissions.
+///
+/// Permissions should be defined like: 0o644.
+/// <https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.mode>
+pub fn check_socket_permission(path: &str, perms: u32) -> check::CheckReturn {
+    let metadata = match fs::metadata(path) {
+        Ok(v) => v,
+        Err(err) => {
+            return (check::CheckState::Warning, Some(err.to_string()));
+        }
+    };
+
+    // TODO: verify that the entry is a socket?
+    // if !metadata.is_file() {
+    //     return (
+    //         check::CheckState::Warning,
+    //         Some("path is not a file".to_string()),
+    //     );
+    // }
+
+    let mode = metadata.mode() & 0o777;
+
+    log_trace!("checking file mode for {:?}, got: {:o}", path, mode);
+
+    if mode != perms {
+        (
+            check::CheckState::Fail,
+            Some(format!("wanted \"{:o}\" got \"{:o}\"", perms, mode)),
+        )
+    } else {
+        (check::CheckState::Pass, None)
+    }
+}
+
+/// Check a socket file owner uid and gid.
+pub fn check_socket_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
+    let metadata = match fs::metadata(path) {
+        Ok(v) => v,
+        Err(err) => {
+            return (check::CheckState::Warning, Some(err.to_string()));
+        }
+    };
+
+    // TODO: verify that the entry is a socket?
+    // if !metadata.is_() {
+    //     return (
+    //         check::CheckState::Warning,
+    //         Some("path is not a socket".to_string()),
+    //     );
+    // }
+
+    let muid = metadata.uid();
+    let mgid = metadata.gid();
+
+    log_trace!(
+        "checking socket owner for {:?}, got: {}:{}",
+        path,
+        muid,
+        mgid
+    );
+
+    if muid != uid || mgid != gid {
+        (
+            check::CheckState::Fail,
+            Some(format!(
+                "wanted \"{}:{}\" got \"{}:{}\"",
+                uid, gid, muid, mgid
+            )),
+        )
+    } else {
+        (check::CheckState::Pass, None)
     }
 }

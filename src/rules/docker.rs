@@ -1,6 +1,10 @@
 use crate::check;
 use crate::check::Severity;
 use crate::modules::{audit, base, docker, group, mount, ps, systemd};
+use serde_json::Value;
+
+// TODO: add checks to ensure limits are set, globally and per containers
+// TODO: add checks for cgroups, apparmor
 
 pub fn add_checks() {
     check::Check::new(
@@ -25,7 +29,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Dropping Linux capabilities reduces the kernel attack surface available to a compromised container, limiting the damage an attacker can do if they gain code execution.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     check::Check::new(
@@ -39,7 +42,6 @@ pub fn add_checks() {
     .skip_when(docker::skip_no_docker)
     .with_description("Containers running as root inside the namespace can exploit any kernel bug, capability loophole, or shared mount to escape the container. Running as a non-root UID forces an attacker to find an additional escalation primitive first. Limit impact of a container process compromise and follow principle of least privilege.")
     .with_fix("Set `USER` in the Dockerfile to a non-root UID, or pass `--user <uid>` at run time.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     check::Check::new(
@@ -53,8 +55,8 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("A separate filesystem for /var/lib/containers lets the operator apply hardened mount options (e.g. nodev, quotas) to container storage and prevents a runaway container from filling the root filesystem and breaking host services.")
-    .with_link("https://docs.docker.com/engine/security/")
     .with_fix("Mount /var/lib/containers as a dedicated filesystem in /etc/fstab, consider `nodev` and disk quotas.")
+    .with_link("https://docs.docker.com/reference/cli/dockerd/")
     .register();
 
     check::Check::new(
@@ -62,12 +64,13 @@ pub fn add_checks() {
         "Ensure docker network traffic is restricted between containers on the default bridge",
         Severity::Medium,
         vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.2
-        || ps::is_running_with_flag("dockerd", "--icc"),
+        // TODO: and check dockerd config file
+        || ps::is_running_without_flag_value("dockerd", "--icc", "false"),
         vec![ps::init_proc],
     )
     .skip_when(docker::skip_no_docker)
     .with_description("By default all containers on the default bridge can communicate freely, which allows lateral movement if one container is compromised. Restricting inter-container communication limits blast radius.")
-    .with_link("https://docs.docker.com/engine/security/")
+    .with_link("https://docs.docker.com/reference/cli/dockerd/")
     .register();
 
     check::Check::new(
@@ -75,13 +78,14 @@ pub fn add_checks() {
         "Ensure docker logging level is set to info",
         Severity::Medium,
         vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.3
+        // TODO: or check dockerd config file
         // TODO: can also be short '-l'
         || ps::is_running_with_flag_value("dockerd", "--log-level", "info"),
         vec![ps::init_proc],
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Setting the log level to info ensures that security-relevant events are captured without excessive noise, enabling effective incident detection and forensic analysis.")
-    .with_link("https://docs.docker.com/engine/security/")
+    .with_fix("In \"/etc/docker/daemon.json\" add `{\"log-level\": \"info\"}`, or start the daemon with `--no-new-privileges` flag.")
     .register();
 
     check::Check::new(
@@ -89,6 +93,7 @@ pub fn add_checks() {
         "Ensure docker is allowed to make changes to iptables",
         Severity::High,
         vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.4
+        // TODO: and check dockerd config file
         || ps::is_running_without_flag_value("dockerd", "--iptables", "false"),
         vec![ps::init_proc],
     )
@@ -100,26 +105,28 @@ pub fn add_checks() {
         "Ensure docker does not allow insecure registry",
         Severity::High,
         vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.5
+        // TODO: and check dockerd config file
         || ps::is_running_without_flag("dockerd", "--insecure-registry"),
         vec![ps::init_proc],
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Insecure registries allow unencrypted and unauthenticated communication, exposing image pulls and pushes to man-in-the-middle attacks and credential theft.")
-    .with_link("https://docs.docker.com/engine/security/")
+    .with_link("https://docs.docker.com/reference/cli/dockerd/")
     .register();
 
+    // TODO: could remove since this driver is no longer supported
     check::Check::new(
         "CNT_009",
-        "Ensure docker storage driver is aufs",
+        "Ensure docker storage driver is not aufs",
         Severity::Medium,
         vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.6
         // TODO: can also be short '-s'
-        || ps::is_running_with_flag_value("dockerd", "--storage-driver", "aufs"),
+        || ps::is_running_without_flag_value("dockerd", "--storage-driver", "aufs"),
         vec![ps::init_proc],
     )
     .skip_when(docker::skip_no_docker)
     .with_description("The aufs storage driver is deprecated and has known security issues including incomplete layer isolation. Using a supported driver reduces the risk of container filesystem leaks.")
-    .with_link("https://docs.docker.com/engine/security/")
+    .with_link("https://docs.docker.com/reference/cli/dockerd/")
     .register();
 
     check::Check::new(
@@ -127,38 +134,87 @@ pub fn add_checks() {
         "Ensure docker storage options \"dm.basesize\" are not set",
         Severity::Medium,
         vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.10
+        // TODO: and check dockerd config file
         || ps::is_running_without_flag_value("dockerd", "--storage-opt", "dm-basesize"),
         vec![ps::init_proc],
     )
     .skip_when(docker::skip_no_docker)
+    .with_link("https://docs.docker.com/reference/cli/dockerd/")
     .register();
 
     // TODO: ensure TLS authentication for Docker daemon is used
+    // https://docs.docker.com/engine/security/protect-access/
     // TODO: add rule to ensure Docker is up to date (CIS 1.2.2)
+
     check::Check::new(
         "CNT_011",
         "Ensure docker uses an authorization plugin",
         Severity::High,
         vec!["container", "docker", "ps", "CIS", "server"], // CIS Docker 2.12
-        || ps::is_running_with_flag("dockerd", "--authorization-plugin"),
+        || docker::check_docker_info_ne("/Plugins/Authorization", Value::Null),
         vec![ps::init_proc],
     )
     .skip_when(docker::skip_no_docker)
-    .with_description("Without an authorization plugin, any user with access to the Docker daemon can execute any Docker command, including privileged operations that could compromise the host.")
-    .with_link("https://docs.docker.com/engine/security/")
+    .with_description("Without an authorization plugin, any user with access to the Docker daemon can execute any Docker command, including privileged operations that could compromise the host. Some attackers use containers to evade security tools like EDR.")
+    .with_fix("Start Docker deamon with `--authorization-plugin ...` flag.")
+    .with_link("https://docs.docker.com/engine/extend/plugins_authorization/")
+    .with_link("https://docs.docker.com/reference/cli/dockerd/")
     .register();
 
     check::Check::new(
         "CNT_012",
-        "Ensure docker cannot acquire new privileges",
+        "Ensure docker containers cannot acquire new privileges",
         Severity::High,
-        vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.14
-        || ps::is_running_with_flag("dockerd", "--no-new-privileges"),
+        vec!["container", "docker", "CIS", "server", "workstation"], // CIS Docker 2.14
+        || {
+            let pointer = "/SecurityOptions";
+            if let Some(Value::Array(arr)) = docker::get_docker_info_value(pointer) {
+                if arr.iter().any(|v| *v == Value::String("name=no-new-privileges".to_string())) {
+                    (check::CheckState::Pass, None)
+                } else {
+                    (check::CheckState::Fail, None)
+                }
+            } else {
+            (
+                check::CheckState::Warning,
+                Some(format!("pointer {:?} not found", pointer)),
+            )
+            }
+        },
         vec![ps::init_proc],
     )
     .skip_when(docker::skip_no_docker)
-    .with_description("Preventing processes from gaining new privileges blocks exploitation techniques like setuid binaries or capability escalation within a container.")
-    .with_link("https://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/docker-security/")
+    .with_description("Set no-new-privileges by default for new containers.")
+    .with_fix("In \"/etc/docker/daemon.json\" add `{\"no-new-privileges\": true}`, or start the daemon with `--no-new-privileges` flag.")
+    .with_link("https://docs.docker.com/reference/cli/dockerd/")
+    .register();
+
+    check::Check::new(
+        "CNT_113",
+        "Ensure docker builtin seccomp profile is used",
+        Severity::High,
+        vec!["container", "docker", "seccomp", "server", "workstation"],
+        || {
+            let pointer = "/SecurityOptions";
+            if let Some(Value::Array(arr)) = docker::get_docker_info_value(pointer) {
+                if arr.iter().any(|v| *v == Value::String("name=seccomp,profile=builtin".to_string())) {
+                    (check::CheckState::Pass, None)
+                } else {
+                    (check::CheckState::Fail, None)
+                }
+            } else {
+            (
+                check::CheckState::Warning,
+                Some(format!("pointer {:?} not found", pointer)),
+            )
+            }
+        },
+        vec![ps::init_proc],
+    )
+    .skip_when(docker::skip_no_docker)
+    .with_description("Use the builtin seccomp Docker profile to ensure some system calls are restricted within containers.")
+    .with_fix("In \"/etc/docker/daemon.json\" remove `{\"seccomp-profile\": \"unconfined\"}`, or start the daemon without `--seccomp-profile unconfined` flag.")
+    .with_link("https://docs.docker.com/reference/cli/dockerd/")
     .register();
 
     check::Check::new(
@@ -166,12 +222,14 @@ pub fn add_checks() {
         "Ensure docker live restore is enabled",
         Severity::Low,
         vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.15
+        // TODO: or check dockerd config file
         || ps::is_running_with_flag("dockerd", "--live-restore"),
         vec![ps::init_proc],
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Live restore keeps containers running during daemon downtime, preventing denial of service during Docker daemon updates or restarts.")
-    .with_link("https://docs.docker.com/engine/security/")
+    .with_link("https://docs.docker.com/engine/daemon/live-restore/")
+    .with_link("https://docs.docker.com/reference/cli/dockerd/")
     .register();
 
     check::Check::new(
@@ -179,12 +237,14 @@ pub fn add_checks() {
         "Ensure docker userland proxy is disabled",
         Severity::Medium,
         vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.16
+        // TODO: or check dockerd config file
         || ps::is_running_with_flag_value("dockerd", "--userlad-proxy", "false"),
         vec![ps::init_proc],
     )
     .skip_when(docker::skip_no_docker)
     .with_description("The userland proxy bypasses iptables filtering rules, which means network-based security policies are not enforced on proxied traffic, weakening network segmentation.")
-    .with_link("https://docs.docker.com/engine/security/")
+    .with_fix("In \"/etc/docker/daemon.json\" remove `{\"userlad-proxy\": false}`, or start the daemon without `--userlad-proxy false` flag.")
+    .with_link("https://docs.docker.com/reference/cli/dockerd/")
     .register();
 
     check::Check::new(
@@ -192,12 +252,13 @@ pub fn add_checks() {
         "Ensure docker runs without experimental features",
         Severity::Medium,
         vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.18
+        // TODO: and check dockerd config file
         || ps::is_running_without_flag("dockerd", "--experimental"),
         vec![ps::init_proc],
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Experimental features are not fully tested and may contain security vulnerabilities or unexpected behaviors that could be exploited to compromise the Docker host.")
-    .with_link("https://docs.docker.com/engine/security/")
+    .with_link("https://docs.docker.com/reference/cli/dockerd/")
     .register();
 
     check::Check::new(
@@ -223,7 +284,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("If the Docker service file is not owned by root, a non-privileged user could modify it to escalate privileges or alter daemon startup behavior.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     check::Check::new(
@@ -249,12 +309,11 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Overly permissive service file permissions allow unprivileged users to modify Docker daemon startup parameters, potentially disabling security features or mounting host filesystems.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     check::Check::new(
         "CNT_018",
-        "Ensure docker socket file is owned by root",
+        "Ensure systemd docker socket file is owned by root",
         Severity::Critical,
         vec![
             "container",
@@ -275,12 +334,11 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("The Docker socket grants full control over the Docker daemon. If not owned by root, an attacker could modify it to intercept or redirect Docker API requests.")
-    .with_link("https://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/docker-security/")
     .register();
 
     check::Check::new(
         "CNT_019",
-        "Ensure docker socket file permissions 644 are set",
+        "Ensure systemd docker socket file permissions 644 are set",
         Severity::Critical,
         vec![
             "container",
@@ -301,7 +359,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Overly permissive socket file permissions could allow unauthorized users to communicate with the Docker daemon, which is equivalent to root access on the host.")
-    .with_link("https://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/docker-security/")
     .register();
 
     // TODO: allow missing
@@ -315,7 +372,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("The /etc/docker directory contains sensitive configuration including TLS certificates. Non-root ownership could allow an attacker to tamper with daemon configuration or steal credentials.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     // TODO: allow missing
@@ -329,7 +385,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Restrictive directory permissions prevent unauthorized users from reading or modifying Docker configuration files, TLS keys, and other sensitive data stored in /etc/docker.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     // TODO: allow missing
@@ -343,7 +398,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("The daemon.json file controls Docker daemon behavior including security settings. Non-root ownership allows unauthorized modification of daemon configuration to weaken security controls.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     // TODO: allow missing
@@ -357,7 +411,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Overly permissive daemon.json permissions allow unprivileged users to alter Docker daemon configuration, potentially enabling insecure registries or disabling security features.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     // TODO: allow missing
@@ -371,7 +424,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("The /etc/default/docker file sets environment variables and options for the Docker daemon. Non-root ownership allows unprivileged users to inject malicious daemon startup options.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     // TODO: allow missing
@@ -385,7 +437,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Overly permissive file permissions on the default Docker config allow local users to modify daemon startup parameters, potentially disabling security protections.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     // TODO: only if on RHEL/Centos
@@ -399,7 +450,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("The sysconfig docker file configures daemon options on RHEL/CentOS systems. Non-root ownership could allow an attacker to alter daemon behavior at next restart.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     // TODO: only if on RHEL/Centos
@@ -413,7 +463,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Overly permissive sysconfig file permissions allow local users to modify Docker daemon options on RHEL/CentOS, potentially introducing insecure configurations.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     check::Check::new(
@@ -421,12 +470,11 @@ pub fn add_checks() {
         "Ensure docker containerd socket file is owned by root",
         Severity::Critical,
         vec!["container", "docker", "CIS", "server", "workstation"], // CIS Docker 3.23
-        || base::check_file_owner_id("/run/containerd/containerd.sock", 0, 0),
+        || base::check_socket_owner_id("/run/containerd/containerd.sock", 0, 0),
         vec![],
     )
     .skip_when(docker::skip_no_docker)
     .with_description("The containerd socket provides direct access to the container runtime. Non-root ownership could allow unauthorized users to manipulate containers or escape to the host.")
-    .with_link("https://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/docker-security/")
     .register();
 
     check::Check::new(
@@ -434,12 +482,11 @@ pub fn add_checks() {
         "Ensure docker containerd socket file permissions is 660",
         Severity::Critical,
         vec!["container", "docker", "CIS", "server", "workstation"], // CIS Docker 3.24
-        || base::check_file_permission("/run/containerd/containerd.sock", 0o660),
+        || base::check_socket_permission("/run/containerd/containerd.sock", 0o660),
         vec![],
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Overly permissive containerd socket permissions grant unauthorized users access to the container runtime, which can be leveraged for privilege escalation to root.")
-    .with_link("https://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/docker-security/")
     .register();
 
     check::Check::new(
@@ -447,15 +494,13 @@ pub fn add_checks() {
         "Ensure docker swarm is disabled if not needed",
         Severity::Medium,
         vec!["container", "docker", "CIS", "server", "workstation"], // CIS Docker 5.1
-        || docker::check_docker_info("/Swarm/ControlAvailable", serde_json::Value::Bool(false)),
+        || docker::check_docker_info("/Swarm/ControlAvailable", Value::Bool(false)),
         vec![docker::init_docker_info],
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Docker Swarm mode exposes additional attack surface including a distributed key-value store and overlay networking. Disabling it when not needed reduces the risk of cluster-level compromise.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
-    // https://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/docker-security/abusing-docker-socket-for-privilege-escalation.html
     check::Check::new(
         "CNT_031",
         "Ensure docker group is empty",
@@ -473,7 +518,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Membership in the docker group grants the ability to interact with the Docker socket, which effectively provides root-equivalent access to the host system.")
-    .with_link("https://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/docker-security/")
     .register();
 
     check::Check::new(
@@ -493,7 +537,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Auditing the Docker daemon binary ensures all invocations are logged, enabling detection of unauthorized Docker usage or tampering with the daemon executable.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     check::Check::new(
@@ -513,7 +556,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Auditing the containerd runtime directory detects unauthorized modifications to runtime state, which could indicate container escape attempts or runtime tampering.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     check::Check::new(
@@ -533,7 +575,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("The /var/lib/docker directory contains container images, volumes, and layer data. Auditing it detects unauthorized access or modification of container storage.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     check::Check::new(
@@ -553,7 +594,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Auditing the /etc/docker directory detects unauthorized changes to Docker configuration files and TLS certificates, which could be used to weaken daemon security.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     // TODO: add CIS Docker 1.1.7 to 1.1.9
@@ -574,7 +614,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Auditing the /etc/default/docker file detects unauthorized changes to Docker daemon environment variables and startup options that could weaken security.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     check::Check::new(
@@ -594,7 +633,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Auditing the daemon.json configuration file provides a trail of any changes to Docker daemon settings, enabling detection of unauthorized security configuration modifications.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     check::Check::new(
@@ -614,7 +652,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Auditing the containerd configuration file detects unauthorized changes to the container runtime, which could disable security features like seccomp or AppArmor profiles.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     check::Check::new(
@@ -634,7 +671,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Auditing the sysconfig docker file detects unauthorized changes to Docker daemon options on RHEL/CentOS systems, which could introduce insecure configurations.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     check::Check::new(
@@ -654,7 +690,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Auditing the containerd binary detects unauthorized replacement or modification of the container runtime, which could be used to bypass container isolation.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     check::Check::new(
@@ -674,7 +709,6 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Auditing the runc binary detects unauthorized replacement or modification of the low-level container runtime, which has been the target of critical container escape vulnerabilities like CVE-2019-5736.")
-    .with_link("https://docs.docker.com/engine/security/")
     .register();
 
     // TODO: what is this rule?

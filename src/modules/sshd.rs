@@ -21,6 +21,7 @@ use std::process;
 use std::process::Stdio;
 use std::sync::OnceLock;
 
+use crate::modules::ps;
 use crate::{check, log_debug, log_error, utils};
 
 static SSHD_CONFIG: OnceLock<SshdConfig> = OnceLock::new();
@@ -28,9 +29,20 @@ static SSHD_CONFIG: OnceLock<SshdConfig> = OnceLock::new();
 /// OpenSSH (sshd) configuration.
 pub type SshdConfig = HashMap<String, String>;
 
-/// Skip if sshd is not installed
+/// Skip if sshd is not installed, or installed but not running.
 pub fn skip_no_sshd() -> bool {
-    utils::which("sshd").is_none()
+    if utils::which("sshd").is_none() {
+        return true;
+    }
+
+    ps::init_proc();
+    match ps::is_running("sshd") {
+        Ok(is_running) => !is_running,
+        Err(err) => {
+            log_error!("failed to verify that sshd is running: {}", err);
+            false
+        }
+    }
 }
 
 /// Parse OpenSSH configuration from `sshd -T` command stdout.

@@ -8,7 +8,7 @@ pub fn add_checks() {
         "Ensure \"auditd\" is running",
         Severity::High,
         vec!["audit", "server", "workstation"],
-        || ps::is_running("auditd"),
+        || ps::check_is_running("auditd"),
         vec![ps::init_proc],
     )
     .with_description("Kernel-level subsystem that provides detailed logging and monitoring of system activities. Allows detection of attacks. Without auditd running, kernel-emitted security events go unrecorded.")

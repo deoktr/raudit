@@ -21,10 +21,11 @@
 // not 80/443)
 // TODO: ensure docker is running rootless
 // https://docs.docker.com/engine/security/rootless/
-// TODO: ensure no containers has the docker socket mounted to it (`/var/run/docker.sock`), capabilities or is unconfined
-// https://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/docker-security/docker-breakout-privilege-escalation/index.html#automatic-enumeration-and-escape
+// TODO: ensure no containers has the docker socket mounted to it
+// (`/var/run/docker.sock`), capabilities or is unconfined
 // TODO: ensure an apparmor profile is enabled for containers
-// TODO: ensure containers are isolated with user namespaces <https://docs.docker.com/engine/security/userns-remap/>
+// TODO: ensure containers are isolated with user namespaces
+// <https://docs.docker.com/engine/security/userns-remap/>
 // TODO: ensure resources are limited to avoid container DOS the host
 
 use serde_json::Value;
@@ -129,26 +130,46 @@ pub fn init_containers_inspect() {
 }
 
 /// Check a configuration from Docker, the pointer are defined by RFC6901.
-pub fn check_docker_info(pointer: &str, expected: Value) -> check::CheckReturn {
+pub fn get_docker_info_value(pointer: &str) -> Option<&Value> {
     let info = match DOCKER_INFO.get() {
         Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("docker info not initialized".to_string()),
-            );
-        }
+        None => return None,
     };
+    info.pointer(pointer)
+}
 
-    match &info.pointer(pointer) {
+/// Check a configuration from Docker, the pointer are defined by RFC6901.
+pub fn check_docker_info(pointer: &str, expected: Value) -> check::CheckReturn {
+    match get_docker_info_value(pointer) {
         Some(val) => {
-            if **val != expected {
+            if *val != expected {
                 (
                     check::CheckState::Fail,
                     Some(format!("{:?} != {:?}", val, expected)),
                 )
             } else {
                 (check::CheckState::Pass, None)
+            }
+        }
+        None => (
+            check::CheckState::Warning,
+            Some(format!("pointer {:?} not found", pointer)),
+        ),
+    }
+}
+
+/// Check a configuration from Docker is not equal (_ne), the pointer are
+/// defined by RFC6901.
+pub fn check_docker_info_ne(pointer: &str, expected: Value) -> check::CheckReturn {
+    match get_docker_info_value(pointer) {
+        Some(val) => {
+            if *val == expected {
+                (check::CheckState::Fail, None)
+            } else {
+                (
+                    check::CheckState::Pass,
+                    Some(format!("{:?} != {:?}", val, expected)),
+                )
             }
         }
         None => (

@@ -22,7 +22,6 @@
 // TODO: ensure docker is running rootless
 // https://docs.docker.com/engine/security/rootless/
 // TODO: ensure no containers has the docker socket mounted to it (`/var/run/docker.sock`), capabilities or is unconfined
-// https://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/docker-security/docker-breakout-privilege-escalation/index.html#automatic-enumeration-and-escape
 // TODO: ensure containers are isolated with user namespaces <https://docs.docker.com/engine/security/userns-remap/>
 // TODO: ensure resources are limited to avoid container DOS the host
 // TODO: if no containers to check because no running, mark as skipped

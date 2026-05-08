@@ -93,9 +93,19 @@ pub fn get_pids(config: &Proc, name: &str) -> Option<Vec<String>> {
 }
 
 /// Check if a process is running from it's name.
-pub fn is_running(name: &str) -> check::CheckReturn {
+pub fn is_running(name: &str) -> Result<bool, String> {
+    match PROCESSES.get() {
+        Some(procs) => Ok(get_pids(procs, name).is_some()),
+        None => {
+            return Err("processes not initialized".to_string());
+        }
+    }
+}
+
+/// Check if a process is running from it's name.
+pub fn check_is_running(name: &str) -> check::CheckReturn {
     let procs = match PROCESSES.get() {
-        Some(kparams) => kparams,
+        Some(procs) => procs,
         None => {
             return (
                 check::CheckState::Warning,
