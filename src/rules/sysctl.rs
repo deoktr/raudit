@@ -68,6 +68,7 @@ pub fn add_checks() {
         "kernel.perf_cpu_time_max_percent",
         1
     )
+    .with_description("Without a low cap, perf (and perf-based tracing/profiling) can consume more CPU on busy systems, increasing attack surface for DoS via heavy tracing workloads.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -77,6 +78,7 @@ pub fn add_checks() {
         "kernel.perf_event_max_sample_rate",
         1
     )
+    .with_description("Caps perf sample rate, uncapped rates produce timing oracles and let unprivileged perf users dominate the perf subsystem to slow security-relevant workloads.")
     .register();
 
     // 2 or 3
@@ -175,6 +177,7 @@ pub fn add_checks() {
         "kernel.modules_disabled",
         1
     )
+    .with_description("Permanently disables module loading once set. Any later attempt by an attacker (even with CAP_SYS_MODULE and root) to load a module is rejected by the kernel. Could prevent loading backdoor modules. For systems needing hot-add drivers it prevents legitimate module loading.")
     .register();
 
     // FIXME: only available on some kernels

@@ -13,5 +13,6 @@ pub fn add_checks() {
     )
     .skip_when(gdm::skip_no_gdm)
     .with_description("Automatic GUI login bypasses authentication, allowing anyone with physical access to gain immediate access to the system.")
+    .with_fix("Set `AutomaticLoginEnable=false` (and remove `AutomaticLogin=`) in /etc/gdm3/custom.conf or /etc/gdm/custom.conf, then restart gdm.")
     .register();
 }
