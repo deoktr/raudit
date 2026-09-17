@@ -10,6 +10,8 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+## [0.33.0](https://github.com/deoktr/raudit/releases/tag/v0.33.0) - 2026-09-17
+
 - Add checks `CNT_032` and `CNT_507`.
 - Add or improve checks descriptions.
 - Add KSPP tags.
