@@ -193,7 +193,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
-    .with_description("IgnoreUserKnownHosts forces sshd to trust only the system-wide known_hosts during host-based authentication, preventing a user from whitelisting a rogue host and bypassing the admin's trust anchors.")
+    .with_description("IgnoreUserKnownHosts forces sshd to trust only the system-wide known_hosts during host-based authentication, preventing a user from whitelisting a rogue host and bypassing the admin's trust anchors. Even if host-based authentication is disable this is a better default in case it ever is.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"IgnoreUserKnownHosts yes\"")
     .register();
 
@@ -757,6 +757,91 @@ pub fn add_checks() {
     .skip_when(sshd::skip_no_sshd)
     .with_description("Could allow an attacker to reconfigure sshd.")
     .with_fix("chmod -R 644 /etc/ssh/sshd_config.d/*")
+    .register();
+
+    check::Check::new(
+        "SSH_054",
+        "Ensure SSH private host key files have permissions 600",
+        Severity::High,
+        vec!["sshd", "server"],
+        || {
+            let keys = [
+                "/etc/ssh/ssh_host_rsa_key",
+                "/etc/ssh/ssh_host_ecdsa_key",
+                "/etc/ssh/ssh_host_ed25519_key",
+                "/etc/ssh/ssh_host_dsa_key",
+            ];
+            for key in &keys {
+                let result = base::check_file_permission_ignore_missing(key, 0o600);
+                if result.0 != check::CheckState::Pass {
+                    return result;
+                }
+            }
+            (check::CheckState::Pass, None)
+        },
+        vec![],
+    )
+    .skip_when(sshd::skip_no_sshd)
+    .with_description("SSH private host keys must have restrictive permissions. If they are world-readable, an attacker can steal them and impersonate the server, enabling man-in-the-middle attacks.")
+    .with_fix("chmod 600 /etc/ssh/ssh_host_*_key")
+    .register();
+
+    check::Check::new(
+        "SSH_055",
+        "Ensure SSH public host key files have permissions 644",
+        Severity::Medium,
+        vec!["sshd", "server"],
+        || {
+            let keys = [
+                "/etc/ssh/ssh_host_rsa_key.pub",
+                "/etc/ssh/ssh_host_ecdsa_key.pub",
+                "/etc/ssh/ssh_host_ed25519_key.pub",
+                "/etc/ssh/ssh_host_dsa_key.pub",
+            ];
+            for key in &keys {
+                let result = base::check_file_permission_ignore_missing(key, 0o644);
+                if result.0 != check::CheckState::Pass {
+                    return result;
+                }
+            }
+            (check::CheckState::Pass, None)
+        },
+        vec![],
+    )
+    .skip_when(sshd::skip_no_sshd)
+    .with_description("SSH public host keys should have correct permissions. Overly permissive public keys could be tampered with, leading to trust-on-first-use poisoning.")
+    .with_fix("chmod 644 /etc/ssh/ssh_host_*_key.pub")
+    .register();
+
+    check::Check::new(
+        "SSH_056",
+        "Ensure SSH host key files are owned by root",
+        Severity::High,
+        vec!["sshd", "server"],
+        || {
+            let keys = [
+                "/etc/ssh/ssh_host_rsa_key",
+                "/etc/ssh/ssh_host_rsa_key.pub",
+                "/etc/ssh/ssh_host_ecdsa_key",
+                "/etc/ssh/ssh_host_ecdsa_key.pub",
+                "/etc/ssh/ssh_host_ed25519_key",
+                "/etc/ssh/ssh_host_ed25519_key.pub",
+                "/etc/ssh/ssh_host_dsa_key",
+                "/etc/ssh/ssh_host_dsa_key.pub",
+            ];
+            for key in &keys {
+                let result = base::check_file_owner_id_ignore_missing(key, 0, 0);
+                if result.0 != check::CheckState::Pass {
+                    return result;
+                }
+            }
+            (check::CheckState::Pass, None)
+        },
+        vec![],
+    )
+    .skip_when(sshd::skip_no_sshd)
+    .with_description("SSH host key files must be owned by root to prevent unauthorized users from modifying them. Non-root ownership could allow an attacker to replace host keys and impersonate the server.")
+    .with_fix("chown root:root /etc/ssh/ssh_host_*_key /etc/ssh/ssh_host_*_key.pub")
     .register();
 
     // TODO: check the content of File: /etc/ssh/moduli from: https://infosec.mozilla.org/guidelines/openssh

@@ -262,4 +262,52 @@ pub fn add_checks() {
     .with_description("\"/etc/security/opasswd\" stores previously-used password hashes for \"pam_pwhistory\" reuse prevention. Wrong permissions exposes those historical hashes to non-root users for cracking, leaking old password that could indicate patterns or be reused elsewhere.")
     .with_fix("chmod 600 /etc/security/opasswd")
     .register();
+
+    check::Check::new(
+        "USR_012",
+        "Ensure no users have \".rhosts\" or \".shosts\" files",
+        Severity::High,
+        vec!["user", "server", "workstation"],
+        users::no_rhosts_files,
+        vec![users::init_passwd],
+    )
+    .with_description("Legacy .rhosts files enable trust-based authentication without passwords, a major security risk. If an attacker compromises any trusted host, they can log in as any user on this system without credentials.")
+    .with_fix("Remove all .rhosts, .shosts files from user home directories: find /home -name \".rhosts\" -delete")
+    .register();
+
+    check::Check::new(
+        "USR_013",
+        "Ensure all users' home directories are owned by their respective user",
+        Severity::Medium,
+        vec!["user", "passwd", "server", "workstation"],
+        users::home_dirs_correct_ownership,
+        vec![users::init_passwd],
+    )
+    .with_description("Home directories owned by other users could allow unauthorized access to files. An attacker could read private keys, configuration files, or plant malicious files.")
+    .with_fix("chown <username>:<username> /home/<username>")
+    .register();
+
+    check::Check::new(
+        "USR_014",
+        "Ensure all users' home directories have permissions 750 or stricter",
+        Severity::Medium,
+        vec!["user", "passwd", "server", "workstation"],
+        users::home_dirs_permissions,
+        vec![users::init_passwd],
+    )
+    .with_description("World-writable or world-readable home directories expose private user data to other users on the system. Permissions should be 750 or stricter to prevent unauthorized access.")
+    .with_fix("chmod 750 /home/<username>")
+    .register();
+
+    check::Check::new(
+        "USR_015",
+        "Ensure no users have world-writable files in their home directory",
+        Severity::Medium,
+        vec!["user", "server", "workstation", "slow"],
+        users::no_world_writable_in_homes,
+        vec![users::init_passwd],
+    )
+    .with_description("World-writable files in user home directories can be modified by any user on the system, enabling data tampering and potential privilege escalation via .bashrc, .profile, or crontab modification.")
+    .with_fix("Find and fix: find /home -type f -perm -0002 -exec chmod o-w {} \\;")
+    .register();
 }

@@ -50,7 +50,6 @@ fn id_from_name(path: &str, name: &str) -> Option<u32> {
 /// Resolve UID from a username by reading `/etc/passwd`.
 ///
 /// Returns `None` if the file cannot be read or the user is not found.
-#[allow(dead_code)]
 pub fn uid_from_name(username: &str) -> Option<u32> {
     id_from_name("/etc/passwd", username)
 }

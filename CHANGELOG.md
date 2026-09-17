@@ -10,6 +10,11 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+- Add SSH checks `SSH_054` to `SSH_056`.
+- Add user checks `USR_012` to `USR_014`.
+- Add system checks `SYT_002` to `SYT_009`.
+- Add audit checks `AUD_101` to `AUD_108`.
+
 ## [0.33.0](https://github.com/deoktr/raudit/releases/tag/v0.33.0) - 2026-09-17
 
 - Add checks `CNT_032` and `CNT_507`.

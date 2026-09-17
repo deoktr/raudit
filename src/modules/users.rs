@@ -537,6 +537,173 @@ pub fn empty_securetty() -> check::CheckReturn {
     base::empty_or_missing_file(SECURETTY_PATH)
 }
 
+pub fn no_rhosts_files() -> check::CheckReturn {
+    let passwd = match PASSWD_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Warning,
+                Some("passwd configuration not initialized".to_string()),
+            );
+        }
+    };
+
+    let mut found: Vec<String> = vec![];
+    for user in passwd.iter() {
+        if user.home.is_empty() || user.home == "/" {
+            continue;
+        }
+        let rhosts = Path::new(&user.home).join(".rhosts");
+        let shosts = Path::new(&user.home).join(".shosts");
+        if rhosts.exists() {
+            found.push(format!("{}:{}", user.username, rhosts.display()));
+        }
+        if shosts.exists() {
+            found.push(format!("{}:{}", user.username, shosts.display()));
+        }
+    }
+
+    if !found.is_empty() {
+        (check::CheckState::Fail, Some(found.join(", ")))
+    } else {
+        (check::CheckState::Pass, None)
+    }
+}
+
+pub fn home_dirs_correct_ownership() -> check::CheckReturn {
+    let passwd = match PASSWD_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Warning,
+                Some("passwd configuration not initialized".to_string()),
+            );
+        }
+    };
+
+    let mut wrong: Vec<String> = vec![];
+    for user in passwd.iter() {
+        if user.uid < UID_MIN || user.home.is_empty() || user.home == "/" {
+            continue;
+        }
+        let home = Path::new(&user.home);
+        if !home.exists() {
+            continue;
+        }
+        if let Ok(meta) = fs::metadata(home) {
+            use std::os::unix::fs::MetadataExt;
+            if meta.uid() != user.uid {
+                wrong.push(format!("{}: uid {}", user.username, meta.uid()));
+            }
+        }
+    }
+
+    if !wrong.is_empty() {
+        (check::CheckState::Fail, Some(wrong.join(", ")))
+    } else {
+        (check::CheckState::Pass, None)
+    }
+}
+
+pub fn home_dirs_permissions() -> check::CheckReturn {
+    let passwd = match PASSWD_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Warning,
+                Some("passwd configuration not initialized".to_string()),
+            );
+        }
+    };
+
+    let mut wrong: Vec<String> = vec![];
+    for user in passwd.iter() {
+        if user.uid < UID_MIN || user.home.is_empty() || user.home == "/" {
+            continue;
+        }
+        let home = Path::new(&user.home);
+        if !home.exists() {
+            continue;
+        }
+        if let Ok(meta) = fs::metadata(home) {
+            use std::os::unix::fs::MetadataExt;
+            let mode = meta.mode() & 0o777;
+            if mode & 0o022 != 0 {
+                wrong.push(format!("{}: {:o}", user.username, mode));
+            }
+        }
+    }
+
+    if !wrong.is_empty() {
+        (check::CheckState::Fail, Some(wrong.join(", ")))
+    } else {
+        (check::CheckState::Pass, None)
+    }
+}
+
+pub fn no_world_writable_in_homes() -> check::CheckReturn {
+    let passwd = match PASSWD_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Warning,
+                Some("passwd configuration not initialized".to_string()),
+            );
+        }
+    };
+
+    let mut found: Vec<String> = vec![];
+    for user in passwd.iter() {
+        if user.uid < UID_MIN || user.home.is_empty() || user.home == "/" {
+            continue;
+        }
+        let home = Path::new(&user.home);
+        if !home.exists() {
+            continue;
+        }
+        walk_dir_world_writable(home, &mut found, 3);
+    }
+
+    if !found.is_empty() {
+        (
+            check::CheckState::Fail,
+            Some(
+                found
+                    .iter()
+                    .take(10)
+                    .cloned()
+                    .collect::<Vec<_>>()
+                    .join(", "),
+            ),
+        )
+    } else {
+        (check::CheckState::Pass, None)
+    }
+}
+
+fn walk_dir_world_writable(dir: &Path, found: &mut Vec<String>, depth: u32) {
+    if depth == 0 {
+        return;
+    }
+    let entries = match fs::read_dir(dir) {
+        Ok(e) => e,
+        Err(_) => return,
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if let Ok(meta) = fs::metadata(&path) {
+            use std::os::unix::fs::MetadataExt;
+            let mode = meta.mode() & 0o777;
+            if meta.is_file() && mode & 0o002 != 0 {
+                found.push(path.display().to_string());
+            }
+            if meta.is_dir() {
+                walk_dir_world_writable(&path, found, depth - 1);
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
