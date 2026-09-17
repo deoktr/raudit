@@ -51,7 +51,7 @@ pub fn add_checks() {
         || pam::check_rule("login", "auth", "required", "pam_faillock"),
         vec![pam::init_pam],
     )
-    .with_description("Without `pam_faillock` locking accounts after repeated failed logins, an attacker with console or terminal access can brute-force passwords.")
+    .with_description("Without `pam_faillock` locking accounts after repeated failed logins, an attacker with console or terminal access can brute-force passwords. Legitimate users who mistype their password too many times will have their account locked out, requiring administrator intervention to unlock.")
     .with_fix("Add \"auth required pam_faillock.so preauth\" and \"auth [default=die] pam_faillock.so authfail\" entries to \"/etc/pam.d/login\" (or common-auth).")
     .register();
 
@@ -63,7 +63,7 @@ pub fn add_checks() {
         || pam::check_rule("login", "auth", "optional", "pam_faildelay"),
         vec![pam::init_pam],
     )
-    .with_description("`pam_faildelay` adds a randomized pause after failed authentications, defeating timing side channels that distinguish unknown user from wrong password.")
+    .with_description("`pam_faildelay` adds a randomized pause after failed authentications, defeating timing side channels that distinguish unknown user from wrong password. Adds latency to failed login attempts, which may be noticeable in automated login scripts or rapid retry scenarios.")
     .with_fix("Add \"auth optional pam_faildelay.so delay=4000000\" to \"/etc/pam.d/login\".")
     .register();
 }

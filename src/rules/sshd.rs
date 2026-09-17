@@ -12,6 +12,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("SHA-256 host-key fingerprints are collision-resistant and fit on one terminal line, unlike MD5. Using a weak hash risks accepting a forged fingerprint during first-connect trust-on-first-use.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"FingerprintHash SHA256\"")
     .register();
 
@@ -24,6 +25,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Routing sshd logs to the AUTH facility keeps authentication events alongside PAM, sudo, and su in the same log stream, simplifying correlation in SIEM rules and incident-response queries. Only useful if you are collecting logs via syslog.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"SyslogFacility AUTH\"")
     .register();
 
@@ -36,6 +38,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("VERBOSE logging records the fingerprint of every key used to authenticate, turning silent key compromises into detectable events and providing forensic evidence for incident response.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"LogLevel VERBOSE\"")
     .register();
 
@@ -79,7 +82,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
-    .with_description("Direct SSH login as root collapses two security barriers into one: an attacker who phishes or cracks the root password gets immediate full control with no intermediate user account, and audit logs cannot attribute the action to a specific user.")
+    .with_description("Direct SSH login as root collapses two security barriers into one: an attacker who phishes or cracks the root password gets immediate full control with no intermediate user account, and audit logs cannot attribute the action to a specific user. Requires an alternative out-of-band access method (e.g. console, serial) for emergency root access.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"PermitRootLogin no\"")
     .register();
 
@@ -130,7 +133,7 @@ pub fn add_checks() {
     check::Check::new(
         "SSH_008",
         "Ensure that sshd is configured with \"maxsessions\" <= 5",
-        Severity::Medium,
+        Severity::Low,
         vec!["sshd", "CIS", "server"],
         || {
             const VAL: i32 = 5;
@@ -154,6 +157,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Limiting multiplexed sessions per connection caps the damage from a single stolen socket: an attacker who hijacks one authenticated channel cannot fan out to dozens of shells, exec channels, or port forwards. Users relying on SSH multiplexing (e.g. ControlMaster) to run many parallel sessions (CI/CD pipelines, mass deployments) may hit the limit.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"MaxSessions 5\"")
     .register();
 
@@ -189,6 +193,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("IgnoreUserKnownHosts forces sshd to trust only the system-wide known_hosts during host-based authentication, preventing a user from whitelisting a rogue host and bypassing the admin's trust anchors.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"IgnoreUserKnownHosts yes\"")
     .register();
 
@@ -201,6 +206,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Requiring public-key authentication eliminates password-based logins, blocking online brute-force and credential-stuffing attacks that exploit weak or reused passwords.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"AuthenticationMethods publickey\"")
     .register();
 
@@ -226,6 +232,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Keyboard-interactive authentication can fall back to PAM password prompts, re-opening the exact brute-force path that public-key-only mode is meant to close. Disable it unless a specific PAM two-factor module requires it.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"KbdInteractiveAuthentication no\"")
     .register();
 
@@ -329,6 +336,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("DisableForwarding blocks all forwarding types (tunnel, agent, X11) in one switch. An attacker with a shell cannot pivot through the SSH session to reach internal services or expose the agent socket.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"DisableForwarding yes\"")
     .register();
 
@@ -341,7 +349,8 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"DisableForwarding yes\"")
+    .with_description("X11 forwarding exposes the X server to the remote host, which can inject keystrokes, capture screenshots, or exploit X11 vulnerabilities. Disable it unless graphical applications are required.")
+    .with_fix("In \"/etc/ssh/sshd_config\" add: \"X11Forwarding no\"")
     .register();
 
     check::Check::new(
@@ -353,7 +362,8 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
-    .with_fix("In \"/etc/ssh/sshd_config\" remove: \"Gatewayports yes\"")
+    .with_description("GatewayPorts allows remote hosts to connect to ports forwarded for the user, turning the SSH server into an open relay. Attackers can expose internal services to the network.")
+    .with_fix("In \"/etc/ssh/sshd_config\" remove: \"GatewayPorts yes\"")
     .register();
 
     check::Check::new(
@@ -365,6 +375,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("Binding forwarded X11 displays to localhost-only prevents remote hosts from connecting to the X socket. Without it, any host that can reach the server can grab the X session.")
     .with_fix("In \"/etc/ssh/sshd_config\" remove: \"X11UseLocalhost no\"")
     .register();
 
@@ -377,6 +388,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("The message-of-the-day can reveal OS version, hostname, or infrastructure details useful for targeting. Disable it if PAM already prints a vetted banner, to avoid leaking information.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"PrintMotd no\"")
     .register();
 
@@ -389,6 +401,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("PermitUserEnvironment lets users set arbitrary environment variables via ~/.ssh/environment, including LD_PRELOAD to hijack libraries loaded by sshd child processes. This bypasses env_reset and other sshd security controls.")
     .with_fix("In \"/etc/ssh/sshd_config\" remove: \"PermitUserEnvironment yes\"")
     .register();
 
@@ -419,6 +432,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("ClientAliveInterval sends encrypted keep-alives at this interval. Setting it to 15s or less ensures dead or hijacked sessions are reaped quickly, reducing the window for session hijacking.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"ClientAliveInterval 15\"")
     .register();
 
@@ -444,6 +458,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("TCPKeepAlive sends unencrypted keep-alives that can be spoofed, making sshd believe a dead connection is still alive. Disable it and rely on ClientAliveInterval for encrypted keep-alives instead.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"TCPKeepAlive no\"")
     .register();
 
@@ -456,6 +471,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("UseDNS triggers reverse-DNS lookups on every connection, leaking client IPs to the configured resolver and adding latency. Disable it unless hostnames are required in logs.")
     .with_fix("In \"/etc/ssh/sshd_config\" remove: \"UseDNS yes\"")
     .register();
 
@@ -468,7 +484,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
-    .with_description("Prevent SSH session from creating a tun/tap device, making it a bit harder for an attacker to bridge networks.")
+    .with_description("Prevent SSH session from creating a tun/tap device, making it a bit harder for an attacker to bridge networks. Breaks SSH VPN tunneling (ssh -w) for users who rely on it for secure remote network access.")
     .with_fix("In \"/etc/ssh/sshd_config\" remove: \"PermitTunnel yes\"")
     .register();
 
@@ -481,6 +497,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .with_description("MaxStartups rate-limits unauthenticated connections: after 10 pending, new connections are dropped with 30% probability, rising to 100% at 60 pending. This thwarts connection-slurping DoS and slows password-spray campaigns. Legitimate bulk SSH connections (CI/CD, mass deployments) may be dropped during peak auth times; increase the threshold on busy bastion hosts.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"MaxStartups 10:30:60\"")
     .register();
 
@@ -505,11 +522,12 @@ pub fn add_checks() {
         Severity::High,
         vec!["sshd", "server"],
         // TODO: ensure the group also exist
+        // TODO: ability to customize the group name, or maybe do not even check group name?
         || sshd::check_sshd_config("allowgroups", "sshusers"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
-    .with_description("SSH access should be restricted to a group of users.")
+    .with_description("SSH access should be restricted to a group of users. Users not in the specified group will be denied SSH access, including system administrators not added to the group.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"AllowGroups sshusers\"")
     .register();
 
@@ -541,7 +559,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
-    .with_description("Pinning key-exchange algorithms to a vetted modern set blocks downgrade to weak/legacy KEX (e.g. SHA-1-based DH groups) and includes post-quantum hybrids (mlkem, sntrup) so today's recorded sessions cannot be decrypted by future quantum-capable adversaries.")
+    .with_description("Pinning key-exchange algorithms to a vetted modern set blocks downgrade to weak/legacy KEX (e.g. SHA-1-based DH groups) and includes post-quantum hybrids (mlkem, sntrup) so today's recorded sessions cannot be decrypted by future quantum-capable adversaries. Older SSH clients that only support legacy algorithms will be unable to connect.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"KexAlgorithms mlkem768x25519-sha256,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521\"")
     .register();
 
@@ -559,7 +577,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
-    .with_description("Pinning ciphers to authenticated-encryption (AEAD) and CTR-with-MAC modes blocks downgrade to CBC, RC4, and 3DES, historically broken to recover plaintext from captured SSH traffic.")
+    .with_description("Pinning ciphers to authenticated-encryption (AEAD) and CTR-with-MAC modes blocks downgrade to CBC, RC4, and 3DES, historically broken to recover plaintext from captured SSH traffic. Older SSH clients that only support legacy ciphers will be unable to connect.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr\"")
     .register();
 
@@ -577,7 +595,7 @@ pub fn add_checks() {
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
-    .with_description("Pinning MACs to encrypt-then-MAC (ETM) SHA-2 family blocks the historically-broken MD5/SHA-1 MACs and the encrypt-and-MAC ordering that has produced timing oracles in OpenSSH.")
+    .with_description("Pinning MACs to encrypt-then-MAC (ETM) SHA-2 family blocks the historically-broken MD5/SHA-1 MACs and the encrypt-and-MAC ordering that has produced timing oracles in OpenSSH. Older SSH clients that only support legacy MACs will be unable to connect.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com\"")
     .register();
 
@@ -610,18 +628,6 @@ pub fn add_checks() {
     .skip_when(sshd::skip_no_sshd)
     .with_description("Configure SFTP to log to AUTHPRIV at INFO, every file transfer over SFTP appears in the auth log, turning otherwise-silent file exfil over SSH into something that can be detected and audited.")
     .with_fix("In \"/etc/ssh/sshd_config\" add: \"Subsystem sftp /usr/lib/openssh/sftp-server -f AUTHPRIV -l INFO\"")
-    .register();
-
-    check::Check::new(
-        "SSH_043",
-        "Ensure that sshd is configured with \"kbdinteractiveauthentication no\"",
-        Severity::High,
-        vec!["sshd", "server"],
-        || sshd::check_sshd_config("kbdinteractiveauthentication", "no"),
-        vec![sshd::init_sshd_config],
-    )
-    .skip_when(sshd::skip_no_sshd)
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"KbdInteractiveAuthentication no\"")
     .register();
 
     check::Check::new(

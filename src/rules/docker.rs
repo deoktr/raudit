@@ -28,7 +28,7 @@ pub fn add_checks() {
         vec![docker::init_containers_inspect],
     )
     .skip_when(docker::skip_no_docker)
-    .with_description("Dropping Linux capabilities reduces the kernel attack surface available to a compromised container, limiting the damage an attacker can do if they gain code execution.")
+    .with_description("Dropping Linux capabilities reduces the kernel attack surface available to a compromised container, limiting the damage an attacker can do if they gain code execution. May break containers that require specific capabilities (e.g. NET_BIND_SERVICE for binding to low ports, SYS_PTRACE for debugging, NET_RAW for raw sockets).")
     .register();
 
     check::Check::new(
@@ -69,7 +69,7 @@ pub fn add_checks() {
         vec![ps::init_proc],
     )
     .skip_when(docker::skip_no_docker)
-    .with_description("By default all containers on the default bridge can communicate freely, which allows lateral movement if one container is compromised. Restricting inter-container communication limits blast radius.")
+    .with_description("By default all containers on the default bridge can communicate freely, which allows lateral movement if one container is compromised. Restricting inter-container communication limits blast radius. Breaks legitimate inter-container communication on the default bridge network; use custom networks with explicit links if containers need to communicate.")
     .with_link("https://docs.docker.com/reference/cli/dockerd/")
     .register();
 
@@ -98,6 +98,7 @@ pub fn add_checks() {
         vec![ps::init_proc],
     )
     .skip_when(docker::skip_no_docker)
+    .with_description("Docker manages container networking by inserting iptables rules. Disabling this breaks port publishing and network isolation, leaving containers exposed or unreachable.")
     .register();
 
     check::Check::new(
@@ -139,6 +140,7 @@ pub fn add_checks() {
         vec![ps::init_proc],
     )
     .skip_when(docker::skip_no_docker)
+    .with_description("Setting dm.basesize caps the root filesystem size of new containers using the devicemapper driver. Growing it beyond the default increases disk consumption per container and can exhaust the thin-pool. Most workloads do not need to change it.")
     .with_link("https://docs.docker.com/reference/cli/dockerd/")
     .register();
 
@@ -184,7 +186,7 @@ pub fn add_checks() {
         vec![ps::init_proc],
     )
     .skip_when(docker::skip_no_docker)
-    .with_description("Set no-new-privileges by default for new containers.")
+    .with_description("Set no-new-privileges by default for new containers. Prevents processes inside containers from gaining additional privileges via setuid/setgid binaries or filesystem capabilities. Breaks containers that rely on privilege escalation (e.g. some init systems, sudo within containers).")
     .with_fix("In \"/etc/docker/daemon.json\" add `{\"no-new-privileges\": true}`, or start the daemon with `--no-new-privileges` flag.")
     .with_link("https://docs.docker.com/reference/cli/dockerd/")
     .register();
@@ -242,7 +244,7 @@ pub fn add_checks() {
         vec![ps::init_proc],
     )
     .skip_when(docker::skip_no_docker)
-    .with_description("The userland proxy bypasses iptables filtering rules, which means network-based security policies are not enforced on proxied traffic, weakening network segmentation.")
+    .with_description("The userland proxy bypasses iptables filtering rules, which means network-based security policies are not enforced on proxied traffic, weakening network segmentation. Disabling it may break port publishing on systems where the kernel does not support hairpin NAT or when using the default bridge network on some platforms.")
     .with_fix("In \"/etc/docker/daemon.json\" remove `{\"userlad-proxy\": false}`, or start the daemon without `--userlad-proxy false` flag.")
     .with_link("https://docs.docker.com/reference/cli/dockerd/")
     .register();
@@ -518,6 +520,19 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Membership in the docker group grants the ability to interact with the Docker socket, which effectively provides root-equivalent access to the host system.")
+    .register();
+
+    check::Check::new(
+        "CNT_032",
+        "Ensure docker containers root filesystem is mounted as read-only",
+        Severity::High,
+        vec!["container", "docker", "server", "workstation"],
+        docker::docker_readonly_rootfs,
+        vec![docker::init_containers_inspect],
+    )
+    .skip_when(docker::skip_no_docker)
+    .with_description("Read-only root filesystems prevent attackers from writing malicious binaries, modifying system files, or tampering with container contents after compromise. Forces explicit volume mounts for writable data, improving security posture and making containers more immutable.")
+    .with_fix("Start containers with `--read-only` flag, or set `\"ReadonlyRootfs\": true` in container config. Use `--tmpfs` or named volumes for directories that need write access.")
     .register();
 
     check::Check::new(

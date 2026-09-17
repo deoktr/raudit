@@ -12,7 +12,7 @@ pub fn add_checks() {
         vec![sudo::init_sudo],
     )
     .skip_when(sudo::skip_no_sudo)
-    .with_description("Prevent commands run via sudo from spawning further processes (blocks shell escapes from editors/pagers that link against the preloaded dummy exec(3) wrappers).")
+    .with_description("Prevent commands run via sudo from spawning further processes (blocks shell escapes from editors/pagers that link against the preloaded dummy exec(3) wrappers). Breaks legitimate commands that need to spawn subprocesses (e.g. running a shell, executing scripts that fork, some CI/CD tooling).")
     .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults noexec\"")
     .register();
 
@@ -51,7 +51,7 @@ pub fn add_checks() {
         vec![sudo::init_sudo],
     )
     .skip_when(sudo::skip_no_sudo)
-    .with_description("Force a restrictive umask on files created by sudo'd commands.")
+    .with_description("Force a restrictive umask on files created by sudo'd commands. Files created with sudo will have restrictive permissions (no access for others); may break scripts or workflows that expect world-readable files.")
     .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults umask=0027\"")
     .register();
 
@@ -71,7 +71,7 @@ pub fn add_checks() {
     check::Check::new(
         "SUD_006",
         "Ensure that sudo default config \"passwd_timeout=1\" is set",
-        Severity::High,
+        Severity::Informational,
         vec!["sudo", "server", "workstation"],
         || sudo::check_sudo_defaults("passwd_timeout=1"),
         vec![sudo::init_sudo],
@@ -90,7 +90,7 @@ pub fn add_checks() {
         vec![sudo::init_sudo],
     )
     .skip_when(sudo::skip_no_sudo)
-    .with_description("Start the command with a minimal, sanitized environment (only variables on env_keep survive), blocks LD_PRELOAD-style attacks.")
+    .with_description("Start the command with a minimal, sanitized environment (only variables on env_keep survive), blocks LD_PRELOAD-style attacks. Breaks scripts and applications that depend on user environment variables (e.g. PATH customizations, application-specific env vars) unless explicitly added to env_keep.")
     .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults env_reset\"")
     .register();
 
@@ -110,7 +110,7 @@ pub fn add_checks() {
     check::Check::new(
         "SUD_010",
         "Ensure that sudo default config \"mail_badpass\" is set",
-        Severity::High,
+        Severity::Medium,
         vec!["sudo", "server", "workstation"],
         || sudo::check_sudo_defaults("mail_badpass"),
         vec![sudo::init_sudo],
@@ -136,25 +136,27 @@ pub fn add_checks() {
     check::Check::new(
         "SUD_013",
         "Ensure that sudo default config \"lecture=\"always\"\" is set",
-        Severity::High,
+        Severity::Informational,
         vec!["sudo", "server", "workstation"],
         || sudo::check_sudo_defaults("lecture=\"always\""),
         vec![sudo::init_sudo],
     )
     .skip_when(sudo::skip_no_sudo)
+    .with_description("The sudo lecture warns users about the responsibilities and risks of elevated privileges before every invocation. Always-on mode ensures the warning is never silently skipped.")
     .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults lecture=\"always\"\"")
     .register();
 
     check::Check::new(
         "SUD_014",
         "Ensure that sudo default config \"lecture_file=\"/usr/share/doc/sudo_lecture.txt\"\" is set",
-        Severity::High,
+        Severity::Informational,
         vec!["sudo", "server", "workstation"],
         // TODO: should also check the content of the file
         || sudo::check_sudo_defaults("lecture_file=\"/usr/share/doc/sudo_lecture.txt\""),
         vec![sudo::init_sudo],
     )
     .skip_when(sudo::skip_no_sudo)
+    .with_description("Point the sudo lecture at an organization-specific text so every sudo invocation reminds users of local policy instead of the default generic warning.")
     .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults lecture_file=\"/usr/share/doc/sudo_lecture.txt\"\" and provide that file with the org's warning text.")
     .register();
 
@@ -213,7 +215,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "SUD_017",
+        "SUD_019",
         "Ensure /etc/sudoers.d/ files permissions are 440",
         Severity::High,
         vec!["sudo", "server", "workstation"],
@@ -226,7 +228,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "SUD_018",
+        "SUD_020",
         "Ensure /etc/sudoers.d/ files are owned by root",
         Severity::High,
         vec!["sudo", "server", "workstation"],

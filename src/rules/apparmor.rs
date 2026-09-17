@@ -14,7 +14,7 @@ pub fn add_checks() {
         vec![],
     )
     .skip_when(apparmor::skip_no_apparmor)
-    .with_description("Linux security module (LSM) that provides mandatory access control (MAC) for applications. Strongly increases security by restricting applications to the bare minimum, follows the least privilege principle.")
+    .with_description("Linux security module (LSM) that provides mandatory access control (MAC) for applications. Strongly increases security by restricting applications to the bare minimum, follows the least privilege principle. Poorly written or missing AppArmor profiles can break applications that require access to files, network sockets, or devices not covered by the default profile.")
     .with_fix("Install AppArmor and enable in bootloader with `apparmor=1 security=apparmor`, reboot, then slowly enforce profiles ensuring it does not break anything.")
     .register();
 }

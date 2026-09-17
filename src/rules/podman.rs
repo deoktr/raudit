@@ -25,7 +25,7 @@ pub fn add_checks() {
         vec![podman::init_containers_inspect],
     )
     .skip_when(podman::skip_no_podman)
-    .with_description("Dropping Linux capabilities reduces the kernel attack surface available to a compromised container, limiting the damage an attacker can do if they gain code execution.")
+    .with_description("Dropping Linux capabilities reduces the kernel attack surface available to a compromised container, limiting the damage an attacker can do if they gain code execution. May break containers that require specific capabilities (e.g. NET_BIND_SERVICE for binding to low ports, SYS_PTRACE for debugging, NET_RAW for raw sockets).")
     .with_fix("Start containers with flag \"--cap-drop all\"")
     .register();
 
@@ -85,5 +85,18 @@ pub fn add_checks() {
     .skip_when(podman::skip_no_podman)
     .with_description("Even with AppArmor enabled host-side, a container started with `--security-opt apparmor=unconfined` runs without the profile, per-container confirmation ensures every container actually inherits the profile.")
     .with_fix("Start containers without `--security-opt apparmor=unconfined`, the default profile applies automatically when AppArmor is enabled.")
+    .register();
+
+    check::Check::new(
+        "CNT_507",
+        "Ensure podman containers root filesystem is mounted as read-only",
+        Severity::High,
+        vec!["container", "podman", "server", "workstation"],
+        podman::podman_readonly_rootfs,
+        vec![podman::init_containers_inspect],
+    )
+    .skip_when(podman::skip_no_podman)
+    .with_description("Read-only root filesystems prevent attackers from writing malicious binaries, modifying system files, or tampering with container contents after compromise. Forces explicit volume mounts for writable data, improving security posture and making containers more immutable.")
+    .with_fix("Start containers with `--read-only` flag, or set `\"ReadonlyRootfs\": true` in container config. Use `--tmpfs` or named volumes for directories that need write access.")
     .register();
 }

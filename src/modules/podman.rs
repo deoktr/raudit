@@ -320,3 +320,45 @@ pub fn podman_apparmor() -> check::CheckReturn {
         (check::CheckState::Fail, Some(ids.join(", ")))
     }
 }
+
+/// Ensure containers root filesystem is mounted as read-only.
+///
+/// Start containers with `--read-only` flag.
+/// Check manually with:
+/// podman container inspect --format '{{.Id}}={{.HostConfig.ReadonlyRootfs}}' <id>
+pub fn podman_readonly_rootfs() -> check::CheckReturn {
+    let containers = match CONTAINERS.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Warning,
+                Some("containers inspect not initialized".to_string()),
+            );
+        }
+    };
+
+    if containers.is_empty() {
+        return (check::CheckState::Pass, Some("no containers".to_string()));
+    }
+
+    let ids: Vec<String> = containers
+        .iter()
+        .filter_map(|(id, container)| {
+            let readonly = &container["HostConfig"]["ReadonlyRootfs"];
+            log_debug!("podman container {} readonly rootfs: {:?}", id, readonly);
+
+            if readonly == &Value::Bool(false) {
+                Some(id.clone())
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    if ids.is_empty() {
+        (check::CheckState::Pass, None)
+    } else {
+        log_debug!("containers running without read-only rootfs: {:?}", ids);
+        (check::CheckState::Fail, Some(ids.join(", ")))
+    }
+}

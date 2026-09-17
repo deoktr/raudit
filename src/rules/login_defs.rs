@@ -54,7 +54,7 @@ pub fn add_checks() {
         },
         vec![login_defs::init_login_defs],
     )
-    .with_description("A higher cost factor multiplies the work an attacker must spend per guess in offline cracking. With yescrypt now consumed by PAM (issue 607), this directly raises the bar for password cracking from any leaked /etc/shadow.")
+    .with_description("A higher cost factor multiplies the work an attacker must spend per guess in offline cracking. With yescrypt now consumed by PAM, this directly raises the bar for password cracking from any leaked /etc/shadow. Higher cost factors increase CPU time for password hashing during login and password changes, which may cause noticeable delays on systems with many concurrent logins.")
     .with_fix("Set \"YESCRYPT_COST_FACTOR 5\" or higher up to 11 in \"/etc/login.defs\".")
     .with_link("https://github.com/linux-pam/linux-pam/issues/607")
     .register();
@@ -255,6 +255,7 @@ pub fn add_checks() {
         },
         vec![login_defs::init_login_defs],
     )
+    .with_description("An unbounded login timeout lets an attacker hold a login prompt open indefinitely, consuming a TTY slot.")
     .with_fix("Set \"LOGIN_TIMEOUT 60\" or lower in \"/etc/login.defs\".")
     .register();
 
@@ -266,6 +267,7 @@ pub fn add_checks() {
         || login_defs::check_login_defs("FAILLOG_ENAB", "yes"),
         vec![login_defs::init_login_defs],
     )
+    .with_description("Recording failed login attempts to /var/log/faillog lets administrators and tools reconstruct brute-force or credential-stuffing campaigns. Without it, failed attempts leave no trace on disk.")
     .with_fix("Set \"FAILLOG_ENAB yes\" in \"/etc/login.defs\".")
     .register();
 
@@ -277,6 +279,7 @@ pub fn add_checks() {
         || login_defs::check_login_defs("LOG_OK_LOGINS", "yes"),
         vec![login_defs::init_login_defs],
     )
+    .with_description("Logging successful logins creates an audit trail of who accessed the system and when, enabling detection of unauthorized account use and supporting incident-response timelines.")
     .with_fix("Set \"LOG_OK_LOGINS yes\" in \"/etc/login.defs\".")
     .register();
 }

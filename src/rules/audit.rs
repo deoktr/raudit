@@ -11,7 +11,7 @@ pub fn add_checks() {
         || ps::check_is_running("auditd"),
         vec![ps::init_proc],
     )
-    .with_description("Kernel-level subsystem that provides detailed logging and monitoring of system activities. Allows detection of attacks. Without auditd running, kernel-emitted security events go unrecorded.")
+    .with_description("Kernel-level subsystem that provides detailed logging and monitoring of system activities. Allows detection of attacks. Without auditd running, kernel-emitted security events go unrecorded. Audit logging adds disk I/O and CPU overhead; on busy systems, audit logs can grow rapidly and consume significant disk space, make sure to have a dedicated partition.")
     .with_fix("Install and enable: \"systemctl enable --now auditd\". Verify with \"systemctl status auditd\".")
     .register();
 
@@ -30,11 +30,11 @@ pub fn add_checks() {
     check::Check::new(
         "AUD_100",
         "Ensure audit rules are immutable",
-        Severity::Medium,
+        Severity::High,
         vec!["audit", "STIG", "server", "workstation"],
         || audit::check_audit_rule("-e 2"),
         vec![audit::init_audit_rules],
     )
-    .with_description("Immutable audit rules prevent attackers from disabling or modifying audit logging to cover their tracks.")
+    .with_description("Immutable audit rules prevent attackers from disabling or modifying audit logging to cover their tracks. Once set, audit rules cannot be changed without a system reboot, which may block legitimate rule updates during system maintenance or testing.")
     .register();
 }

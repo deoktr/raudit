@@ -10,8 +10,11 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
-- Improve kernel rules descriptions.
+- Add checks `CNT_032` and `CNT_507`.
+- Add or improve checks descriptions.
 - Add KSPP tags.
+- Update some severity levels.
+- Remove duplicate checks.
 
 ## [0.32.3](https://github.com/deoktr/raudit/releases/tag/v0.32.3) - 2026-05-08
 

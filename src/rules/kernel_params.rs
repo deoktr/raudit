@@ -1470,6 +1470,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable crash dump support. Removes the crash dump mechanism that exposes kernel memory.")
     .with_fix("Recompile the kernel with \"CONFIG_CRASH_DUMP\" disabled (\"# CONFIG_CRASH_DUMP is not set\" in .config) and reboot.")
     .register();
 
@@ -1494,6 +1495,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable cpuid access from userspace. Prevents userspace from querying CPU identification information.")
     .with_fix("Recompile the kernel with \"CONFIG_X86_CPUID\" disabled (\"# CONFIG_X86_CPUID is not set\" in .config) and reboot.")
     .register();
 
@@ -1591,6 +1593,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable EFI test driver. Removes the EFI runtime test interface.")
     .with_fix("Recompile the kernel with \"CONFIG_EFI_TEST\" disabled (\"# CONFIG_EFI_TEST is not set\" in .config) and reboot.")
     .register();
 
@@ -1603,6 +1606,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable mmiotrace test. Removes the memory-mapped I/O tracing test interface.")
     .with_fix("Recompile the kernel with \"CONFIG_MMIOTRACE_TEST\" disabled (\"# CONFIG_MMIOTRACE_TEST is not set\" in .config) and reboot.")
     .register();
 
@@ -1615,6 +1619,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable kprobes. Removes the kernel probe infrastructure used for dynamic tracing and debugging.")
     .with_fix("Recompile the kernel with \"CONFIG_KPROBES\" disabled (\"# CONFIG_KPROBES is not set\" in .config) and reboot.")
     .register();
 
@@ -1627,6 +1632,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable mmiotrace. Removes memory-mapped I/O tracing support.")
     .with_fix("Recompile the kernel with \"CONFIG_MMIOTRACE\" disabled (\"# CONFIG_MMIOTRACE is not set\" in .config) and reboot.")
     .register();
 
@@ -1639,6 +1645,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable live patching. Removes the ability to patch the running kernel without rebooting.")
     .with_fix("Recompile the kernel with \"CONFIG_LIVEPATCH\" disabled (\"# CONFIG_LIVEPATCH is not set\" in .config) and reboot.")
     .register();
 
@@ -1663,6 +1670,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable ftrace. Removes the function tracing infrastructure that increases kernel attack surface.")
     .with_fix("Recompile the kernel with \"CONFIG_FTRACE\" disabled (\"# CONFIG_FTRACE is not set\" in .config) and reboot.")
     .register();
 
@@ -1675,6 +1683,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable VIVID test driver. Removes the virtual video test driver.")
     .with_fix("Recompile the kernel with \"CONFIG_VIDEO_VIVID\" disabled (\"# CONFIG_VIDEO_VIVID is not set\" in .config) and reboot.")
     .register();
 
@@ -1687,6 +1696,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable evbug input handler. Removes the input event debug handler that logs all keystrokes.")
     .with_fix("Recompile the kernel with \"CONFIG_INPUT_EVBUG\" disabled (\"# CONFIG_INPUT_EVBUG is not set\" in .config) and reboot.")
     .register();
 
@@ -1711,6 +1721,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable XFS v4 support. Removes support for the legacy XFS version 4 format.")
     .with_fix("Recompile the kernel with \"CONFIG_XFS_SUPPORT_V4\" disabled (\"# CONFIG_XFS_SUPPORT_V4 is not set\" in .config) and reboot.")
     .register();
 
@@ -1735,6 +1746,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable fault injection. Removes the fault injection framework that allows simulating errors.")
     .with_fix("Recompile the kernel with \"CONFIG_FAULT_INJECTION\" disabled (\"# CONFIG_FAULT_INJECTION is not set\" in .config) and reboot.")
     .register();
 
@@ -1747,6 +1759,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable LKDTM. Removes the Linux Kernel Dump Test Module used for testing crash dumps.")
     .with_fix("Recompile the kernel with \"CONFIG_LKDTM\" disabled (\"# CONFIG_LKDTM is not set\" in .config) and reboot.")
     .register();
 

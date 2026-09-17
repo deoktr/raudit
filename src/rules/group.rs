@@ -7,7 +7,7 @@ pub fn add_checks() {
     check::Check::new(
         "GRP_001",
         "Ensure group shadow file is empty or missing",
-        Severity::Medium,
+        Severity::High,
         vec!["group", "server", "workstation"],
         group::empty_gshadow,
         vec![],
@@ -19,7 +19,7 @@ pub fn add_checks() {
     check::Check::new(
         "GRP_002",
         "Ensure no group has a password set",
-        Severity::Medium,
+        Severity::High,
         vec!["group", "server", "workstation"],
         group::no_password_in_group,
         vec![group::init_group],
@@ -80,7 +80,7 @@ pub fn add_checks() {
     check::Check::new(
         "GRP_100",
         "Ensure \"/etc/group\" file owner is \"root:root\"",
-        Severity::Medium,
+        Severity::High,
         vec!["group", "CIS", "server", "workstation"],
         || base::check_file_owner_id("/etc/group", 0, 0),
         vec![],

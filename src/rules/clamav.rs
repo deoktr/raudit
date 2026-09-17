@@ -6,7 +6,7 @@ pub fn add_checks() {
     check::Check::new(
         "CAV_001",
         "Ensure ClamAV is installed",
-        Severity::Medium,
+        Severity::Low,
         vec!["clamav", "CIS", "useless"],
         clamav::clamav_installed,
         vec![],
