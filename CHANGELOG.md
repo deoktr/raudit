@@ -14,6 +14,7 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 - Add user checks `USR_012` to `USR_014`.
 - Add system checks `SYT_002` to `SYT_009`.
 - Add audit checks `AUD_101` to `AUD_108`.
+- Add skip condition for `EXP_001`.
 
 ## [0.33.0](https://github.com/deoktr/raudit/releases/tag/v0.33.0) - 2026-09-17
 

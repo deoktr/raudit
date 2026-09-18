@@ -23,8 +23,10 @@ use std::sync::OnceLock;
 use crate::{check, log_debug, log_error};
 
 const CMDLINE_PATH: &str = "/proc/cmdline";
+const OSRELEASE_PATH: &str = "/proc/sys/kernel/osrelease";
 
 static KERNEL_PARAMS: OnceLock<KernelParams> = OnceLock::new();
+static KERNEL_VERSION: OnceLock<(u32, u32, u32)> = OnceLock::new();
 
 /// Kernel params from `/proc/cmdline`.
 pub type KernelParams = Vec<String>;
@@ -78,6 +80,57 @@ pub fn check_kernel_params(variable: &str) -> check::CheckReturn {
     }
 }
 
+/// Parse a kernel version string like "6.8.0-45-generic" into (major, minor, patch).
+pub fn parse_kernel_version(version: &str) -> Option<(u32, u32, u32)> {
+    let numeric_part: String = version
+        .chars()
+        .take_while(|c| c.is_ascii_digit() || *c == '.')
+        .collect();
+    let mut parts = numeric_part.split('.');
+    let major = parts.next()?.parse().ok()?;
+    let minor = parts.next()?.parse().ok()?;
+    let patch = parts.next().and_then(|p| p.parse().ok()).unwrap_or(0);
+    Some((major, minor, patch))
+}
+
+/// Init kernel version by reading `/proc/sys/kernel/osrelease`.
+pub fn init_kernel_version() {
+    if KERNEL_VERSION.get().is_some() {
+        return;
+    }
+
+    let content = match fs::read_to_string(OSRELEASE_PATH) {
+        Ok(c) => c,
+        Err(err) => {
+            log_error!("failed to read kernel osrelease: {}", err);
+            return;
+        }
+    };
+
+    if let Some(v) = parse_kernel_version(content.trim()) {
+        KERNEL_VERSION.get_or_init(|| v);
+        log_debug!("initialized kernel version: {}.{}.{}", v.0, v.1, v.2);
+    } else {
+        log_error!("failed to parse kernel version from: {}", content.trim());
+    }
+}
+
+/// Skip check when the running kernel is not in the vulnerable range for CopyFail.
+/// Vulnerable range: >= 4.14.0 and <= 6.19.12.
+pub fn skip_not_vulnerable_copyfail() -> bool {
+    init_kernel_version();
+    match KERNEL_VERSION.get() {
+        Some(&(major, minor, patch)) => {
+            let version = (major, minor, patch);
+            !((4, 14, 0)..=(6, 19, 12)).contains(&version)
+        }
+        None => {
+            log_error!("kernel version not initialized, skipping CopyFail check");
+            true
+        }
+    }
+}
+
 /// Check if system needs a reboot.
 pub fn check_reboot_required() -> check::CheckReturn {
     // TODO: on RHEL use `needs-restarting -r` command, status 0 no reboot
@@ -89,5 +142,43 @@ pub fn check_reboot_required() -> check::CheckReturn {
         (check::CheckState::Pass, None)
     } else {
         (check::CheckState::Fail, None)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_kernel_version() {
+        assert_eq!(
+            parse_kernel_version("7.1.9-hardened1-1-hardened"),
+            Some((7, 1, 9))
+        );
+        assert_eq!(parse_kernel_version("6.8.0-45-generic"), Some((6, 8, 0)));
+        assert_eq!(parse_kernel_version("5.15.0-134-generic"), Some((5, 15, 0)));
+        assert_eq!(parse_kernel_version("4.14.0"), Some((4, 14, 0)));
+        assert_eq!(parse_kernel_version("6.19.12"), Some((6, 19, 12)));
+        assert_eq!(
+            parse_kernel_version("3.10.0-1160.el7.x86_64"),
+            Some((3, 10, 0))
+        );
+        assert_eq!(parse_kernel_version("6.1"), Some((6, 1, 0)));
+        assert_eq!(parse_kernel_version(""), None);
+        assert_eq!(parse_kernel_version("abc"), None);
+    }
+
+    #[test]
+    fn test_copyfail_vulnerable_range() {
+        let vulnerable = |v: (u32, u32, u32)| ((4, 14, 0)..=(6, 19, 12)).contains(&v);
+
+        assert!(!vulnerable((3, 10, 0)));
+        assert!(!vulnerable((4, 13, 99)));
+        assert!(vulnerable((4, 14, 0)));
+        assert!(vulnerable((5, 15, 0)));
+        assert!(vulnerable((6, 8, 0)));
+        assert!(vulnerable((6, 19, 12)));
+        assert!(!vulnerable((6, 19, 13)));
+        assert!(!vulnerable((7, 0, 0)));
     }
 }
