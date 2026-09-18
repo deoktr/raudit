@@ -310,4 +310,16 @@ pub fn add_checks() {
     .with_description("World-writable files in user home directories can be modified by any user on the system, enabling data tampering and potential privilege escalation via .bashrc, .profile, or crontab modification.")
     .with_fix("Find and fix: find /home -type f -perm -0002 -exec chmod o-w {} \\;")
     .register();
+
+    check::Check::new(
+        "USR_016",
+        "Ensure root account is disabled",
+        Severity::Critical,
+        vec!["user", "passwd", "shadow", "server", "workstation"],
+        users::root_account_disabled,
+        vec![users::init_passwd, users::init_shadow],
+    )
+    .with_description("An enabled root account with a valid password and an interactive shell is the single highest-value target for brute-force and credential-theft attacks. Disabling it forces administrators to log in as themselves and use \"sudo\", which preserves non-repudiable audit trails. Ensure you have valid admin accounts.")
+    .with_fix("Lock the password: \"passwd -l root\" and set the shell to nologin: \"usermod -s /usr/sbin/nologin root\".")
+    .register();
 }

@@ -294,7 +294,11 @@ pub fn yescrypt_hashes() -> check::CheckReturn {
     let usernames: Vec<String> = shadow
         .iter()
         .filter(|entry| {
-            !entry.password.starts_with("$y$") && entry.password != "!" && entry.password != "!*"
+            !entry.password.starts_with("$y$")
+                // all indicating the account is locked or disabled
+                && entry.password != "*"
+                // could be `!`, `!!`, or `!*`
+                && !entry.password.starts_with('!')
         })
         .map(|entry| entry.username.clone())
         .collect();
@@ -535,6 +539,56 @@ pub fn no_empty_passwd_password() -> check::CheckReturn {
 /// terminal.
 pub fn empty_securetty() -> check::CheckReturn {
     base::empty_or_missing_file(SECURETTY_PATH)
+}
+
+/// Ensure root account is disabled.
+pub fn root_account_disabled() -> check::CheckReturn {
+    let shadow = match SHADOW_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Warning,
+                Some("shadow configuration not initialized".to_string()),
+            );
+        }
+    };
+
+    let passwd = match PASSWD_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Warning,
+                Some("passwd configuration not initialized".to_string()),
+            );
+        }
+    };
+
+    let root_shadow = shadow.iter().find(|entry| entry.username == "root");
+    let root_passwd = passwd.iter().find(|entry| entry.username == "root");
+
+    let password_locked = match root_shadow {
+        Some(entry) => entry.password.starts_with('!') || entry.password == "*",
+        None => true,
+    };
+
+    let shell_disabled = match root_passwd {
+        Some(entry) => {
+            entry.shell == "/usr/sbin/nologin"
+                || entry.shell == "/sbin/nologin"
+                || entry.shell == "/bin/false"
+                || entry.shell == "/usr/bin/false"
+        }
+        None => false,
+    };
+
+    if password_locked || shell_disabled {
+        (check::CheckState::Pass, None)
+    } else {
+        (
+            check::CheckState::Fail,
+            Some("root account is enabled".to_string()),
+        )
+    }
 }
 
 pub fn no_rhosts_files() -> check::CheckReturn {
