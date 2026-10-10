@@ -12,18 +12,20 @@ except ImportError:
     print("run: pip install jinja2")
     raise
 
+logger = logging.getLogger(__name__)
+
 
 def handle(args) -> int:
-    logging.info(f"reading raudit json result from {args.raudit_json.name}")
+    logger.info(f"reading raudit json result from {args.raudit_json.name}")
     input = args.raudit_json.read()
     result = json.loads(input)
 
     for key in ("findings", "stats", "metadata"):
         if key not in result:
-            logging.error(f"invalid OCSF JSON: missing '{key}' field")
+            logger.error(f"invalid OCSF JSON: missing '{key}' field")
             return 1
 
-    logging.info(f"loading template file {args.template.name}")
+    logger.info(f"loading template file {args.template.name}")
     template_content = args.template.read()
     env = Environment(
         loader=DictLoader({"template": template_content}),
@@ -34,7 +36,7 @@ def handle(args) -> int:
 
     out = template.render(**result)
 
-    logging.info(f"writing output to {args.output.name}")
+    logger.info(f"writing output to {args.output.name}")
     args.output.write(out)
     return 0
 
@@ -91,7 +93,7 @@ def cli() -> int:
     try:
         return handle(args)
     except Exception as e:
-        logging.error(str(e))
+        logger.error(str(e))
         return 1
 
 

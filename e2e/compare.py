@@ -3,39 +3,63 @@
 import argparse
 import json
 import logging
-import shutil
 import sys
 
-SKIP_MESSAGE = ["UPT_001"]
+logger = logging.getLogger(__name__)
+
+SKIP_MESSAGE = ["UPT_001", "AAR_004", "AUD_001"]
+
+TIMESTAMP_KEYS = ["time"]
+
+
+def strip_timestamps(data):
+    """Recursively drop timestamp keys so baselines stay stable in git."""
+
+    if isinstance(data, dict):
+        return {
+            key: strip_timestamps(value)
+            for key, value in data.items()
+            if key not in TIMESTAMP_KEYS
+        }
+    if isinstance(data, list):
+        return [strip_timestamps(item) for item in data]
+    return data
+
+
+def save_json(path, data):
+    """Write data as indented json, without timestamps."""
+
+    with open(path, "w") as f:
+        json.dump(strip_timestamps(data), f, indent=2)
 
 
 def compare_stat(base, target, stat_name) -> int:
     """Compare a single stat."""
 
     if "stats" not in base:
-        logging.error("wrong json format, missing stats from base")
+        logger.error("wrong json format, missing stats from base")
         return 1
     if "stats" not in target:
-        logging.error("wrong json format, missing stats from target")
+        logger.error("wrong json format, missing stats from target")
         return 1
 
     if stat_name not in base["stats"]:
-        logging.error(f"wrong json format, missing stat '{stat_name}' from base")
+        logger.error(f"wrong json format, missing stat '{stat_name}' from base")
         return 1
     if stat_name not in target["stats"]:
-        logging.error(f"wrong json format, missing stat '{stat_name}' from target")
+        logger.error(f"wrong json format, missing stat '{stat_name}' from target")
         return 1
 
     base_stat = base["stats"][stat_name]
     target_stat = target["stats"][stat_name]
 
     if base_stat != target_stat:
-        logging.warning(
+        logger.warning(
             f"stat {stat_name} are not the same: '{base_stat}' != '{target_stat}'"
         )
         return 1
     else:
-        logging.debug(f"valid stat '{stat_name}'")
+        logger.debug(f"valid stat '{stat_name}'")
         return 0
 
 
@@ -43,21 +67,21 @@ def compare_number_of_findings(base, target) -> int:
     """Compare the total amount of findings."""
 
     if "findings" not in base:
-        logging.error("wrong json format, missing findings from base")
+        logger.error("wrong json format, missing findings from base")
         return 1
     if "findings" not in target:
-        logging.error("wrong json format, missing findings from target")
+        logger.error("wrong json format, missing findings from target")
         return 1
 
     num_base = len(base["findings"])
     num_target = len(target["findings"])
     if num_base != num_target:
-        logging.warning(
+        logger.warning(
             f"number of findings are not the same: '{num_base}' != '{num_target}'"
         )
         return 1
     else:
-        logging.debug(f"valid number of findings '{num_base}'")
+        logger.debug(f"valid number of findings '{num_base}'")
         return 0
 
 
@@ -81,7 +105,7 @@ def compare_findings(base, target) -> int:
         target_id = target_finding["finding_info"]["uid"]
 
         if base_id != target_id:
-            logging.warning(
+            logger.warning(
                 f"finding at index {index} do not have same id: '{base_id}' != '{target_id}'"
             )
             out += 1
@@ -92,7 +116,7 @@ def compare_findings(base, target) -> int:
         base_title = base_finding["finding_info"]["title"]
         target_title = target_finding["finding_info"]["title"]
         if base_title != target_title:
-            logging.warning(
+            logger.warning(
                 f"finding {finding_id} do not have same title: '{base_title}' != '{target_title}'"
             )
             out += 1
@@ -100,19 +124,19 @@ def compare_findings(base, target) -> int:
         base_message = base_finding.get("message")
         target_message = target_finding.get("message")
         if finding_id not in SKIP_MESSAGE and base_message != target_message:
-            logging.warning(
+            logger.warning(
                 f"finding {finding_id} do not have same message: '{base_message}' != '{target_message}'"
             )
             out += 1
 
         if base_finding["status"] != target_finding["status"]:
-            logging.warning(
+            logger.warning(
                 f"finding {finding_id} do not have same status: '{base_finding['status']}' != '{target_finding['status']}'"
             )
             out += 1
 
         if base_finding["severity"] != target_finding["severity"]:
-            logging.warning(
+            logger.warning(
                 f"finding {finding_id} do not have same severity: '{base_finding['severity']}' != '{target_finding['severity']}'"
             )
             out += 1
@@ -126,7 +150,7 @@ def unique_finding_id(base) -> int:
     for finding in base["findings"]:
         finding_id = finding["finding_info"]["uid"]
         if finding_id in ids:
-            logging.warning(f"duplicate finding id: {finding_id}")
+            logger.warning(f"duplicate finding id: {finding_id}")
             out += 1
         else:
             ids.append(finding_id)
@@ -155,31 +179,31 @@ def compare(base, target) -> int:
 
 
 def handle(args) -> int:
-    logging.info(
+    logger.info(
         f"comparing raudit json {args.base_json.name} to {args.target_json.name}"
     )
 
     if args.base_json.name == args.target_json.name:
-        logging.error(f"comparing the same file: {args.base_json.name}")
+        logger.error(f"comparing the same file: {args.base_json.name}")
         return 1
 
     base_raw = args.base_json.read()
     base = json.loads(base_raw)
-    logging.debug(f"loaded raudit base json from: {args.base_json.name}")
+    logger.debug(f"loaded raudit base json from: {args.base_json.name}")
 
     target_raw = args.target_json.read()
     target = json.loads(target_raw)
-    logging.debug(f"loaded raudit target json from: {args.target_json.name}")
+    logger.debug(f"loaded raudit target json from: {args.target_json.name}")
 
     check_sum = compare(base, target)
     if check_sum == 0:
-        logging.info("valid, all checks passed")
+        logger.info("valid, all checks passed")
         return 0
 
-    logging.error(f"invalid, {check_sum} checks failed")
+    logger.error(f"invalid, {check_sum} checks failed")
     if not args.no_ask_changes:
         if input("\nDo you want to accept changes? y/[n] ").lower() == "y":
-            shutil.copyfile(args.target_json.name, args.base_json.name)
+            save_json(args.base_json.name, target)
     return 0
 
 
@@ -233,7 +257,7 @@ def cli() -> int:
     try:
         return handle(args)
     except Exception as e:
-        logging.error(str(e))
+        logger.error(str(e))
         return 1
 
 

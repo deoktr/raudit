@@ -2,4 +2,7 @@ debug/
 target/
 *.pdb
 *.json
+!e2e/expected/*.json
 venv/
+e2e/qemu/keys/
+__pycache__/

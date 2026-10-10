@@ -1,2 +1,0 @@
-APT::Periodic::AutocleanInterval "7";
-APT::Get::AutomaticRemove "1";

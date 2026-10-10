@@ -131,11 +131,7 @@ pub fn init_containers_inspect() {
 
 /// Check a configuration from Docker, the pointer are defined by RFC6901.
 pub fn get_docker_info_value(pointer: &str) -> Option<&Value> {
-    let info = match DOCKER_INFO.get() {
-        Some(c) => c,
-        None => return None,
-    };
-    info.pointer(pointer)
+    DOCKER_INFO.get()?.pointer(pointer)
 }
 
 /// Check a configuration from Docker, the pointer are defined by RFC6901.

@@ -1734,6 +1734,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable writing to mounted block devices. Prevents raw writes to mounted filesystems that bypass filesystem checks.")
     .with_fix("Recompile the kernel with \"CONFIG_BLK_DEV_WRITE_MOUNTED\" disabled (\"# CONFIG_BLK_DEV_WRITE_MOUNTED is not set\" in .config) and reboot.")
     .register();
 

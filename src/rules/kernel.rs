@@ -349,7 +349,7 @@ pub fn add_checks() {
 
     // from: kernel-hardening-checker
     check::Check::new(
-        "KNP_063",
+        "KNP_064",
         "Ensure that kernel flag \"hardened_usercopy=1\" is present",
         Severity::Medium,
         vec!["kernel", "KSPP", "server", "workstation"],

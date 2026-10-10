@@ -10,36 +10,52 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
-- Add SSH checks `SSH_054` to `SSH_056`.
-- Add user checks `USR_012` to `USR_016`.
-- Add system checks `SYT_002` to `SYT_009`.
-- Add audit checks `AUD_101` to `AUD_108`.
-- Add skip condition for `EXP_001`.
+## [0.34.0] - 2026-10-10
 
-## [0.33.0](https://github.com/deoktr/raudit/releases/tag/v0.33.0) - 2026-09-17
+### Added
 
-- Add checks `CNT_032` and `CNT_507`.
-- Add or improve checks descriptions.
-- Add KSPP tags.
-- Update some severity levels.
-- Remove duplicate checks.
+- Add SSH checks `SSH_054` to `SSH_056`
+- Add user checks `USR_012` to `USR_016`
+- Add system checks `SYT_002` to `SYT_009`
+- Add audit checks `AUD_101` to `AUD_108`
+- Add skip condition for `EXP_001`
 
-## [0.32.3](https://github.com/deoktr/raudit/releases/tag/v0.32.3) - 2026-05-08
+### Fixed
 
-- Update Docker checks to verify from `docker info` directly.
-- Fix check for socket files permissions and owner not working.
-- Internal refactoring, update checks.
+- Fixed end-to-end tests
+- Fixed checks `APT_100` to `APT_103`
+- Fixed duplicate check ID `KNP_063`
 
-## [0.32.2](https://github.com/deoktr/raudit/releases/tag/v0.32.2) - 2026-05-06
+## [0.33.0] - 2026-09-17
 
-- Add rules `HST_003` to `HST_007`.
-- Add rule `EXP_001`.
-- Add exploit mitigation rules.
-- Add descriptions to rules.
-- Update some rules levels.
-- Add UID/GID resolution helper function.
-- Internal refactoring, update project layout.
+- Add checks `CNT_032` and `CNT_507`
+- Add or improve checks descriptions
+- Add KSPP tags
+- Update some severity levels
+- Remove duplicate checks
 
-## [0.32.1](https://github.com/deoktr/raudit/releases/tag/v0.32.1) - 2026-05-01
+## [0.32.3] - 2026-05-08
 
-- Add `--no-skip` CLI flag to disable automatic check skipping.
+- Update Docker checks to verify from `docker info` directly
+- Fix check for socket files permissions and owner not working
+- Internal refactoring, update checks
+
+## [0.32.2] - 2026-05-06
+
+- Add rules `HST_003` to `HST_007`
+- Add rule `EXP_001`
+- Add exploit mitigation rules
+- Add descriptions to rules
+- Update some rules levels
+- Add UID/GID resolution helper function
+- Internal refactoring, update project layout
+
+## [0.32.1] - 2026-05-01
+
+- Add `--no-skip` CLI flag to disable automatic check skipping
+
+[0.34.0]: https://github.com/deoktr/raudit/releases/tag/v0.34.0
+[0.33.0]: https://github.com/deoktr/raudit/releases/tag/v0.33.0
+[0.32.3]: https://github.com/deoktr/raudit/releases/tag/v0.32.3
+[0.32.2]: https://github.com/deoktr/raudit/releases/tag/v0.32.2
+[0.32.1]: https://github.com/deoktr/raudit/releases/tag/v0.32.1

@@ -96,9 +96,7 @@ pub fn get_pids(config: &Proc, name: &str) -> Option<Vec<String>> {
 pub fn is_running(name: &str) -> Result<bool, String> {
     match PROCESSES.get() {
         Some(procs) => Ok(get_pids(procs, name).is_some()),
-        None => {
-            return Err("processes not initialized".to_string());
-        }
+        None => Err("processes not initialized".to_string()),
     }
 }
 

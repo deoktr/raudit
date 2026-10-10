@@ -1,5 +1,3 @@
-alias t := test
-
 [private]
 default:
     @just --choose
@@ -18,11 +16,20 @@ lint:
 audit:
     cargo audit
 
-e2e_test target="ubuntu-base":
-    podman build . -f 'tests/{{ target }}.Containerfile' -t 'raudit-test-{{ target }}'
-    podman run --rm 'raudit-test-{{ target }}' > 'raudit-test-{{ target }}.json'
-    ./tests/compare.py -b 'tests/raudit-test-{{ target }}.json' -t 'raudit-test-{{ target }}.json'
+e2e_build:
+    cargo build --release
 
-e2e_test_all:
-    just e2e_test 'ubuntu-base'
-    just e2e_test 'ubuntu-hardened'
+e2e_install_deps:
+    sudo apt-get install -y qemu-system-x86 qemu-utils cloud-image-utils genisoimage sshpass
+
+e2e_hardened: e2e_build
+    python3 e2e/qemu_test.py hardened --log-level info
+
+e2e_insecure: e2e_build
+    python3 e2e/qemu_test.py insecure --log-level info
+
+e2e_all: e2e_build
+    python3 e2e/qemu_test.py all --log-level info
+
+e2e_update: e2e_build
+    python3 e2e/qemu_test.py all --update-baselines --log-level info

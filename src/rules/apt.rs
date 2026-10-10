@@ -167,57 +167,57 @@ pub fn add_checks() {
     // fs
     check::Check::new(
         "APT_100",
-        "Ensure /etc/apt/source.list file have 644 permission",
+        "Ensure /etc/apt/sources.list file have 644 permission",
         Severity::High,
         vec!["apt", "server", "workstation"],
-        || base::check_file_permission("/etc/apt/source.list", 0o644),
+        || base::check_file_permission("/etc/apt/sources.list", 0o644),
         vec![],
     )
     .skip_when(os::skip_not_debian)
     .with_description("Prevents unauthorized modification of package repositories. Could be exploited to download packages from attacker controlled servers.")
-    .with_fix("chmod 644 /etc/apt/source.list")
+    .with_fix("chmod 644 /etc/apt/sources.list")
     .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
         "APT_101",
-        "Ensure /etc/apt/source.list is owned by root",
+        "Ensure /etc/apt/sources.list is owned by root",
         Severity::High,
         vec!["apt", "server", "workstation"],
-        || base::check_file_owner_id("/etc/apt/source.list", 0, 0),
+        || base::check_file_owner_id("/etc/apt/sources.list", 0, 0),
         vec![],
     )
     .skip_when(os::skip_not_debian)
     .with_description("Prevents unauthorized modification of package repositories. Could be exploited to download packages from attacker controlled servers.")
-    .with_fix("chown root:root /etc/apt/source.list")
+    .with_fix("chown root:root /etc/apt/sources.list")
     .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
         "APT_102",
-        "Ensure all /etc/apt/source.list.d/ files have 644 permissions",
+        "Ensure all /etc/apt/sources.list.d/ files have 644 permissions",
         Severity::High,
         vec!["apt", "server", "workstation"],
-        || base::check_dir_files_permission("/etc/apt/source.list.d/", 0o644),
+        || base::check_dir_files_permission("/etc/apt/sources.list.d/", 0o644),
         vec![],
     )
     .skip_when(os::skip_not_debian)
     .with_description("Prevents unauthorized modification of package repositories. Could be exploited to download packages from attacker controlled servers.")
-    .with_fix("chmod -R 644 /etc/apt/source.list.d/*")
+    .with_fix("chmod -R 644 /etc/apt/sources.list.d/*")
     .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
         "APT_103",
-        "Ensure all /etc/apt/source.list.d/ files are owned by root",
+        "Ensure all /etc/apt/sources.list.d/ files are owned by root",
         Severity::High,
         vec!["cron", "server", "workstation"],
-        || base::check_dir_files_owner_id("/etc/apt/source.list.d/", 0, 0),
+        || base::check_dir_files_owner_id("/etc/apt/sources.list.d/", 0, 0),
         vec![],
     )
     .skip_when(os::skip_not_debian)
     .with_description("Prevents unauthorized modification of package repositories. Could be exploited to download packages from attacker controlled servers.")
-    .with_fix("chown -R root:root /etc/apt/source.list.d/*")
+    .with_fix("chown -R root:root /etc/apt/sources.list.d/*")
     .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
