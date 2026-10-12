@@ -19,6 +19,7 @@
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
+use std::process::Command;
 use std::sync::OnceLock;
 
 use crate::{check, log_debug, log_error, utils::run};
@@ -26,6 +27,7 @@ use crate::{check, log_debug, log_error, utils::run};
 const SYSTEMD_CONF_PATH: &str = "/etc/systemd/system.conf";
 
 static SYSTEMD_CONFIG: OnceLock<SystemdConfig> = OnceLock::new();
+static SYSTEMD_ACTIVE_UNITS: OnceLock<Vec<String>> = OnceLock::new();
 
 /// Systemd configuration.
 pub type SystemdConfig = HashMap<String, String>;
@@ -65,6 +67,50 @@ pub fn init_systemd_config() {
             log_debug!("initialized systemd config");
         }
         Err(err) => log_error!("failed to initialize systemd configuration: {}", err),
+    };
+}
+
+/// Returns a Vec of unit names reported as "active" by `systemctl list-units`.
+fn get_systemd_active_units() -> Result<Vec<String>, String> {
+    let output = Command::new("systemctl")
+        .args([
+            "list-units",
+            "--type=service",
+            "--state=active",
+            "--no-legend",
+            "--no-pager",
+        ])
+        .output()
+        .map_err(|err| err.to_string())?;
+
+    if !output.status.success() {
+        return Err("systemctl failed".to_string());
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let mut units = Vec::new();
+
+    for line in stdout.lines() {
+        if let Some(unit) = line.split_whitespace().next() {
+            units.push(unit.to_string());
+        }
+    }
+
+    Ok(units)
+}
+
+/// Init systemd active units by running `systemctl list-units`.
+pub fn init_systemd_active_units() {
+    if SYSTEMD_ACTIVE_UNITS.get().is_some() {
+        return;
+    }
+
+    match get_systemd_active_units() {
+        Ok(c) => {
+            SYSTEMD_ACTIVE_UNITS.get_or_init(|| c);
+            log_debug!("initialized systemd active units");
+        }
+        Err(err) => log_error!("failed to initialize systemd active units: {}", err),
     };
 }
 
@@ -136,4 +182,12 @@ pub fn get_service_file(name: &str) -> Option<String> {
 
 pub fn get_socket_file(name: &str) -> Option<String> {
     get_systemd_file(&format!("{}.socket", name))
+}
+
+/// Check if a systemd unit (service, socket, etc.) is running.
+pub fn systemd_unit_active(name: &str) -> Result<bool, String> {
+    match SYSTEMD_ACTIVE_UNITS.get() {
+        Some(active_units) => Ok(active_units.contains(&name.to_string())),
+        None => Err("systemd config not initialized".to_string()),
+    }
 }

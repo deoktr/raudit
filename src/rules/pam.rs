@@ -4,6 +4,8 @@ use crate::modules::pam;
 
 pub fn add_checks() {
     // TODO: ensure yescrypt is used
+    // TODO: ensure pam_unix has no flag `nullok`, would mitigate dirtyflag LPE?
+    // TODO: ensure pam_unix has flag `remember=5` or some higher number
 
     check::Check::new(
         "PAM_001",
