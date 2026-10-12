@@ -34,7 +34,7 @@ pub fn is_secureboot_enabled() -> check::CheckReturn {
             // 1 = enabled, 0 = disabled
             let bytes = content.into_bytes();
             if bytes.len() >= 5 {
-                if (bytes[4] == 1) {
+                if bytes[4] == 1 {
                     (check::CheckState::Pass, None)
                 } else {
                     (check::CheckState::Fail, None)

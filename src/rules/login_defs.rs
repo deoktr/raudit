@@ -44,10 +44,7 @@ pub fn add_checks() {
                         }
                         Err(err) => (check::CheckState::Warning, Some(err.to_string())),
                     },
-                    None => (
-                        check::CheckState::Warning,
-                        Some("key not present".to_string()),
-                    ),
+                    None => (check::CheckState::Pass, Some("default (5)".to_string())),
                 },
                 Err(err) => (check::CheckState::Warning, Some(err)),
             }
@@ -61,7 +58,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "LDF_003",
-        "Ensure that login.defs \"PASS_MAX_DAYS\" <= 365",
+        "Ensure that login.defs -1 < \"PASS_MAX_DAYS\" <= 365",
         Severity::High,
         vec!["login_defs", "server"],
         || {
@@ -70,7 +67,7 @@ pub fn add_checks() {
                 Ok(value) => match value {
                     Some(vl) => match vl.parse::<i32>() {
                         Ok(val) => {
-                            if val <= VAL {
+                            if val <= VAL && val >= 0 {
                                 (check::CheckState::Pass, Some(format!("{}", val)))
                             } else {
                                 (check::CheckState::Fail, Some(format!("{} > {}", val, VAL)))
@@ -79,8 +76,8 @@ pub fn add_checks() {
                         Err(err) => (check::CheckState::Warning, Some(err.to_string())),
                     },
                     None => (
-                        check::CheckState::Warning,
-                        Some("key not present".to_string()),
+                        check::CheckState::Fail,
+                        Some("key not present (default is -1)".to_string()),
                     ),
                 },
                 Err(err) => (check::CheckState::Warning, Some(err)),
@@ -112,8 +109,8 @@ pub fn add_checks() {
                         Err(err) => (check::CheckState::Warning, Some(err.to_string())),
                     },
                     None => (
-                        check::CheckState::Warning,
-                        Some("key not present".to_string()),
+                        check::CheckState::Fail,
+                        Some("key not present (default is 0)".to_string()),
                     ),
                 },
                 Err(err) => (check::CheckState::Warning, Some(err)),
@@ -145,8 +142,8 @@ pub fn add_checks() {
                         Err(err) => (check::CheckState::Warning, Some(err.to_string())),
                     },
                     None => (
-                        check::CheckState::Warning,
-                        Some("key not present".to_string()),
+                        check::CheckState::Fail,
+                        Some("key not present (default is -1)".to_string()),
                     ),
                 },
                 Err(err) => (check::CheckState::Warning, Some(err)),
@@ -196,7 +193,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "LDF_009",
-        "Ensure that login.defs \"LOGIN_RETRIES\" <= 10",
+        "Ensure that login.defs \"LOGIN_RETRIES\" <= 3",
         Severity::Medium,
         vec!["login_defs", "server", "workstation"],
         || {
@@ -214,8 +211,8 @@ pub fn add_checks() {
                         Err(err) => (check::CheckState::Warning, Some(err.to_string())),
                     },
                     None => (
-                        check::CheckState::Warning,
-                        Some("key not present".to_string()),
+                        check::CheckState::Fail,
+                        Some("key not present (default is 5)".to_string()),
                     ),
                 },
                 Err(err) => (check::CheckState::Warning, Some(err)),
@@ -223,7 +220,8 @@ pub fn add_checks() {
         },
         vec![login_defs::init_login_defs],
     )
-    .with_fix("Set \"LOGIN_RETRIES 10\" or lower in \"/etc/login.defs\".")
+    .with_description("Maximum number of login retries in case of bad password. This will most likely be overridden by PAM, since the default pam_unix module has its own built in of 3 retries. However, this is a safe fallback in case you are using an authentication module that does not enforce PAM_MAXTRIES.")
+    .with_fix("Set \"LOGIN_RETRIES 3\" or lower in \"/etc/login.defs\".")
     .register();
 
     check::Check::new(
@@ -246,7 +244,7 @@ pub fn add_checks() {
                         Err(err) => (check::CheckState::Warning, Some(err.to_string())),
                     },
                     None => (
-                        check::CheckState::Warning,
+                        check::CheckState::Fail,
                         Some("key not present".to_string()),
                     ),
                 },

@@ -70,6 +70,7 @@ pub fn init_apt_config() {
     }
 }
 
+/// Ensure APT is configured correctly.
 pub fn check_apt(key: &str, value: &str) -> check::CheckReturn {
     let config = match APT_CONFIG.get() {
         Some(c) => c,
@@ -84,6 +85,43 @@ pub fn check_apt(key: &str, value: &str) -> check::CheckReturn {
     match config.get(key) {
         Some(conf_value) => {
             if conf_value == value {
+                (check::CheckState::Pass, None)
+            } else {
+                (
+                    check::CheckState::Fail,
+                    Some(format!("found: {}", conf_value)),
+                )
+            }
+        }
+        None => (
+            check::CheckState::Fail,
+            Some(format!("key {:?} not present", key)),
+        ),
+    }
+}
+
+fn matches_bool_value(conf_value: &str, expected: bool) -> bool {
+    match expected {
+        true => conf_value == "true" || conf_value == "1",
+        false => conf_value == "false" || conf_value == "0",
+    }
+}
+
+/// Ensure APT is configured correctly, when the key is a boolean.
+pub fn check_apt_bool(key: &str, value: bool) -> check::CheckReturn {
+    let config = match APT_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Warning,
+                Some("apt configuration not initialized".to_string()),
+            );
+        }
+    };
+
+    match config.get(key) {
+        Some(conf_value) => {
+            if matches_bool_value(conf_value, value) {
                 (check::CheckState::Pass, None)
             } else {
                 (

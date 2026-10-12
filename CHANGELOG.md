@@ -16,6 +16,15 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 - Add Secure Boot module
 - Add Secure Boot check `SCB_001`
 
+### Changed
+
+- Updated severity level of some checks
+
+### Fixed
+
+- Fixed apt checks for boolean values
+- Fixed status on some checks with valid defaults instead of error
+
 ## [0.34.0] - 2026-10-10
 
 ### Added

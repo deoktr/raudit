@@ -16,16 +16,20 @@ pub fn add_checks() {
     .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults noexec\"")
     .register();
 
+    // requiretty is not supported on sudo-rs, the default sudo implementation
+    // on Ubuntu, looks like they won't implement it:
+    // <https://github.com/trifectatechfoundation/sudo-rs/issues/1245>
     check::Check::new(
         "SUD_002",
         "Ensure that sudo default config \"requiretty\" is set",
-        Severity::High,
+        Severity::Low,
         vec!["sudo", "server", "workstation"],
         || sudo::check_sudo_defaults("requiretty"),
         vec![sudo::init_sudo],
     )
     .skip_when(sudo::skip_no_sudo)
-    .with_description("Refuse to run unless sudo is invoked from a real tty, blocking exploitation paths via cron jobs or web shells. May break remote management tools, can be ignored for a remote management user with: \"Defaults:user !noexec\".")
+    .skip_when(sudo::skip_sudo_rs)
+    .with_description("Refuse to run unless sudo is invoked from a real tty, blocking exploitation paths via cron jobs or web shells. This slows down attacks but does not completely prevent them, just makes it a bit harder. May break remote management tools, can be ignored for a remote management user with: \"Defaults:user !noexec\".")
     .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults requiretty\"")
     .register();
 

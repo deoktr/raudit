@@ -46,7 +46,13 @@ fn parse_sudoer(content: String) -> SudoConfig {
 
 /// Skip when sudo is not installed.
 pub fn skip_no_sudo() -> bool {
-    utils::which("sudo").is_none()
+    utils::which("sudo").is_none() && utils::which("sudo-rs").is_none()
+}
+
+/// Skip when sudo-rs is installed, hard to tell which one between sudo and
+/// sudo-rs would be used, this is a quick skip.
+pub fn skip_sudo_rs() -> bool {
+    utils::which("sudo-rs").is_some()
 }
 
 pub fn init_sudo() {

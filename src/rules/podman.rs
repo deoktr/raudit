@@ -77,7 +77,7 @@ pub fn add_checks() {
     check::Check::new(
         "CNT_506",
         "Ensure podman containers are started with an apparmor profile",
-        Severity::High,
+        Severity::Medium,
         vec!["container", "podman", "apparmor", "server", "workstation"],
         podman::podman_apparmor,
         vec![podman::init_containers_inspect],

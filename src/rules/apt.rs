@@ -5,29 +5,29 @@ use crate::modules::{apt, base, os};
 pub fn add_checks() {
     check::Check::new(
         "APT_001",
-        "Ensure apt is configured with \"Acquire::http::AllowRedirect\" = \"0\"",
+        "Ensure apt is configured with \"Acquire::http::AllowRedirect\" = \"false\"",
         Severity::Medium,
         vec!["apt", "server", "workstation"],
-        || apt::check_apt("Acquire::http::AllowRedirect", "0"),
+        || apt::check_apt_bool("Acquire::http::AllowRedirect", false),
         vec![apt::init_apt_config],
     )
     .skip_when(os::skip_not_debian)
     .with_description("Disabling HTTP redirects prevents man-in-the-middle attacks that could redirect package downloads to malicious servers.")
-    .with_fix("In \"/etc/apt/apt.conf\" add: 'Acquire::http::AllowRedirect = \"0\";'")
+    .with_fix("In \"/etc/apt/apt.conf\" add: 'Acquire::http::AllowRedirect \"false\";'")
     .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
         "APT_002",
-        "Ensure apt is configured with \"APT::Get::AllowUnauthenticated\" = \"0\"",
+        "Ensure apt is configured with \"APT::Get::AllowUnauthenticated\" = \"false\"",
         Severity::High,
         vec!["apt", "server", "workstation"],
-        || apt::check_apt("APT::Get::AllowUnauthenticated", "0"),
+        || apt::check_apt_bool("APT::Get::AllowUnauthenticated", false),
         vec![apt::init_apt_config],
     )
     .skip_when(os::skip_not_debian)
     .with_description("Blocks installation of packages without proper authentication.")
-    .with_fix("In \"/etc/apt/apt.conf\" add: 'APT::Get::AllowUnauthenticated = \"0\";'")
+    .with_fix("In \"/etc/apt/apt.conf\" add: 'APT::Get::AllowUnauthenticated \"false\";'")
     .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
@@ -41,126 +41,126 @@ pub fn add_checks() {
     )
     .skip_when(os::skip_not_debian)
     .with_description("Automatically cleans package cache every 7 days, reducing disk space usage and potential stale package vulnerabilities.")
-    .with_fix("In \"/etc/apt/apt.conf\" add: 'APT::Periodic::AutocleanInterval = \"7\";'")
+    .with_fix("In \"/etc/apt/apt.conf\" add: 'APT::Periodic::AutocleanInterval \"7\";'")
     .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
         "APT_004",
-        "Ensure apt is configured with \"APT::Get::AutomaticRemove\" = \"1\"",
+        "Ensure apt is configured with \"APT::Get::AutomaticRemove\" = \"true\"",
         Severity::Low,
         vec!["apt", "workstation"],
-        || apt::check_apt("APT::Get::AutomaticRemove", "1"),
+        || apt::check_apt_bool("APT::Get::AutomaticRemove", true),
         vec![apt::init_apt_config],
     )
     .skip_when(os::skip_not_debian)
     .with_description("Automatically removes orphaned packages that are no longer needed, reducing the number of installed packages and the attack surface.")
-    .with_fix("In \"/etc/apt/apt.conf\" add: 'APT::Get::AutomaticRemove = \"1\";'")
+    .with_fix("In \"/etc/apt/apt.conf\" add: 'APT::Get::AutomaticRemove \"true\";'")
     .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
         "APT_005",
-        "Ensure apt is configured with \"APT::Install-Recommends\" = \"0\"",
+        "Ensure apt is configured with \"APT::Install-Recommends\" = \"false\"",
         Severity::Medium,
         vec!["apt", "server", "workstation"],
-        || apt::check_apt("APT::Install-Recommends", "0"),
+        || apt::check_apt_bool("APT::Install-Recommends", false),
         vec![apt::init_apt_config],
     )
     .skip_when(os::skip_not_debian)
     .with_description(
         "Prevents automatic installation of recommended packages, minimizing attack surface.",
     )
-    .with_fix("In \"/etc/apt/apt.conf\" add: 'APT::Install-Recommends = \"0\";'")
+    .with_fix("In \"/etc/apt/apt.conf\" add: 'APT::Install-Recommends \"false\";'")
     .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
         "APT_006",
-        "Ensure apt is configured with \"APT::Install-Suggests\" = \"0\"",
+        "Ensure apt is configured with \"APT::Install-Suggests\" = \"false\"",
         Severity::Medium,
         vec!["apt", "server", "workstation"],
-        || apt::check_apt("APT::Install-Suggests", "0"),
+        || apt::check_apt_bool("APT::Install-Suggests", false),
         vec![apt::init_apt_config],
     )
     .skip_when(os::skip_not_debian)
     .with_description(
         "Prevents automatic installation of suggested packages, minimizing attack surface.",
     )
-    .with_fix("In \"/etc/apt/apt.conf\" add: 'APT::Install-Suggests = \"0\";'")
+    .with_fix("In \"/etc/apt/apt.conf\" add: 'APT::Install-Suggests \"false\";'")
     .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
         "APT_007",
-        "Ensure apt is configured with \"Acquire::AllowInsecureRepositories\" = \"0\"",
+        "Ensure apt is configured with \"Acquire::AllowInsecureRepositories\" = \"false\"",
         Severity::High,
         vec!["apt", "server", "workstation"],
-        || apt::check_apt("Acquire::AllowInsecureRepositories", "0"),
+        || apt::check_apt_bool("Acquire::AllowInsecureRepositories", false),
         vec![apt::init_apt_config],
     )
     .skip_when(os::skip_not_debian)
     .with_description("Blocks use of repositories without valid cryptographic signatures, preventing installation of tampered packages.")
-    .with_fix("In \"/etc/apt/apt.conf\" add: 'Acquire::AllowInsecureRepositories = \"0\";'")
+    .with_fix("In \"/etc/apt/apt.conf\" add: 'Acquire::AllowInsecureRepositories \"false\";'")
     .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
         "APT_008",
-        "Ensure apt is configured with \"Acquire::AllowDowngradeToInsecureRepositories\" = \"0\"",
+        "Ensure apt is configured with \"Acquire::AllowDowngradeToInsecureRepositories\" = \"false\"",
         Severity::High,
         vec!["apt", "server", "workstation"],
-        || apt::check_apt("Acquire::AllowDowngradeToInsecureRepositories", "0"),
+        || apt::check_apt_bool("Acquire::AllowDowngradeToInsecureRepositories", false),
         vec![apt::init_apt_config],
     )
     .skip_when(os::skip_not_debian)
     .with_description("Prevents downgrading a previously authenticated repository to an insecure one, blocking a potential supply chain attack vector.")
     .with_fix(
-        "In \"/etc/apt/apt.conf\" add: 'Acquire::AllowDowngradeToInsecureRepositories = \"0\";'",
+        "In \"/etc/apt/apt.conf\" add: 'Acquire::AllowDowngradeToInsecureRepositories \"false\";'",
     )
     .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     check::Check::new(
         "APT_009",
-        "Ensure apt is configured with \"APT::Sandbox::Seccomp\" = \"1\"",
+        "Ensure apt is configured with \"APT::Sandbox::Seccomp\" = \"true\"",
         Severity::Medium,
         vec!["apt", "server", "workstation"],
-        || apt::check_apt("APT::Sandbox::Seccomp", "1"),
+        || apt::check_apt_bool("APT::Sandbox::Seccomp", true),
         vec![apt::init_apt_config],
     )
     .skip_when(os::skip_not_debian)
     .with_description("Enables Seccomp sandboxing for package management, providing additional process isolation.")
-    .with_fix("In \"/etc/apt/apt.conf\" add: 'APT::Sandbox::Seccomp = \"1\";'")
+    .with_fix("In \"/etc/apt/apt.conf\" add: 'APT::Sandbox::Seccomp \"true\";'")
     .with_link("https://wiki.debian.org/SecureApt")
     .register();
 
     // unattended-upgrade
     check::Check::new(
         "APT_010",
-        "Ensure apt is configured with \"Unattended-Upgrade::Remove-Unused-Dependencies\" = \"1\"",
+        "Ensure apt is configured with \"Unattended-Upgrade::Remove-Unused-Dependencies\" = \"true\"",
         Severity::Medium,
         vec!["apt", "workstation", "unattended-upgrade"],
-        || apt::check_apt("Unattended-Upgrade::Remove-Unused-Dependencies", "1"),
+        || apt::check_apt_bool("Unattended-Upgrade::Remove-Unused-Dependencies", true),
         vec![apt::init_apt_config],
     )
     .skip_when(os::skip_not_debian)
     .with_description("Automatically removes unused dependencies, minimizing attack surface.")
-    .with_fix("Install apt unattended-upgrade. In \"/etc/apt/apt.conf\" add: 'Unattended-Upgrade::Remove-Unused-Dependencies = \"1\";'")
+    .with_fix("Install apt unattended-upgrade. In \"/etc/apt/apt.conf\" add: 'Unattended-Upgrade::Remove-Unused-Dependencies \"true\";'")
     .with_link("https://wiki.debian.org/PeriodicUpdates")
     .register();
 
     check::Check::new(
         "APT_011",
-        "Ensure apt is configured with \"Unattended-Upgrade::Remove-Unused-Kernel-Packages\" = \"1\"",
+        "Ensure apt is configured with \"Unattended-Upgrade::Remove-Unused-Kernel-Packages\" = \"true\"",
         Severity::Medium,
         vec!["apt", "workstation", "unattended-upgrade"],
-        || apt::check_apt("Unattended-Upgrade::Remove-Unused-Kernel-Packages", "1"),
+        || apt::check_apt_bool("Unattended-Upgrade::Remove-Unused-Kernel-Packages", true),
         vec![apt::init_apt_config],
     )
     .skip_when(os::skip_not_debian)
     .with_description("Automatically removes unused kernel packages, minimizing attack surface.")
-    .with_fix("Install apt unattended-upgrade. In \"/etc/apt/apt.conf\" add: 'Unattended-Upgrade::Remove-Unused-Kernel-Packages = \"1\";'")
+    .with_fix("Install apt unattended-upgrade. In \"/etc/apt/apt.conf\" add: 'Unattended-Upgrade::Remove-Unused-Kernel-Packages \"true\";'")
     .with_link("https://wiki.debian.org/PeriodicUpdates")
     .register();
 
