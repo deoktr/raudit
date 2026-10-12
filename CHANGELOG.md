@@ -10,11 +10,16 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+### Added
+
+- Add Systemd check `systemd_unit_active`
+- Add Secure Boot module
+- Add Secure Boot check `SCB_001`
+
 ## [0.34.0] - 2026-10-10
 
 ### Added
 
-- Systemd check `systemd_unit_active`
 - Add SSH checks `SSH_054` to `SSH_056`
 - Add user checks `USR_012` to `USR_016`
 - Add system checks `SYT_002` to `SYT_009`

@@ -19,6 +19,7 @@ pub mod mount;
 pub mod nginx;
 pub mod pam;
 pub mod podman;
+pub mod secureboot;
 pub mod shell;
 pub mod sshd;
 pub mod sudo;
@@ -50,6 +51,7 @@ pub fn add_all_checks() {
     nginx::add_checks();
     pam::add_checks();
     podman::add_checks();
+    secureboot::add_checks();
     shell::add_checks();
     sshd::add_checks();
     sudo::add_checks();

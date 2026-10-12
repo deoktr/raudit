@@ -20,6 +20,7 @@ pub mod os;
 pub mod pam;
 pub mod podman;
 pub mod ps;
+pub mod secureboot;
 pub mod shell;
 pub mod sshd;
 pub mod sudo;
