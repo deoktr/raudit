@@ -12,25 +12,32 @@ SKIP_MESSAGE = ["UPT_001", "AAR_004", "AUD_001"]
 TIMESTAMP_KEYS = ["time"]
 
 
-def strip_timestamps(data):
-    """Recursively drop timestamp keys so baselines stay stable in git."""
+def strip_volatile(data):
+    """Recursively drop timestamps and blank the raudit version.
+
+    Timestamps and the raudit product version change on every run or release,
+    so they are stripped to keep baselines stable in git.
+    """
 
     if isinstance(data, dict):
-        return {
-            key: strip_timestamps(value)
-            for key, value in data.items()
-            if key not in TIMESTAMP_KEYS
-        }
+        out = {}
+        for key, value in data.items():
+            if key in TIMESTAMP_KEYS:
+                continue
+            if key == "product" and isinstance(value, dict) and "version" in value:
+                value = {**value, "version": ""}
+            out[key] = strip_volatile(value)
+        return out
     if isinstance(data, list):
-        return [strip_timestamps(item) for item in data]
+        return [strip_volatile(item) for item in data]
     return data
 
 
 def save_json(path, data):
-    """Write data as indented json, without timestamps."""
+    """Write data as indented json, without timestamps or raudit version."""
 
     with open(path, "w") as f:
-        json.dump(strip_timestamps(data), f, indent=2)
+        json.dump(strip_volatile(data), f, indent=2)
 
 
 def compare_stat(base, target, stat_name) -> int:
@@ -201,9 +208,11 @@ def handle(args) -> int:
         return 0
 
     logger.error(f"invalid, {check_sum} checks failed")
-    if not args.no_ask_changes:
-        if input("\nDo you want to accept changes? y/[n] ").lower() == "y":
-            save_json(args.base_json.name, target)
+    if (
+        not args.no_ask_changes
+        and input("\nDo you want to accept changes? y/[n] ").lower() == "y"
+    ):
+        save_json(args.base_json.name, target)
     return 0
 
 

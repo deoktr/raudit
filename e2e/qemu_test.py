@@ -24,21 +24,36 @@ from compare import compare, save_json
 UBUNTU_RELEASE = "noble"
 UBUNTU_IMAGE_URL = f"https://cloud-images.ubuntu.com/{UBUNTU_RELEASE}/current/{UBUNTU_RELEASE}-server-cloudimg-amd64.img"
 IMAGE_CACHE_DIR = os.path.join(PROJECT_DIR, "target", "qemu-cache")
+# the VM disks are sparse qcow2 images that grow to a few GB, they must not end
+# up on a small tmpfs (which is the default TMPDIR on many systems)
+WORK_DIR_ROOT = os.path.join(PROJECT_DIR, "target", "qemu-work")
 CACHED_IMAGE = os.path.join(
     IMAGE_CACHE_DIR, f"{UBUNTU_RELEASE}-server-cloudimg-amd64.img"
 )
 
 VM_SSH_USER = "ubuntu"
+VM_SSH_PASSWORD = "ubuntu"
 VM_SSH_KEY = os.path.join(QEMU_DIR, "keys", "test_key")
 VM_SSH_PORT_BASE = 2222
 VM_RAM = "2G"
 VM_CPUS = "2"
 
+VM_RAUDIT_PATH = "/usr/local/bin/raudit"
+
+PROFILES = {
+    "hardened": {
+        "setup": "hardened-setup.sh",
+    },
+    "insecure": {
+        "setup": "insecure-setup.sh",
+    },
+}
+
 TIMEOUT_BOOT = 300
-TIMEOUT_SSH = 600
+TIMEOUT_SSH = 900
 TIMEOUT_CLOUD_INIT = 300
-TIMEOUT_SETUP = 600
-TIMEOUT_RAUDIT = 120
+TIMEOUT_SETUP = 1800
+TIMEOUT_RAUDIT = 900
 
 SSH_COMMON_OPTS = [
     "-o",
@@ -46,7 +61,7 @@ SSH_COMMON_OPTS = [
     "-o",
     "UserKnownHostsFile=/dev/null",
     "-o",
-    "ConnectTimeout=30",
+    "ConnectTimeout=10",
     "-o",
     "ServerAliveInterval=5",
     "-o",
@@ -264,7 +279,7 @@ def wait_for_ssh(ssh_port, timeout=TIMEOUT_SSH):
                     ],
                     capture_output=True,
                     text=True,
-                    timeout=45,
+                    timeout=12,
                     check=False,
                 )
                 if result.returncode == 0 and "SSH_READY" in result.stdout:
@@ -276,9 +291,9 @@ def wait_for_ssh(ssh_port, timeout=TIMEOUT_SSH):
             except Exception:
                 pass
 
-        if attempt % 3 == 0:
+        if attempt % 5 == 0:
             log(f"  attempt {attempt}: not ready ({int(time.time() - start)}s)")
-        time.sleep(3)
+        time.sleep(2)
     log_err(f"SSH not ready after {timeout}s")
     return False
 
@@ -377,6 +392,16 @@ def wait_for_cloud_init(ssh_port, timeout=TIMEOUT_CLOUD_INIT):
     return False
 
 
+def sudo_wrap(cmd):
+    """Run cmd through sudo, feeding the password on stdin.
+
+    The hardened profile removes passwordless sudo and never caches credentials
+    (`timestamp_timeout=0`), so every privileged command has to authenticate.
+    """
+
+    return f"printf '%s\\n' '{VM_SSH_PASSWORD}' | sudo -S -p '' {cmd}"
+
+
 def run_setup_script(ssh_port, script_name, timeout=TIMEOUT_SETUP):
     script_path = os.path.join(QEMU_DIR, script_name)
     log(f"uploading {script_name}...")
@@ -384,17 +409,17 @@ def run_setup_script(ssh_port, script_name, timeout=TIMEOUT_SETUP):
     log(f"running {script_name} (this may take a while)...")
     result = ssh_cmd(
         ssh_port,
-        f"chmod +x /tmp/{script_name} && sudo bash /tmp/{script_name} 2>&1",
+        sudo_wrap(f"bash /tmp/{script_name} 2>&1"),
         timeout=timeout,
         check=False,
     )
     if result.returncode != 0:
-        log_err(f"setup script failed (rc={result.returncode})")
-        log_err(f"stdout tail: {result.stdout[-500:]}")
+        log_err(f"{script_name} failed (rc={result.returncode})")
+        log_err(f"stdout tail: {result.stdout[-2000:]}")
         return False
 
     for line in result.stdout.splitlines():
-        if "COMPLETE" in line:
+        if "COMPLETE" in line or "WARNING" in line:
             log(f"  {line.strip()}")
     return True
 
@@ -410,21 +435,39 @@ def build_raudit():
     return raudit_bin
 
 
+def install_raudit(ssh_port, raudit_bin):
+    """Upload raudit and install it outside of the noexec /tmp mount."""
+
+    log("uploading raudit...")
+    scp_to_vm(ssh_port, raudit_bin, "/tmp/raudit")
+    result = ssh_cmd(
+        ssh_port,
+        sudo_wrap(f"install -m 0755 -o root -g root /tmp/raudit {VM_RAUDIT_PATH}"),
+        timeout=120,
+        check=False,
+    )
+    if result.returncode != 0:
+        log_err(f"failed to install raudit: {result.stderr[-500:]}")
+        return False
+    return True
+
+
 def run_raudit(ssh_port, output_path, timeout=TIMEOUT_RAUDIT):
     log("running raudit in VM...")
     result = ssh_cmd(
         ssh_port,
-        "sudo /tmp/raudit --json --no-skip --no-time 2>&1",
+        sudo_wrap(f"{VM_RAUDIT_PATH} --json --no-skip --no-time"),
         timeout=timeout,
         check=False,
     )
 
     stdout = result.stdout.strip()
     log_debug(f"raudit stdout length: {len(stdout)}")
-    log_debug(f"raudit stderr: {result.stderr[:200]}")
+    log_debug(f"raudit stderr: {result.stderr[:500]}")
 
     if not stdout:
         log_err("raudit produced no output")
+        log_err(f"stderr: {result.stderr[-2000:]}")
         return False
 
     json_start = stdout.find("{")
@@ -501,9 +544,9 @@ def run_vm_test(profile, output_path, ssh_port, work_dir):
                 return False
 
             raudit_bin = build_raudit()
-            log(f"[{profile}] uploading raudit...")
-            scp_to_vm(ssh_port, raudit_bin, "/tmp/raudit")
-            ssh_cmd(ssh_port, "chmod +x /tmp/raudit")
+            if not install_raudit(ssh_port, raudit_bin):
+                log_err(f"[{profile}] could not install raudit")
+                return False
 
             if not run_raudit(ssh_port, output_path):
                 log_err(f"[{profile}] raudit failed")
@@ -572,7 +615,8 @@ def main():
     check_tools()
     download_image()
 
-    work_dir = tempfile.mkdtemp(prefix="raudit-qemu-")
+    os.makedirs(WORK_DIR_ROOT, exist_ok=True)
+    work_dir = tempfile.mkdtemp(prefix="raudit-qemu-", dir=WORK_DIR_ROOT)
     log(f"work dir: {work_dir}")
 
     profiles = ["hardened", "insecure"] if args.profile == "all" else [args.profile]

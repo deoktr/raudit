@@ -12,6 +12,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable EFI support. Reduces attack surface by removing EFI runtime services accessible to userspace.")
     .with_fix("Recompile the kernel with \"CONFIG_EFI\" disabled (\"# CONFIG_EFI is not set\" in .config) and reboot.")
     .register();
 
@@ -24,6 +25,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Remove AMD CPU support code. Reduces kernel attack surface if the system only uses Intel CPUs.")
     .with_fix("Recompile the kernel with \"CONFIG_CPU_SUP_AMD\" disabled (\"# CONFIG_CPU_SUP_AMD is not set\" in .config) and reboot.")
     .register();
 
@@ -36,6 +38,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Remove Intel CPU support code. Reduces kernel attack surface if the system only uses AMD CPUs.")
     .with_fix("Recompile the kernel with \"CONFIG_CPU_SUP_INTEL\" disabled (\"# CONFIG_CPU_SUP_INTEL is not set\" in .config) and reboot.")
     .register();
 
@@ -48,6 +51,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable loadable kernel modules entirely. Prevents all runtime module loading, blocking unsigned or malicious modules. System must have all drivers built-in.")
     .with_fix("Recompile the kernel with \"CONFIG_MODULES\" disabled (\"# CONFIG_MODULES is not set\" in .config) and reboot.")
     .register();
 
@@ -60,6 +64,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable /dev/mem entirely. Prevents all direct physical memory access from userspace, closing a major information leak and attack vector.")
     .with_fix("Recompile the kernel with \"CONFIG_DEVMEM\" disabled (\"# CONFIG_DEVMEM is not set\" in .config) and reboot.")
     .register();
 
@@ -72,6 +77,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable the BPF syscall. Removes the BPF system call entirely, closing a major kernel attack surface. Breaks all BPF-based tools.")
     .with_fix("Recompile the kernel with \"CONFIG_BPF_SYSCALL\" disabled (\"# CONFIG_BPF_SYSCALL is not set\" in .config) and reboot.")
     .register();
 
@@ -84,6 +90,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Enable kernel BUG() checks. Ensures the kernel panics on internal consistency failures instead of silently continuing in a corrupted state.")
     .with_fix("Recompile the kernel with \"CONFIG_BUG=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -96,6 +103,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Store thread_info on the task_struct rather than the kernel stack. Prevents kernel stack overflows from corrupting thread_info (e.g., flipping task flags to escalate privileges).")
     .with_fix("Recompile the kernel with \"CONFIG_THREAD_INFO_IN_TASK=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -108,6 +116,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Enable IOMMU support in the kernel build. Required for DMA attack protection via intel_iommu/amd_iommu kernel parameters.")
     .with_fix("Recompile the kernel with \"CONFIG_IOMMU_SUPPORT=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -134,6 +143,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Enable hardened linked list operations. Detects and prevents corruption of kernel linked lists, a common exploitation primitive.")
     .with_fix("Recompile the kernel with \"CONFIG_LIST_HARDENED=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -146,6 +156,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Enable random kmalloc caches. Randomizes slab allocation to make heap-based exploitation more difficult.")
     .with_fix("Recompile the kernel with \"CONFIG_RANDOM_KMALLOC_CACHES=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -158,6 +169,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Merge slab caches that share the same size and characteristics. Reduces kernel memory fragmentation and increases cache hotness.")
     .with_fix("Recompile the kernel with \"CONFIG_SLAB_MERGE_DEFAULT=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -170,6 +182,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Enable page table consistency checks. Detects corruption of page tables, catching use-after-free and double-free exploitation attempts.")
     .register();
 
     check::Check::new(
@@ -181,6 +194,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Enforce page table checks at runtime. Actively verifies page table integrity on every allocation and free.")
     .with_fix("Recompile the kernel with \"CONFIG_PAGE_TABLE_CHECK_ENFORCED=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -193,6 +207,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Panic on data corruption detection. Prevents the kernel from continuing with corrupted data structures that could be exploited.")
     .with_fix("Recompile the kernel with \"CONFIG_BUG_ON_DATA_CORRUPTION=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -205,6 +220,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Harden slab freelist metadata. Makes slab-based heap exploitation more difficult by protecting freelist pointers.")
     .with_fix("Recompile the kernel with \"CONFIG_SLAB_FREELIST_HARDENED=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -217,6 +233,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Randomize slab freelist order. Prevents predictable slab allocation patterns that attackers exploit for heap spraying.")
     .with_fix("Recompile the kernel with \"CONFIG_SLAB_FREELIST_RANDOM=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -229,6 +246,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Shuffle the page allocator. Randomizes the page allocator free lists to reduce the predictability of physical page placement, complementing slab freelist randomization.")
     .with_fix("Recompile the kernel with \"CONFIG_SHUFFLE_PAGE_ALLOCATOR=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -241,6 +259,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Enable compile-time and runtime buffer overflow checks. Detects and prevents buffer overflows in standard kernel functions like memcpy, strcpy.")
     .with_fix("Recompile the kernel with \"CONFIG_FORTIFY_SOURCE=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -253,6 +272,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Zero memory on allocation by default. Eliminates information leaks from previously freed memory containing sensitive data.")
     .with_fix("Recompile the kernel with \"CONFIG_INIT_ON_ALLOC_DEFAULT_ON=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -265,6 +285,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Use a static path for usermode helpers. Prevents attackers from hijacking usermode helper execution by modifying the helper path.")
     .with_fix("Recompile the kernel with \"CONFIG_STATIC_USERMODEHELPER=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -277,6 +298,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Enable core scheduling support. Allows grouping tasks that can share a physical core, mitigating cross-thread side-channel attacks.")
     .with_fix("Recompile the kernel with \"CONFIG_SCHED_CORE=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -289,6 +311,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Enable the lockdown LSM. Provides a security boundary between root and the kernel, preventing root from modifying kernel code or data.")
     .with_fix("Recompile the kernel with \"CONFIG_SECURITY_LOCKDOWN_LSM=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -301,6 +324,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Enable lockdown LSM early in boot. Ensures lockdown is active from the earliest possible point in the boot process.")
     .with_fix("Recompile the kernel with \"CONFIG_SECURITY_LOCKDOWN_LSM_EARLY=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -313,6 +337,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Force kernel lockdown in confidentiality mode at boot. Disables features that allow the kernel to be modified at runtime or that permit userland to read confidential material held inside the kernel.")
     .with_fix("Recompile the kernel with \"CONFIG_LOCK_DOWN_KERNEL_FORCE_CONFIDENTIALITY=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -326,6 +351,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Enable the kernel security framework. Required for all LSMs (SELinux, AppArmor, Landlock, etc.) to function.")
     .with_fix("Recompile the kernel with \"CONFIG_SECURITY=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -338,6 +364,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Enable the Yama LSM. Provides ptrace restrictions, DAC protections, and other security hardening features.")
     .with_fix("Recompile the kernel with \"CONFIG_SECURITY_YAMA=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -350,6 +377,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Enable Landlock LSM. Provides unprivileged sandboxing, allowing processes to restrict their own access rights.")
     .with_fix("Recompile the kernel with \"CONFIG_SECURITY_LANDLOCK=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -362,6 +390,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Prevent runtime disabling of SELinux. Once enabled, SELinux cannot be turned off without a reboot, preventing attackers from disabling MAC.")
     .with_fix("Recompile the kernel with \"# CONFIG_SECURITY_SELINUX_DISABLE is not set\" in .config and reboot.")
     .register();
 
@@ -374,6 +403,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Remove the SELinux boot parameter. Prevents disabling SELinux via kernel command line.")
     .with_fix("Recompile the kernel with \"CONFIG_SECURITY_SELINUX_BOOTPARAM\" disabled (\"# CONFIG_SECURITY_SELINUX_BOOTPARAM is not set\" in .config) and reboot.")
     .register();
 
@@ -387,6 +417,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Remove SELinux permissive mode support. Prevents running SELinux in permissive (non-enforcing) mode.")
     .with_fix("Recompile the kernel with \"CONFIG_SECURITY_SELINUX_DEVELOP\" disabled (\"# CONFIG_SECURITY_SELINUX_DEVELOP is not set\" in .config) and reboot.")
     .register();
 
@@ -399,6 +430,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Prevent writable security hooks. Stops modules from registering security hooks after boot, preventing MAC bypass.")
     .with_fix("Recompile the kernel with \"CONFIG_SECURITY_WRITABLE_HOOKS\" disabled (\"# CONFIG_SECURITY_WRITABLE_HOOKS is not set\" in .config) and reboot.")
     .register();
 
@@ -411,6 +443,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Remove SELinux debugging code. Debug code increases attack surface and may leak sensitive information.")
     .with_fix("Recompile the kernel with \"CONFIG_SECURITY_SELINUX_DEBUG\" disabled (\"# CONFIG_SECURITY_SELINUX_DEBUG is not set\" in .config) and reboot.")
     .register();
 
@@ -423,6 +456,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Enable seccomp system call filtering. Allows processes to restrict which system calls they can make, reducing kernel attack surface.")
     .with_fix("Recompile the kernel with \"CONFIG_SECCOMP=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -435,6 +469,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Enable seccomp BPF filters. Allows fine-grained system call filtering using BPF programs.")
     .with_fix("Recompile the kernel with \"CONFIG_SECCOMP_FILTER=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -447,6 +482,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable unprivileged BPF by default. BPF programs run in kernel context and have been a source of privilege escalation vulnerabilities.")
     .with_fix("Recompile the kernel with \"CONFIG_BPF_UNPRIV_DEFAULT_OFF=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -459,6 +495,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Restrict /dev/mem access. Only allows access to PCI space and the BIOS code and data regions, blocking access to system RAM.")
     .with_fix("Recompile the kernel with \"CONFIG_STRICT_DEVMEM=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -471,6 +508,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable Intel TSX by default. TSX has been implicated in multiple speculative execution side-channel vulnerabilities.")
     .with_fix("Recompile the kernel with \"CONFIG_X86_INTEL_TSX_MODE_OFF=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -483,6 +521,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Restrict dmesg access. Prevents unprivileged users from reading the kernel log which may contain sensitive information.")
     .with_fix("Recompile the kernel with \"CONFIG_SECURITY_DMESG_RESTRICT=y\" in the .config (or set in kconfig). Distros: install a kernel package that has it enabled, or follow your distro's kernel-build process.")
     .register();
 
@@ -495,6 +534,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable ACPI custom methods. Prevents arbitrary kernel code execution via /sys/kernel/debug/acpi/custom_method.")
     .with_fix("Recompile the kernel with \"# CONFIG_ACPI_CUSTOM_METHOD is not set\" in .config and reboot.")
     .register();
 
@@ -507,6 +547,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable the legacy brk randomization compatibility. Allows more aggressive heap randomization.")
     .with_fix("Recompile the kernel with \"CONFIG_COMPAT_BRK\" disabled (\"# CONFIG_COMPAT_BRK is not set\" in .config) and reboot.")
     .register();
 
@@ -519,6 +560,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable /dev/kmem. Prevents direct kernel virtual memory access from userspace, closing a major attack vector.")
     .with_fix("Recompile the kernel with \"CONFIG_DEVKMEM\" disabled (\"# CONFIG_DEVKMEM is not set\" in .config) and reboot.")
     .register();
 
@@ -531,6 +573,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable miscellaneous binary formats. Prevents execution of arbitrary binary formats registered via binfmt_misc.")
     .with_fix("Recompile the kernel with \"CONFIG_BINFMT_MISC\" disabled (\"# CONFIG_BINFMT_MISC is not set\" in .config) and reboot.")
     .register();
 
@@ -543,6 +586,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable INET diagnostics. Removes the socket monitoring interface that exposes network connection details.")
     .with_fix("Recompile the kernel with \"CONFIG_INET_DIAG\" disabled (\"# CONFIG_INET_DIAG is not set\" in .config) and reboot.")
     .register();
 
@@ -555,6 +599,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable kexec. Prevents loading a new kernel without rebooting, blocking an attack vector for replacing the running kernel.")
     .with_fix("Recompile the kernel with \"CONFIG_KEXEC\" disabled (\"# CONFIG_KEXEC is not set\" in .config) and reboot.")
     .register();
 
@@ -567,6 +612,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable /proc/kcore. Prevents reading the kernel's virtual memory image, closing a major information leak.")
     .with_fix("Recompile the kernel with \"CONFIG_PROC_KCORE\" disabled (\"# CONFIG_PROC_KCORE is not set\" in .config) and reboot.")
     .register();
 
@@ -579,6 +625,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable legacy PTY support. Removes old-style pseudo-terminals that have known security issues.")
     .with_fix("Recompile the kernel with \"CONFIG_LEGACY_PTYS\" disabled (\"# CONFIG_LEGACY_PTYS is not set\" in .config) and reboot.")
     .register();
 
@@ -591,6 +638,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable hibernation. Prevents writing memory contents to disk, avoiding sensitive data exposure in swap/hibernation images.")
     .with_fix("Recompile the kernel with \"CONFIG_HIBERNATION\" disabled (\"# CONFIG_HIBERNATION is not set\" in .config) and reboot.")
     .register();
 
@@ -617,6 +665,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable 32-bit emulation. Removes 32-bit syscall compatibility layer, reducing kernel attack surface on 64-bit systems.")
     .with_fix("Recompile the kernel with \"CONFIG_IA32_EMULATION\" disabled (\"# CONFIG_IA32_EMULATION is not set\" in .config) and reboot.")
     .register();
 
@@ -629,6 +678,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable x32 ABI. Removes the x32 compatibility layer, reducing syscall attack surface.")
     .with_fix("Recompile the kernel with \"CONFIG_X86_X32\" disabled (\"# CONFIG_X86_X32 is not set\" in .config) and reboot.")
     .register();
 
@@ -641,6 +691,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable x32 ABI support.")
     .with_fix("Recompile the kernel with \"CONFIG_X86_X32_ABI\" disabled (\"# CONFIG_X86_X32_ABI is not set\" in .config) and reboot.")
     .register();
 
@@ -653,6 +704,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable the modify_ldt syscall. Removes the ability to create custom LDT entries, reducing attack surface.")
     .with_fix("Recompile the kernel with \"CONFIG_MODIFY_LDT_SYSCALL\" disabled (\"# CONFIG_MODIFY_LDT_SYSCALL is not set\" in .config) and reboot.")
     .register();
 
@@ -665,6 +717,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable OABI compatibility. Removes old ARM binary compatibility layer, reducing attack surface.")
     .with_fix("Recompile the kernel with \"CONFIG_OABI_COMPAT\" disabled (\"# CONFIG_OABI_COMPAT is not set\" in .config) and reboot.")
     .register();
 
@@ -677,6 +730,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable MSR access from userspace. Prevents reading/writing model-specific registers that can leak or modify CPU state.")
     .with_fix("Recompile the kernel with \"CONFIG_X86_MSR\" disabled (\"# CONFIG_X86_MSR is not set\" in .config) and reboot.")
     .register();
 
@@ -689,6 +743,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable legacy TIOCSTI. Prevents injecting characters into the terminal input buffer, blocking a privilege escalation path.")
     .with_fix("Recompile the kernel with \"CONFIG_LEGACY_TIOCSTI\" disabled (\"# CONFIG_LEGACY_TIOCSTI is not set\" in .config) and reboot.")
     .register();
 
@@ -701,6 +756,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable forced module loading. Prevents loading modules that fail taint checks or version verification.")
     .with_fix("Recompile the kernel with \"CONFIG_MODULE_FORCE_LOAD\" disabled (\"# CONFIG_MODULE_FORCE_LOAD is not set\" in .config) and reboot.")
     .register();
 
@@ -713,6 +769,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable legacy DRM support. Removes old graphics driver interfaces that increase attack surface.")
     .with_fix("Recompile the kernel with \"CONFIG_DRM_LEGACY\" disabled (\"# CONFIG_DRM_LEGACY is not set\" in .config) and reboot.")
     .register();
 
@@ -725,6 +782,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable framebuffer support. Removes legacy framebuffer console, reducing kernel attack surface.")
     .with_fix("Recompile the kernel with \"CONFIG_FB\" disabled (\"# CONFIG_FB is not set\" in .config) and reboot.")
     .register();
 
@@ -737,6 +795,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable virtual terminal support. Removes VT console, reducing attack surface for systems that do not need it.")
     .with_fix("Recompile the kernel with \"CONFIG_VT\" disabled (\"# CONFIG_VT is not set\" in .config) and reboot.")
     .register();
 
@@ -749,6 +808,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable floppy disk driver. Removes legacy floppy support, closing a rarely-used attack vector.")
     .with_fix("Recompile the kernel with \"CONFIG_BLK_DEV_FD\" disabled (\"# CONFIG_BLK_DEV_FD is not set\" in .config) and reboot.")
     .register();
 
@@ -761,6 +821,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable floppy raw commands. Prevents sending raw commands to floppy drives.")
     .with_fix("Recompile the kernel with \"CONFIG_BLK_DEV_FD_RAWCMD\" disabled (\"# CONFIG_BLK_DEV_FD_RAWCMD is not set\" in .config) and reboot.")
     .register();
 
@@ -773,6 +834,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable Nouveau legacy context support. Removes legacy DRM context support for NVIDIA cards.")
     .with_fix("Recompile the kernel with \"CONFIG_NOUVEAU_LEGACY_CTX_SUPPORT\" disabled (\"# CONFIG_NOUVEAU_LEGACY_CTX_SUPPORT is not set\" in .config) and reboot.")
     .register();
 
@@ -785,6 +847,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable GSM 07.10 tty multiplexer. Removes a rarely-used tty line discipline that increases attack surface.")
     .with_fix("Recompile the kernel with \"CONFIG_N_GSM\" disabled (\"# CONFIG_N_GSM is not set\" in .config) and reboot.")
     .register();
 
@@ -798,6 +861,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable zsmalloc statistics. Removes debugfs statistics for zsmalloc, reducing information leakage.")
     .with_fix("Recompile the kernel with \"CONFIG_ZSMALLOC_STAT\" disabled (\"# CONFIG_ZSMALLOC_STAT is not set\" in .config) and reboot.")
     .register();
 
@@ -810,6 +874,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable kernel memory leak detector. The detector adds overhead and exposes internal allocation information.")
     .with_fix("Recompile the kernel with \"CONFIG_DEBUG_KMEMLEAK\" disabled (\"# CONFIG_DEBUG_KMEMLEAK is not set\" in .config) and reboot.")
     .register();
 
@@ -822,6 +887,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable a.out binary format support. Removes support for the obsolete a.out executable format.")
     .register();
 
     check::Check::new(
@@ -833,6 +899,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable kprobe events. Removes dynamic tracing via kprobes, reducing kernel attack surface.")
     .with_fix("Recompile the kernel with \"CONFIG_KPROBE_EVENTS\" disabled (\"# CONFIG_KPROBE_EVENTS is not set\" in .config) and reboot.")
     .register();
 
@@ -845,6 +912,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable uprobe events. Removes user-space dynamic tracing, reducing kernel attack surface.")
     .with_fix("Recompile the kernel with \"CONFIG_UPROBE_EVENTS\" disabled (\"# CONFIG_UPROBE_EVENTS is not set\" in .config) and reboot.")
     .register();
 
@@ -857,6 +925,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable generic tracing infrastructure. Removes ftrace and other tracing frameworks that expose kernel internals.")
     .with_fix("Recompile the kernel with \"CONFIG_GENERIC_TRACER\" disabled (\"# CONFIG_GENERIC_TRACER is not set\" in .config) and reboot.")
     .register();
 
@@ -869,6 +938,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable function tracer. Removes the function-level tracing infrastructure that increases kernel attack surface.")
     .with_fix("Recompile the kernel with \"CONFIG_FUNCTION_TRACER\" disabled (\"# CONFIG_FUNCTION_TRACER is not set\" in .config) and reboot.")
     .register();
 
@@ -881,6 +951,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable stack tracer. Removes stack tracing functionality that exposes kernel internals.")
     .with_fix("Recompile the kernel with \"CONFIG_STACK_TRACER\" disabled (\"# CONFIG_STACK_TRACER is not set\" in .config) and reboot.")
     .register();
 
@@ -893,6 +964,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable histogram triggers. Removes histogram-based tracing that increases kernel attack surface.")
     .with_fix("Recompile the kernel with \"CONFIG_HIST_TRIGGERS\" disabled (\"# CONFIG_HIST_TRIGGERS is not set\" in .config) and reboot.")
     .register();
 
@@ -905,6 +977,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable block device I/O tracing. Removes blktrace support that exposes I/O patterns.")
     .with_fix("Recompile the kernel with \"CONFIG_BLK_DEV_IO_TRACE\" disabled (\"# CONFIG_BLK_DEV_IO_TRACE is not set\" in .config) and reboot.")
     .register();
 
@@ -917,6 +990,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable /proc/vmcore. Prevents reading crash dump data from /proc, closing an information leak.")
     .with_fix("Recompile the kernel with \"CONFIG_PROC_VMCORE\" disabled (\"# CONFIG_PROC_VMCORE is not set\" in .config) and reboot.")
     .register();
 
@@ -929,6 +1003,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable page monitoring in /proc. Removes interfaces such as /proc/pid/pagemap, /proc/kpageflags, and /proc/kpagecount that expose memory layout.")
     .with_fix("Recompile the kernel with \"CONFIG_PROC_PAGE_MONITOR\" disabled (\"# CONFIG_PROC_PAGE_MONITOR is not set\" in .config) and reboot.")
     .register();
 
@@ -941,6 +1016,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable the uselib syscall. Removes the obsolete uselib system call.")
     .with_fix("Recompile the kernel with \"CONFIG_USELIB\" disabled (\"# CONFIG_USELIB is not set\" in .config) and reboot.")
     .register();
 
@@ -953,6 +1029,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable checkpoint/restore. Removes CRIU support that exposes process internals and increases attack surface.")
     .with_fix("Recompile the kernel with \"CONFIG_CHECKPOINT_RESTORE\" disabled (\"# CONFIG_CHECKPOINT_RESTORE is not set\" in .config) and reboot.")
     .register();
 
@@ -965,6 +1042,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable userfaultfd. Removes the userfaultfd syscall, a frequent source of use-after-free exploitation primitives.")
     .with_fix("Recompile the kernel with \"CONFIG_USERFAULTFD\" disabled (\"# CONFIG_USERFAULTFD is not set\" in .config) and reboot.")
     .register();
 
@@ -977,6 +1055,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable hardware poison injection. Removes the ability to simulate hardware memory errors from userspace.")
     .with_fix("Recompile the kernel with \"CONFIG_HWPOISON_INJECT\" disabled (\"# CONFIG_HWPOISON_INJECT is not set\" in .config) and reboot.")
     .register();
 
@@ -989,6 +1068,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable soft-dirty page tracking. Removes the mechanism for tracking modified pages, reducing information leakage.")
     .with_fix("Recompile the kernel with \"CONFIG_MEM_SOFT_DIRTY\" disabled (\"# CONFIG_MEM_SOFT_DIRTY is not set\" in .config) and reboot.")
     .register();
 
@@ -1001,6 +1081,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable /dev/port. Prevents direct I/O port access from userspace, closing a hardware attack vector.")
     .with_fix("Recompile the kernel with \"CONFIG_DEVPORT\" disabled (\"# CONFIG_DEVPORT is not set\" in .config) and reboot.")
     .register();
 
@@ -1013,6 +1094,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable debugfs. Removes the kernel debug filesystem that exposes extensive internal state and is a major attack surface.")
     .with_fix("Recompile the kernel with \"CONFIG_DEBUG_FS\" disabled (\"# CONFIG_DEBUG_FS is not set\" in .config) and reboot.")
     .register();
 
@@ -1025,6 +1107,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable notifier error injection. Removes the ability to inject errors into notifier chains from userspace.")
     .with_fix("Recompile the kernel with \"CONFIG_NOTIFIER_ERROR_INJECTION\" disabled (\"# CONFIG_NOTIFIER_ERROR_INJECTION is not set\" in .config) and reboot.")
     .register();
 
@@ -1037,6 +1120,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable futex failure injection. Removes the ability to force futex operations to fail, used for testing but increases attack surface.")
     .with_fix("Recompile the kernel with \"CONFIG_FAIL_FUTEX\" disabled (\"# CONFIG_FAIL_FUTEX is not set\" in .config) and reboot.")
     .register();
 
@@ -1049,6 +1133,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable Atom PUNIT debug. Removes debug interface for Intel Atom power management.")
     .with_fix("Recompile the kernel with \"CONFIG_PUNIT_ATOM_DEBUG\" disabled (\"# CONFIG_PUNIT_ATOM_DEBUG is not set\" in .config) and reboot.")
     .register();
 
@@ -1061,6 +1146,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable ACPI ConfigFS. Prevents userspace from creating custom ACPI tables, blocking firmware-level attacks.")
     .with_fix("Recompile the kernel with \"CONFIG_ACPI_CONFIGFS\" disabled (\"# CONFIG_ACPI_CONFIGFS is not set\" in .config) and reboot.")
     .register();
 
@@ -1073,6 +1159,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable EDAC debug. Removes Error Detection and Correction debug interface.")
     .with_fix("Recompile the kernel with \"CONFIG_EDAC_DEBUG\" disabled (\"# CONFIG_EDAC_DEBUG is not set\" in .config) and reboot.")
     .register();
 
@@ -1085,6 +1172,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable i915 DRM debug. Removes Intel graphics driver debug interface.")
     .with_fix("Recompile the kernel with \"CONFIG_DRM_I915_DEBUG\" disabled (\"# CONFIG_DRM_I915_DEBUG is not set\" in .config) and reboot.")
     .register();
 
@@ -1097,6 +1185,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable bcache closures debug. Removes bcache debug interface.")
     .with_fix("Recompile the kernel with \"CONFIG_BCACHE_CLOSURES_DEBUG\" disabled (\"# CONFIG_BCACHE_CLOSURES_DEBUG is not set\" in .config) and reboot.")
     .register();
 
@@ -1109,6 +1198,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable DVB C8SECTPFE driver. Removes a rarely-used digital TV driver.")
     .with_fix("Recompile the kernel with \"CONFIG_DVB_C8SECTPFE\" disabled (\"# CONFIG_DVB_C8SECTPFE is not set\" in .config) and reboot.")
     .register();
 
@@ -1121,6 +1211,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable MTD SLDRAM driver. Removes the memory-mapped RAM MTD driver.")
     .with_fix("Recompile the kernel with \"CONFIG_MTD_SLRAM\" disabled (\"# CONFIG_MTD_SLRAM is not set\" in .config) and reboot.")
     .register();
 
@@ -1133,6 +1224,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable MTD PHRAM driver. Removes the physical RAM MTD driver.")
     .with_fix("Recompile the kernel with \"CONFIG_MTD_PHRAM\" disabled (\"# CONFIG_MTD_PHRAM is not set\" in .config) and reboot.")
     .register();
 
@@ -1145,6 +1237,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable io_uring. Removes the high-performance async I/O interface that has been a frequent source of kernel vulnerabilities.")
     .with_fix("Recompile the kernel with \"CONFIG_IO_URING\" disabled (\"# CONFIG_IO_URING is not set\" in .config) and reboot.")
     .register();
 
@@ -1157,6 +1250,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable the kcmp syscall. Removes the ability to compare kernel objects between processes, reducing information leakage.")
     .with_fix("Recompile the kernel with \"CONFIG_KCMP\" disabled (\"# CONFIG_KCMP is not set\" in .config) and reboot.")
     .register();
 
@@ -1169,6 +1263,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable restartable sequences. Removes the rseq mechanism that increases kernel attack surface.")
     .with_fix("Recompile the kernel with \"CONFIG_RSEQ\" disabled (\"# CONFIG_RSEQ is not set\" in .config) and reboot.")
     .register();
 
@@ -1181,6 +1276,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable latency tracking. Removes the latency top debug interface.")
     .with_fix("Recompile the kernel with \"CONFIG_LATENCYTOP\" disabled (\"# CONFIG_LATENCYTOP is not set\" in .config) and reboot.")
     .register();
 
@@ -1193,6 +1289,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable code coverage. Removes KCOV, a kernel feature used by fuzzers that increases attack surface.")
     .with_fix("Recompile the kernel with \"CONFIG_KCOV\" disabled (\"# CONFIG_KCOV is not set\" in .config) and reboot.")
     .register();
 
@@ -1205,6 +1302,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable OHCI 1394 DMA init. Prevents early FireWire DMA access that could be used to read physical memory.")
     .with_fix("Recompile the kernel with \"CONFIG_PROVIDE_OHCI1394_DMA_INIT\" disabled (\"# CONFIG_PROVIDE_OHCI1394_DMA_INIT is not set\" in .config) and reboot.")
     .register();
 
@@ -1217,6 +1315,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable SunRPC debug. Removes NFS/RPC debug interface.")
     .with_fix("Recompile the kernel with \"CONFIG_SUNRPC_DEBUG\" disabled (\"# CONFIG_SUNRPC_DEBUG is not set\" in .config) and reboot.")
     .register();
 
@@ -1229,6 +1328,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable 16-bit x86 support. Removes 16-bit code segment support, reducing attack surface.")
     .with_fix("Recompile the kernel with \"CONFIG_X86_16BIT\" disabled (\"# CONFIG_X86_16BIT is not set\" in .config) and reboot.")
     .register();
 
@@ -1241,6 +1341,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable user block driver. Removes the user-space block device driver.")
     .with_fix("Recompile the kernel with \"CONFIG_BLK_DEV_UBLK\" disabled (\"# CONFIG_BLK_DEV_UBLK is not set\" in .config) and reboot.")
     .register();
 
@@ -1253,6 +1354,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable SMB server. Removes the kernel-space SMB/CIFS file server.")
     .with_fix("Recompile the kernel with \"CONFIG_SMB_SERVER\" disabled (\"# CONFIG_SMB_SERVER is not set\" in .config) and reboot.")
     .register();
 
@@ -1265,6 +1367,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable XFS online scrub statistics. Removes XFS debug statistics.")
     .with_fix("Recompile the kernel with \"CONFIG_XFS_ONLINE_SCRUB_STATS\" disabled (\"# CONFIG_XFS_ONLINE_SCRUB_STATS is not set\" in .config) and reboot.")
     .register();
 
@@ -1277,6 +1380,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable cachestat syscall. Removes the page cache statistics syscall that exposes memory access patterns.")
     .with_fix("Recompile the kernel with \"CONFIG_CACHESTAT_SYSCALL\" disabled (\"# CONFIG_CACHESTAT_SYSCALL is not set\" in .config) and reboot.")
     .register();
 
@@ -1289,6 +1393,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable preempt/IRQ tracepoints. Removes tracepoints that expose kernel scheduling internals.")
     .with_fix("Recompile the kernel with \"CONFIG_PREEMPTIRQ_TRACEPOINTS\" disabled (\"# CONFIG_PREEMPTIRQ_TRACEPOINTS is not set\" in .config) and reboot.")
     .register();
 
@@ -1301,6 +1406,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable default tracers. Removes pre-enabled tracing that increases kernel attack surface.")
     .with_fix("Recompile the kernel with \"CONFIG_ENABLE_DEFAULT_TRACERS\" disabled (\"# CONFIG_ENABLE_DEFAULT_TRACERS is not set\" in .config) and reboot.")
     .register();
 
@@ -1313,6 +1419,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable lock proving. Removes the lock dependency validator that is primarily a debug feature.")
     .with_fix("Recompile the kernel with \"CONFIG_PROVE_LOCKING\" disabled (\"# CONFIG_PROVE_LOCKING is not set\" in .config) and reboot.")
     .register();
 
@@ -1325,6 +1432,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable virtual memory debug tests. Removes virtual address space debug testing.")
     .with_fix("Recompile the kernel with \"CONFIG_TEST_DEBUG_VIRTUAL\" disabled (\"# CONFIG_TEST_DEBUG_VIRTUAL is not set\" in .config) and reboot.")
     .register();
 
@@ -1337,6 +1445,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable MPTCP. Removes Multipath TCP support that increases networking attack surface.")
     .with_fix("Recompile the kernel with \"CONFIG_MPTCP\" disabled (\"# CONFIG_MPTCP is not set\" in .config) and reboot.")
     .register();
 
@@ -1349,6 +1458,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable kernel TLS. Removes the kernel TLS offload interface.")
     .with_fix("Recompile the kernel with \"CONFIG_TLS\" disabled (\"# CONFIG_TLS is not set\" in .config) and reboot.")
     .register();
 
@@ -1361,6 +1471,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable TIPC. Removes the Transparent Inter-Process Communication protocol.")
     .with_fix("Recompile the kernel with \"CONFIG_TIPC\" disabled (\"# CONFIG_TIPC is not set\" in .config) and reboot.")
     .register();
 
@@ -1373,6 +1484,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable SCTP. Removes the Stream Control Transmission Protocol, a rarely-used protocol with a history of vulnerabilities.")
     .with_fix("Recompile the kernel with \"CONFIG_IP_SCTP\" disabled (\"# CONFIG_IP_SCTP is not set\" in .config) and reboot.")
     .register();
 
@@ -1385,6 +1497,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable KGDB kernel debugger. Removes the kernel debugger that allows arbitrary memory access.")
     .with_fix("Recompile the kernel with \"CONFIG_KGDB\" disabled (\"# CONFIG_KGDB is not set\" in .config) and reboot.")
     .register();
 
@@ -1397,6 +1510,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable page table dump via debugfs. Prevents reading page table contents via debugfs.")
     .with_fix("Recompile the kernel with \"CONFIG_PTDUMP_DEBUGFS\" disabled (\"# CONFIG_PTDUMP_DEBUGFS is not set\" in .config) and reboot.")
     .register();
 
@@ -1409,6 +1523,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable x86 page table dump. Removes the ability to dump kernel page tables.")
     .with_fix("Recompile the kernel with \"CONFIG_X86_PTDUMP\" disabled (\"# CONFIG_X86_PTDUMP is not set\" in .config) and reboot.")
     .register();
 
@@ -1422,6 +1537,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable staging drivers. Removes experimental, unreviewed drivers that increase attack surface.")
     .with_fix("Recompile the kernel with \"CONFIG_STAGING\" disabled (\"# CONFIG_STAGING is not set\" in .config) and reboot.")
     .register();
 
@@ -1434,6 +1550,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable Kernel Samepage Merging. KSM can enable cross-VM side-channel attacks in virtualized environments.")
     .with_fix("Recompile the kernel with \"CONFIG_KSM\" disabled (\"# CONFIG_KSM is not set\" in .config) and reboot.")
     .register();
 
@@ -1446,6 +1563,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable kallsyms. Removes kernel symbol names from /proc/kallsyms, hiding function addresses that aid exploitation.")
     .with_fix("Recompile the kernel with \"CONFIG_KALLSYMS\" disabled (\"# CONFIG_KALLSYMS is not set\" in .config) and reboot.")
     .register();
 
@@ -1458,6 +1576,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable kexec file loading. Removes the file-based kexec interface.")
     .with_fix("Recompile the kernel with \"CONFIG_KEXEC_FILE\" disabled (\"# CONFIG_KEXEC_FILE is not set\" in .config) and reboot.")
     .register();
 
@@ -1483,6 +1602,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable user namespaces. Removes the user namespace feature that has been a frequent source of privilege escalation bugs.")
     .with_fix("Recompile the kernel with \"CONFIG_USER_NS\" disabled (\"# CONFIG_USER_NS is not set\" in .config) and reboot.")
     .register();
 
@@ -1508,6 +1628,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable IOPL and ioperm. Prevents userspace from accessing hardware I/O ports directly.")
     .with_fix("Recompile the kernel with \"CONFIG_X86_IOPL_IOPERM\" disabled (\"# CONFIG_X86_IOPL_IOPERM is not set\" in .config) and reboot.")
     .register();
 
@@ -1520,6 +1641,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable ACPI table upgrade. Prevents replacing ACPI tables via initrd, blocking firmware-level attacks.")
     .with_fix("Recompile the kernel with \"CONFIG_ACPI_TABLE_UPGRADE\" disabled (\"# CONFIG_ACPI_TABLE_UPGRADE is not set\" in .config) and reboot.")
     .register();
 
@@ -1532,6 +1654,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable custom EFI SSDT overlays. Prevents loading custom ACPI tables from EFI.")
     .with_fix("Recompile the kernel with \"CONFIG_EFI_CUSTOM_SSDT_OVERLAYS\" disabled (\"# CONFIG_EFI_CUSTOM_SSDT_OVERLAYS is not set\" in .config) and reboot.")
     .register();
 
@@ -1544,6 +1667,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable async I/O. Removes the legacy AIO interface that has been a source of vulnerabilities.")
     .with_fix("Recompile the kernel with \"CONFIG_AIO\" disabled (\"# CONFIG_AIO is not set\" in .config) and reboot.")
     .register();
 
@@ -1556,6 +1680,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable Magic SysRq key. Removes the SysRq key that can be used to reboot, dump memory, or perform other low-level operations.")
     .with_fix("Recompile the kernel with \"CONFIG_MAGIC_SYSRQ\" disabled (\"# CONFIG_MAGIC_SYSRQ is not set\" in .config) and reboot.")
     .register();
 
@@ -1568,6 +1693,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable SysRq default enable mask. Ensures SysRq functions are not enabled by default.")
     .with_fix("Recompile the kernel with \"CONFIG_MAGIC_SYSRQ_DEFAULT_ENABLE\" disabled (\"# CONFIG_MAGIC_SYSRQ_DEFAULT_ENABLE is not set\" in .config) and reboot.")
     .register();
 
@@ -1580,6 +1706,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable SysRq on serial console. Prevents SysRq via serial port, which could be accessed remotely.")
     .with_fix("Recompile the kernel with \"CONFIG_MAGIC_SYSRQ_SERIAL\" disabled (\"# CONFIG_MAGIC_SYSRQ_SERIAL is not set\" in .config) and reboot.")
     .register();
 
@@ -1658,6 +1785,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable DCCP. Removes the Datagram Congestion Control Protocol, a rarely-used protocol with a history of vulnerabilities.")
     .with_fix("Recompile the kernel with \"CONFIG_IP_DCCP\" disabled (\"# CONFIG_IP_DCCP is not set\" in .config) and reboot.")
     .register();
 
@@ -1709,6 +1837,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
+    .with_description("Disable CoreSight. Removes the ARM CoreSight debug and trace infrastructure.")
     .with_fix("Recompile the kernel with \"CONFIG_CORESIGHT\" disabled (\"# CONFIG_CORESIGHT is not set\" in .config) and reboot.")
     .register();
 

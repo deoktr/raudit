@@ -1,4 +1,13 @@
 #!/bin/bash
+# Phase 1 of the rAudit "hardened" e2e profile.
+#
+# Only persistent configuration is applied here (files, fstab, bootloader).
+# The VM is rebooted afterwards so the kernel command line takes effect, then
+# hardened-post-setup.sh applies the runtime-only hardening (module unloading,
+# audit rule loading, sudo lockdown).
+#
+# NOTE: sudo must keep working until the post-setup phase, so the sudoers
+# lockdown and the removal of the cloud-init NOPASSWD rule happen over there.
 set -euo pipefail
 
 export DEBIAN_FRONTEND=noninteractive
@@ -15,9 +24,77 @@ apt-get install -y --no-install-recommends \
     auditd \
     chrony \
     acl \
-    apt-utils
+    apt-utils \
+    kmod \
+    libpam-pwquality \
+    nginx
 
-cat >/etc/sysctl.d/99-hardened-kernel.conf <<'SYSCTL_EOF'
+# modules that are already loaded are removed in the post-setup phase
+MODULES_BLACKLIST="
+    snd_intel8x0 sr_mod snd_intel8x0m cdrom amd76x_edac ath_pci evbug
+    snd_aw2 snd_pcsp usbkbd usbmouse
+"
+
+MODULES_DISABLED="
+    cfg80211 intel_agp ip_tables mousedev psmouse tls virtio_balloon
+    virtio_console af_802154 appletalk dccp netrom rose n_hdlc ax25 x25
+    decnet econet ipx psnap p8023 p8022 eepro100 eth1394 atm ueagle_atm
+    usbatm xusbatm c_can c_can_pci c_can_platform can can_bcm can_dev
+    can_gw can_isotp can_raw can_j1939 can327 ifi_canfd janz_ican3 m_can
+    m_can_pci m_can_platform phy_can_transceiver slcan ucan vxcan vcan
+    tipc tipc_diag rds rds_rdma rds_tcp sctp sctp_diag adfs affs bfs
+    befs cramfs efs erofs exofs freevxfs f2fs hfs hfsplus squashfs hpfs
+    jfs jffs2 minix nilfs2 ntfs omfs qnx4 qnx6 sysv ufs udf reiserfs
+    ksmbd gfs2 cifs cifs_arc4 cifs_md4 nfs nfs_acl
+    nfs_layout_nfsv41_files nfs_layout_flexfiles nfsd nfsv2 nfsv3 nfsv4
+    usb_storage vivid floppy joydev bluetooth bluetooth_6lowpan bt3c_cs
+    btbcm btintel btmrvl btmrvl_sdio btmtk btmtksdio btmtkuart btnxpuart
+    btqca btrsi btrtl btsdio btusb virtio_bt dv1394 firewire_core
+    firewire_ohci firewire_net firewire_sbp2 ohci1394 raw1394 sbp2
+    video1394 garmin_gps gnss gnss_mtk gnss_serial gnss_sirf gnss_ubx
+    gnss_usb pmt_class pmt_crashlog pmt_telemetry intel_wmi_thunderbolt
+    thunderbolt thunderbolt_net hamradio aty128fb atyfb cirrusfb
+    cyber2000fb cyblafb gx1fb hgafb i810fb intelfb kyrofb lxfb
+    matroxfb_bases neofb nvidiafb pm2fb radeonfb rivafb s1d13xxxfb
+    savagefb sisfb sstfb tdfxfb tridentfb vesafb vfb viafb vt8623fb
+    udlfb asus_acpi bcm43xx de4x5 prism54 uvcvideo arkfb matroxfb_base
+    mb862xxfb pm3fb s3fb snd_mixer_oss acquirewdt advantech_ec_wdt
+    advantechwdt alim1535_wdt cadence_wdt cpu5wdt da9055_wdt da9063_wdt
+    dw_wdt eurotechwdt f71808e_wdt i6300esb iTCO_wdt ibmasr it8712f_wdt
+    kempld_wdt max63xx_wdt mena21_wdt menz69_wdt ni903x_wdt nv_tco
+    pc87413_wdt pcwd_usb rave_sp_wdt sbc60xxwdt sbc_fitpc2_wdt
+    sch311x_wdt smsc37b787_wdt sp5100_tco twl4030_wdt w83627hf_wdt
+    w83977f_wdt wdat_wdt wm831x_wdt xen_wdt snd_pcm_oss alim7101_wdt
+    da9052_wdt da9062_wdt ebc_c384_wdt exar_wdt hpwdt
+    iTCO_vendor_support ib700wdt ie6xx_wdt it87_wdt machzwd mei_wdt
+    menf21bmc_wdt mlx_wdt nic7018_wdt of_xilinx_wdt pcwd_pci
+    pretimeout_panic retu_wdt sbc_epx_c3 sc1200wdt simatic_ipc_wdt
+    softdog tqmx86_wdt via_wdt w83877f_wdt wafer5823wdt wdt_pci
+    wm8350_wdt ziirave_wdt pcspkr ac97 ac97_codec ac97_plugin_ad1980
+    ad1848 ad1889 adlib_card aedsp16 ali5455 btaudio cmpci cs4232 cs4281
+    cs461x cs46xx emu10k1 es1370 es1371 esssolo1 forte gus i810_audio
+    kahlua mad16 maestro maestro3 maui mpu401 nm256_audio opl3 opl3sa
+    opl3sa2 pas2 pss rme96xx sb sb_lib sgalaxy sonicvibes sound sscape
+    trident trix uart401 uart6850 via82cxxx_audio v_midi wavefront
+    ymfpci ac97_plugin_wm97xx ad1816 audio awe_wave dmasound_core
+    dmasound_pmac harmony sequencer soundcard usb_midi microcode
+"
+
+{
+    for m in ${MODULES_BLACKLIST}; do
+        echo "blacklist ${m}"
+    done
+} >/etc/modprobe.d/99-hardened-blacklist.conf
+
+{
+    for m in ${MODULES_DISABLED}; do
+        echo "install ${m} /bin/true"
+    done
+} >/etc/modprobe.d/99-hardened-disabled.conf
+
+chmod 0644 /etc/modprobe.d/99-hardened-blacklist.conf /etc/modprobe.d/99-hardened-disabled.conf
+
+cat >/etc/sysctl.d/zz-hardened-kernel.conf <<'SYSCTL_EOF'
 kernel.pid_max = 65536
 kernel.kptr_restrict = 2
 kernel.ftrace_enabled = 0
@@ -30,7 +107,9 @@ kernel.perf_event_paranoid = 3
 kernel.sysrq = 0
 kernel.kexec_load_disabled = 1
 kernel.unprivileged_bpf_disabled = 1
+kernel.unprivileged_userns_clone = 0
 net.core.bpf_jit_harden = 2
+net.core.bpf_jit_enable = 0
 kernel.panic_on_oops = 1
 kernel.panic = -1
 kernel.yama.ptrace_scope = 3
@@ -50,7 +129,7 @@ kernel.warn_limit = 100
 user.max_user_namespaces = 31231
 SYSCTL_EOF
 
-cat >/etc/sysctl.d/99-hardened-fs.conf <<'SYSCTL_EOF'
+cat >/etc/sysctl.d/zz-hardened-fs.conf <<'SYSCTL_EOF'
 fs.suid_dumpable = 0
 fs.protected_fifos = 2
 fs.protected_regular = 2
@@ -59,7 +138,7 @@ fs.protected_hardlinks = 1
 fs.binfmt_misc.status = 0
 SYSCTL_EOF
 
-cat >/etc/sysctl.d/99-hardened-ipv4.conf <<'SYSCTL_EOF'
+cat >/etc/sysctl.d/zz-hardened-ipv4.conf <<'SYSCTL_EOF'
 net.ipv4.ip_forward = 0
 net.ipv4.conf.all.accept_source_route = 0
 net.ipv4.conf.default.accept_source_route = 0
@@ -72,7 +151,6 @@ net.ipv4.conf.default.send_redirects = 0
 net.ipv4.conf.all.log_martians = 1
 net.ipv4.conf.default.log_martians = 1
 net.ipv4.icmp_echo_ignore_all = 1
-net.ipv6.icmp_echo_ignore_all = 1
 net.ipv4.icmp_echo_ignore_broadcasts = 1
 net.ipv4.conf.all.rp_filter = 1
 net.ipv4.conf.default.rp_filter = 1
@@ -95,7 +173,7 @@ net.ipv4.tcp_rfc1337 = 1
 net.ipv4.tcp_timestamps = 0
 SYSCTL_EOF
 
-cat >/etc/sysctl.d/99-hardened-ipv6.conf <<'SYSCTL_EOF'
+cat >/etc/sysctl.d/zz-hardened-ipv6.conf <<'SYSCTL_EOF'
 net.ipv6.conf.all.forwarding = 0
 net.ipv6.conf.default.forwarding = 0
 net.ipv6.conf.all.accept_redirects = 0
@@ -116,11 +194,17 @@ net.ipv6.conf.all.max_addresses = 1
 net.ipv6.conf.default.max_addresses = 1
 net.ipv6.conf.all.use_tempaddr = 2
 net.ipv6.conf.default.use_tempaddr = 2
+net.ipv6.icmp.echo_ignore_all = 1
 net.ipv6.icmp.echo_ignore_anycast = 1
 net.ipv6.icmp.echo_ignore_multicast = 1
 SYSCTL_EOF
 
-sysctl --system
+rm -f /etc/sysctl.d/99-hardened-kernel.conf \
+    /etc/sysctl.d/99-hardened-fs.conf \
+    /etc/sysctl.d/99-hardened-ipv4.conf \
+    /etc/sysctl.d/99-hardened-ipv6.conf
+
+sysctl --system >/dev/null || true
 
 cat >/etc/login.defs <<'LOGIN_EOF'
 MAIL_DIR /var/mail
@@ -183,97 +267,184 @@ Unattended-Upgrade::Remove-Unused-Dependencies "1";
 Unattended-Upgrade::Remove-Unused-Kernel-Packages "1";
 APT_EOF
 
+# apport overrides kernel.core_pattern and forces fs.suid_dumpable=2 when it
+# starts, undoing the sysctl hardening below
+apt-get purge -y apport apport-symptoms >/dev/null 2>&1 || true
+systemctl mask apport.service apport-autoreport.path apport-autoreport.timer \
+    >/dev/null 2>&1 || true
+rm -f /etc/sysctl.d/*apport* /usr/lib/sysctl.d/*apport*
+
+groupadd sshusers 2>/dev/null || true
+for u in ubuntu test root; do
+    if id "${u}" >/dev/null 2>&1; then
+        usermod -aG sshusers "${u}"
+    fi
+done
+
 mkdir -p /etc/ssh/sshd_config.d
-cat >/etc/ssh/sshd_config.d/99-hardening.conf <<'SSH_EOF'
+cat >/etc/ssh/sshd_config.d/00-hardening.conf <<'SSH_EOF'
 FingerprintHash SHA256
 SyslogFacility AUTH
 LogLevel VERBOSE
-LoginGraceTime 60
+LoginGraceTime 30
 PermitRootLogin no
 StrictModes yes
 MaxAuthTries 4
 MaxSessions 4
+HostbasedAuthentication no
+IgnoreUserKnownHosts yes
 PubkeyAuthentication yes
 PasswordAuthentication no
-PermitEmptyPasswords no
 KbdInteractiveAuthentication no
+PermitEmptyPasswords no
+KerberosAuthentication no
+KerberosOrLocalPasswd no
+KerberosTicketCleanup yes
+GSSAPIAuthentication no
+GSSAPICleanupCredentials yes
 UsePAM yes
+AuthenticationMethods publickey
+DisableForwarding yes
 AllowAgentForwarding no
 AllowTcpForwarding no
+PermitTunnel no
 GatewayPorts no
 X11Forwarding no
+X11UseLocalhost yes
 PrintMotd no
+PrintLastLog yes
+PermitUserEnvironment no
+UseDNS no
+TCPKeepAlive no
+ClientAliveInterval 15
+ClientAliveCountMax 3
+MaxStartups 10:30:60
+Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
+MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com
 AcceptEnv LANG LC_*
-Subsystem sftp /usr/lib/openssh/sftp-server
-ClientAliveInterval 300
-ClientAliveCountMax 2
+Subsystem sftp /usr/lib/openssh/sftp-server -f AUTHPRIV -l INFO
+AllowGroups sshusers
 SSH_EOF
+rm -f /etc/ssh/sshd_config.d/99-hardening.conf
+chmod 0644 /etc/ssh/sshd_config.d/*.conf
 
-cat >/etc/sudoers.d/99-hardening <<'SUDO_EOF'
-Defaults use_pty
-Defaults umask=0027
-Defaults ignore_dot
-Defaults passwd_timeout=1
-Defaults timestamp_timeout=1
-Defaults log_output
-SUDO_EOF
-chmod 0440 /etc/sudoers.d/99-hardening
+sshd -t -f /etc/ssh/sshd_config
+# the account used to drive the test must be allowed
+# NOTE: no `cmd | grep -q` pipelines, `grep -q` exits as soon as it matches and
+# the SIGPIPE it sends to `cmd` fails the script through `pipefail`
+sshd_effective_config=$(sshd -T)
+grep -qi '^allowgroups sshusers$' <<<"${sshd_effective_config}"
+ubuntu_groups=$(id -nG ubuntu)
+grep -qw sshusers <<<"${ubuntu_groups}"
 
-cat >/etc/profile.d/99-timeout.sh <<'SHELL_EOF'
-export TMOUT=600
-readonly TMOUT
+systemctl enable ssh >/dev/null 2>&1 || systemctl enable sshd >/dev/null 2>&1 || true
+systemctl restart ssh >/dev/null 2>&1 || systemctl restart sshd >/dev/null 2>&1 || true
+
+# --------------------------------------------------------------------------- pam
+# The stock Debian/Ubuntu layout is kept on purpose: the service files are left
+# alone and `@include` the common-* stacks, the hardening goes in those stacks.
+# rAudit resolves the includes per service, so hardening `common-auth` covers
+# every service asking for a password (`login`, `sshd`, `su`, `su-l`, `sudo` and
+# `sudo-i`) and hardening `common-password` covers every password tool
+# (`passwd`, `chpasswd` and `newusers`).
+
+# account lockout wrapped around the unix authentication, `pam_unix` is
+# `sufficient` so a success skips the `authfail` record below it
+cat >/etc/pam.d/common-auth <<'PAM_AUTH_EOF'
+auth	required	pam_faillock.so preauth silent audit deny=5 unlock_time=900
+auth	sufficient	pam_unix.so try_first_pass
+auth	[default=die]	pam_faillock.so authfail audit deny=5 unlock_time=900
+auth	requisite	pam_deny.so
+auth	required	pam_permit.so
+PAM_AUTH_EOF
+
+# a locked account must also be refused once the password is not asked anymore
+cat >/etc/pam.d/common-account <<'PAM_ACCOUNT_EOF'
+account	[success=1 new_authtok_reqd=done default=ignore]	pam_unix.so
+account	requisite	pam_deny.so
+account	required	pam_permit.so
+account	required	pam_faillock.so
+PAM_ACCOUNT_EOF
+
+# quality and reuse checks must run before pam_unix writes the new hash
+cat >/etc/pam.d/common-password <<'PAM_PASSWORD_EOF'
+password	requisite	pam_pwquality.so retry=3 minlen=14 difok=4 ucredit=-1 lcredit=-1 dcredit=-1 ocredit=-1 enforce_for_root
+password	required	pam_pwhistory.so remember=5 enforce_for_root use_authtok
+password	[success=1 default=ignore]	pam_unix.so obscure use_authtok try_first_pass yescrypt
+password	requisite	pam_deny.so
+password	required	pam_permit.so
+PAM_PASSWORD_EOF
+
+cat >/etc/pam.d/common-session <<'PAM_SESSION_EOF'
+session	[default=1]	pam_permit.so
+session	requisite	pam_deny.so
+session	required	pam_permit.so
+session	required	pam_umask.so
+session	required	pam_unix.so
+session	required	pam_loginuid.so
+session	required	pam_limits.so
+session	required	pam_env.so readenv=1
+session	optional	pam_systemd.so
+PAM_SESSION_EOF
+
+chmod 0644 /etc/pam.d/common-auth /etc/pam.d/common-account \
+    /etc/pam.d/common-password /etc/pam.d/common-session
+
+# `su` restricted to the wheel group, the stock file ships that rule commented out
+# (`gpasswd` instead of `usermod`, the harness user is logged in while this runs)
+groupadd -f wheel
+gpasswd -a ubuntu wheel
+sed -i '/^auth[[:space:]]\+sufficient[[:space:]]\+pam_rootok\.so/a auth       required   pam_wheel.so use_uid' /etc/pam.d/su
+grep -q '^auth[[:space:]]\+required[[:space:]]\+pam_wheel\.so use_uid$' /etc/pam.d/su
+
+# longer pause before the next authentication attempt, the stock `login` already
+# has the rule so only its value is hardened
+sed -i -E 's/^(auth[[:space:]]+optional[[:space:]]+pam_faildelay\.so[[:space:]]+)delay=[0-9]+/\1delay=4000000/' /etc/pam.d/login
+grep -qE '^auth[[:space:]]+optional[[:space:]]+pam_faildelay\.so[[:space:]]+delay=4000000' /etc/pam.d/login
+
+# the services must still be readable by the PAM library
+chmod 0644 /etc/pam.d/login /etc/pam.d/su /etc/pam.d/passwd
+
+cat >/etc/security/pwquality.conf <<'PWQUALITY_EOF'
+minlen = 14
+dcredit = -1
+ucredit = -1
+ocredit = -1
+lcredit = -1
+retry = 3
+difok = 4
+enforce_for_root
+PWQUALITY_EOF
+
+cat >/etc/security/limits.conf <<'LIMITS_EOF'
+*    hard    core    0
+*    soft    core    0
+*    hard    maxlogins    10
+*    soft    maxlogins    10
+*    hard    maxsyslogins    10
+*    soft    maxsyslogins    10
+LIMITS_EOF
+
+cat >/etc/profile.d/umask.sh <<'UMASK_EOF'
+umask 027
+UMASK_EOF
+chmod 0644 /etc/profile.d/umask.sh
+
+cat >/etc/profile.d/shell-timeout.sh <<'SHELL_EOF'
+TMOUT="$(( 60*10 ))";
+[ -z "$DISPLAY" ] && export TMOUT;
+case $( /usr/bin/tty ) in
+    /dev/tty[0-9]*) export TMOUT;;
+esac
 SHELL_EOF
-chmod 0644 /etc/profile.d/99-timeout.sh
-
-cat >/etc/grub.d/40_custom <<'GRUB_EOF'
-#!/bin/sh
-exec tail -n +3 $0
-set superusers="root"
-password_pbkdf2 root grub.pbkdf2.sha512.10000.AB42TEST00000000000000000000000000000000000000000000000000000000000000000000000.00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000TESTGRUB
-GRUB_EOF
-
-if [ -f /etc/default/grub ]; then
-    sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="\(.*\)"/GRUB_CMDLINE_LINUX_DEFAULT="\1 apparmor=1 security=apparmor"/' /etc/default/grub || true
-fi
-
-systemctl enable apparmor 2>/dev/null || true
-systemctl start apparmor 2>/dev/null || true
-# aa-enforce is disabled because it blocks raudit from running commands
-# aa-enforce /etc/apparmor.d/* 2>/dev/null || true
-
-find /etc/cron.d/ -type f -exec chmod 0644 {} \; 2>/dev/null || true
-find /etc/cron.daily/ -type f -exec chmod 0644 {} \; 2>/dev/null || true
-find /etc/cron.hourly/ -type f -exec chmod 0644 {} \; 2>/dev/null || true
-find /etc/cron.weekly/ -type f -exec chmod 0644 {} \; 2>/dev/null || true
-find /etc/cron.monthly/ -type f -exec chmod 0644 {} \; 2>/dev/null || true
-chmod 0600 /etc/crontab 2>/dev/null || true
-
-cat >/etc/hosts <<'HOSTS_EOF'
-127.0.0.1	localhost
-127.0.1.1	raudit-test
-127.0.0.1	localhost.localdomain
-127.0.0.1	local
-::1		ip6-localhost ip6-loopback localhost
-fe00::0		ip6-localnet
-ff00::0		ip6-mcastprefix
-ff02::1		ip6-allnodes
-ff02::2		ip6-allrouters
-0.0.0.0		0.0.0.0
-HOSTS_EOF
-
-if [ -f /etc/gshadow ]; then
-    chmod 0640 /etc/gshadow
-    chgrp root /etc/gshadow 2>/dev/null || true
-fi
-if [ -f /etc/gshadow- ]; then
-    chmod 0640 /etc/gshadow-
-fi
+chmod 0644 /etc/profile.d/shell-timeout.sh
+rm -f /etc/profile.d/99-timeout.sh
 
 cat >/etc/audit/auditd.conf <<'AUDIT_EOF'
 local_events = yes
 write_logs = yes
 log_file = /var/log/audit/audit.log
-log_group = adm
+log_group = root
 log_format = RAW
 flush = INCREMENTAL_ASYNC
 freq = 50
@@ -290,7 +461,7 @@ verify_email = yes
 action_mail_acct = root
 admin_space_left = 50
 admin_space_left_action = SUSPEND
-disk_full_action = SUSPEND
+disk_full_action = HALT
 disk_error_action = SUSPEND
 use_libwrap = yes
 tcp_listen_queue = 5
@@ -321,7 +492,7 @@ cat >/etc/audit/rules.d/hardened.rules <<'AUDIT_RULES_EOF'
 -w /var/log/btmp -p wa -k session
 -w /etc/sudoers -p wa -k privileged
 -w /etc/sudoers.d/ -p wa -k privileged
--w /var/log/sudo.log -p wa -k privileged
+-w /var/log/sudo.log -p wa -k log_file
 -w /etc/ssh/sshd_config -p wa -k sshd
 -w /etc/ssh/sshd_config.d/ -p wa -k sshd
 -w /etc/sysctl.conf -p wa -k sysctl
@@ -331,70 +502,121 @@ AUDIT_RULES_EOF
 chmod 0640 /etc/audit/rules.d/hardened.rules
 chown root:root /etc/audit/rules.d/hardened.rules
 
-systemctl enable auditd 2>/dev/null || true
-systemctl start auditd 2>/dev/null || true
+install -d -m 0700 -o root -g root /var/log/audit
+touch /var/log/sudo.log
+chmod 0600 /var/log/sudo.log
+chown root:root /var/log/sudo.log
 
-cat >/etc/pam.d/common-password <<'PAM_PASSWORD_EOF'
-password    requisite     pam_pwquality.so retry=3 minlen=14 difok=4 ucredit=-1 lcredit=-1 dcredit=-1 ocredit=-1 enforce_for_root
-password    [success=1 default=ignore]    pam_unix.so obscure use_authtok try_first_pass yescrypt
-password    requisite     pam_deny.so
-password    required      pam_permit.so
-password    required      pam_pwhistory.so remember=5 enforce_for_root
-PAM_PASSWORD_EOF
+systemctl enable auditd >/dev/null 2>&1 || true
 
-cat >/etc/pam.d/common-auth <<'PAM_AUTH_EOF'
-auth    [success=1 default=ignore]    pam_unix.so
-auth    requisite     pam_deny.so
-auth    required      pam_permit.so
-auth    required      pam_faillock.so preauth silent audit deny=5 unlock_time=900
-auth    [default=ignore]    pam_faillock.so authfail audit deny=5 unlock_time=900
-PAM_AUTH_EOF
+cat >/etc/hosts <<'HOSTS_EOF'
+127.0.0.1	localhost
+127.0.0.1	localhost.localdomain
+127.0.0.1	local
+127.0.1.1	raudit-test
+::1	localhost
+::1	ip6-localhost
+::1	ip6-loopback
+fe00::0	ip6-localnet
+ff00::0	ip6-mcastprefix
+ff02::1	ip6-allnodes
+ff02::2	ip6-allrouters
+0.0.0.0	0.0.0.0
+HOSTS_EOF
 
-cat >/etc/pam.d/common-account <<'PAM_ACCOUNT_EOF'
-account    [success=1 new_authtok_reqd=done default=ignore]    pam_unix.so
-account    requisite     pam_deny.so
-account    required      pam_permit.so
-account    required      pam_time.so
-account    required      pam_faillock.so
-PAM_ACCOUNT_EOF
+if [ -f /etc/gshadow ]; then
+    : >/etc/gshadow
+    chown root:shadow /etc/gshadow
+    chmod 0640 /etc/gshadow
+fi
+if [ -f /etc/gshadow- ]; then
+    chown root:shadow /etc/gshadow-
+    chmod 0640 /etc/gshadow-
+fi
 
-cat >/etc/pam.d/common-session <<'PAM_SESSION_EOF'
-session    [success=1 default=ignore]    pam_unix.so
-session    requisite     pam_deny.so
-session    required      pam_permit.so
-session    required      pam_umask.so
-session    required      pam_loginuid.so
-session    required      pam_limits.so
-session    required      pam_env.so
-PAM_SESSION_EOF
+if ! grep -q '^CtrlAltDelBurstAction=' /etc/systemd/system.conf; then
+    sed -i 's/^#\?CtrlAltDelBurstAction=.*/CtrlAltDelBurstAction=none/' /etc/systemd/system.conf
+fi
+grep -q '^CtrlAltDelBurstAction=none$' /etc/systemd/system.conf ||
+    echo 'CtrlAltDelBurstAction=none' >>/etc/systemd/system.conf
 
-cat >/etc/security/pwquality.conf <<'PWQUALITY_EOF'
-minlen = 14
-dcredit = -1
-ucredit = -1
-ocredit = -1
-lcredit = -1
-retry = 3
-difok = 4
-enforce_for_root
-PWQUALITY_EOF
+# must leave NOPASSWD for cloud-init
+cat >/etc/sudoers.d/99-hardening <<'SUDO_EOF'
+Defaults env_reset
+Defaults mail_badpass
+Defaults use_pty
+Defaults umask=0027
+Defaults ignore_dot
+Defaults passwd_timeout=1
+Defaults logfile="/var/log/sudo.log"
+Defaults lecture="always"
+Defaults lecture_file="/usr/share/doc/sudo_lecture.txt"
+SUDO_EOF
+chmod 0440 /etc/sudoers.d/99-hardening
+chown root:root /etc/sudoers.d/99-hardening
 
-cat >/etc/security/limits.conf <<'LIMITS_EOF'
-*    hard    core    0
-*    soft    core    0
-*    hard    maxlogins    10
-*    soft    maxlogins    10
-*    hard    maxsyslogins    10
-*    soft    maxsyslogins    10
-LIMITS_EOF
+cat >/usr/share/doc/sudo_lecture.txt <<'LECTURE_EOF'
+This host is audited. Every privileged command is logged and attributable.
+Use the least privilege required, and never share credentials.
+LECTURE_EOF
+chmod 0644 /usr/share/doc/sudo_lecture.txt
 
-cat >/etc/profile.d/umask.sh <<'UMASK_EOF'
-umask 027
-UMASK_EOF
+visudo -cf /etc/sudoers.d/99-hardening >/dev/null
 
-systemctl enable ssh 2>/dev/null || systemctl enable sshd 2>/dev/null || true
-systemctl restart ssh 2>/dev/null || systemctl restart sshd 2>/dev/null || true
+# single image so bind remount
+cat >/etc/fstab <<'FSTAB_EOF'
+LABEL=cloudimg-rootfs	/	  ext4	discard,commit=30,errors=remount-ro	0 1
+LABEL=BOOT	/boot	  ext4	defaults,nodev,nosuid,noexec	0 2
+LABEL=UEFI	/boot/efi vfat	umask=0077	0 1
+/var		/var	  none	bind,nodev,nosuid,noexec	0 0
+/var/log	/var/log	  none	bind,nodev,nosuid,noexec	0 0
+/var/log/audit	/var/log/audit none	bind,nodev,nosuid,noexec	0 0
+/home		/home	  none	bind,nodev,nosuid,noexec	0 0
+tmpfs		/tmp	  tmpfs	defaults,nodev,nosuid,noexec,mode=1777,size=512M	0 0
+tmpfs		/var/tmp  tmpfs	defaults,nodev,nosuid,noexec,mode=1777,size=512M	0 0
+tmpfs		/dev/shm  tmpfs	defaults,nodev,nosuid,noexec,mode=1777	0 0
+FSTAB_EOF
 
-chmod 644 /etc/ssh/sshd_config.d/*.conf 2>/dev/null || true
+install -d -m 1777 /var/tmp
+install -d -m 0700 -o root -g root /var/log/audit
+findmnt --verify --tab-file /etc/fstab >/dev/null || true
+
+rm -f /etc/nginx/sites-enabled/default
+cat >/etc/nginx/conf.d/99-hardening.conf <<'NGINX_EOF'
+server_tokens off;
+add_header X-Frame-Options "DENY" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+add_header Referrer-Policy "no-referrer" always;
+
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
+    return 301 https://$host$request_uri;
+}
+NGINX_EOF
+nginx -t
+systemctl enable nginx >/dev/null 2>&1 || true
+systemctl restart nginx >/dev/null 2>&1 || true
+
+cat >/etc/default/grub.d/99-hardened.cfg <<'GRUB_CFG_EOF'
+GRUB_TIMEOUT=0
+GRUB_TIMEOUT_STYLE=hidden
+GRUB_RECORDFAIL_TIMEOUT=0
+GRUB_TERMINAL=console
+GRUB_CMDLINE_LINUX_DEFAULT="console=tty1 console=ttyS0 quiet loglevel=0 slab_nomerge slab_debug=FZ page_alloc.shuffle=1 init_on_alloc=1 init_on_free=1 pti=on randomize_kstack_offset=on vsyscall=none debugfs=off oops=panic module.sig_enforce=1 lockdown=integrity mce=0 kfence.sample_interval=100 vdso32=0 amd_iommu=force_isolation intel_iommu=on iommu=force iommu.passthrough=0 iommu.strict=1 efi=disable_early_pci_dma random.trust_bootloader=off random.trust_cpu=off extra_latent_entropy ia32_emulation=0 cfi=kcfi hardened_usercopy=1 remountsecure=3 mitigations=auto,nosmt nosmt spectre_v2=on spectre_bhi=on spec_store_bypass_disable=on l1tf=full,force mds=full tsx=off tsx_async_abort=full,nosmt kvm.nx_huge_pages=force l1d_flush=on mmio_stale_data=full,nosmt retbleed=auto,nosmt spec_rstack_overflow=safe-ret gather_data_sampling=force reg_file_data_sampling=on spectre_v2_user=on srbds=auto,nosmt hash_pointers=always apparmor=1 security=apparmor"
+GRUB_CFG_EOF
+chmod 0644 /etc/default/grub.d/99-hardened.cfg
+
+update-grub
+
+find /etc/cron.d/ /etc/cron.daily/ /etc/cron.hourly/ /etc/cron.weekly/ /etc/cron.monthly/ \
+    -type f -exec chmod 0644 {} \; 2>/dev/null || true
+chmod 0600 /etc/crontab 2>/dev/null || true
+
+systemctl enable apparmor >/dev/null 2>&1 || true
+systemctl start apparmor >/dev/null 2>&1 || true
+# aa-enforce is not applied: it blocks raudit from running its probe commands
 
 echo "HARDENED SETUP COMPLETE"

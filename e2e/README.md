@@ -24,7 +24,7 @@ python3 e2e/qemu_test.py all --update-baselines
 ## How it works
 
 1. Downloads an Ubuntu cloud image (cached in `target/qemu-cache/`)
-2. Creates copy-on-write disk images
+2. Creates copy-on-write disk images in `target/qemu-work/`
 3. Generates cloud-init ISOs
 4. Boots QEMU VMs with KVM acceleration (if available)
 5. Waits for SSH
@@ -49,7 +49,8 @@ Expected JSON outputs are stored in `e2e/expected/`. Each profile has a baseline
 file (`hardened.json`, `insecure.json`). Tests fail if the output differs from
 the baseline.
 
-Timestamps (`time` fields) are stripped before saving, so baselines only change
+Timestamps (`time` fields) are stripped and the raudit version
+(`metadata.product.version`) is blanked before saving, so baselines only change
 when check results actually change.
 
 To generate or update baselines after intentional changes:
@@ -57,3 +58,7 @@ To generate or update baselines after intentional changes:
 ```bash
 just e2e_update
 ```
+
+## TODO
+
+- Install Podman or Docker on hardened and insecure and run containers
