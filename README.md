@@ -199,6 +199,7 @@ Some modules help with specific configuration checks.
 What is supported:
 
 - Mounts including options.
+- LUKS disk encryption.
 - Kernel params.
 - Kernel compilation params.
 - Sysctl params.
@@ -325,7 +326,6 @@ Rules:
 - Ensure NTP is configured with NTS
 - Ensure logrotate is used
 - Ensure rsyslog is used
-- Ensure secure boot and TPM are setup
 - Ensure LSM is configured at boot with either AppArmor or SELinux
 - Ensure AppArmor profiles are used for some processes
 - Ensure firejail is used for some processes

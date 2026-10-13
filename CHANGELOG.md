@@ -15,6 +15,7 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 - Add Systemd check `systemd_unit_active`
 - Add Secure Boot module
 - Add Secure Boot check `SCB_001`
+- Add LUKS check `MNT_100`
 - Add descriptions to kernel params checks
 
 ### Changed

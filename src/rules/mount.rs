@@ -593,4 +593,22 @@ pub fn add_checks() {
     )
     .with_description("Prevent execution of binaries on /dev/shm, blocking attackers from running exploits from shared memory. This could be used to bypass AV and EDR that scan files created on disk but may ignore files created in shared memory.")
     .register();
+
+    check::Check::new(
+        "MNT_100",
+        "Ensure \"/\" partition is encrypted with LUKS",
+        Severity::Critical,
+        vec![
+            "mount",
+            "fs",
+            "encryption",
+            "server",
+            "workstation",
+        ],
+        || mount::check_luks_mount("/"),
+        vec![mount::init_mounts],
+    )
+    .with_description("LUKS full disk encryption protects data at rest against physical access, theft, or improper disposal of storage media. Without it, an attacker with physical access to the disk can read sensitive data directly, bypassing all filesystem permissions and access controls. This is acceptable to leave unencrypted under specific context, for example a VM running on an hypervisor with an encrypted host disk is not an issue, an host with no sensitive data, or a diskless setup.")
+    .with_fix("Re-encrypting an existing partition usually requires a backup and a reinstall, follow your distribution documentation to setup LUKS.")
+    .register();
 }

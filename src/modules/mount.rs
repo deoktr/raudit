@@ -17,11 +17,18 @@
  */
 
 use std::fs;
+use std::path::Path;
 use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_error};
+use crate::{check, log_debug, log_error, log_trace};
 
 const PROC_MOUNTS_PATH: &str = "/proc/mounts";
+
+const SYS_BLOCK_PATH: &str = "/sys/block";
+
+/// Maximum recursion depth while walking the block device stack, prevents
+/// infinite loops on unexpected sysfs layouts.
+const MAX_DEVICE_DEPTH: usize = 16;
 
 static MOUNT_CONFIG: OnceLock<MountConfig> = OnceLock::new();
 
@@ -135,5 +142,92 @@ pub fn check_mount_option(target: &str, option: &str) -> check::CheckReturn {
             check::CheckState::Fail,
             Some("not a mount point".to_string()),
         ),
+    }
+}
+
+/// Resolve a device path to its `/sys/block` name, following symlinks like
+/// `/dev/mapper/foo` to `/dev/dm-0`.
+fn resolve_device_name(source: &str) -> Option<String> {
+    let path = fs::canonicalize(source).ok()?;
+    path.file_name()?.to_str().map(|name| name.to_string())
+}
+
+/// Check if the content of a device-mapper `uuid` sysfs file belongs to a LUKS
+/// device opened by cryptsetup, e.g. `CRYPT-LUKS2-<digest>-<name>`.
+fn dm_uuid_is_luks(content: &str) -> bool {
+    content.trim().starts_with("CRYPT-LUKS")
+}
+
+/// Check if a block device is a LUKS device opened by cryptsetup.
+fn dev_is_luks(dev: &str) -> Option<bool> {
+    let path = Path::new(SYS_BLOCK_PATH).join(dev).join("dm/uuid");
+    let content = fs::read_to_string(path).ok()?;
+    Some(dm_uuid_is_luks(&content))
+}
+
+/// Check if a block device, or any device underneath it in the stack (e.g. LVM
+/// on top of LUKS), is a LUKS device.
+fn device_is_luks(dev: &str, depth: usize) -> bool {
+    if depth > MAX_DEVICE_DEPTH {
+        return false;
+    }
+
+    if let Some(is_luks) = dev_is_luks(dev) {
+        log_trace!("device {} is luks: {}", dev, is_luks);
+        if is_luks {
+            return true;
+        }
+    }
+
+    let slaves_path = Path::new(SYS_BLOCK_PATH).join(dev).join("slaves");
+    if let Ok(entries) = fs::read_dir(slaves_path) {
+        for entry in entries.flatten() {
+            if let Some(name) = entry.file_name().to_str()
+                && device_is_luks(name, depth + 1)
+            {
+                return true;
+            }
+        }
+    }
+
+    false
+}
+
+/// Ensure the block device backing a mount target is encrypted with LUKS.
+pub fn check_luks_mount(target: &str) -> check::CheckReturn {
+    let mounts = match MOUNT_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Warning,
+                Some("mount configuration not initialized".to_string()),
+            );
+        }
+    };
+
+    let source = match get_mount(mounts, target) {
+        Some(mount) => &mount.source,
+        None => {
+            return (
+                check::CheckState::Warning,
+                Some(format!("target {} is not a mount", target)),
+            );
+        }
+    };
+
+    let dev = match resolve_device_name(&source) {
+        Some(dev) => dev,
+        None => {
+            return (
+                check::CheckState::Warning,
+                Some(format!("failed to resolve device {}", source)),
+            );
+        }
+    };
+
+    if device_is_luks(&dev, 0) {
+        (check::CheckState::Pass, None)
+    } else {
+        (check::CheckState::Fail, None)
     }
 }

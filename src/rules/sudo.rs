@@ -124,6 +124,7 @@ pub fn add_checks() {
     .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults mail_badpass\"")
     .register();
 
+    // sudo-rs does not support logfile, it sends all it's logs to syslog
     check::Check::new(
         "SUD_011",
         "Ensure that sudo default config \"logfile=\"/var/log/sudo.log\"\" is set",
@@ -133,6 +134,7 @@ pub fn add_checks() {
         vec![sudo::init_sudo],
     )
     .skip_when(sudo::skip_no_sudo)
+    .skip_when(sudo::skip_sudo_rs)
     .with_description("Append a record of every sudo command (success and failure) to this file in addition to syslog.")
     .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults logfile=\"/var/log/sudo.log\"\"")
     .register();

@@ -24646,6 +24646,41 @@
       "class_name": "Compliance Finding",
       "type_uid": 200301,
       "finding_info": {
+        "uid": "MNT_100",
+        "title": "Ensure \"/\" partition is encrypted with LUKS",
+        "desc": "LUKS full disk encryption protects data at rest against physical access, theft, or improper disposal of storage media. Without it, an attacker with physical access to the disk can read sensitive data directly, bypassing all filesystem permissions and access controls. This is acceptable to leave unencrypted under specific context, for example a VM running on an hypervisor with an encrypted host disk is not an issue, an host with no sensitive data, or a diskless setup."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Re-encrypting an existing partition usually requires a backup and a reinstall, follow your distribution documentation to setup LUKS."
+      },
+      "severity_id": 5,
+      "severity": "Critical",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
         "uid": "NGX_001",
         "title": "Ensure nginx server_tokens is set to off",
         "desc": "The server_tokens directive controls whether nginx sends its version number in error pages and the Server response header. This is not directly a security measure as it offer no protection against attacks, but prevent information leakage about update management that could reflect a company security and operational posture."
@@ -32683,12 +32718,12 @@
     }
   ],
   "stats": {
-    "total": 918,
+    "total": 919,
     "pass": 56,
-    "fail": 777,
+    "fail": 778,
     "warning": 85,
     "unknown": 0,
-    "fail_critical": 12,
+    "fail_critical": 13,
     "fail_high": 194,
     "fail_medium": 513,
     "fail_low": 54,
