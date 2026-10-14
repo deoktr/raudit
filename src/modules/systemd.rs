@@ -32,6 +32,12 @@ static SYSTEMD_ACTIVE_UNITS: OnceLock<Vec<String>> = OnceLock::new();
 /// Systemd configuration.
 pub type SystemdConfig = HashMap<String, String>;
 
+/// Skip when systemd is not used. Systemd creates a notification socket that
+/// services can communicate with.
+pub fn skip_no_systemd() -> bool {
+    !Path::new("/run/systemd/notify").exists()
+}
+
 /// Parse content of `/etc/systemd/system.conf`.
 fn parse_systemd_config(systemd_config: String) -> SystemdConfig {
     systemd_config

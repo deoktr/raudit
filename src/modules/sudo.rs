@@ -34,16 +34,6 @@ pub type SudoConfig = Vec<String>;
 /// List of sudo configuration `Defaults`.
 pub type SudoConfigDefaults = Vec<String>;
 
-/// Parse a sudo configuration file content.
-fn parse_sudoer(content: String) -> SudoConfig {
-    content
-        .lines()
-        .filter(|line| !line.starts_with("#"))
-        .filter(|line| !line.is_empty())
-        .map(|line| line.to_string())
-        .collect()
-}
-
 /// Skip when sudo is not installed.
 pub fn skip_no_sudo() -> bool {
     utils::which("sudo").is_none() && utils::which("sudo-rs").is_none()
@@ -53,6 +43,16 @@ pub fn skip_no_sudo() -> bool {
 /// sudo-rs would be used, this is a quick skip.
 pub fn skip_sudo_rs() -> bool {
     utils::which("sudo-rs").is_some()
+}
+
+/// Parse a sudo configuration file content.
+fn parse_sudoer(content: String) -> SudoConfig {
+    content
+        .lines()
+        .filter(|line| !line.starts_with("#"))
+        .filter(|line| !line.is_empty())
+        .map(|line| line.to_string())
+        .collect()
 }
 
 pub fn init_sudo() {

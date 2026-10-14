@@ -313,7 +313,7 @@ Benchmark 1: ./target/release/raudit
 - Add configurations for whitelist on some rules, for example whitelist trusted
   users in a docker group, instead of failing the check that would force admins
   to create config
-- Add check to avoid check name collision
+- Add check to avoid check name or ID collision
 - Use macro `run!()` to log commands
 - Fix all TODO and FIXME in code
 

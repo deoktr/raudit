@@ -10,6 +10,8 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+## [0.35.0] - 2026-10-14
+
 ### Added
 
 - Add Systemd check `systemd_unit_active`
@@ -21,6 +23,7 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 ### Changed
 
 - Updated severity level of some checks
+- Skip systemd checks when not used
 
 ### Fixed
 

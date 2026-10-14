@@ -3,6 +3,7 @@ use crate::check::Severity;
 use crate::modules::bin;
 
 pub fn add_checks() {
+    // TODO: add a way to give an allow list to avoid having this always as fail
     check::Check::new(
         "BIN_001",
         "Ensure all SUID/SGID executables are allowed",

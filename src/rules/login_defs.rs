@@ -33,10 +33,8 @@ pub fn add_checks() {
                 Ok(value) => match value {
                     Some(vl) => match vl.parse::<i32>() {
                         Ok(val) => {
-                            // TODO: also check to see if <= 11? even tho this
-                            // should not cause any problems, it's still an
-                            // invalid value
-                            if val >= VAL {
+                            // max value is 11
+                            if val >= VAL && val <= 11 {
                                 (check::CheckState::Pass, Some(format!("{}", val)))
                             } else {
                                 (check::CheckState::Fail, Some(format!("{} < {}", val, VAL)))

@@ -9,6 +9,7 @@ pub fn add_checks() {
     // Note disabling IPv6 via 'net.ipv6.conf.all.disable_ipv6' is not included
     // as a rule even if it's a CIS rule, this is because it does not increase
     // the security
+
     sysctl::add_sysctl_check!(
         "SYS_001",
         Severity::Medium,
@@ -182,7 +183,6 @@ pub fn add_checks() {
     .register();
 
     // FIXME: only available on some kernels
-    // NOTE: prevents Docker and Podman from working rootless
     sysctl::add_sysctl_check!(
         "SYS_016",
         Severity::High,
