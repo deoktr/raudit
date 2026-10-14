@@ -10,6 +10,14 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+### Changed
+
+- Changed the format for the human readable output
+
+### Fixed
+
+- Fixed a bug where mount file was missing character escaping
+
 ## [0.35.0] - 2026-10-14
 
 ### Added
@@ -74,6 +82,7 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 - Add `--no-skip` CLI flag to disable automatic check skipping
 
+[0.35.0]: https://github.com/deoktr/raudit/releases/tag/v0.35.0
 [0.34.0]: https://github.com/deoktr/raudit/releases/tag/v0.34.0
 [0.33.0]: https://github.com/deoktr/raudit/releases/tag/v0.33.0
 [0.32.3]: https://github.com/deoktr/raudit/releases/tag/v0.32.3

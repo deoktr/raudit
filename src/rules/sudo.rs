@@ -3,6 +3,7 @@ use crate::check::Severity;
 use crate::modules::{audit, base, sudo};
 
 pub fn add_checks() {
+    // FIXME: breaks 'sudo apt update'
     check::Check::new(
         "SUD_001",
         "Ensure that sudo default config \"noexec\" is set",

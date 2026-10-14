@@ -16,8 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use super::types::{CheckState, REPORT, ReportStats, Severity};
+use super::types::{Check, CheckState, REPORT, ReportStats, Severity};
 use crate::{config, consts, ocsf, utils};
+
+/// Maximum width of a printed line.
+const OUTPUT_WIDTH: usize = 100;
+
+/// Prefix of every line belonging to a check.
+const CHILD_PREFIX: &str = "| ";
+
+/// Width left for the content of a line belonging to a check.
+const CHILD_WIDTH: usize = OUTPUT_WIDTH - CHILD_PREFIX.len();
 
 /// Print list of available tags.
 pub fn print_tags() {
@@ -56,6 +65,51 @@ pub fn print_severities() {
     println!("Available severities: informational, low, medium, high, critical.");
 }
 
+/// Style `text` with an ANSI attribute, or return it as is when colored output
+/// is disabled.
+fn styled(attribute: &str, reset: &str, text: &str) -> String {
+    if config::is_colored_output_enabled() {
+        format!("{}{}{}", attribute, text, reset)
+    } else {
+        text.to_string()
+    }
+}
+
+/// Print the check header, wrapping the title to the output width.
+fn print_check_header(check: &Check) {
+    let color = check.state_color();
+    let reset = if color.is_empty() {
+        ""
+    } else {
+        consts::RESET_COLOR
+    };
+    let header = format!("{}{}", check.header_prefix(), check.title);
+    let lines = utils::wrap_text(&header, OUTPUT_WIDTH);
+
+    if let Some((first, rest)) = lines.split_first() {
+        println!("{}{}", first, reset);
+
+        for line in rest {
+            println!("{}{}{}", color, line, reset);
+        }
+    }
+}
+
+/// Print a line belonging to a check, wrapped to the output width.
+fn print_check_line(text: &str) {
+    let prefix = styled(consts::DIM_COLOR, consts::RESET_COLOR, CHILD_PREFIX);
+
+    for line in utils::wrap_text(text, CHILD_WIDTH) {
+        println!("{}{}", prefix, line);
+    }
+}
+
+/// Print a check detail, with its label in bold, wrapped to the output width.
+fn print_check_detail(label: &str, text: &str) {
+    let label = styled(consts::BOLD_COLOR, consts::RESET_BOLD_COLOR, label);
+    print_check_line(format!("{} {}", label, text).trim_end());
+}
+
 /// Print list of checks, with option to skip passed checks.
 pub fn print_checks(skip_passed: bool, no_print_description: bool, no_print_fix: bool) {
     let report = REPORT.lock().expect("Checks not initialized");
@@ -65,17 +119,20 @@ pub fn print_checks(skip_passed: bool, no_print_description: bool, no_print_fix:
             continue;
         }
 
-        println!("{}", check);
+        print_check_header(check);
 
         let mut add_new_line = false;
+
+        if let Some(message) = &check.message {
+            print_check_detail("Result:", message);
+            add_new_line = true;
+        }
 
         if check.state != CheckState::Pass
             && !no_print_description
             && let Some(description) = &check.description
         {
-            for line in utils::wrap_text(&format!("Description: {}", description), 80) {
-                println!("{}", line);
-            }
+            print_check_detail("Description:", description);
             add_new_line = true;
         }
 
@@ -83,16 +140,14 @@ pub fn print_checks(skip_passed: bool, no_print_description: bool, no_print_fix:
             && !no_print_fix
             && let Some(fix) = &check.fix
         {
-            for line in utils::wrap_text(&format!("Fix: {}", fix), 80) {
-                println!("{}", line);
-            }
+            print_check_detail("Fix:", fix);
             add_new_line = true;
         }
 
         if check.state == CheckState::Fail && !check.links.is_empty() {
-            println!("Links:");
+            print_check_detail("Links:", "");
             for link in &check.links {
-                println!("- <{}>", link);
+                print_check_line(link);
             }
             add_new_line = true;
         }

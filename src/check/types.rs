@@ -172,47 +172,48 @@ impl Check {
     pub fn register(self) {
         REPORT.lock().unwrap().checks.push(self);
     }
-}
 
-impl Display for Check {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        let msg_suffix = match &self.message {
-            Some(m) => format!(" ({})", m),
-            None => "".to_string(),
-        };
+    /// ANSI color of the check state, empty when colored output is disabled.
+    pub fn state_color(&self) -> &'static str {
+        if !config::is_colored_output_enabled() {
+            return "";
+        }
 
-        let message = if config::is_colored_output_enabled() {
-            let state_color = match self.state {
-                CheckState::Pass => consts::CHK_PASS_COLOR,
-                CheckState::Fail => consts::CHK_FAIL_COLOR,
-                CheckState::Warning => consts::CHK_WARNING_COLOR,
-                CheckState::Unknown => consts::CHK_UNKNOWN_COLOR,
-            };
+        match self.state {
+            CheckState::Pass => consts::CHK_PASS_COLOR,
+            CheckState::Fail => consts::CHK_FAIL_COLOR,
+            CheckState::Warning => consts::CHK_WARNING_COLOR,
+            CheckState::Unknown => consts::CHK_UNKNOWN_COLOR,
+        }
+    }
+
+    /// State label, used when colored output is disabled.
+    fn state_label(&self) -> &'static str {
+        match self.state {
+            CheckState::Pass => "PASS",
+            CheckState::Fail => "FAIL",
+            CheckState::Warning => "WARNING",
+            CheckState::Unknown => "UNKNOWN",
+        }
+    }
+
+    /// Check header: state, ID and severity, e.g. `FAIL [APT_001] [Medium] `.
+    ///
+    /// Leaves the state color active, the caller must reset it once done.
+    pub fn header_prefix(&self) -> String {
+        if config::is_colored_output_enabled() {
             format!(
-                "{}[{}] {}[{}]{} {}{}{}",
-                state_color,
+                "{}[{}] {}[{}]{} {}",
+                self.state_color(),
                 self.id,
                 self.severity.color(),
                 self.severity,
                 consts::RESET_COLOR,
-                state_color,
-                self.title,
-                msg_suffix,
+                self.state_color(),
             )
         } else {
-            let state_label = match self.state {
-                CheckState::Pass => "PASS",
-                CheckState::Fail => "FAIL",
-                CheckState::Warning => "WARNING",
-                CheckState::Unknown => "UNKNOWN",
-            };
-            format!(
-                "{} [{}] [{}] {}{}",
-                state_label, self.id, self.severity, self.title, msg_suffix,
-            )
-        };
-
-        write!(f, "{}", message)
+            format!("{} [{}] [{}] ", self.state_label(), self.id, self.severity)
+        }
     }
 }
 
@@ -256,7 +257,7 @@ impl Severity {
 impl Display for Severity {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match self {
-            Severity::Informational => write!(f, "Informational"),
+            Severity::Informational => write!(f, "Info"),
             Severity::Low => write!(f, "Low"),
             Severity::Medium => write!(f, "Medium"),
             Severity::High => write!(f, "High"),

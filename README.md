@@ -42,13 +42,13 @@ your specific needs, and for cleaner outputs do not print checks that passed:
 Workstation:
 
 ```bash
-raudit --tags workstation --tags-exclude paranoid,useless --no-print-passed
+raudit --tags workstation --tags-exclude paranoid,bin,clamav,modprobe,kernel_build_conf,mount_option,sysctl,audit,kernel
 ```
 
 Server:
 
 ```bash
-raudit --tags server --tags-exclude paranoid,useless --no-print-passed
+raudit --tags server --tags-exclude paranoid,bin,clamav,modprobe,kernel_build_conf,mount_option,sysctl,audit,kernel
 ```
 
 > [!NOTE]

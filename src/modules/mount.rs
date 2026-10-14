@@ -47,21 +47,71 @@ pub struct Mount {
     options: MountOptions,
 }
 
+/// Unescape the octal sequences (`\ooo`) used by the kernel in the device,
+/// mount point and filesystem type fields of `/proc/mounts`, e.g. a space is
+/// reported as `\040`.
+fn unescape_octal(value: &str) -> String {
+    if !value.contains('\\') {
+        return value.to_string();
+    }
+
+    let value = value.as_bytes();
+    let mut bytes = Vec::with_capacity(value.len());
+    let mut i = 0;
+
+    while i < value.len() {
+        if value[i] != b'\\' {
+            bytes.push(value[i]);
+            i += 1;
+            continue;
+        }
+
+        i += 1;
+        let mut octal: u8 = 0;
+        let mut digits = 0;
+        while digits < 3 && i < value.len() && (b'0'..=b'7').contains(&value[i]) {
+            octal = octal * 8 + (value[i] - b'0');
+            i += 1;
+            digits += 1;
+        }
+
+        if digits == 0 {
+            bytes.push(b'\\');
+            continue;
+        }
+
+        bytes.push(octal);
+    }
+
+    String::from_utf8_lossy(&bytes).into_owned()
+}
+
 /// Parse the content for `/proc/mounts`.
 fn parse_mounts(mounts: String) -> MountConfig {
     mounts
         .lines()
         .map(|line| {
-            let mut kvs = line.splitn(6, " ");
-            let source = kvs.next().unwrap_or_default();
-            let target = kvs.next().unwrap_or_default();
-            let fs_type = kvs.next().unwrap_or_default();
-            let options = kvs.next().unwrap_or_default();
+            let mut kvs = line.splitn(4, " ");
+            let source = unescape_octal(kvs.next().unwrap_or_default());
+            let target = unescape_octal(kvs.next().unwrap_or_default());
+            let fs_type = unescape_octal(kvs.next().unwrap_or_default());
+
+            // The remainder holds the option list followed by the dump and pass
+            // values, the kernel does not escape the options, they may contain
+            // spaces.
+            let remainder = kvs.next().unwrap_or_default();
+            let options = remainder
+                .strip_suffix(" 0 0")
+                .unwrap_or(remainder)
+                .split(",")
+                .map(str::to_string)
+                .collect();
+
             Mount {
-                source: source.to_string(),
-                target: target.to_string(),
-                fs_type: fs_type.to_string(),
-                options: options.split(",").map(str::to_string).collect(),
+                source,
+                target,
+                fs_type,
+                options,
             }
         })
         .collect()
@@ -229,5 +279,61 @@ pub fn check_luks_mount(target: &str) -> check::CheckReturn {
         (check::CheckState::Pass, None)
     } else {
         (check::CheckState::Fail, None)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_unescape_octal() {
+        assert_eq!(unescape_octal("/home"), "/home".to_string());
+        assert_eq!(unescape_octal("/mnt/my\\040dir"), "/mnt/my dir".to_string());
+        assert_eq!(
+            unescape_octal("a\\011b\\012c\\015d\\134e\\043f"),
+            "a\tb\nc\rd\\e#f".to_string()
+        );
+        assert_eq!(unescape_octal("\\377"), "\u{fffd}".to_string());
+        assert_eq!(unescape_octal("\\12\\1"), "\n\u{1}".to_string());
+        assert_eq!(unescape_octal("trailing\\"), "trailing\\".to_string());
+    }
+
+    #[test]
+    fn test_parse_mounts() {
+        let mounts = parse_mounts(
+            "/dev/mapper/vg-root / ext4 rw,relatime 0 0
+/dev/disk/by-label/Data\\040Disk /mnt/data\\040dir fuse\\043sshfs ro,nosuid,nodev 0 0
+tmpfs /tmp tmpfs rw,seclabel,context=\"system_u:object_r:tmp_t\\040a b\" 0 0
+"
+            .to_string(),
+        );
+
+        assert_eq!(mounts.len(), 3);
+
+        assert_eq!(mounts[0].source, "/dev/mapper/vg-root".to_string());
+        assert_eq!(mounts[0].target, "/".to_string());
+        assert_eq!(mounts[0].fs_type, "ext4".to_string());
+        assert_eq!(
+            mounts[0].options,
+            vec!["rw".to_string(), "relatime".to_string()]
+        );
+
+        assert_eq!(mounts[1].source, "/dev/disk/by-label/Data Disk".to_string());
+        assert_eq!(mounts[1].target, "/mnt/data dir".to_string());
+        assert_eq!(mounts[1].fs_type, "fuse#sshfs".to_string());
+        assert_eq!(
+            mounts[1].options,
+            vec!["ro".to_string(), "nosuid".to_string(), "nodev".to_string()]
+        );
+
+        assert_eq!(
+            mounts[2].options,
+            vec![
+                "rw".to_string(),
+                "seclabel".to_string(),
+                "context=\"system_u:object_r:tmp_t\\040a b\"".to_string()
+            ]
+        );
     }
 }

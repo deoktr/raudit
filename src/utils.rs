@@ -21,6 +21,9 @@ use std::fs;
 use std::path::PathBuf;
 use std::time::Duration;
 
+/// Maximum length of an ANSI escape sequence.
+const MAX_ANSI_ESCAPE_LEN: usize = 16;
+
 /// Resolve an executable name against `$PATH`. Returns the first matching
 /// absolute path, or None if the binary is not found.
 pub fn which(bin: &str) -> Option<PathBuf> {
@@ -79,31 +82,94 @@ pub fn format_duration(dur: Duration) -> String {
     }
 }
 
-/// Format text and wrap it on words at a specific width.
-pub fn wrap_text(text: &str, max_width: usize) -> Vec<String> {
-    let mut wrapped_lines = Vec::new();
+/// Length of the ANSI escape sequence starting `text`, None if there is none.
+fn escape_len(text: &str) -> Option<usize> {
+    if !text.starts_with("\x1b[") {
+        return None;
+    }
 
-    for line in text.split("\n") {
-        let mut current_line = String::new();
+    let len = text[2..].find(|c: char| c.is_ascii_alphabetic())? + 3;
+    (len <= MAX_ANSI_ESCAPE_LEN).then_some(len)
+}
 
-        for word in line.split_whitespace() {
-            if current_line.is_empty() {
-                current_line.push_str(word);
-            } else if current_line.len() + word.len() < max_width {
-                current_line.push(' ');
-                current_line.push_str(word);
-            } else {
-                wrapped_lines.push(current_line);
-                current_line = word.to_string();
+/// Split `text` on whitespaces into words with their displayed width.
+///
+/// ANSI escape sequences are zero width and stay in the word they precede,
+/// words wider than `max_width` are broken into chunks of `max_width` chars.
+fn split_words(text: &str, max_width: usize) -> Vec<(String, usize)> {
+    let mut words = Vec::new();
+    let mut word = String::new();
+    let mut width = 0;
+    let mut rest = text;
+
+    while let Some(ch) = rest.chars().next() {
+        let (token, tail) = match escape_len(rest) {
+            Some(len) => rest.split_at(len),
+            None => rest.split_at(ch.len_utf8()),
+        };
+        rest = tail;
+
+        if token.starts_with("\x1b") {
+            word.push_str(token);
+        } else if ch.is_whitespace() {
+            if !word.is_empty() {
+                words.push((std::mem::take(&mut word), width));
+                width = 0;
             }
-        }
+        } else {
+            word.push_str(token);
+            width += 1;
 
-        if !current_line.is_empty() {
-            wrapped_lines.push(current_line);
+            if width == max_width {
+                words.push((std::mem::take(&mut word), width));
+                width = 0;
+            }
         }
     }
 
-    wrapped_lines
+    if !word.is_empty() {
+        words.push((word, width));
+    }
+
+    words
+}
+
+/// Format text and wrap it on words at a specific width.
+///
+/// ANSI escape sequences are zero width and words wider than `max_width` are
+/// hard-broken.
+pub fn wrap_text(text: &str, max_width: usize) -> Vec<String> {
+    let mut lines = Vec::new();
+
+    if max_width == 0 {
+        return lines;
+    }
+
+    for paragraph in text.split("\n") {
+        let mut line = String::new();
+        let mut width = 0;
+
+        for (word, word_width) in split_words(paragraph, max_width) {
+            if width > 0 && width + word_width + 1 > max_width {
+                lines.push(std::mem::take(&mut line));
+                width = 0;
+            }
+
+            if width > 0 {
+                line.push(' ');
+                width += 1;
+            }
+
+            line.push_str(&word);
+            width += word_width;
+        }
+
+        if !line.is_empty() {
+            lines.push(line);
+        }
+    }
+
+    lines
 }
 
 /// Run a command without failing.
@@ -129,3 +195,77 @@ macro_rules! run {
 }
 
 pub(crate) use run;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::consts;
+
+    #[test]
+    fn test_wrap_text_on_words() {
+        assert_eq!(
+            wrap_text("Ensure apt is configured with false", 12),
+            vec!["Ensure apt", "is", "configured", "with false"]
+        );
+    }
+
+    #[test]
+    fn test_wrap_text_counts_chars_not_bytes() {
+        assert_eq!(wrap_text("héllo wörld", 6), vec!["héllo", "wörld"]);
+    }
+
+    #[test]
+    fn test_wrap_text_hard_break_long_words() {
+        assert_eq!(wrap_text("abcdef", 2), vec!["ab", "cd", "ef"]);
+        assert_eq!(wrap_text("x abcdefg y", 3), vec!["x", "abc", "def", "g y"]);
+    }
+
+    #[test]
+    fn test_wrap_text_escapes_are_zero_width() {
+        let text = format!(
+            "{}one two three{}",
+            consts::CHK_FAIL_COLOR,
+            consts::RESET_COLOR
+        );
+        assert_eq!(
+            wrap_text(&text, 8),
+            vec![
+                format!("{}one two", consts::CHK_FAIL_COLOR),
+                format!("three{}", consts::RESET_COLOR),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_wrap_text_stops_bold() {
+        let text = format!(
+            "{}bold{} normal text here",
+            consts::BOLD_COLOR,
+            consts::RESET_BOLD_COLOR
+        );
+        assert_eq!(
+            wrap_text(&text, 12),
+            vec![
+                format!(
+                    "{}bold{} normal",
+                    consts::BOLD_COLOR,
+                    consts::RESET_BOLD_COLOR
+                ),
+                "text here".to_string(),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_wrap_text_on_new_lines() {
+        assert_eq!(
+            wrap_text("On Debian: chmod 640\nOn other: chmod 600", 80),
+            vec!["On Debian: chmod 640", "On other: chmod 600"]
+        );
+    }
+
+    #[test]
+    fn test_wrap_text_zero_width() {
+        assert!(wrap_text("anything", 0).is_empty());
+    }
+}

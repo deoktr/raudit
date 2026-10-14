@@ -17,6 +17,9 @@
  */
 
 pub const RESET_COLOR: &str = "\x1b[39m";
+pub const DIM_COLOR: &str = "\x1b[90m";
+pub const BOLD_COLOR: &str = "\x1b[1m";
+pub const RESET_BOLD_COLOR: &str = "\x1b[22m";
 
 pub const CHK_PASS_COLOR: &str = "\x1b[32m";
 pub const CHK_FAIL_COLOR: &str = "\x1b[31m";
