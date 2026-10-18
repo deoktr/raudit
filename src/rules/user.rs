@@ -322,4 +322,28 @@ pub fn add_checks() {
     .with_description("An enabled root account with a valid password and an interactive shell is the single highest-value target for brute-force and credential-theft attacks. Disabling it forces administrators to log in as themselves and use \"sudo\", which preserves non-repudiable audit trails. Ensure you have valid admin accounts.")
     .with_fix("Lock the password: \"passwd -l root\" and set the shell to nologin: \"usermod -s /usr/sbin/nologin root\".")
     .register();
+
+    check::Check::new(
+        "USR_017",
+        "Ensure account is disabled when password is expired",
+        Severity::High,
+        vec!["user", "useradd", "server"],
+        users::inactivity_is_set,
+        vec![users::init_shadow],
+    )
+    .with_description("Set the number of days after a password expires until the account is permanently disabled to instantly. Password expiry could mean that the account should rotate it's password, or that the password was compromised, in either case the account should be locked to prevent it from being used until the password is changed. Especially useful when doing mandatory password rotation, but be careful to always keep a valid access to the host.")
+    .with_fix("Set a user inactivity_period to 0: \"chage -I 0 <username>\".")
+    .register();
+
+    check::Check::new(
+        "USR_018",
+        "Ensure account is disabled when password is expired by default",
+        Severity::High,
+        vec!["user", "useradd", "server"],
+        users::useradd_inactive,
+        vec![],
+    )
+    .with_description("Set the number of days after a password expires until the account is permanently disabled to instantly. Password expiry could mean that the account should rotate it's password, or that the password was compromised, in either case the account should be locked to prevent it from being used until the password is changed. Especially useful when doing mandatory password rotation, but be careful to always keep a valid access to the host.")
+    .with_fix("Edit useradd configuration in: \"/etc/default/useradd\" and set: \"INACTIVE=0\".")
+    .register();
 }

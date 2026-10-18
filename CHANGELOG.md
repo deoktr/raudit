@@ -10,9 +10,14 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+### Added
+
+- Add user checks `USR_017` and `USR_018`
+
 ### Changed
 
 - Changed the format for the human readable output
+- Change `SHL_001` timeout script
 
 ### Fixed
 

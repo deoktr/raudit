@@ -28,6 +28,7 @@ use crate::{log_debug, log_error};
 const PASSWD_PATH: &str = "/etc/passwd";
 const SHADOW_PATH: &str = "/etc/shadow";
 const SECURETTY_PATH: &str = "/etc/securetty";
+const USERADD_PATH: &str = "/etc/default/useradd";
 
 // TODO: get dynamically
 /// UID_MIN as defined in `/etc/login.defs`.
@@ -227,7 +228,7 @@ pub fn init_shadow() {
     };
 }
 
-/// Verify if any user has a password in passwd (not equal to `x`).
+/// Verify if any user has a password in passwd, not equal to `x`.
 pub fn no_password_in_passwd() -> check::CheckReturn {
     let passwd = match PASSWD_CONFIG.get() {
         Some(c) => c,
@@ -755,6 +756,53 @@ fn walk_dir_world_writable(dir: &Path, found: &mut Vec<String>, depth: u32) {
                 walk_dir_world_writable(&path, found, depth - 1);
             }
         }
+    }
+}
+
+/// Get the useradd configuration from `/etc/default/useradd`.
+fn get_useradd() -> Result<String, String> {
+    Ok(fs::read_to_string(USERADD_PATH).map_err(|e| e.to_string())?)
+}
+
+/// Verify that useradd is configured with `INACTIVE=0`.
+pub fn useradd_inactive() -> check::CheckReturn {
+    let useradd = match get_useradd() {
+        Ok(c) => c,
+        Err(err) => {
+            return (check::CheckState::Warning, Some(err));
+        }
+    };
+
+    if !useradd.starts_with("INACTIVE=0") && !useradd.contains("\nINACTIVE=0") {
+        (check::CheckState::Fail, None)
+    } else {
+        (check::CheckState::Pass, None)
+    }
+}
+
+/// Verify that all users have inactivity_period set to 0, meaning their
+/// account is instantly locked when their password expires.
+pub fn inactivity_is_set() -> check::CheckReturn {
+    let shadow = match SHADOW_CONFIG.get() {
+        Some(c) => c,
+        None => {
+            return (
+                check::CheckState::Warning,
+                Some("shadow configuration not initialized".to_string()),
+            );
+        }
+    };
+
+    let g: Vec<String> = shadow
+        .iter()
+        .filter(|entry| entry.inactivity_period.is_none_or(|i| i != 0))
+        .map(|entry| entry.username.clone())
+        .collect();
+
+    if !g.is_empty() {
+        (check::CheckState::Fail, Some(g.join(", ")))
+    } else {
+        (check::CheckState::Pass, None)
     }
 }
 

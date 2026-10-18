@@ -21,20 +21,18 @@ use crate::modules::base;
 
 /// Ensure automatic logout from shells is configured.
 ///
-/// In, /etc/profile.d/shell-timeout.sh:
-/// ```bash
-/// TMOUT="$(( 60*10 ))";
-/// [ -z "$DISPLAY" ] && export TMOUT;
-/// case $( /usr/bin/tty ) in
-///     /dev/tty[0-9]*) export TMOUT;;
-/// esac
+/// In, /etc/profile.d/timeout.sh:
+/// ```sh
+/// TMOUT=900
+/// readonly TMOUT
+/// export TMOUT
 /// ```
 ///
 /// <https://wiki.archlinux.org/title/Security#Automatic_logout>
 pub fn check_shell_timeout() -> check::CheckReturn {
-    // FIXME: allow for comments, at least the the top
+    // TODO: add a capture group and the result is the value of TMOUT
     base::check_file_content_regex(
-        "/etc/profile.d/shell-timeout.sh",
-        r#"TMOUT=.*;\n\[ -z "\$DISPLAY" ] && export TMOUT;\ncase \$\( /usr/bin/tty \) in\n[ \t]*/dev/tty\[0\-9\]\*\) export TMOUT;;\nesac"#,
+        "/etc/profile.d/timeout.sh",
+        r#"TMOUT=[1-9][0-9]*\nreadonly TMOUT\nexport TMOUT"#,
     )
 }

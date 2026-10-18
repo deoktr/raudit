@@ -83,7 +83,7 @@ pub fn add_checks() {
         },
         vec![login_defs::init_login_defs],
     )
-    .with_description("Forcing periodic password rotation limits the value of any single leaked credential: an attacker who steals a hash today (and if he is able to crack it) loses access once it expires. Combined with strong hashing, it bounds the window of unauthorized use.")
+    .with_description("Forcing periodic password rotation limits the value of any single leaked credential: an attacker who steals a hash today, and if he is able to crack it, loses access once it expires. Combined with strong hashing, it bounds the window of unauthorized use.")
     .with_fix("Set \"PASS_MAX_DAYS 365\" or lower in \"/etc/login.defs\".")
     .register();
 
