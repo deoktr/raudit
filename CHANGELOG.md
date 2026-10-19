@@ -10,18 +10,23 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+## [0.35.1] - 2026-10-19
+
 ### Added
 
 - Add user checks `USR_017` and `USR_018`
+- Add login_defs checks `LDF_013`
 
 ### Changed
 
 - Changed the format for the human readable output
 - Change `SHL_001` timeout script
+- Optimized the release build for size
 
 ### Fixed
 
 - Fixed a bug where mount file was missing character escaping
+- Fixed a parsing error on hosts file
 
 ## [0.35.0] - 2026-10-14
 

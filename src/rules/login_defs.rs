@@ -263,7 +263,7 @@ pub fn add_checks() {
         || login_defs::check_login_defs("FAILLOG_ENAB", "yes"),
         vec![login_defs::init_login_defs],
     )
-    .with_description("Recording failed login attempts to /var/log/faillog lets administrators and tools reconstruct brute-force or credential-stuffing campaigns. Without it, failed attempts leave no trace on disk.")
+    .with_description("Recording failed login attempts to /var/log/faillog lets administrators and tools reconstruct brute-force or credential-stuffing campaigns. Without it, failed attempts leave no trace on disk. Replaced by pam_faillock.")
     .with_fix("Set \"FAILLOG_ENAB yes\" in \"/etc/login.defs\".")
     .register();
 
@@ -277,5 +277,17 @@ pub fn add_checks() {
     )
     .with_description("Logging successful logins creates an audit trail of who accessed the system and when, enabling detection of unauthorized account use and supporting incident-response timelines.")
     .with_fix("Set \"LOG_OK_LOGINS yes\" in \"/etc/login.defs\".")
+    .register();
+
+    check::Check::new(
+        "LDF_013",
+        "Ensure that login.defs \"LOG_UNKFAIL_ENAB\" = \"no\"",
+        Severity::Medium,
+        vec!["login_defs", "server", "workstation"],
+        || login_defs::check_login_defs("LOG_UNKFAIL_ENAB", "no"),
+        vec![login_defs::init_login_defs],
+    )
+    .with_description("Do not log unknown usernames when login failures are recorded. Logging unknown usernames is an issue if a user enter his password instead of his username.")
+    .with_fix("Set \"LOG_UNKFAIL_ENAB no\" in \"/etc/login.defs\".")
     .register();
 }

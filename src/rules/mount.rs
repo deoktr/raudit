@@ -200,7 +200,7 @@ pub fn add_checks() {
         || mount::check_mount_option("/home", "noexec"),
         vec![mount::init_mounts],
     )
-    .with_description("Prevent direct execution of binaries on /home, blocking attackers from running malicious code in user home directories.")
+    .with_description("Prevent direct execution of binaries on /home, blocking attackers from running malicious code in user home directories. This may break some application that install directly in user's home directory, like development tools.")
     .register();
 
     check::Check::new(

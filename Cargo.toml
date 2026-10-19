@@ -1,6 +1,6 @@
 [package]
 name = "raudit"
-version = "0.35.0"
+version = "0.35.1"
 edition = "2024"
 authors = ["deoktr"]
 license = "GPLv3"
@@ -21,3 +21,9 @@ serde_json = "1.0.141"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ["cfg(test)"] }
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true
