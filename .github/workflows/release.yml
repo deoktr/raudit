@@ -8,31 +8,120 @@ on:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+*'
 
-jobs:
-  create-release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v6
-      - uses: taiki-e/create-gh-release-action@v1
-        with:
-          changelog: CHANGELOG.md
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
-  upload-assets:
-    needs: create-release
+jobs:
+  build:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-26.04-arm
+          - target: aarch64-unknown-linux-musl
+            os: ubuntu-26.04-arm
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    env:
+      TARGET: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install audit tooling
+        run: |
+          cargo install cargo-auditable --version 0.7.7 --locked
+
+      - name: Install musl tools (musl targets only)
+        if: contains(matrix.target, 'musl')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+
+      - name: Build
+        run: |
+          rustup target add "$TARGET"
+          cargo auditable build --release --locked --target "$TARGET"
+          mv "target/${TARGET}/release/raudit" raudit-${{ matrix.target }}
+          shasum -a 256 raudit-${{ matrix.target }}
+
+      - name: Attest build provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: raudit-${{ matrix.target }}
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: assets-${{ matrix.target }}
+          path: |
+            raudit-${{ matrix.target }}
+          if-no-files-found: error
+          retention-days: 1
+
+  create-release:
+    needs: build
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v6
-      - uses: taiki-e/upload-rust-binary-action@v1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          bin: raudit
-          target: ${{ matrix.target }}
-          checksum: sha256
+          pattern: assets-*
+          path: dist
+          merge-multiple: true
+
+      - name: Extract release notes from CHANGELOG.md
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v ver="$version" '
+            /^##[ \t]/ {
+              if (insec) { found = 1; exit }
+              title = $0
+              sub(/^##[ \t]+/, "", title)
+              sub(/^\[/, "", title)
+              sub(/^(v|Version |Release )/, "", title)
+              split(title, parts, /[ \t]/)
+              sub(/\]$/, "", parts[1])
+              insec = (parts[1] == ver)
+              started = 0
+              blanks = 0
+              next
+            }
+            insec {
+              if ($0 ~ /^[ \t]*$/) { if (started) blanks++; next }
+              while (blanks > 0) { print ""; blanks-- }
+              started = 1
+              print
+            }
+            END { if (insec || found) exit 0; exit 1 }
+          ' CHANGELOG.md >release-notes.md || {
+            echo "::error::no section for version '${version}' found in CHANGELOG.md"
+            exit 1
+          }
+          cat release-notes.md
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="$GITHUB_REF_NAME"
+          # never overwrite a release that already exists for this tag
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "::error::release '${tag}' already exists; delete it manually to re-run"
+            exit 1
+          fi
+          opts=(--title "$tag" --notes-file release-notes.md)
+          if [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+- ]]; then
+            opts+=(--prerelease)
+          fi
+          gh release create "$tag" "${opts[@]}" dist/*

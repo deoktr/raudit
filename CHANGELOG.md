@@ -10,6 +10,17 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+## [0.35.2] - 2026-10-19
+
+### Added
+
+- Add release CI support for musl
+- Add release CI support for ARM
+
+### Changed
+
+- Update CI to pin actions version with commit hash
+
 ## [0.35.1] - 2026-10-19
 
 ### Added

@@ -15,24 +15,46 @@ Goals:
 
 ## Install
 
-Install for pre-compiled Github release:
+Install from pre-compiled Github release.
+
+First select the target based on your host, check releases for the full list:
 
 ```bash
-# download and verify
-curl -fsSL -O https://github.com/deoktr/raudit/releases/latest/download/raudit-x86_64-unknown-linux-gnu.tar.gz
-curl -fsSL -O https://github.com/deoktr/raudit/releases/latest/download/raudit-x86_64-unknown-linux-gnu.sha256
-sha256sum -c raudit-x86_64-unknown-linux-gnu.sha256
+# Linux x86_64
+export TARGET="raudit-x86_64-unknown-linux-gnu"
+# macOS AArch64
+export TARGET="raudit-aarch64-apple-darwin"
+```
 
-# install
-tar -xzf raudit-x86_64-unknown-linux-gnu.tar.gz
+Download and install:
+
+```bash
+# download the binary
+curl -fsSL -O "https://github.com/deoktr/raudit/releases/latest/download/${TARGET}"
+
+# install system wide
 sudo install -m 0755 raudit /usr/local/bin/raudit
 
-# verify install
+# test install
 raudit --version
-
-# clean
-rm raudit raudit-x86_64-unknown-linux-gnu.sha256 raudit-x86_64-unknown-linux-gnu.tar.gz
 ```
+
+### Verify a release
+
+Release binaries carry a
+[SLSA build provenance](https://slsa.dev/spec/v1.0/provenance) attestation,
+signed keyless via [Sigstore](https://www.sigstore.dev/) and recorded in
+GitHub's attestation store. This proves the binary was built by this repo's CI
+inside GitHub Actions, and matches it to the exact build.
+
+After downloading a binary, verify it with the GitHub CLI:
+
+```bash
+gh attestation verify "${TARGET}" --owner deoktr
+```
+
+A successful check prints `Verification succeeded` and confirms the artifact was
+built by the `deoktr/raudit` GitHub Actions workflow.
 
 ## Usage
 
