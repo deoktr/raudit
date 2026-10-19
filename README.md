@@ -33,7 +33,7 @@ Download and install:
 curl -fsSL -O "https://github.com/deoktr/raudit/releases/latest/download/${TARGET}"
 
 # install system wide
-sudo install -m 0755 raudit /usr/local/bin/raudit
+sudo install -m 0755 "${TARGET}" /usr/local/bin/raudit
 
 # test install
 raudit --version
