@@ -2,6 +2,10 @@ use crate::check;
 use crate::check::Severity;
 use crate::modules::login_defs;
 
+// login.defs is slowly being replaced by PAM, transfer the rules over to PAM, and maybe add a check
+// on the version of login.defs to disable those rules when they are fully deprecated but keeping
+// them for system still vulnerable/using it
+
 pub fn add_checks() {
     check::Check::new(
         "LDF_001",

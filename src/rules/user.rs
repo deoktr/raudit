@@ -162,7 +162,6 @@ pub fn add_checks() {
 
     check::Check::new(
         "USR_100",
-        // TODO: allow root:root
         "Ensure \"/etc/shadow\" file owner is correct",
         Severity::High,
         vec!["group", "CIS", "server", "workstation"],

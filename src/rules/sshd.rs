@@ -709,10 +709,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_050",
-        "Ensure \"/etc/ssh/sshd_config\" file permissions is 644",
+        "Ensure \"/etc/ssh/sshd_config\" file permissions is 644 or stricter",
         Severity::High,
         vec!["sshd", "server"],
-        || base::check_file_permission("/etc/ssh/sshd_config", 0o644),
+        || base::check_file_permission_or_stricter("/etc/ssh/sshd_config", 0o644),
         vec![],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -748,10 +748,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_053",
-        "Ensure \"/etc/ssh/sshd_config.d/\" files permissions are 644",
+        "Ensure \"/etc/ssh/sshd_config.d/\" files permissions are 644 or stricter",
         Severity::High,
         vec!["sshd", "server"],
-        || base::check_dir_files_permission("/etc/ssh/sshd_config.d/", 0o644),
+        || base::check_dir_files_permission_or_stricter("/etc/ssh/sshd_config.d/", 0o644),
         vec![],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -759,6 +759,7 @@ pub fn add_checks() {
     .with_fix("chmod -R 644 /etc/ssh/sshd_config.d/*")
     .register();
 
+    // TODO: get the path of server's keys from the configuration
     check::Check::new(
         "SSH_054",
         "Ensure SSH private host key files have permissions 600",
@@ -786,6 +787,7 @@ pub fn add_checks() {
     .with_fix("chmod 600 /etc/ssh/ssh_host_*_key")
     .register();
 
+    // TODO: get the path of server's keys from the configuration
     check::Check::new(
         "SSH_055",
         "Ensure SSH public host key files have permissions 644",
@@ -813,6 +815,7 @@ pub fn add_checks() {
     .with_fix("chmod 644 /etc/ssh/ssh_host_*_key.pub")
     .register();
 
+    // TODO: get the path of server's keys from the configuration
     check::Check::new(
         "SSH_056",
         "Ensure SSH host key files are owned by root",

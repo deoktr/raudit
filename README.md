@@ -338,6 +338,7 @@ Benchmark 1: ./target/release/raudit
 - Add check to avoid check name or ID collision
 - Use macro `run!()` to log commands
 - Fix all TODO and FIXME in code
+- Add flag to force printing the description and the fix for all checks
 
 Rules:
 

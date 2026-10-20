@@ -120,7 +120,7 @@ pub fn add_checks() {
         vec![os::init_os_release],
     )
     .with_description("Wrong ownershoip of \"/etc/gshadow\" leaks group password hashes (when present) for offline cracking and exposes sensitive group elevation policy.")
-    .with_fix("On Debian: `chown root:shadow /etc/gshadow`. Elsewhere: `chown root:root /etc/gshadow`.")
+    .with_fix("On Debian: `chown root:shadow /etc/gshadow`\nOn other distros: `chown root:root /etc/gshadow`.")
     .register();
 
     check::Check::new(
@@ -142,7 +142,7 @@ pub fn add_checks() {
         vec![os::init_os_release],
     )
     .with_description("World- or group-readable \"/etc/gshadow\" leaks group password hashes (when present) for offline cracking and exposes sensitive group elevation policy.")
-    .with_fix("On Debian: `chmod 640 /etc/gshadow`. Elsewhere: `chmod 600 /etc/gshadow`.")
+    .with_fix("On Debian: `chmod 640 /etc/gshadow`\nOn other distros: `chmod 600 /etc/gshadow`.")
     .register();
 
     check::Check::new(

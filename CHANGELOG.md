@@ -10,6 +10,16 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+## [0.35.3] - 2026-10-20
+
+### Added
+
+- Add `base` helpers form permission checks with `_or_stricter` suffix to allow for stricter permissions
+
+### Fixed
+
+- Fixed permission checks on some rules
+
 ## [0.35.2] - 2026-10-19
 
 ### Added

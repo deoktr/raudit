@@ -16,10 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// TODO: check permission to be at most the value
-
 use regex::Regex;
 use std::fs;
+use std::os::unix::fs::FileTypeExt;
 use std::os::unix::fs::MetadataExt;
 use std::path::Path;
 
@@ -68,43 +67,84 @@ pub fn directory_exist(path: &str) -> check::CheckReturn {
     }
 }
 
-/// Check a socket file permissions.
-///
-/// Permissions should be defined like: 0o644.
-/// <https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.mode>
-fn check_entry_permission(metadata: fs::Metadata, path: &str, perms: u32) -> check::CheckReturn {
-    let mode = metadata.mode() & 0o777;
+/// How an entry mode relates to the target permissions.
+#[derive(Clone, Copy)]
+enum ModeMatch {
+    /// The mode must be exactly the target mode.
+    Exact,
 
-    log_trace!("checking entry mode for {:?}, got: {:o}", path, mode);
+    /// The mode must not grant any bit outside the target mode, eg. `0600` is
+    /// accepted for a target of `0644`.
+    ///
+    /// A stricter file is not a security issue and some distros ship stricter
+    /// defaults, only use when a stricter mode cannot break the file consumers
+    /// otherwise it could be a security issue for example DOS.
+    OrStricter,
+}
 
-    if mode != perms {
-        (
-            check::CheckState::Fail,
-            Some(format!("wanted \"{:o}\" got \"{:o}\"", perms, mode)),
-        )
-    } else {
-        (check::CheckState::Pass, None)
+impl ModeMatch {
+    /// Permissions should be defined like: 0o644.
+    /// <https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.mode>
+    fn is_satisfied_by(self, mode: u32, perms: u32) -> bool {
+        match self {
+            ModeMatch::Exact => mode == perms,
+            ModeMatch::OrStricter => mode & !perms == 0,
+        }
+    }
+
+    fn hint(self) -> &'static str {
+        match self {
+            ModeMatch::Exact => "",
+            ModeMatch::OrStricter => " or stricter",
+        }
     }
 }
 
-// TODO: have an alternative function that takes in a username and group name
-/// Check a socket file owner uid and gid.
-fn check_entry_owner_id(
-    metadata: fs::Metadata,
-    path: &str,
-    uid: u32,
-    gid: u32,
-) -> check::CheckReturn {
-    let muid = metadata.uid();
-    let mgid = metadata.gid();
+/// Kind of entry expected at the audited path, anything else is a warning.
+#[derive(Clone, Copy)]
+enum EntryKind {
+    File,
+    Dir,
+    Socket,
+}
 
-    log_trace!(
-        "checking entry owner for {:?}, got: {}:{}",
-        path,
-        muid,
-        mgid
-    );
+impl EntryKind {
+    fn matches(self, metadata: &fs::Metadata) -> bool {
+        match self {
+            EntryKind::File => metadata.is_file(),
+            EntryKind::Dir => metadata.is_dir(),
+            EntryKind::Socket => metadata.file_type().is_socket(),
+        }
+    }
 
+    fn label(self) -> &'static str {
+        match self {
+            EntryKind::File => "file",
+            EntryKind::Dir => "directory",
+            EntryKind::Socket => "socket",
+        }
+    }
+}
+
+/// Compare an entry mode with the target permissions.
+fn check_mode(mode: u32, perms: u32, matching: ModeMatch) -> check::CheckReturn {
+    if matching.is_satisfied_by(mode, perms) {
+        (check::CheckState::Pass, None)
+    } else {
+        (
+            check::CheckState::Fail,
+            Some(format!(
+                "wanted \"{:o}\"{} got \"{:o}\"",
+                perms,
+                matching.hint(),
+                mode
+            )),
+        )
+    }
+}
+
+/// Compare an entry owner uid and gid with the expected ones.
+fn check_owner(muid: u32, mgid: u32, uid: u32, gid: u32) -> check::CheckReturn {
     if muid != uid || mgid != gid {
         (
             check::CheckState::Fail,
@@ -118,200 +158,256 @@ fn check_entry_owner_id(
     }
 }
 
-/// Check a file owner uid and gid.
-pub fn check_file_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
-    let metadata = match fs::metadata(path) {
-        Ok(v) => v,
-        Err(err) => {
-            return (check::CheckState::Warning, Some(err.to_string()));
-        }
-    };
+/// Check an entry mode against the target permissions.
+fn entry_mode(
+    metadata: &fs::Metadata,
+    path: &Path,
+    perms: u32,
+    matching: ModeMatch,
+) -> check::CheckReturn {
+    let mode = metadata.mode() & 0o777;
 
-    if !metadata.is_file() {
-        return (
-            check::CheckState::Warning,
-            Some("path is not a file".to_string()),
-        );
-    }
+    log_trace!("checking entry mode for {:?}, got: {:o}", path, mode);
 
-    check_entry_owner_id(metadata, path, uid, gid)
+    check_mode(mode, perms, matching)
 }
 
-/// Check a directory owner uid and gid.
-pub fn check_dir_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
-    let metadata = match fs::metadata(path) {
-        Ok(v) => v,
-        Err(err) => {
-            return (check::CheckState::Warning, Some(err.to_string()));
-        }
-    };
+// TODO: have an alternative function that takes in a username and group name
+/// Check an entry owner uid and gid.
+fn entry_owner(metadata: &fs::Metadata, path: &Path, uid: u32, gid: u32) -> check::CheckReturn {
+    let muid = metadata.uid();
+    let mgid = metadata.gid();
 
-    if !metadata.is_dir() {
-        return (
-            check::CheckState::Warning,
-            Some("path is not a directory".to_string()),
-        );
-    }
+    log_trace!(
+        "checking entry owner for {:?}, got: {}:{}",
+        path,
+        muid,
+        mgid
+    );
 
-    check_entry_owner_id(metadata, path, uid, gid)
+    check_owner(muid, mgid, uid, gid)
 }
 
-/// Check all directory files owner uid and gid.
-pub fn check_dir_files_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
-    match fs::read_dir(path) {
-        Ok(entries) => {
-            for entry in entries {
-                match entry {
-                    Ok(entry) => {
-                        let path = entry.path();
-                        if !path.is_file() {
-                            continue;
-                        }
-
-                        if let Ok(metadata) = fs::metadata(&path) {
-                            let muid = metadata.uid();
-                            let mgid = metadata.gid();
-
-                            if muid != uid || mgid != gid {
-                                return (
-                                    check::CheckState::Fail,
-                                    Some(format!(
-                                        "file: {:?}: wanted \"{}:{}\" got \"{}:{}\"",
-                                        path, uid, gid, muid, mgid
-                                    )),
-                                );
-                            }
-                        }
-                    }
-                    Err(err) => {
-                        return (
-                            check::CheckState::Warning,
-                            Some(format!("error on path {:?}: {}", path, err)),
-                        );
-                    }
+/// Stat `path`, verify the entry kind, then run `check` on its metadata.
+///
+/// A missing path is a warning, unless `ignore_missing` is set, for rules about
+/// optional files.
+fn with_entry<F>(path: &str, kind: EntryKind, ignore_missing: bool, check: F) -> check::CheckReturn
+where
+    F: FnOnce(&fs::Metadata) -> check::CheckReturn,
+{
+    let metadata = match fs::metadata(path) {
+        Ok(metadata) => metadata,
+        Err(err) => {
+            return match err.kind() {
+                std::io::ErrorKind::NotFound if ignore_missing => {
+                    (check::CheckState::Pass, Some("file missing".to_string()))
                 }
-            }
-            (check::CheckState::Pass, None)
+                _ => (check::CheckState::Warning, Some(err.to_string())),
+            };
         }
-        Err(err) => (
+    };
+
+    if !kind.matches(&metadata) {
+        return (
             check::CheckState::Warning,
-            Some(format!("failed to open directory {}: {}", path, err)),
-        ),
+            Some(format!("path is not a {}", kind.label())),
+        );
     }
+
+    check(&metadata)
 }
 
-/// Check a file owner uid and gid, and ignore error if file is missing.
-pub fn check_file_owner_id_ignore_missing(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
-    match fs::metadata(path) {
-        Ok(_) => check_file_owner_id(path, uid, gid),
-        Err(err) => match err.kind() {
-            std::io::ErrorKind::NotFound => {
-                (check::CheckState::Pass, Some("file missing".to_string()))
+/// Implementation shared by every `check_*_permission*` function.
+fn check_permission(
+    path: &str,
+    kind: EntryKind,
+    matching: ModeMatch,
+    ignore_missing: bool,
+    perms: u32,
+) -> check::CheckReturn {
+    with_entry(path, kind, ignore_missing, |metadata| {
+        entry_mode(metadata, Path::new(path), perms, matching)
+    })
+}
+
+/// Implementation shared by every `check_*_owner_id` function.
+fn check_owner_id(
+    path: &str,
+    kind: EntryKind,
+    ignore_missing: bool,
+    uid: u32,
+    gid: u32,
+) -> check::CheckReturn {
+    with_entry(path, kind, ignore_missing, |metadata| {
+        entry_owner(metadata, Path::new(path), uid, gid)
+    })
+}
+
+/// Run `check` on every regular file of the directory `path`, stopping at the
+/// first entry that does not pass.
+fn check_dir_files<F>(path: &str, mut check: F) -> check::CheckReturn
+where
+    F: FnMut(&Path, &fs::Metadata) -> check::CheckReturn,
+{
+    let entries = match fs::read_dir(path) {
+        Ok(entries) => entries,
+        Err(err) => {
+            return (
+                check::CheckState::Warning,
+                Some(format!("failed to open directory {}: {}", path, err)),
+            );
+        }
+    };
+
+    for entry in entries {
+        let entry = match entry {
+            Ok(entry) => entry,
+            Err(err) => {
+                return (
+                    check::CheckState::Warning,
+                    Some(format!("error on path {:?}: {}", path, err)),
+                );
             }
-            _ => (check::CheckState::Warning, Some(err.to_string())),
-        },
+        };
+
+        let file = entry.path();
+        if !file.is_file() {
+            continue;
+        }
+
+        if let Ok(metadata) = fs::metadata(&file) {
+            let (state, message) = check(&file, &metadata);
+            if state != check::CheckState::Pass {
+                return (state, message);
+            }
+        }
     }
+
+    (check::CheckState::Pass, None)
+}
+
+fn check_dir_files_permission_common(
+    path: &str,
+    perms: u32,
+    matching: ModeMatch,
+) -> check::CheckReturn {
+    check_dir_files(path, |file, metadata| {
+        let (state, message) = entry_mode(metadata, file, perms, matching);
+        match message {
+            Some(message) => (
+                state,
+                Some(format!("file {:?} permission: {}", file, message)),
+            ),
+            None => (state, None),
+        }
+    })
 }
 
 /// Check a file permissions.
 ///
 /// Permissions should be defined like: 0o644.
-/// <https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.mode>
 pub fn check_file_permission(path: &str, perms: u32) -> check::CheckReturn {
-    let metadata = match fs::metadata(path) {
-        Ok(v) => v,
-        Err(err) => {
-            return (check::CheckState::Warning, Some(err.to_string()));
-        }
-    };
+    check_permission(path, EntryKind::File, ModeMatch::Exact, false, perms)
+}
 
-    if !metadata.is_file() {
-        return (
-            check::CheckState::Warning,
-            Some("path is not a file".to_string()),
-        );
-    }
+/// Check a file permissions are equal or stricter than the target mode.
+///
+/// Permissions should be defined like: 0o644.
+pub fn check_file_permission_or_stricter(path: &str, perms: u32) -> check::CheckReturn {
+    check_permission(path, EntryKind::File, ModeMatch::OrStricter, false, perms)
+}
 
-    check_entry_permission(metadata, path, perms)
+/// Check a file permissions, and ignore error if file is missing.
+///
+/// Permissions should be defined like: 0o644.
+pub fn check_file_permission_ignore_missing(path: &str, perms: u32) -> check::CheckReturn {
+    check_permission(path, EntryKind::File, ModeMatch::Exact, true, perms)
+}
+
+/// Check a file permissions are equal or stricter than the target mode, and
+/// ignore error if file is missing.
+///
+/// Permissions should be defined like: 0o644.
+pub fn check_file_permission_or_stricter_ignore_missing(
+    path: &str,
+    perms: u32,
+) -> check::CheckReturn {
+    check_permission(path, EntryKind::File, ModeMatch::OrStricter, true, perms)
 }
 
 /// Check a directory permissions.
 ///
 /// Permissions should be defined like: 0o644.
-/// <https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.mode>
 pub fn check_dir_permission(path: &str, perms: u32) -> check::CheckReturn {
-    let metadata = match fs::metadata(path) {
-        Ok(v) => v,
-        Err(err) => {
-            return (check::CheckState::Warning, Some(err.to_string()));
-        }
-    };
+    check_permission(path, EntryKind::Dir, ModeMatch::Exact, false, perms)
+}
 
-    if !metadata.is_dir() {
-        return (
-            check::CheckState::Warning,
-            Some("path is not a directory".to_string()),
-        );
-    }
+/// Check a directory permissions are equal or stricter than the target mode.
+///
+/// Permissions should be defined like: 0o644.
+pub fn check_dir_permission_or_stricter(path: &str, perms: u32) -> check::CheckReturn {
+    check_permission(path, EntryKind::Dir, ModeMatch::OrStricter, false, perms)
+}
 
-    check_entry_permission(metadata, path, perms)
+/// Check a socket file permissions.
+///
+/// Permissions should be defined like: 0o644.
+pub fn check_socket_permission(path: &str, perms: u32) -> check::CheckReturn {
+    check_permission(path, EntryKind::Socket, ModeMatch::Exact, false, perms)
+}
+
+/// Check a socket file permissions are equal or stricter than the target mode.
+///
+/// Permissions should be defined like: 0o644.
+pub fn check_socket_permission_or_stricter(path: &str, perms: u32) -> check::CheckReturn {
+    check_permission(path, EntryKind::Socket, ModeMatch::OrStricter, false, perms)
 }
 
 /// Check permissions of all the files inside a directory.
+///
+/// Permissions should be defined like: 0o644.
 pub fn check_dir_files_permission(path: &str, perms: u32) -> check::CheckReturn {
-    match fs::read_dir(path) {
-        Ok(entries) => {
-            for entry in entries {
-                match entry {
-                    Ok(entry) => {
-                        let path = entry.path();
-                        if !path.is_file() {
-                            continue;
-                        }
+    check_dir_files_permission_common(path, perms, ModeMatch::Exact)
+}
 
-                        if let Ok(metadata) = fs::metadata(&path) {
-                            let mode = metadata.mode() & 0o777;
-                            log_trace!("checking file mode for {:?}, got: {:o}", path, mode);
+/// Check permissions of all the files inside a directory are equal or stricter
+/// than the target mode.
+///
+/// Permissions should be defined like: 0o644.
+pub fn check_dir_files_permission_or_stricter(path: &str, perms: u32) -> check::CheckReturn {
+    check_dir_files_permission_common(path, perms, ModeMatch::OrStricter)
+}
 
-                            if mode != perms {
-                                return (
-                                    check::CheckState::Fail,
-                                    Some(format!(
-                                        "file {:?} permission: wanted \"{:o}\" got \"{:o}\"",
-                                        path, perms, mode
-                                    )),
-                                );
-                            }
-                        }
-                    }
-                    Err(err) => {
-                        return (
-                            check::CheckState::Warning,
-                            Some(format!("error on path {:?}: {}", path, err)),
-                        );
-                    }
-                }
-            }
-            (check::CheckState::Pass, None)
-        }
-        Err(err) => (
-            check::CheckState::Warning,
-            Some(format!("failed to open directory {}: {}", path, err)),
-        ),
-    }
+/// Check a file owner uid and gid.
+pub fn check_file_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
+    check_owner_id(path, EntryKind::File, false, uid, gid)
 }
 
 /// Check a file owner uid and gid, and ignore error if file is missing.
-pub fn check_file_permission_ignore_missing(path: &str, perms: u32) -> check::CheckReturn {
-    match fs::metadata(path) {
-        Ok(_) => check_file_permission(path, perms),
-        Err(err) => match err.kind() {
-            std::io::ErrorKind::NotFound => {
-                (check::CheckState::Pass, Some("file missing".to_string()))
-            }
-            _ => (check::CheckState::Warning, Some(err.to_string())),
-        },
-    }
+pub fn check_file_owner_id_ignore_missing(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
+    check_owner_id(path, EntryKind::File, true, uid, gid)
+}
+
+/// Check a directory owner uid and gid.
+pub fn check_dir_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
+    check_owner_id(path, EntryKind::Dir, false, uid, gid)
+}
+
+/// Check a socket file owner uid and gid.
+pub fn check_socket_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
+    check_owner_id(path, EntryKind::Socket, false, uid, gid)
+}
+
+/// Check all directory files owner uid and gid.
+pub fn check_dir_files_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
+    check_dir_files(path, |file, metadata| {
+        let (state, message) = entry_owner(metadata, file, uid, gid);
+        match message {
+            Some(message) => (state, Some(format!("file: {:?}: {}", file, message))),
+            None => (state, None),
+        }
+    })
 }
 
 /// Check if the file content matches the pattern.
@@ -345,79 +441,5 @@ pub fn check_file_content_regex(path: &str, pattern: &str) -> check::CheckReturn
         (check::CheckState::Pass, None)
     } else {
         (check::CheckState::Fail, Some("no match".to_string()))
-    }
-}
-
-/// Check a socket file permissions.
-///
-/// Permissions should be defined like: 0o644.
-/// <https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.mode>
-pub fn check_socket_permission(path: &str, perms: u32) -> check::CheckReturn {
-    let metadata = match fs::metadata(path) {
-        Ok(v) => v,
-        Err(err) => {
-            return (check::CheckState::Warning, Some(err.to_string()));
-        }
-    };
-
-    // TODO: verify that the entry is a socket?
-    // if !metadata.is_file() {
-    //     return (
-    //         check::CheckState::Warning,
-    //         Some("path is not a file".to_string()),
-    //     );
-    // }
-
-    let mode = metadata.mode() & 0o777;
-
-    log_trace!("checking file mode for {:?}, got: {:o}", path, mode);
-
-    if mode != perms {
-        (
-            check::CheckState::Fail,
-            Some(format!("wanted \"{:o}\" got \"{:o}\"", perms, mode)),
-        )
-    } else {
-        (check::CheckState::Pass, None)
-    }
-}
-
-/// Check a socket file owner uid and gid.
-pub fn check_socket_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
-    let metadata = match fs::metadata(path) {
-        Ok(v) => v,
-        Err(err) => {
-            return (check::CheckState::Warning, Some(err.to_string()));
-        }
-    };
-
-    // TODO: verify that the entry is a socket?
-    // if !metadata.is_() {
-    //     return (
-    //         check::CheckState::Warning,
-    //         Some("path is not a socket".to_string()),
-    //     );
-    // }
-
-    let muid = metadata.uid();
-    let mgid = metadata.gid();
-
-    log_trace!(
-        "checking socket owner for {:?}, got: {}:{}",
-        path,
-        muid,
-        mgid
-    );
-
-    if muid != uid || mgid != gid {
-        (
-            check::CheckState::Fail,
-            Some(format!(
-                "wanted \"{}:{}\" got \"{}:{}\"",
-                uid, gid, muid, mgid
-            )),
-        )
-    } else {
-        (check::CheckState::Pass, None)
     }
 }

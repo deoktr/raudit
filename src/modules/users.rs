@@ -660,6 +660,7 @@ pub fn home_dirs_correct_ownership() -> check::CheckReturn {
     }
 }
 
+/// Ensure all users' home directories have permissions 750 or stricter.
 pub fn home_dirs_permissions() -> check::CheckReturn {
     let passwd = match PASSWD_CONFIG.get() {
         Some(c) => c,

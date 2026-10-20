@@ -397,7 +397,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "KNP_064",
+        "KNP_069",
         "Ensure that kernel flag \"mitigations=auto,nosmt\" is present",
         Severity::High,
         vec!["kernel", "paranoid", "server", "workstation"],

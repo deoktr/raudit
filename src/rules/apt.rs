@@ -2,6 +2,9 @@ use crate::check;
 use crate::check::Severity;
 use crate::modules::{apt, base, os};
 
+// TODO: add checks about 'Check-Date', 'Max-FutureTime', 'Check-Valid-Until',
+// 'AllowTLS' and others?
+
 pub fn add_checks() {
     check::Check::new(
         "APT_001",
