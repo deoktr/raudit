@@ -10,6 +10,10 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+### Added
+
+- Add kernel build config fallback sources `/boot/config-$(uname -r)` and `/proc/config.gz`
+
 ## [0.35.3] - 2026-10-20
 
 ### Added

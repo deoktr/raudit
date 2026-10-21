@@ -16,37 +16,67 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use std::io::Read;
 use std::sync::OnceLock;
-use std::{collections::HashMap, path::PathBuf};
-use std::{fs, io};
+use std::{collections::HashMap, fs, io, path::Path, path::PathBuf};
+
+use flate2::read::GzDecoder;
 
 use crate::{check, log_debug, log_error};
 
 static KERNEL_BUILD_CONFIG: OnceLock<KernelBuildConfig> = OnceLock::new();
 
-/// Kernel build configuration from `/lib/modules/$(uname -r)/build/.config`.
+/// Kernel build configuration, parsed from the first available source of
+/// [get_kernel_build_config_paths].
 pub type KernelBuildConfig = HashMap<String, String>;
 
 /// Skip a check when the running kernel's build config is not available.
 pub fn skip_no_kbuild_config() -> bool {
-    match get_kernel_build_config_path() {
-        Ok(p) => !p.exists(),
+    match get_kernel_build_config_paths() {
+        Ok(paths) => !paths.iter().any(|path| path.is_file()),
         Err(_) => true,
     }
 }
 
-/// Get path `/lib/modules/$(uname -r)/build/.config`.
-fn get_kernel_build_config_path() -> Result<PathBuf, io::Error> {
-    let kernel_version = fs::read_to_string("/proc/sys/kernel/osrelease")?
+/// Get the running kernel release from `/proc/sys/kernel/osrelease`.
+fn get_kernel_release() -> Result<String, io::Error> {
+    Ok(fs::read_to_string("/proc/sys/kernel/osrelease")?
         .trim()
-        .to_string();
-
-    Ok(PathBuf::from("/lib/modules")
-        .join(kernel_version)
-        .join("build/.config"))
+        .to_string())
 }
 
-/// Parse content of `/lib/modules/$(uname -r)/build/.config`.
+/// Get the kernel build configuration sources, in order of preference:
+///
+/// - `/lib/modules/$(uname -r)/build/.config`
+/// - `/boot/config-$(uname -r)`
+/// - `/proc/config.gz` present if the kernel had `CONFIG_IKCONFIG_PROC=y`
+///
+/// [view_kernel_conf](https://docs.rockylinux.org/gemstones/core/view_kernel_conf/)
+fn get_kernel_build_config_paths() -> Result<Vec<PathBuf>, io::Error> {
+    let kernel_version = get_kernel_release()?;
+
+    Ok(vec![
+        PathBuf::from("/lib/modules")
+            .join(&kernel_version)
+            .join("build/.config"),
+        PathBuf::from(format!("/boot/config-{kernel_version}")),
+        PathBuf::from("/proc/config.gz"),
+    ])
+}
+
+/// Read a kernel build configuration file, gunzipping it when needed.
+fn read_kernel_build_config(path: &Path) -> Result<String, io::Error> {
+    if !path.extension().is_some_and(|ext| ext == "gz") {
+        return fs::read_to_string(path);
+    }
+
+    let mut content = String::new();
+    GzDecoder::new(fs::File::open(path)?).read_to_string(&mut content)?;
+
+    Ok(content)
+}
+
+/// Parse content of a kernel build configuration file.
 fn parse_kernel_build_config(cmdline: String) -> KernelBuildConfig {
     cmdline
         .lines()
@@ -69,27 +99,31 @@ fn parse_kernel_build_config(cmdline: String) -> KernelBuildConfig {
         .collect()
 }
 
-/// Get kernel build configuration by reading
-/// `/lib/modules/$(uname -r)/build/.config` or by reading `/proc/config.gz`.
-///
-/// [view_kernel_conf](https://docs.rockylinux.org/gemstones/core/view_kernel_conf/)
-/// The file may not exist, it is only present if the kernel was compiled with
-/// `CONFIG_IKCONFIG_PROC=y`.
+/// Get kernel build configuration from the first readable source of
+/// [get_kernel_build_config_paths].
 fn get_kernel_build_config() -> Result<KernelBuildConfig, io::Error> {
-    // TODO: if `/lib/modules/.../build/.config` is not present, get it from
-    // another source
+    let mut err = io::Error::new(
+        io::ErrorKind::NotFound,
+        "no kernel build config source available",
+    );
 
-    Ok(parse_kernel_build_config(fs::read_to_string(
-        get_kernel_build_config_path()?,
-    )?))
+    for path in get_kernel_build_config_paths()? {
+        match read_kernel_build_config(&path) {
+            Ok(content) => {
+                log_debug!("kernel build config read from {}", path.display());
+                return Ok(parse_kernel_build_config(content));
+            }
+            Err(e) => err = e,
+        }
+    }
+
+    Err(err)
 }
 
-/// Init kernel build configuration by reading
-/// `/lib/modules/$(uname -r)/build/.config` or by reading `/proc/config.gz`.
+/// Init kernel build configuration from the first readable source of
+/// [get_kernel_build_config_paths].
 ///
 /// [view_kernel_conf](https://docs.rockylinux.org/gemstones/core/view_kernel_conf/)
-/// The file may not exist, it is only present if the kernel was compiled with
-/// `CONFIG_IKCONFIG_PROC=y`.
 pub fn init_kernel_build_config() {
     if KERNEL_BUILD_CONFIG.get().is_some() {
         return;
