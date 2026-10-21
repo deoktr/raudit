@@ -38,14 +38,14 @@ static PASSWD_CONFIG: OnceLock<PasswdConfig> = OnceLock::new();
 static SHADOW_CONFIG: OnceLock<ShadowConfig> = OnceLock::new();
 
 /// Passwd configuration from `/etc/passwd`.
-pub type PasswdConfig = Vec<Passwd>;
+type PasswdConfig = Vec<Passwd>;
 
 /// Shadow configuration from `/etc/shadow`.
-pub type ShadowConfig = Vec<Shadow>;
+type ShadowConfig = Vec<Shadow>;
 
 /// Passwd entry.
 #[allow(dead_code)]
-pub struct Passwd {
+struct Passwd {
     /// login name
     username: String,
     /// optional encrypted password
@@ -63,8 +63,7 @@ pub struct Passwd {
 }
 
 /// Shadow entry.
-#[allow(dead_code)]
-pub struct Shadow {
+struct Shadow {
     /// login name
     username: String,
     /// encrypted password
@@ -86,7 +85,7 @@ pub struct Shadow {
 }
 
 /// Parse the content of passwd.
-pub fn parse_passwd(content: String) -> PasswdConfig {
+fn parse_passwd(content: String) -> PasswdConfig {
     content
         .lines()
         .map(|line| {
@@ -142,7 +141,7 @@ pub fn init_passwd() {
 }
 
 /// Parse the content of `/etc/passwd`.
-pub fn parse_shadow(content: String) -> ShadowConfig {
+fn parse_shadow(content: String) -> ShadowConfig {
     content
         .lines()
         .map(|line| {

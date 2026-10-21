@@ -23,7 +23,7 @@ use crate::{check, log_debug, log_error};
 
 const UPTIME_PATH: &str = "/proc/uptime";
 
-pub static UPTIME: OnceLock<u64> = OnceLock::new();
+static UPTIME: OnceLock<u64> = OnceLock::new();
 
 /// Get system uptime by reading `/proc/uptime`.
 fn get_uptime() -> Result<u64, String> {

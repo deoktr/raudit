@@ -329,6 +329,7 @@ pub fn check_file_permission_ignore_missing(path: &str, perms: u32) -> check::Ch
 /// ignore error if file is missing.
 ///
 /// Permissions should be defined like: 0o644.
+#[allow(dead_code)]
 pub fn check_file_permission_or_stricter_ignore_missing(
     path: &str,
     perms: u32,
@@ -360,6 +361,7 @@ pub fn check_socket_permission(path: &str, perms: u32) -> check::CheckReturn {
 /// Check a socket file permissions are equal or stricter than the target mode.
 ///
 /// Permissions should be defined like: 0o644.
+#[allow(dead_code)]
 pub fn check_socket_permission_or_stricter(path: &str, perms: u32) -> check::CheckReturn {
     check_permission(path, EntryKind::Socket, ModeMatch::OrStricter, false, perms)
 }

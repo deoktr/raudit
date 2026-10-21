@@ -29,10 +29,10 @@ static SUDO_CONFIG: OnceLock<SudoConfig> = OnceLock::new();
 static SUDO_CONFIG_DEFAULTS: OnceLock<SudoConfigDefaults> = OnceLock::new();
 
 /// List of sudo configuration.
-pub type SudoConfig = Vec<String>;
+type SudoConfig = Vec<String>;
 
 /// List of sudo configuration `Defaults`.
-pub type SudoConfigDefaults = Vec<String>;
+type SudoConfigDefaults = Vec<String>;
 
 /// Skip when sudo is not installed.
 pub fn skip_no_sudo() -> bool {

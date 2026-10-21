@@ -36,7 +36,7 @@ static AUDIT_CONFIG: OnceLock<AuditConfig> = OnceLock::new();
 static AUDIT_RULES: OnceLock<AuditRules> = OnceLock::new();
 
 /// Audit configuration from `/etc/audit/auditd.conf`.
-pub type AuditConfig = HashMap<String, String>;
+type AuditConfig = HashMap<String, String>;
 
 /// List of audit rules.
 ///
@@ -45,7 +45,7 @@ pub type AuditConfig = HashMap<String, String>;
 /// `-F key=`, and list of arguments of `-S` can change order.
 /// To set the checks correctly run `auditctl -l` and get the rules from the
 /// output.
-pub type AuditRules = Vec<String>;
+type AuditRules = Vec<String>;
 
 /// Get audit rules by running `auditctl -l`.
 fn get_audit_rules() -> Result<AuditRules, std::io::Error> {

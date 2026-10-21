@@ -28,27 +28,27 @@ static NGINX_CONFIG: OnceLock<NginxConfig> = OnceLock::new();
 
 /// A single nginx configuration directive (key = value).
 #[derive(Debug, Clone)]
-pub struct NginxDirective {
-    pub name: String,
-    pub value: String,
+struct NginxDirective {
+    name: String,
+    value: String,
 }
 
 /// A named block context (http, server, location, events, etc.).
 #[derive(Debug, Clone)]
-pub struct NginxBlock {
+struct NginxBlock {
     #[allow(dead_code)]
-    pub name: String,
+    name: String,
     #[allow(dead_code)]
-    pub args: String,
-    pub directives: Vec<NginxDirective>,
-    pub blocks: Vec<NginxBlock>,
+    args: String,
+    directives: Vec<NginxDirective>,
+    blocks: Vec<NginxBlock>,
 }
 
 /// Top-level nginx configuration.
 #[derive(Debug, Clone)]
-pub struct NginxConfig {
-    pub directives: Vec<NginxDirective>,
-    pub blocks: Vec<NginxBlock>,
+struct NginxConfig {
+    directives: Vec<NginxDirective>,
+    blocks: Vec<NginxBlock>,
 }
 
 /// Skip if nginx is not installed
@@ -57,7 +57,7 @@ pub fn skip_no_nginx() -> bool {
 }
 
 /// Parse nginx -T output into a structured config.
-pub fn parse_nginx_config(content: &str) -> NginxConfig {
+fn parse_nginx_config(content: &str) -> NginxConfig {
     let lines: Vec<&str> = content
         .lines()
         .map(|l| l.trim())

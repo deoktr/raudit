@@ -25,13 +25,13 @@ const HOSTS_PATH: &str = "/etc/hosts";
 
 static HOSTS: OnceLock<Hosts> = OnceLock::new();
 
-pub struct Host {
+struct Host {
     addr: String,
     value: String,
 }
 
 /// Hosts config from `/etc/hosts`.
-pub type Hosts = Vec<Host>;
+type Hosts = Vec<Host>;
 
 /// Parse content of `/etc/hosts`.
 fn parse_hosts(hosts: String) -> Hosts {

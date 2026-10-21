@@ -44,7 +44,7 @@ pub enum Severity {
     Critical = 5,
 }
 
-#[derive(PartialEq, Serialize)]
+#[derive(Debug, PartialEq, Serialize)]
 pub enum CheckState {
     /// Check is yet to execute or in progress.
     Unknown,

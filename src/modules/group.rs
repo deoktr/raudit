@@ -28,11 +28,11 @@ const SHADOW_PATH: &str = "/etc/gshadow";
 static GROUPS: OnceLock<Groups> = OnceLock::new();
 
 /// Group configuration from `/etc/group`.
-pub type Groups = Vec<Group>;
+type Groups = Vec<Group>;
 
 /// Group entry found in `/etc/group`.
 #[allow(dead_code)]
-pub struct Group {
+struct Group {
     /// group name
     name: String,
     /// optional encrypted password
@@ -46,7 +46,7 @@ pub struct Group {
 /// Parse the content of `/etc/group`.
 ///
 /// Parsed group following the format: `group_name:password:GID:user_list`.
-pub fn parse_group(content: String) -> Groups {
+fn parse_group(content: String) -> Groups {
     content
         .lines()
         .map(|line| {

@@ -27,7 +27,7 @@ const GRUB_CFG_PATH: &str = "/boot/grub/grub.cfg";
 static GRUB_CFG: OnceLock<GrubCfg> = OnceLock::new();
 
 /// Raw grub config from `/boot/grub/grub.cfg`.
-pub type GrubCfg = String;
+type GrubCfg = String;
 
 /// Skip if grub is not the bootloader.
 pub fn skip_no_grub() -> bool {

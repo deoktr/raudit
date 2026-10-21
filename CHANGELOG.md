@@ -10,9 +10,23 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+## [0.36.0] - 2026-10-21
+
 ### Added
 
+- Add modprobe checks `KMD_001` to `KMD_004` for `/etc/modprobe.d` directory and files ownership and permissions
+- Add warning on modprobe rules when a module is compiled in the kernel, and thus cannot be blacklisted or disabled
 - Add kernel build config fallback sources `/boot/config-$(uname -r)` and `/proc/config.gz`
+
+### Changed
+
+- Update all the rules of modprobe, don't use a macro to generate them so they have consistent IDs
+- Small refactor, removed `pub` from struct in modules
+
+### Fixed
+
+- Fix modprobe module, complete refactor, now work the way modprobe parses the config files, including glob pattern (?/*)
+- Fix the kernel boot params `/proc/cmdline` parser
 
 ## [0.35.3] - 2026-10-20
 

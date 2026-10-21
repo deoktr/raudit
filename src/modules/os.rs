@@ -30,7 +30,7 @@ static OS_RELEASE: OnceLock<OSRelease> = OnceLock::new();
 
 /// OS.
 #[allow(dead_code)]
-pub struct OS {
+struct OS {
     os: String,
     name: String,
     version: String,
@@ -38,7 +38,7 @@ pub struct OS {
 }
 
 /// OS release.
-pub type OSRelease = HashMap<String, String>;
+type OSRelease = HashMap<String, String>;
 
 /// Init system OS type by reading `/proc/sys/kernel/ostype`.
 #[allow(dead_code)]

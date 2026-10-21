@@ -25,7 +25,7 @@ use crate::{check, log_debug, log_error};
 /// List of running process.
 ///
 /// Collected by reading the content of the `/proc/` dir.
-pub type Proc = HashMap<String, String>;
+type Proc = HashMap<String, String>;
 
 static PROCESSES: OnceLock<Proc> = OnceLock::new();
 

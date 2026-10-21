@@ -28,7 +28,7 @@ static KERNEL_BUILD_CONFIG: OnceLock<KernelBuildConfig> = OnceLock::new();
 
 /// Kernel build configuration, parsed from the first available source of
 /// [get_kernel_build_config_paths].
-pub type KernelBuildConfig = HashMap<String, String>;
+type KernelBuildConfig = HashMap<String, String>;
 
 /// Skip a check when the running kernel's build config is not available.
 pub fn skip_no_kbuild_config() -> bool {

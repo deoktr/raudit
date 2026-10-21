@@ -27,7 +27,7 @@ const LOGIN_DEFS_PATH: &str = "/etc/login.defs";
 static LOGIN_DEFS_CONFIG: OnceLock<LoginDefsConfig> = OnceLock::new();
 
 /// Login.defs configuration.
-pub type LoginDefsConfig = HashMap<String, String>;
+type LoginDefsConfig = HashMap<String, String>;
 
 /// Parse content of `/etc/login.defs`.
 fn parse_login_defs(login_defs: String) -> LoginDefsConfig {

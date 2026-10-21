@@ -16,72 +16,160 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use std::collections::HashSet;
 use std::fs;
-use std::path::PathBuf;
+use std::io;
+use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 
 use crate::{check, log_debug, log_error};
+
+const OSRELEASE_PATH: &str = "/proc/sys/kernel/osrelease";
+
+/// Modprobe configuration directories, in kmod precedence order. A file in an
+/// earlier directory shadows a file with the same name in a later one.
+const MODPROBE_DIRS: [&str; 5] = [
+    "/etc/modprobe.d",
+    "/run/modprobe.d",
+    "/usr/local/lib/modprobe.d",
+    "/usr/lib/modprobe.d",
+    "/lib/modprobe.d",
+];
 
 static MODPROBE_CONFIG: OnceLock<ModprobeConfig> = OnceLock::new();
 static MODPROBE_BLACKLIST: OnceLock<ModprobeBlacklist> = OnceLock::new();
 static MODPROBE_DISABLED: OnceLock<ModprobeDisabled> = OnceLock::new();
 static LOADED_MODULES: OnceLock<LoadedModules> = OnceLock::new();
 
-/// Modprobe configuration.
-pub type ModprobeConfig = Vec<String>;
+/// Available modules are the list of modules present on disk.
+static AVAILABLE_MODULES: OnceLock<AvailableModules> = OnceLock::new();
+
+/// Compiled-in modules cannot be unloaded, but they are present.
+static COMPILED_IN_MODULES: OnceLock<CompiledInModules> = OnceLock::new();
+
+/// Modprobe directives, in the order kmod parses them.
+type ModprobeConfig = Vec<Directive>;
 
 // NOTE: disabled and blacklisted are two different things, blacklist means the
 // module won't start automatically, and disabled means it will never be able
 // to start
 
-/// List of blacklisted kernel modules.
-pub type ModprobeBlacklist = Vec<String>;
+/// Set of blacklisted kernel modules.
+type ModprobeBlacklist = HashSet<String>;
 
-/// List of disabled kernel modules.
-pub type ModprobeDisabled = Vec<String>;
+/// `install` directives of the modprobe configuration, in kmod parse order.
+///
+/// kmod only runs the first directive matching a module, the following ones are
+/// ignored, which is why the order matters.
+type ModprobeDisabled = Vec<InstallDirective>;
 
-/// List of loaded kernel modules.
-pub type LoadedModules = Vec<String>;
+/// Set of loaded kernel modules.
+type LoadedModules = HashSet<String>;
+
+/// Set of kernel modules loadable for the running kernel.
+type AvailableModules = HashSet<String>;
+
+/// Set of kernel modules compiled-in the running kernel.
+type CompiledInModules = HashSet<String>;
+
+/// A modprobe configuration directive.
+struct Directive {
+    /// Keyword starting the directive, e.g. `blacklist` or `install`.
+    cmd: String,
+    /// Module name, normalized.
+    module: String,
+    /// Remainder of the line.
+    arg: String,
+}
+
+/// An `install` directive, kmod runs `command` instead of loading the module.
+struct InstallDirective {
+    /// Module name, normalized.
+    module: String,
+    /// Command run instead of loading the module.
+    command: String,
+}
+
+/// Get modprobe configuration file paths, in the order kmod parses them.
+///
+/// kmod sorts the files of every directory by name, and ignores a file whose
+/// name was already found in a directory with a higher precedence.
+fn get_modprobe_config_paths() -> Vec<PathBuf> {
+    let mut files: Vec<(String, usize, PathBuf)> = Vec::new();
+
+    for (precedence, dir) in MODPROBE_DIRS.iter().enumerate() {
+        let Ok(entries) = fs::read_dir(dir) else {
+            continue;
+        };
+
+        for entry in entries.flatten() {
+            let name = entry.file_name().to_string_lossy().to_string();
+
+            // kmod ignores hidden files and anything but `.conf` files
+            if name.starts_with('.') || !name.ends_with(".conf") {
+                continue;
+            }
+
+            let path = entry.path();
+            if path.is_dir() {
+                continue;
+            }
+
+            files.push((name, precedence, path));
+        }
+    }
+
+    files.sort_by(|a, b| (&a.0, a.1).cmp(&(&b.0, b.1)));
+
+    // names are now sorted, keep only the first occurrence of each one
+    files.dedup_by(|a, b| a.0 == b.0);
+
+    files.into_iter().map(|(_, _, path)| path).collect()
+}
+
+/// Parse a single modprobe configuration line.
+///
+/// Lines are tokenized like kmod does: leading whitespace is ignored, the first
+/// token is the directive keyword, the second is the module name and the rest
+/// of the line is kept as the directive argument.
+fn parse_line(line: &str) -> Option<Directive> {
+    let line = line.trim_start();
+
+    // only full line comments are supported, like kmod
+    if line.is_empty() || line.starts_with('#') {
+        return None;
+    }
+
+    // a directive without argument is a syntax error for kmod
+    let cmd_end = line.find(char::is_whitespace)?;
+    let cmd = &line[..cmd_end];
+    let rest = line[cmd_end..].trim_start();
+
+    let module_end = rest.find(char::is_whitespace).unwrap_or(rest.len());
+    let module = &rest[..module_end];
+    if module.is_empty() {
+        return None;
+    }
+
+    Some(Directive {
+        cmd: cmd.to_string(),
+        module: normalize_module_name(module),
+        arg: rest[module_end..].trim_start().to_string(),
+    })
+}
 
 /// Parse en content of a modprobe configuration file.
-fn parse_modprobe(content: String) -> ModprobeConfig {
-    content
-        .lines()
-        .filter(|line| !line.is_empty())
-        .filter(|line| !line.starts_with("#"))
-        .map(|module| module.to_string())
-        .collect()
+fn parse_modprobe(content: &str) -> ModprobeConfig {
+    content.lines().filter_map(parse_line).collect()
 }
 
 /// Get modprobe configuration by reading files.
 fn get_modprobe_config() -> ModprobeConfig {
-    // get all modprob configuration file paths
-    let paths: Vec<PathBuf> = vec![
-        fs::read_dir("/lib/modprobe.d/"),
-        fs::read_dir("/usr/local/lib/modprobe.d/"),
-        fs::read_dir("/run/modprobe.d/"),
-        fs::read_dir("/etc/modprobe.d/"),
-    ]
-    .into_iter()
-    .flatten()
-    .flat_map(|dir| {
-        dir.flatten()
-            // only keep `.conf` files
-            .filter(|dentry| dentry.file_name().to_string_lossy().ends_with(".conf"))
-            .map(|dentry| dentry.path())
-            .filter(|path| !path.is_dir())
-            .collect::<Vec<PathBuf>>()
-    })
-    .collect();
-
-    // get the configuration from all config paths
-    let config: ModprobeConfig = paths
+    get_modprobe_config_paths()
         .into_iter()
         .flat_map(fs::read_to_string)
-        .flat_map(parse_modprobe)
-        .collect();
-
-    config
+        .flat_map(|content| parse_modprobe(&content))
+        .collect()
 }
 
 /// Init modprobe configuration by reading files.
@@ -95,15 +183,11 @@ fn init_modprobe_config() {
 }
 
 /// Get modprobe blacklisted modules from modprobe config.
-fn get_modprobe_blacklist(modprobe: &ModprobeConfig) -> ModprobeBlacklist {
-    modprobe
+fn get_modprobe_blacklist(config: &ModprobeConfig) -> ModprobeBlacklist {
+    config
         .iter()
-        .filter(|line| {
-            // `blacklist mod_name`
-            line.starts_with("blacklist")
-        })
-        .filter_map(|line| line.split_whitespace().nth(1))
-        .map(|line| line.to_string())
+        .filter(|directive| directive.cmd == "blacklist")
+        .map(|directive| directive.module.clone())
         .collect()
 }
 
@@ -124,23 +208,15 @@ fn init_modprobe_blacklist() {
     }
 }
 
-/// Get modprobe disabled modules from modprobe config.
-fn get_modprobe_disabled(modprobe: &ModprobeConfig) -> ModprobeDisabled {
-    modprobe
+/// Get modprobe `install` directives from modprobe config.
+fn get_modprobe_disabled(config: &ModprobeConfig) -> ModprobeDisabled {
+    config
         .iter()
-        .filter(|line| {
-            // `install mod_name /bin/false`
-            // OR
-            // `install mod_name /bin/true`
-            // NOTE: technically it can be any other executable other then the
-            // actual module
-            // You could for example add a custom executable to log every
-            // loading attempts
-            line.starts_with("install")
-                && (line.ends_with("/bin/false") || line.ends_with("/bin/true"))
+        .filter(|directive| directive.cmd == "install")
+        .map(|directive| InstallDirective {
+            module: directive.module.clone(),
+            command: directive.arg.clone(),
         })
-        .filter_map(|line| line.split_whitespace().nth(1))
-        .map(|line| line.to_string())
         .collect()
 }
 
@@ -159,18 +235,12 @@ fn init_modprobe_disabled() {
     };
 }
 
-/// Parse the output of `lsmod` to extract modules.
-fn parse_lsmod_modules(lsmod: String) -> Vec<String> {
-    lsmod
+/// Parse the content of `/proc/modules` to extract module names.
+fn parse_proc_modules(proc_modules: &str) -> Vec<String> {
+    proc_modules
         .lines()
-        // skip first line
-        .skip(1)
-        .map(|line| {
-            line.split_whitespace()
-                .next()
-                .unwrap_or_default()
-                .to_string()
-        })
+        .filter_map(|line| line.split_whitespace().next())
+        .map(normalize_module_name)
         .collect()
 }
 
@@ -182,10 +252,90 @@ fn init_loaded_modules() {
 
     match fs::read_to_string("/proc/modules") {
         Ok(content) => {
-            LOADED_MODULES.get_or_init(|| parse_lsmod_modules(content));
+            LOADED_MODULES.get_or_init(|| parse_proc_modules(&content).into_iter().collect());
             log_debug!("initialized modprobe loaded kernel modules");
         }
         Err(err) => log_error!("failed to initialize loaded kernel modules: {}", err),
+    }
+}
+
+/// Normalize a module name, kernel module names always use `_` but file names
+/// may use `-`.
+fn normalize_module_name(module: &str) -> String {
+    module.replace('-', "_")
+}
+
+/// Parse content of `modules.dep` or `modules.builtin` to extract available
+/// module names.
+fn parse_available_modules(content: &str) -> Vec<String> {
+    content
+        .lines()
+        .filter(|line| !line.is_empty())
+        // `modules.dep` lines are `<path>.ko: <dep>.ko ...`, only keep the
+        // first field, which also strips the trailing `:`
+        .filter_map(|line| line.split_whitespace().next())
+        .filter_map(|path| path.rsplit('/').next())
+        // strip the `.ko` extension and any compression suffix (.ko.zst,
+        // .ko.xz, .ko.gz)
+        .filter_map(|file| file.find(".ko").map(|idx| &file[..idx]))
+        .map(normalize_module_name)
+        .collect()
+}
+
+/// Get available kernel modules for the running kernel by reading
+/// `/lib/modules/$(uname -r)/modules.dep`.
+fn get_available_modules() -> Result<AvailableModules, io::Error> {
+    let kernel_release = fs::read_to_string(OSRELEASE_PATH)?.trim().to_string();
+
+    Ok(parse_available_modules(&fs::read_to_string(
+        PathBuf::from("/lib/modules")
+            .join(&kernel_release)
+            .join("modules.dep"),
+    )?)
+    .into_iter()
+    .collect())
+}
+
+/// Init available kernel modules for the running kernel.
+fn init_available_modules() {
+    if AVAILABLE_MODULES.get().is_some() {
+        return;
+    }
+
+    match get_available_modules() {
+        Ok(m) => {
+            AVAILABLE_MODULES.get_or_init(|| m);
+            log_debug!("initialized available kernel modules");
+        }
+        Err(err) => log_error!("failed to initialize available kernel modules: {}", err),
+    }
+}
+
+/// Get compiled-in kernel modules by reading `modules.builtin`.
+fn get_compiled_in_modules() -> Result<CompiledInModules, io::Error> {
+    let kernel_release = fs::read_to_string(OSRELEASE_PATH)?.trim().to_string();
+
+    Ok(parse_available_modules(&fs::read_to_string(
+        PathBuf::from("/lib/modules")
+            .join(&kernel_release)
+            .join("modules.builtin"),
+    )?)
+    .into_iter()
+    .collect())
+}
+
+/// Init compiled-in kernel modules for the running kernel.
+fn init_compiled_in_modules() {
+    if COMPILED_IN_MODULES.get().is_some() {
+        return;
+    }
+
+    match get_compiled_in_modules() {
+        Ok(m) => {
+            COMPILED_IN_MODULES.get_or_init(|| m);
+            log_debug!("initialized compiled-in kernel modules");
+        }
+        Err(err) => log_error!("failed to initialize compiled-in kernel modules: {}", err),
     }
 }
 
@@ -195,12 +345,130 @@ pub fn init_modprobe() {
     init_modprobe_disabled();
     init_modprobe_blacklist();
     init_loaded_modules();
+    init_available_modules();
+    init_compiled_in_modules();
 
     log_debug!("initialized modprobe");
 }
 
+/// Decide the checks that only depend on the state of a module for the running
+/// kernel, returns `None` when the module is present and can be loaded.
+///
+/// `modules.builtin` is the list kmod itself uses to know that a module is
+/// compiled-in, and `modules.dep` the list of modules it can load. A module
+/// absent from both cannot be loaded, but without `modules.builtin` an absent
+/// module is indistinguishable from a compiled-in one.
+///
+/// `action` is the verb used in the compiled-in failure message, `blacklist` or
+/// `disable`.
+fn check_module_state(module: &str, action: &str) -> Option<check::CheckReturn> {
+    let module = normalize_module_name(module);
+
+    match (
+        COMPILED_IN_MODULES.get().map(|m| m.contains(&module)),
+        AVAILABLE_MODULES.get().map(|m| m.contains(&module)),
+    ) {
+        // a compiled-in module is always active, it cannot be blacklisted nor
+        // disabled
+        (Some(true), _) => Some((
+            check::CheckState::Fail,
+            Some(format!(
+                "module is compiled-in in the kernel, you must recompile the kernel without it to be able to {} it",
+                action
+            )),
+        )),
+        // a module on disk cannot be compiled-in, even if `modules.builtin`
+        // could not be read
+        (_, Some(true)) => None,
+        (Some(false), Some(false)) => Some((
+            check::CheckState::Pass,
+            Some("module not present".to_string()),
+        )),
+        (None, Some(false)) => Some((
+            check::CheckState::Warning,
+            Some("module state unknown: compiled-in modules not initialized".to_string()),
+        )),
+        (_, None) => Some((
+            check::CheckState::Warning,
+            Some("module state unknown: available modules not initialized".to_string()),
+        )),
+    }
+}
+
+/// Match a module name against an `install` directive pattern.
+///
+/// kmod matches those with `fnmatch(pattern, modname, 0)`, so a single
+/// directive can cover a whole module family (e.g. `install usb* /bin/false`).
+/// Only `*` and `?` are supported, other patterns are compared literally, which
+/// fails the check instead of silently passing it.
+fn pattern_matches(pattern: &str, module: &str) -> bool {
+    let pattern: Vec<char> = pattern.chars().collect();
+    let module: Vec<char> = module.chars().collect();
+    let (mut p, mut m) = (0, 0);
+    // position of the last `*` and of the module character it matched
+    let mut star: Option<(usize, usize)> = None;
+
+    while m < module.len() {
+        match pattern.get(p) {
+            Some('*') => {
+                star = Some((p, m));
+                p += 1;
+            }
+            Some('?') => {
+                p += 1;
+                m += 1;
+            }
+            Some(&c) if c == module[m] => {
+                p += 1;
+                m += 1;
+            }
+            // on mismatch, let the last `*` consume one more character
+            _ => match star {
+                Some((star_p, star_m)) => {
+                    p = star_p + 1;
+                    m = star_m + 1;
+                    star = Some((star_p, m));
+                }
+                None => return false,
+            },
+        }
+    }
+
+    pattern[p..].iter().all(|&c| c == '*')
+}
+
+/// Get the `install` directive kmod would run for a module, the first matching
+/// directive in parse order wins.
+fn get_install_directive<'a>(
+    installs: &'a ModprobeDisabled,
+    module: &str,
+) -> Option<&'a InstallDirective> {
+    installs
+        .iter()
+        .find(|install| pattern_matches(&install.module, module))
+}
+
+/// Returns `true` when an `install` command prevents the module from loading.
+///
+/// The command is run by `/bin/sh -c`, so anything after a `#` is a comment.
+fn install_command_blocks(command: &str) -> bool {
+    let command = command.split('#').next().unwrap_or_default();
+
+    match command.split_whitespace().next() {
+        Some(exe) => matches!(
+            Path::new(exe).file_name().and_then(|name| name.to_str()),
+            Some("false") | Some("true")
+        ),
+        None => false,
+    }
+}
+
 /// Ensure that kernel module is blacklisted.
 pub fn check_module_blacklist(module: &str) -> check::CheckReturn {
+    if let Some(result) = check_module_state(module, "blacklist") {
+        return result;
+    }
+
     let m_blacklist = match MODPROBE_BLACKLIST.get() {
         Some(m_blacklist) => m_blacklist,
         None => {
@@ -221,14 +489,16 @@ pub fn check_module_blacklist(module: &str) -> check::CheckReturn {
         }
     };
 
-    if !m_blacklist.contains(&module.to_string()) {
+    let module = normalize_module_name(module);
+
+    if !m_blacklist.contains(&module) {
         return (
             check::CheckState::Fail,
             Some("module not blacklisted".to_string()),
         );
     }
 
-    if loaded.contains(&module.to_string()) {
+    if loaded.contains(&module) {
         return (
             check::CheckState::Fail,
             Some("module blacklisted but loaded".to_string()),
@@ -239,6 +509,10 @@ pub fn check_module_blacklist(module: &str) -> check::CheckReturn {
 
 /// Ensure that kernel module is disabled.
 pub fn check_module_disabled(module: &str) -> check::CheckReturn {
+    if let Some(result) = check_module_state(module, "disable") {
+        return result;
+    }
+
     let m_disabled = match MODPROBE_DISABLED.get() {
         Some(m_disabled) => m_disabled,
         None => {
@@ -259,14 +533,29 @@ pub fn check_module_disabled(module: &str) -> check::CheckReturn {
         }
     };
 
-    if !m_disabled.contains(&module.to_string()) {
+    let module = normalize_module_name(module);
+
+    let install = match get_install_directive(m_disabled, &module) {
+        Some(install) => install,
+        None => {
+            return (
+                check::CheckState::Fail,
+                Some("module not disabled".to_string()),
+            );
+        }
+    };
+
+    if !install_command_blocks(&install.command) {
         return (
             check::CheckState::Fail,
-            Some("module not disabled".to_string()),
+            Some(format!(
+                "install command does not prevent loading: {}",
+                install.command
+            )),
         );
     }
 
-    if loaded.contains(&module.to_string()) {
+    if loaded.contains(&module) {
         return (
             check::CheckState::Fail,
             Some("module disabled but loaded".to_string()),
@@ -275,48 +564,238 @@ pub fn check_module_disabled(module: &str) -> check::CheckReturn {
     (check::CheckState::Pass, None)
 }
 
-/// Add checks from a list of modules.
-macro_rules! add_module_blacklisted_check_list {
-    ($($module:expr),* $(,)?) => {
-        let mut __i_add_module_blacklisted_check_list = 0;
-        $(
-            $crate::check::Check::new(
-                format!("KMD_{:03}", __i_add_module_blacklisted_check_list).as_str(),
-                format!("Ensure that kernel module \"{}\" is blacklisted", $module).as_str(),
-                $crate::check::Severity::Medium,
-                vec!["modprobe"],
-                || $crate::modules::modprobe::check_module_blacklist($module),
-                vec![$crate::modules::modprobe::init_modprobe],
-            )
-            .with_description("Prevents the kernel from auto-loading the module on hardware probe or subsystem request, reducing kernel attack surface from rarely-exercised drivers and protocol parsers that are common exploit targets. Module remains loadable manually by root.")
-            .with_fix(&format!("Add entry in \"/etc/modprobe.d/blacklist.conf\" with: \"blacklist {}\"", $module))
-            .register();
-            __i_add_module_blacklisted_check_list += 1;
-        )*
-    };
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn set(strings: &[&str]) -> HashSet<String> {
+        strings.iter().map(|s| s.to_string()).collect()
+    }
+
+    #[test]
+    fn test_parse_available_modules() {
+        let modules = parse_available_modules(
+            "kernel/arch/x86/events/amd/amd-uncore.ko.zst:
+kernel/drivers/usb/misc/usbtest.ko.xz: kernel/drivers/usb/core/usbcore.ko
+kernel/arch/x86/events/intel/intel-uncore.ko
+",
+        );
+        assert_eq!(modules.len(), 3);
+        assert!(modules.contains(&"amd_uncore".to_string()));
+        assert!(modules.contains(&"usbtest".to_string()));
+        assert!(modules.contains(&"intel_uncore".to_string()));
+    }
+
+    #[test]
+    fn test_normalize_module_name() {
+        assert_eq!(normalize_module_name("snd-intel8x0"), "snd_intel8x0");
+        assert_eq!(normalize_module_name("snd_intel8x0"), "snd_intel8x0");
+    }
+
+    #[test]
+    fn test_parse_directive() {
+        // keyword must be a full token, module names are normalized, the rest
+        // of the line is kept as the argument
+        let directive = parse_line("install snd-pcm-oss /bin/false").unwrap();
+        assert_eq!(directive.cmd, "install");
+        assert_eq!(directive.module, "snd_pcm_oss");
+        assert_eq!(directive.arg, "/bin/false");
+
+        // kmod ignores leading whitespace
+        assert_eq!(
+            parse_line("\t  blacklist snd-pcm-oss").unwrap().module,
+            "snd_pcm_oss"
+        );
+
+        // comments and empty lines
+        assert!(parse_line("# blacklist foo").is_none());
+        assert!(parse_line("   ").is_none());
+
+        // directives without module name or keyword
+        assert!(parse_line("blacklist").is_none());
+        assert_eq!(parse_line("blacklistx foo").unwrap().cmd, "blacklistx");
+
+        // a directive with no argument is still valid, e.g. `blacklist foo`
+        let directive = parse_line("blacklist foo").unwrap();
+        assert!(directive.arg.is_empty());
+    }
+
+    #[test]
+    fn test_parse_modprobe() {
+        let config = parse_modprobe(
+            "# comment
+blacklist snd-pcm-oss
+options snd-hda-intel index=0
+install snd_pcm /sbin/modprobe --ignore-install snd_pcm
+
+blacklist usb-midi
+",
+        );
+        assert_eq!(config.len(), 4);
+        assert_eq!(config[0].cmd, "blacklist");
+        assert_eq!(config[0].module, "snd_pcm_oss");
+        assert_eq!(config[3].module, "usb_midi");
+    }
+
+    #[test]
+    fn test_get_modprobe_blacklist() {
+        let config = parse_modprobe(
+            "blacklist snd-pcm-oss
+blacklist snd_pcm_oss
+install foo /bin/false
+blacklistx bar
+",
+        );
+        let blacklist = get_modprobe_blacklist(&config);
+        assert_eq!(blacklist.len(), 1);
+        assert!(blacklist.contains("snd_pcm_oss"));
+    }
+
+    #[test]
+    fn test_get_modprobe_disabled() {
+        let config = parse_modprobe(
+            "blacklist foo
+install snd-pcm /bin/false
+install snd_seq /sbin/modprobe --ignore-install snd_seq
+",
+        );
+        let disabled = get_modprobe_disabled(&config);
+        assert_eq!(disabled.len(), 2);
+        assert_eq!(disabled[0].module, "snd_pcm");
+        assert_eq!(disabled[0].command, "/bin/false");
+    }
+
+    #[test]
+    fn test_get_install_directive() {
+        let config = parse_modprobe(
+            "install snd_pcm /sbin/modprobe --ignore-install snd_pcm
+install snd_pcm /bin/false
+install usb* /bin/false
+",
+        );
+        let disabled = get_modprobe_disabled(&config);
+
+        // the first matching directive wins, like kmod
+        let install = get_install_directive(&disabled, "snd_pcm").unwrap();
+        assert_eq!(install.command, "/sbin/modprobe --ignore-install snd_pcm");
+
+        // kmod matches install directives with fnmatch
+        let install = get_install_directive(&disabled, "usb_storage").unwrap();
+        assert_eq!(install.command, "/bin/false");
+
+        assert!(get_install_directive(&disabled, "foo").is_none());
+    }
+
+    #[test]
+    fn test_install_command_blocks() {
+        assert!(install_command_blocks("/bin/false"));
+        assert!(install_command_blocks("/usr/bin/false"));
+        assert!(install_command_blocks("true"));
+        // the command is run by `/bin/sh -c`
+        assert!(install_command_blocks("/bin/false # CIS 4.4.2"));
+        assert!(install_command_blocks("  /bin/true  "));
+
+        assert!(!install_command_blocks(
+            "/sbin/modprobe --ignore-install snd_pcm"
+        ));
+        assert!(!install_command_blocks(""));
+        assert!(!install_command_blocks("/bin/falsey"));
+    }
+
+    #[test]
+    fn test_pattern_matches() {
+        assert!(pattern_matches("usb_storage", "usb_storage"));
+        assert!(!pattern_matches("usb_storage", "usb_storag"));
+        assert!(pattern_matches("usb*", "usb_storage"));
+        assert!(pattern_matches("*", "usb_storage"));
+        assert!(pattern_matches("*storage", "usb_storage"));
+        assert!(pattern_matches("usb_*age", "usb_storage"));
+        assert!(pattern_matches("usb_storag?", "usb_storage"));
+        assert!(!pattern_matches("usb?", "usb_storage"));
+        assert!(!pattern_matches("snd*", "usb_storage"));
+        assert!(!pattern_matches("usb_storage", "usb_storagex"));
+    }
+
+    #[test]
+    fn test_parse_proc_modules() {
+        let modules = parse_proc_modules(
+            "nf_conntrack_netlink 61440 0 - Live 0x0000000000000000
+snd_hda_intel 61440 2 - Live 0x0000000000000000
+usb_storage 61440 0 - Live 0x0000000000000000
+",
+        );
+        assert_eq!(modules.len(), 3);
+        assert!(modules.contains(&"nf_conntrack_netlink".to_string()));
+        assert!(modules.contains(&"snd_hda_intel".to_string()));
+    }
+
+    /// End to end test of the blacklist and disabled checks.
+    ///
+    /// The statics are process wide, so every assertion on them lives in this
+    /// single test.
+    #[test]
+    fn test_check_modules() {
+        let config = parse_modprobe(
+            "blacklist snd-pcm-oss
+install snd_pcm /sbin/modprobe --ignore-install snd_pcm $CMDLINE_OPTS
+install snd_pcm /bin/false
+install usb* /bin/false # CIS
+install 9p /bin/true
+",
+        );
+
+        COMPILED_IN_MODULES.get_or_init(|| set(&["cdrom"]));
+        AVAILABLE_MODULES.get_or_init(|| set(&["snd_pcm_oss", "snd_pcm", "usb_storage", "9p"]));
+        LOADED_MODULES.get_or_init(|| {
+            parse_proc_modules("9p 81920 1 - Live 0x0")
+                .into_iter()
+                .collect()
+        });
+        MODPROBE_BLACKLIST.get_or_init(|| get_modprobe_blacklist(&config));
+        MODPROBE_DISABLED.get_or_init(|| get_modprobe_disabled(&config));
+
+        // compiled-in modules cannot be blacklisted nor disabled
+        assert_eq!(check_module_blacklist("cdrom").0, check::CheckState::Fail);
+        assert_eq!(check_module_disabled("cdrom").0, check::CheckState::Fail);
+
+        // modules absent from the running kernel cannot be loaded
+        assert_eq!(check_module_blacklist("dccp").0, check::CheckState::Pass);
+        assert_eq!(check_module_disabled("dccp").0, check::CheckState::Pass);
+
+        // `blacklist snd-pcm-oss` matches the `snd_pcm_oss` module
+        assert_eq!(
+            check_module_blacklist("snd_pcm_oss").0,
+            check::CheckState::Pass
+        );
+        assert_eq!(
+            check_module_blacklist("snd-pcm-oss").0,
+            check::CheckState::Pass
+        );
+
+        // modules without directive are neither blacklisted nor disabled
+        assert_eq!(check_module_blacklist("snd_pcm").0, check::CheckState::Fail);
+        assert_eq!(
+            check_module_disabled("snd_pcm_oss").0,
+            check::CheckState::Fail
+        );
+
+        // the first `install` directive wins, even when a later one blocks
+        let (state, reason) = check_module_disabled("snd_pcm");
+        assert_eq!(state, check::CheckState::Fail);
+        assert_eq!(
+            reason.unwrap(),
+            "install command does not prevent loading: /sbin/modprobe --ignore-install snd_pcm $CMDLINE_OPTS"
+        );
+
+        // `install usb* /bin/false # CIS` covers the whole family
+        assert_eq!(
+            check_module_disabled("usb_storage").0,
+            check::CheckState::Pass
+        );
+
+        // a disabled module must not be loaded
+        let (state, reason) = check_module_disabled("9p");
+        assert_eq!(state, check::CheckState::Fail);
+        assert_eq!(reason.unwrap(), "module disabled but loaded");
+    }
 }
-
-pub(crate) use add_module_blacklisted_check_list;
-
-/// Add checks from a list of modules.
-macro_rules! add_module_disabled_check_list {
-    ($($module:expr),* $(,)?) => {
-        let mut __i_add_module_disabled_check_list = 500;
-        $(
-            $crate::check::Check::new(
-                format!("KMD_{:03}", __i_add_module_disabled_check_list).as_str(),
-                format!("Ensure that kernel module \"{}\" is disabled", $module).as_str(),
-                $crate::check::Severity::Medium,
-                vec!["modprobe"],
-                || $crate::modules::modprobe::check_module_disabled($module),
-                vec![$crate::modules::modprobe::init_modprobe],
-            )
-            .with_description("Prohibits the module from loading at all (not just from auto-loading), eliminating its kernel attack surface entirely. Required for modules an attacker who reaches root must not be able to bring in.")
-            .with_fix(&format!("Add entry in \"/etc/modprobe.d/disabled.conf\" with: \"install {} /bin/true\"", $module))
-            .register();
-            __i_add_module_disabled_check_list += 1;
-        )*
-    };
-}
-
-pub(crate) use add_module_disabled_check_list;

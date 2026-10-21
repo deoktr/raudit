@@ -26,7 +26,7 @@ use crate::{check, log_debug, log_error};
 static SYSCTL_CONFIG: OnceLock<SysctlConfig> = OnceLock::new();
 
 /// Kernel params configuration from sysctl.
-pub type SysctlConfig = HashMap<String, String>;
+type SysctlConfig = HashMap<String, String>;
 
 /// Parse `sysctl --all` command stdout.
 fn parse_sysctl_config(stdout: String) -> SysctlConfig {

@@ -27,10 +27,12 @@ use crate::{check, log_debug, log_error, utils::run};
 const SYSTEMD_CONF_PATH: &str = "/etc/systemd/system.conf";
 
 static SYSTEMD_CONFIG: OnceLock<SystemdConfig> = OnceLock::new();
+
+#[allow(dead_code)]
 static SYSTEMD_ACTIVE_UNITS: OnceLock<Vec<String>> = OnceLock::new();
 
 /// Systemd configuration.
-pub type SystemdConfig = HashMap<String, String>;
+type SystemdConfig = HashMap<String, String>;
 
 /// Skip when systemd is not used. Systemd creates a notification socket that
 /// services can communicate with.
@@ -77,6 +79,7 @@ pub fn init_systemd_config() {
 }
 
 /// Returns a Vec of unit names reported as "active" by `systemctl list-units`.
+#[allow(dead_code)]
 fn get_systemd_active_units() -> Result<Vec<String>, String> {
     let output = Command::new("systemctl")
         .args([
@@ -106,6 +109,7 @@ fn get_systemd_active_units() -> Result<Vec<String>, String> {
 }
 
 /// Init systemd active units by running `systemctl list-units`.
+#[allow(dead_code)]
 pub fn init_systemd_active_units() {
     if SYSTEMD_ACTIVE_UNITS.get().is_some() {
         return;
@@ -191,6 +195,7 @@ pub fn get_socket_file(name: &str) -> Option<String> {
 }
 
 /// Check if a systemd unit (service, socket, etc.) is running.
+#[allow(dead_code)]
 pub fn systemd_unit_active(name: &str) -> Result<bool, String> {
     match SYSTEMD_ACTIVE_UNITS.get() {
         Some(active_units) => Ok(active_units.contains(&name.to_string())),

@@ -33,14 +33,14 @@ const MAX_DEVICE_DEPTH: usize = 16;
 static MOUNT_CONFIG: OnceLock<MountConfig> = OnceLock::new();
 
 /// List of mount configurations.
-pub type MountConfig = Vec<Mount>;
+type MountConfig = Vec<Mount>;
 
 /// List of options applied to a mount.
-pub type MountOptions = Vec<String>;
+type MountOptions = Vec<String>;
 
 /// A single mount configuration.
 #[allow(dead_code)]
-pub struct Mount {
+struct Mount {
     source: String,
     target: String,
     fs_type: String,

@@ -37,8 +37,11 @@ use crate::{check, log_debug, log_error, utils};
 static PODMAN_INFO: OnceLock<PodmanInfo> = OnceLock::new();
 static CONTAINERS: OnceLock<Containers> = OnceLock::new();
 
-pub type PodmanInfo = Value;
-pub type Containers = HashMap<String, Value>;
+/// Podman info from `podman info -f json`.
+type PodmanInfo = Value;
+
+/// Podman containers config from `podman container inspect <ids>`, key is ID.
+type Containers = HashMap<String, Value>;
 
 /// Skip if Podman is not installed.
 pub fn skip_no_podman() -> bool {

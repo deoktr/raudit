@@ -174,12 +174,12 @@ pub fn add_checks() {
 
     sysctl::add_sysctl_check!(
         "SYS_015",
-        Severity::Medium,
+        Severity::High,
         vec!["sysctl", "KSPP", "server", "workstation"],
         "kernel.modules_disabled",
         1
     )
-    .with_description("Permanently disable module loading once set. Any later attempt by an attacker (even with CAP_SYS_MODULE and root) to load a module is rejected by the kernel. This could prevent loading backdoor or vulnerable modules. For systems needing hot-add drivers, it prevents legitimate module loading.")
+    .with_description("Permanently disable module loading once set. Any later attempt by an attacker, even with CAP_SYS_MODULE and root, to load a module is rejected by the kernel. This could prevent loading backdoor or vulnerable modules. For systems needing hot-add drivers, it prevents legitimate module loading.")
     .register();
 
     // FIXME: only available on some kernels

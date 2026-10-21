@@ -39,8 +39,11 @@ use crate::{check, log_debug, log_error, utils};
 static DOCKER_INFO: OnceLock<DockerInfo> = OnceLock::new();
 static CONTAINERS: OnceLock<Containers> = OnceLock::new();
 
-pub type DockerInfo = Value;
-pub type Containers = HashMap<String, Value>;
+/// Docker info from `docker info -f json`.
+type DockerInfo = Value;
+
+/// Docker containers config from `docker container inspect <ids>`, key is ID.
+type Containers = HashMap<String, Value>;
 
 /// Skip when the docker is not installed.
 pub fn skip_no_docker() -> bool {

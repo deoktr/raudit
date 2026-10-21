@@ -27,7 +27,7 @@ const LD_SO_PRELOAD_PATH: &str = "/etc/ld.so.preload";
 static LD_SO_PRELOAD: OnceLock<LdSoPreload> = OnceLock::new();
 
 /// LD preload configuration from `/etc/ld.so.preload`.
-pub type LdSoPreload = String;
+type LdSoPreload = String;
 
 /// Get login.defs configuration by reading `/etc/ld.so.preload`.
 pub fn init_ld_so_preload() {

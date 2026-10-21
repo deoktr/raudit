@@ -26,7 +26,7 @@ use crate::{check, log_debug, log_error};
 static APT_CONFIG: OnceLock<AptConfig> = OnceLock::new();
 
 /// Kenel params configuration from apt.
-pub type AptConfig = HashMap<String, String>;
+type AptConfig = HashMap<String, String>;
 
 /// Parse `apt-config dump` command stdout.
 fn parse_apt_config(stdout: String) -> AptConfig {

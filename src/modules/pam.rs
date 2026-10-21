@@ -29,26 +29,26 @@ static PAM_CONFIG: OnceLock<PamConfig> = OnceLock::new();
 ///
 /// The key of the HashMap is the name of the service (name of the file).
 /// The value is a list of rules found in that file, or imported by it.
-pub type PamConfig = HashMap<String, Vec<PamRule>>;
+type PamConfig = HashMap<String, Vec<PamRule>>;
 
 /// A single PAM rule (line).
 #[derive(Debug)]
-pub struct PamRule {
+struct PamRule {
     /// rule interface, `auth|account|password|session`
-    pub rule_type: String,
+    rule_type: String,
 
     /// control flag, `required|requisite|sufficient|optional|include`
     /// it can also have complicated valid syntax such as:
     /// `[value1=action1 value2=action2 ...]`
-    pub control: String,
+    control: String,
 
     /// PAM module name, without the `.so` at the end
-    pub module: String,
+    module: String,
 
     /// library parameters the key and the value are separated by `=`
     /// if it has no value (is just a flag) then the value is empty
     #[allow(dead_code)]
-    pub settings: HashMap<String, String>,
+    settings: HashMap<String, String>,
 }
 
 /// Parse PAM rule line.

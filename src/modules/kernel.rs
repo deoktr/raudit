@@ -29,21 +29,48 @@ static KERNEL_PARAMS: OnceLock<KernelParams> = OnceLock::new();
 static KERNEL_VERSION: OnceLock<(u32, u32, u32)> = OnceLock::new();
 
 /// Kernel params from `/proc/cmdline`.
-pub type KernelParams = Vec<String>;
+type KernelParams = Vec<String>;
 
-/// Parse content for `/proc/cmdline`.
-fn parse_kernel_params(cmdline: String) -> KernelParams {
-    cmdline
-        .replace("\n", "")
-        // TODO: use shlex to split arguments, they could contain spaces in them
-        .split(" ")
-        .map(|line| line.to_string())
-        .collect()
+/// Parse content of `/proc/cmdline`.
+///
+/// Arguments are split like the kernel does in `next_arg()`: whitespace outside
+/// double quotes separates arguments, double quotes protect spaces and are
+/// stripped from the result.
+fn parse_kernel_params(cmdline: &str) -> KernelParams {
+    let mut params = Vec::new();
+    let mut current = String::new();
+    let mut in_quote = false;
+    let mut started = false;
+
+    for c in cmdline.chars() {
+        match c {
+            '"' => {
+                in_quote = !in_quote;
+                started = true;
+            }
+            c if c.is_ascii_whitespace() && !in_quote => {
+                if started {
+                    params.push(std::mem::take(&mut current));
+                    started = false;
+                }
+            }
+            c => {
+                current.push(c);
+                started = true;
+            }
+        }
+    }
+
+    if started {
+        params.push(current);
+    }
+
+    params
 }
 
 /// Get kernel params by reading from `/proc/cmdline`.
 fn get_kernel_params() -> Result<KernelParams, std::io::Error> {
-    Ok(parse_kernel_params(fs::read_to_string(CMDLINE_PATH)?))
+    Ok(parse_kernel_params(&fs::read_to_string(CMDLINE_PATH)?))
 }
 
 /// Init kernel params by reading from `/proc/cmdline`.
@@ -80,7 +107,8 @@ pub fn check_kernel_params(variable: &str) -> check::CheckReturn {
     }
 }
 
-/// Parse a kernel version string like "6.8.0-45-generic" into (major, minor, patch).
+/// Parse a kernel version string like "6.8.0-45-generic" into (major, minor,
+/// patch).
 pub fn parse_kernel_version(version: &str) -> Option<(u32, u32, u32)> {
     let numeric_part: String = version
         .chars()
@@ -115,22 +143,6 @@ pub fn init_kernel_version() {
     }
 }
 
-/// Skip check when the running kernel is not in the vulnerable range for CopyFail.
-/// Vulnerable range: >= 4.14.0 and <= 6.19.12.
-pub fn skip_not_vulnerable_copyfail() -> bool {
-    init_kernel_version();
-    match KERNEL_VERSION.get() {
-        Some(&(major, minor, patch)) => {
-            let version = (major, minor, patch);
-            !((4, 14, 0)..=(6, 19, 12)).contains(&version)
-        }
-        None => {
-            log_error!("kernel version not initialized, skipping CopyFail check");
-            true
-        }
-    }
-}
-
 /// Check if system needs a reboot.
 pub fn check_reboot_required() -> check::CheckReturn {
     // TODO: on RHEL use `needs-restarting -r` command, status 0 no reboot
@@ -142,6 +154,22 @@ pub fn check_reboot_required() -> check::CheckReturn {
         (check::CheckState::Pass, None)
     } else {
         (check::CheckState::Fail, None)
+    }
+}
+
+/// Skip check when the running kernel is not in the vulnerable range for
+/// CopyFail. Vulnerable range: >= 4.14.0 and <= 6.19.12.
+pub fn skip_not_vulnerable_copyfail() -> bool {
+    init_kernel_version();
+    match KERNEL_VERSION.get() {
+        Some(&(major, minor, patch)) => {
+            let version = (major, minor, patch);
+            !((4, 14, 0)..=(6, 19, 12)).contains(&version)
+        }
+        None => {
+            log_error!("kernel version not initialized, skipping CopyFail check");
+            true
+        }
     }
 }
 
@@ -166,6 +194,25 @@ mod tests {
         assert_eq!(parse_kernel_version("6.1"), Some((6, 1, 0)));
         assert_eq!(parse_kernel_version(""), None);
         assert_eq!(parse_kernel_version("abc"), None);
+    }
+
+    #[test]
+    fn test_parse_kernel_params() {
+        assert_eq!(
+            parse_kernel_params("BOOT_IMAGE=/vmlinuz ro quiet\n"),
+            ["BOOT_IMAGE=/vmlinuz", "ro", "quiet"]
+        );
+        assert_eq!(
+            parse_kernel_params(r#"mod.opt="a b c" pti=on"#),
+            ["mod.opt=a b c", "pti=on"]
+        );
+        assert_eq!(parse_kernel_params("  a=1   \t b=2  \n"), ["a=1", "b=2"]);
+        assert!(parse_kernel_params("").is_empty());
+        assert!(parse_kernel_params("   \n").is_empty());
+        assert_eq!(parse_kernel_params(r#""foo bar" baz"#), ["foo bar", "baz"]);
+        // backslash are literals
+        assert_eq!(parse_kernel_params(r#"a=b\ c"#), [r"a=b\", "c"]);
+        assert_eq!(parse_kernel_params(r#"a="b c"#), ["a=b c"]);
     }
 
     #[test]

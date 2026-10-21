@@ -27,7 +27,7 @@ use crate::{check, log_debug, log_error, utils};
 static SSHD_CONFIG: OnceLock<SshdConfig> = OnceLock::new();
 
 /// OpenSSH (sshd) configuration.
-pub type SshdConfig = HashMap<String, String>;
+type SshdConfig = HashMap<String, String>;
 
 /// Skip if sshd is not installed, or installed but not running.
 pub fn skip_no_sshd() -> bool {
