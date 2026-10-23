@@ -3,6 +3,9 @@ use crate::check::Severity;
 use crate::modules::{base, os, users};
 use crate::utils;
 
+// TODO: to be consistent with login_defs rules, check 'last_change', 'max_age',
+// 'warn_period'
+
 pub fn add_checks() {
     check::Check::new(
         "USR_001",

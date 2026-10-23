@@ -38,10 +38,10 @@ pub fn add_checks() {
                     Some(vl) => match vl.parse::<i32>() {
                         Ok(val) => {
                             // max value is 11
-                            if val >= VAL && val <= 11 {
+                            if (VAL..=11).contains(&val) {
                                 (check::CheckState::Pass, Some(format!("{}", val)))
                             } else {
-                                (check::CheckState::Fail, Some(format!("{} < {}", val, VAL)))
+                                (check::CheckState::Fail, Some(format!("{} not in [{}..11]", val, VAL)))
                             }
                         }
                         Err(err) => (check::CheckState::Warning, Some(err.to_string())),
@@ -54,7 +54,7 @@ pub fn add_checks() {
         vec![login_defs::init_login_defs],
     )
     .with_description("A higher cost factor multiplies the work an attacker must spend per guess in offline cracking. With yescrypt now consumed by PAM, this directly raises the bar for password cracking from any leaked /etc/shadow. Higher cost factors increase CPU time for password hashing during login and password changes, which may cause noticeable delays on systems with many concurrent logins.")
-    .with_fix("Set \"YESCRYPT_COST_FACTOR 5\" or higher up to 11 in \"/etc/login.defs\".")
+    .with_fix("Set \"YESCRYPT_COST_FACTOR 5\" or higher (up to 11) in \"/etc/login.defs\".")
     .with_link("https://github.com/linux-pam/linux-pam/issues/607")
     .register();
 
@@ -69,10 +69,10 @@ pub fn add_checks() {
                 Ok(value) => match value {
                     Some(vl) => match vl.parse::<i32>() {
                         Ok(val) => {
-                            if val <= VAL && val >= 0 {
+                            if (0..=VAL).contains(&val) {
                                 (check::CheckState::Pass, Some(format!("{}", val)))
                             } else {
-                                (check::CheckState::Fail, Some(format!("{} > {}", val, VAL)))
+                                (check::CheckState::Fail, Some(format!("{} not in [0..{}]", val, VAL)))
                             }
                         }
                         Err(err) => (check::CheckState::Warning, Some(err.to_string())),

@@ -25,7 +25,7 @@ use crate::{check, log_debug, log_error};
 
 static SYSCTL_CONFIG: OnceLock<SysctlConfig> = OnceLock::new();
 
-/// Kernel params configuration from sysctl.
+/// Kernel params configuration from `sysctl --all`.
 type SysctlConfig = HashMap<String, String>;
 
 /// Parse `sysctl --all` command stdout.
@@ -153,6 +153,18 @@ pub fn get_sysctl_i32_value(key: &str) -> Result<i32, String> {
     }
 }
 
+pub fn get_sysctl_str_value(key: &str) -> Result<String, String> {
+    let config = match SYSCTL_CONFIG.get() {
+        Some(c) => c,
+        None => return Err("sysctl configuration not initialized".to_string()),
+    };
+
+    match config.get(key) {
+        Some(value) => Ok(value.clone()),
+        None => Err("missing key".to_string()),
+    }
+}
+
 macro_rules! add_sysctl_check {
     ($id:tt, $severity:expr, $tags:expr, $key:tt, $val:tt) => {
         $crate::check::Check::new(
@@ -170,7 +182,73 @@ macro_rules! add_sysctl_check {
     };
 }
 
+macro_rules! add_sysctl_min_check {
+    ($id:tt, $severity:expr, $tags:expr, $key:tt, $val:tt) => {
+        $crate::check::Check::new(
+            $id,
+            format!("Ensure sysctl {:?} >= {:?}", $key, $val).as_str(),
+            $severity,
+            $tags,
+            || {
+                const VAL: i32 = $val;
+                match $crate::modules::sysctl::get_sysctl_i32_value($key) {
+                    Ok(value) => {
+                        if value >= VAL {
+                            ($crate::check::CheckState::Pass, Some(format!("{}", value)))
+                        } else {
+                            (
+                                $crate::check::CheckState::Fail,
+                                Some(format!("{} < {}", value, VAL)),
+                            )
+                        }
+                    }
+                    Err(err) => ($crate::check::CheckState::Warning, Some(err)),
+                }
+            },
+            vec![$crate::modules::sysctl::init_sysctl_config],
+        )
+        .with_fix(&format!(
+            "Add \"{} = {}\" (or higher) in a sysctl config file \"/etc/sysctl.d/*.conf\". Then run \"sysctl --system\".",
+            $key, $val,
+        ))
+    };
+}
+
+macro_rules! add_sysctl_max_check {
+    ($id:tt, $severity:expr, $tags:expr, $key:tt, $val:tt) => {
+        $crate::check::Check::new(
+            $id,
+            format!("Ensure sysctl {:?} <= {:?}", $key, $val).as_str(),
+            $severity,
+            $tags,
+            || {
+                const VAL: i32 = $val;
+                match $crate::modules::sysctl::get_sysctl_i32_value($key) {
+                    Ok(value) => {
+                        if value <= VAL {
+                            ($crate::check::CheckState::Pass, Some(format!("{}", value)))
+                        } else {
+                            (
+                                $crate::check::CheckState::Fail,
+                                Some(format!("{} > {}", value, VAL)),
+                            )
+                        }
+                    }
+                    Err(err) => ($crate::check::CheckState::Warning, Some(err)),
+                }
+            },
+            vec![$crate::modules::sysctl::init_sysctl_config],
+        )
+        .with_fix(&format!(
+            "Add \"{} = {}\" (or lower) in a sysctl config file \"/etc/sysctl.d/*.conf\". Then run \"sysctl --system\".",
+            $key, $val,
+        ))
+    };
+}
+
 pub(crate) use add_sysctl_check;
+pub(crate) use add_sysctl_max_check;
+pub(crate) use add_sysctl_min_check;
 
 #[cfg(test)]
 mod tests {

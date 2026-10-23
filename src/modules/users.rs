@@ -761,7 +761,7 @@ fn walk_dir_world_writable(dir: &Path, found: &mut Vec<String>, depth: u32) {
 
 /// Get the useradd configuration from `/etc/default/useradd`.
 fn get_useradd() -> Result<String, String> {
-    Ok(fs::read_to_string(USERADD_PATH).map_err(|e| e.to_string())?)
+    fs::read_to_string(USERADD_PATH).map_err(|e| e.to_string())
 }
 
 /// Verify that useradd is configured with `INACTIVE=0`.

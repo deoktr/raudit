@@ -265,7 +265,7 @@ pub fn check_luks_mount(target: &str) -> check::CheckReturn {
         }
     };
 
-    let dev = match resolve_device_name(&source) {
+    let dev = match resolve_device_name(source) {
         Some(dev) => dev,
         None => {
             return (

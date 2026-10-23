@@ -10,6 +10,20 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+## [0.36.1] - 2026-10-22
+
+### Added
+
+- Add sysctl checks `SYS_106` to `SYS_217`
+
+### Changed
+
+- Update ID, description, and severity of some existing sysctl rules
+
+### Fixed
+
+- Fix error in sysctl rules where some max values did not have min, add range
+
 ## [0.36.0] - 2026-10-21
 
 ### Added
@@ -131,6 +145,11 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 - Add `--no-skip` CLI flag to disable automatic check skipping
 
+[0.36.1]: https://github.com/deoktr/raudit/releases/tag/v0.36.1
+[0.36.0]: https://github.com/deoktr/raudit/releases/tag/v0.36.0
+[0.35.3]: https://github.com/deoktr/raudit/releases/tag/v0.35.3
+[0.35.2]: https://github.com/deoktr/raudit/releases/tag/v0.35.2
+[0.35.1]: https://github.com/deoktr/raudit/releases/tag/v0.35.1
 [0.35.0]: https://github.com/deoktr/raudit/releases/tag/v0.35.0
 [0.34.0]: https://github.com/deoktr/raudit/releases/tag/v0.34.0
 [0.33.0]: https://github.com/deoktr/raudit/releases/tag/v0.33.0

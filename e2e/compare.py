@@ -12,17 +12,32 @@ SKIP_MESSAGE = ["UPT_001", "AAR_004", "AUD_001"]
 TIMESTAMP_KEYS = ["time"]
 
 
-def strip_volatile(data):
-    """Recursively drop timestamps and blank the raudit version.
+def finding_uid(data) -> str | None:
+    """Return the uid of a finding, or None if data is not a finding."""
 
-    Timestamps and the raudit product version change on every run or release,
-    so they are stripped to keep baselines stable in git.
+    if not isinstance(data, dict):
+        return None
+    finding_info = data.get("finding_info")
+    if not isinstance(finding_info, dict):
+        return None
+    return finding_info.get("uid")
+
+
+def strip_volatile(data):
+    """Recursively drop timestamps, volatile messages and the raudit version.
+
+    Timestamps, the raudit product version and the messages of findings listed
+    in SKIP_MESSAGE (pids, uptime, ...) change on every run or release, so they
+    are stripped to keep baselines stable in git.
     """
 
     if isinstance(data, dict):
+        uid = finding_uid(data)
         out = {}
         for key, value in data.items():
             if key in TIMESTAMP_KEYS:
+                continue
+            if key == "message" and uid in SKIP_MESSAGE:
                 continue
             if key == "product" and isinstance(value, dict) and "version" in value:
                 value = {**value, "version": ""}
