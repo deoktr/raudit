@@ -98,6 +98,11 @@ cat >/etc/sysctl.d/zz-hardened-kernel.conf <<'SYSCTL_EOF'
 kernel.pid_max = 65536
 kernel.kptr_restrict = 2
 kernel.ftrace_enabled = 0
+kernel.print-fatal-signals = 0
+kernel.printk_devkmsg = off
+kernel.stack_tracer_enabled = 0
+kernel.ftrace_dump_on_oops = 0
+kernel.tracepoint_printk = 0
 kernel.randomize_va_space = 2
 kernel.dmesg_restrict = 1
 kernel.printk = 3	3	3	3
@@ -108,25 +113,43 @@ kernel.sysrq = 0
 kernel.kexec_load_disabled = 1
 kernel.unprivileged_bpf_disabled = 1
 kernel.unprivileged_userns_clone = 0
+kernel.apparmor_restrict_unprivileged_userns = 1
+kernel.apparmor_restrict_unprivileged_unconfined = 1
 net.core.bpf_jit_harden = 2
 net.core.bpf_jit_enable = 0
+net.core.bpf_jit_kallsyms = 0
 kernel.panic_on_oops = 1
 kernel.panic = -1
+kernel.panic_on_warn = 1
+kernel.unknown_nmi_panic = 1
+kernel.panic_on_unrecovered_nmi = 1
+kernel.panic_on_io_nmi = 1
+kernel.hardlockup_panic = 1
+kernel.panic_on_rcu_stall = 1
+kernel.nmi_watchdog = 1
+kernel.watchdog = 1
 kernel.yama.ptrace_scope = 3
 kernel.io_uring_disabled = 2
 kernel.core_pattern = |/bin/false
 kernel.core_uses_pid = 1
+kernel.ctrl-alt-del = 0
+kernel.shm_rmid_forced = 1
 vm.unprivileged_userfaultfd = 0
 vm.mmap_rnd_bits = 32
 vm.mmap_rnd_compat_bits = 16
 vm.mmap_min_addr = 65536
+vm.memfd_noexec = 2
+vm.legacy_va_layout = 0
+vm.oom_dump_tasks = 0
 dev.tty.ldisc_autoload = 0
 dev.tty.legacy_tiocsti = 0
+dev.hpet.max-user-freq = 64
 vm.max_map_count = 1048576
 vm.swappiness = 1
 kernel.oops_limit = 100
 kernel.warn_limit = 100
 user.max_user_namespaces = 31231
+abi.vsyscall32 = 0
 SYSCTL_EOF
 
 cat >/etc/sysctl.d/zz-hardened-fs.conf <<'SYSCTL_EOF'
@@ -136,6 +159,7 @@ fs.protected_regular = 2
 fs.protected_symlinks = 1
 fs.protected_hardlinks = 1
 fs.binfmt_misc.status = 0
+fs.verity.require_signatures = 1
 SYSCTL_EOF
 
 cat >/etc/sysctl.d/zz-hardened-ipv4.conf <<'SYSCTL_EOF'
@@ -157,20 +181,45 @@ net.ipv4.conf.default.rp_filter = 1
 net.ipv4.icmp_ignore_bogus_error_responses = 1
 net.ipv4.icmp_ratelimit = 100
 net.ipv4.icmp_ratemask = 88089
+net.ipv4.icmp_msgs_per_sec = 1000
+net.ipv4.icmp_msgs_burst = 50
 net.ipv4.tcp_syncookies = 1
 net.ipv4.conf.all.accept_local = 0
+net.ipv4.conf.default.accept_local = 0
 net.ipv4.conf.all.shared_media = 0
 net.ipv4.conf.default.shared_media = 0
 net.ipv4.conf.all.arp_filter = 1
+net.ipv4.conf.default.arp_filter = 1
 net.ipv4.conf.all.arp_ignore = 2
 net.ipv4.conf.default.arp_ignore = 2
 net.ipv4.conf.default.arp_announce = 2
 net.ipv4.conf.all.arp_announce = 2
+net.ipv4.conf.all.arp_accept = 0
+net.ipv4.conf.default.arp_accept = 0
 net.ipv4.conf.all.drop_gratuitous_arp = 1
+net.ipv4.conf.default.drop_gratuitous_arp = 1
 net.ipv4.conf.all.route_localnet = 0
+net.ipv4.conf.default.route_localnet = 0
+net.ipv4.conf.all.proxy_arp = 0
+net.ipv4.conf.default.proxy_arp = 0
+net.ipv4.conf.all.proxy_arp_pvlan = 0
+net.ipv4.conf.default.proxy_arp_pvlan = 0
+net.ipv4.conf.all.bc_forwarding = 0
+net.ipv4.conf.default.bc_forwarding = 0
+net.ipv4.conf.all.bootp_relay = 0
+net.ipv4.conf.default.bootp_relay = 0
+net.ipv4.conf.all.disable_policy = 0
+net.ipv4.conf.default.disable_policy = 0
+net.ipv4.conf.all.disable_xfrm = 0
+net.ipv4.conf.default.disable_xfrm = 0
+net.ipv4.conf.all.drop_unicast_in_l2_multicast = 1
+net.ipv4.conf.default.drop_unicast_in_l2_multicast = 1
 net.ipv4.ip_local_port_range = 32768	65535
+net.ipv4.ping_group_range = 1	0
 net.ipv4.tcp_rfc1337 = 1
 net.ipv4.tcp_timestamps = 0
+net.ipv4.tcp_fastopen = 0
+net.ipv4.ipfrag_time = 15
 SYSCTL_EOF
 
 cat >/etc/sysctl.d/zz-hardened-ipv6.conf <<'SYSCTL_EOF'
@@ -188,21 +237,67 @@ net.ipv6.conf.all.accept_ra_rtr_pref = 0
 net.ipv6.conf.default.accept_ra_rtr_pref = 0
 net.ipv6.conf.all.accept_ra_defrtr = 0
 net.ipv6.conf.default.accept_ra_defrtr = 0
+net.ipv6.conf.all.accept_ra_from_local = 0
+net.ipv6.conf.default.accept_ra_from_local = 0
 net.ipv6.conf.all.autoconf = 0
 net.ipv6.conf.default.autoconf = 0
 net.ipv6.conf.all.max_addresses = 1
 net.ipv6.conf.default.max_addresses = 1
 net.ipv6.conf.all.use_tempaddr = 2
 net.ipv6.conf.default.use_tempaddr = 2
+net.ipv6.conf.all.addr_gen_mode = 2
+net.ipv6.conf.default.addr_gen_mode = 2
+net.ipv6.conf.all.accept_dad = 1
+net.ipv6.conf.default.accept_dad = 1
+net.ipv6.conf.all.enhanced_dad = 1
+net.ipv6.conf.default.enhanced_dad = 1
+net.ipv6.conf.all.accept_untracked_na = 0
+net.ipv6.conf.default.accept_untracked_na = 0
+net.ipv6.conf.all.drop_unsolicited_na = 1
+net.ipv6.conf.default.drop_unsolicited_na = 1
+net.ipv6.conf.all.proxy_ndp = 0
+net.ipv6.conf.default.proxy_ndp = 0
+net.ipv6.conf.all.suppress_frag_ndisc = 1
+net.ipv6.conf.default.suppress_frag_ndisc = 1
+net.ipv6.conf.all.disable_policy = 0
+net.ipv6.conf.default.disable_policy = 0
+net.ipv6.conf.all.drop_unicast_in_l2_multicast = 1
+net.ipv6.conf.default.drop_unicast_in_l2_multicast = 1
+net.ipv6.conf.all.seg6_enabled = 0
+net.ipv6.conf.default.seg6_enabled = 0
+net.ipv6.conf.all.rpl_seg_enabled = 0
+net.ipv6.conf.default.rpl_seg_enabled = 0
+net.ipv6.conf.all.ioam6_enabled = 0
+net.ipv6.conf.default.ioam6_enabled = 0
 net.ipv6.icmp.echo_ignore_all = 1
 net.ipv6.icmp.echo_ignore_anycast = 1
 net.ipv6.icmp.echo_ignore_multicast = 1
+net.ipv6.icmp.ratelimit = 100
+net.ipv6.max_dst_opts_number = 8
+net.ipv6.max_hbh_opts_number = 8
+net.ipv6.max_dst_opts_length = 65536
+net.ipv6.max_hbh_length = 65536
+net.ipv6.ip6frag_time = 15
+SYSCTL_EOF
+
+cat >/etc/sysctl.d/zz-hardened-net.conf <<'SYSCTL_EOF'
+net.core.devconf_inherit_init_net = 1
+net.core.fb_tunnels_only_for_init_net = 1
+net.core.xfrm_larval_drop = 1
+net.mptcp.enabled = 0
+net.netfilter.nf_conntrack_tcp_be_liberal = 0
+net.netfilter.nf_conntrack_tcp_ignore_invalid_rst = 0
+net.netfilter.nf_conntrack_tcp_loose = 0
+net.netfilter.nf_conntrack_checksum = 1
 SYSCTL_EOF
 
 rm -f /etc/sysctl.d/99-hardened-kernel.conf \
     /etc/sysctl.d/99-hardened-fs.conf \
     /etc/sysctl.d/99-hardened-ipv4.conf \
     /etc/sysctl.d/99-hardened-ipv6.conf
+
+# the net.netfilter.* keys only exist while the conntrack module is loaded
+modprobe nf_conntrack 2>/dev/null || true
 
 sysctl --system >/dev/null || true
 
@@ -618,5 +713,10 @@ chmod 0600 /etc/crontab 2>/dev/null || true
 systemctl enable apparmor >/dev/null 2>&1 || true
 systemctl start apparmor >/dev/null 2>&1 || true
 # aa-enforce is not applied: it blocks raudit from running its probe commands
+
+# runtime-only freeze, everything needed by the test is loaded at this point.
+# it must not go in a sysctl.d file: applied at boot it would block the module
+# loading the boot itself needs
+sysctl -w kernel.modules_disabled=1
 
 echo "HARDENED SETUP COMPLETE"

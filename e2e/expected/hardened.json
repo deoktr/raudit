@@ -57799,10 +57799,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 != 1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -57815,8 +57814,8 @@
       },
       "severity_id": 4,
       "severity": "High",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -58118,10 +58117,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "\"on\" != \"off\"",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -58134,8 +58132,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -58366,10 +58364,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 != 1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -58382,8 +58379,8 @@
       },
       "severity_id": 3,
       "severity": "Medium",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -58402,10 +58399,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 != 1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -58418,8 +58414,8 @@
       },
       "severity_id": 3,
       "severity": "Medium",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -58438,10 +58434,9 @@
         "standards": [
           "DISA STIG"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 != 1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -58454,8 +58449,8 @@
       },
       "severity_id": 3,
       "severity": "Medium",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -58474,10 +58469,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 != 1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -58490,8 +58484,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -58510,10 +58504,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 != 1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -58526,8 +58519,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -58546,10 +58539,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 != 1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -58562,8 +58554,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -58617,10 +58609,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 != 1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -58633,8 +58624,8 @@
       },
       "severity_id": 1,
       "severity": "Info",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -58653,10 +58644,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 != 1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -58669,8 +58659,8 @@
       },
       "severity_id": 1,
       "severity": "Info",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -58864,10 +58854,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 != 1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -58880,8 +58869,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -58900,10 +58889,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "1 != 0",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -58916,8 +58904,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -59146,10 +59134,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 != 1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -59162,8 +59149,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -59427,10 +59414,10 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 < 1",
+      "message": "2",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -59443,8 +59430,8 @@
       },
       "severity_id": 3,
       "severity": "Medium",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -59463,10 +59450,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "1 != 0",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -59479,8 +59465,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -59999,10 +59985,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "1 != 0",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -60015,8 +60000,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -60071,10 +60056,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 != 1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -60087,8 +60071,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -60107,10 +60091,10 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 < 1",
+      "message": "1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -60123,8 +60107,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -61585,10 +61569,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 != 1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -61601,8 +61584,8 @@
       },
       "severity_id": 4,
       "severity": "High",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -61621,10 +61604,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 != 1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -61637,8 +61619,8 @@
       },
       "severity_id": 4,
       "severity": "High",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -61937,10 +61919,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 != 1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -61953,8 +61934,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -61973,10 +61954,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 != 1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -61989,8 +61969,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -62292,10 +62272,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "1 != 0",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -62308,8 +62287,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -62400,10 +62379,10 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "30 > 15",
+      "message": "15",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -62416,8 +62395,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -63559,10 +63538,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 != 1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -63575,8 +63553,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -63595,10 +63573,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 != 1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -63611,8 +63588,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -63701,10 +63678,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 != 1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -63717,8 +63693,8 @@
       },
       "severity_id": 3,
       "severity": "Medium",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -63737,10 +63713,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 != 1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -63753,8 +63728,8 @@
       },
       "severity_id": 3,
       "severity": "Medium",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -63773,10 +63748,10 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 < 1",
+      "message": "1",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -63789,8 +63764,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -64055,10 +64030,10 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 < 2",
+      "message": "2",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -64071,8 +64046,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -64091,10 +64066,10 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "0 < 2",
+      "message": "2",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -64107,8 +64082,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -64127,10 +64102,10 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "1000 is not in [1..100]",
+      "message": "100",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -64143,8 +64118,8 @@
       },
       "severity_id": 4,
       "severity": "High",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -64270,10 +64245,10 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "2147483647 > 65536",
+      "message": "65536",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -64286,8 +64261,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -64306,10 +64281,10 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "2147483647 > 65536",
+      "message": "65536",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -64322,8 +64297,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -64342,10 +64317,10 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "60 > 15",
+      "message": "15",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -64358,8 +64333,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -64624,10 +64599,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 2,
-        "status": "Warning"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "missing key \"net.netfilter.nf_conntrack_tcp_be_liberal\"",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -64640,8 +64614,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 0,
-      "status": "Unknown"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -64660,10 +64634,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 2,
-        "status": "Warning"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "missing key \"net.netfilter.nf_conntrack_tcp_ignore_invalid_rst\"",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -64676,8 +64649,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 0,
-      "status": "Unknown"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -64696,10 +64669,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 2,
-        "status": "Warning"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "missing key \"net.netfilter.nf_conntrack_tcp_loose\"",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -64712,8 +64684,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 0,
-      "status": "Unknown"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -64732,10 +64704,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 2,
-        "status": "Warning"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "missing key \"net.netfilter.nf_conntrack_checksum\"",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -64748,8 +64719,8 @@
       },
       "severity_id": 2,
       "severity": "Low",
-      "status_id": 0,
-      "status": "Unknown"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -64768,10 +64739,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 2,
-        "status": "Warning"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "missing key \"net.netfilter.nf_conntrack_log_invalid\"",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -64784,8 +64754,8 @@
       },
       "severity_id": 1,
       "severity": "Info",
-      "status_id": 0,
-      "status": "Unknown"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -64839,10 +64809,9 @@
         "standards": [
           "raudit"
         ],
-        "status_id": 3,
-        "status": "Fail"
+        "status_id": 1,
+        "status": "Pass"
       },
-      "message": "1 != 0",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -64855,8 +64824,8 @@
       },
       "severity_id": 3,
       "severity": "Medium",
-      "status_id": 1,
-      "status": "New"
+      "status_id": 4,
+      "status": "Resolved"
     },
     {
       "activity_id": 1,
@@ -66192,15 +66161,15 @@
   ],
   "stats": {
     "total": 1859,
-    "pass": 1384,
-    "fail": 412,
-    "warning": 63,
+    "pass": 1425,
+    "fail": 376,
+    "warning": 58,
     "unknown": 0,
     "fail_critical": 2,
-    "fail_high": 97,
-    "fail_medium": 201,
-    "fail_low": 108,
-    "fail_informational": 4
+    "fail_high": 93,
+    "fail_medium": 194,
+    "fail_low": 85,
+    "fail_informational": 2
   },
   "metadata": {
     "version": "1.7.0",
