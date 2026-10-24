@@ -17,64 +17,58 @@
  */
 
 use std::fs;
-use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_error};
+use crate::check::{self, State};
 
 const UPTIME_PATH: &str = "/proc/uptime";
 
-static UPTIME: OnceLock<u64> = OnceLock::new();
+static UPTIME: State<u64> = State::new("uptime");
 
 /// Get system uptime by reading `/proc/uptime`.
 fn get_uptime() -> Result<u64, String> {
-    match fs::read_to_string(UPTIME_PATH)
-        .map_err(|e| e.to_string())?
-        .split_once(" ")
-    {
-        Some((uptime, _idle)) => {
-            // remove the decimals before parsing to u64
-            uptime[..uptime.len() - 3]
-                .parse::<u64>()
-                .map_err(|e| e.to_string())
-        }
-        None => Err("invalid uptime file format".to_string()),
-    }
+    let content = fs::read_to_string(UPTIME_PATH)
+        .map_err(|err| format!("failed to read {}: {}", UPTIME_PATH, err))?;
+
+    let Some((uptime, _idle)) = content.split_once(" ") else {
+        return Err(format!(
+            "invalid {} file format: {:?}",
+            UPTIME_PATH,
+            content.trim()
+        ));
+    };
+
+    // remove the decimals before parsing to u64
+    let seconds = uptime
+        .split_once(".")
+        .map(|(seconds, _decimals)| seconds)
+        .unwrap_or(uptime);
+
+    seconds.parse::<u64>().map_err(|err| {
+        format!(
+            "failed to parse {} value {:?}: {}",
+            UPTIME_PATH, uptime, err
+        )
+    })
 }
 
 /// Init system uptime by reading `/proc/uptime`.
 pub fn init_uptime() {
-    if UPTIME.get().is_some() {
-        return;
-    }
-
-    match get_uptime() {
-        Ok(u) => {
-            UPTIME.get_or_init(|| u);
-            log_debug!("initialized uptime");
-        }
-        Err(err) => log_error!("failed to initialize uptime: {}", err),
-    };
+    UPTIME.init(get_uptime);
 }
 
 /// Ensure uptime is bellow the maximum allowed.
 pub fn uptime_bellow(max_uptime: u64) -> check::CheckReturn {
-    match UPTIME.get() {
-        Some(uptime) => {
-            if uptime < &max_uptime {
-                (
-                    check::CheckState::Pass,
-                    Some(format!("{} h", uptime / 3600)),
-                )
-            } else {
-                (
-                    check::CheckState::Fail,
-                    Some(format!("{} h", uptime / 3600)),
-                )
-            }
+    UPTIME.with(|uptime| {
+        if uptime < &max_uptime {
+            (
+                check::CheckState::Pass,
+                Some(format!("{} h", uptime / 3600)),
+            )
+        } else {
+            (
+                check::CheckState::Fail,
+                Some(format!("{} h", uptime / 3600)),
+            )
         }
-        None => (
-            check::CheckState::Warning,
-            Some("uptime not initialized".to_string()),
-        ),
-    }
+    })
 }

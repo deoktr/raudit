@@ -134,7 +134,7 @@ fn check_mode(mode: u32, perms: u32, matching: ModeMatch) -> check::CheckReturn 
         (
             check::CheckState::Fail,
             Some(format!(
-                "wanted \"{:o}\"{} got \"{:o}\"",
+                "wanted \"{:03o}\"{} got \"{:03o}\"",
                 perms,
                 matching.hint(),
                 mode
@@ -167,7 +167,7 @@ fn entry_mode(
 ) -> check::CheckReturn {
     let mode = metadata.mode() & 0o777;
 
-    log_trace!("checking entry mode for {:?}, got: {:o}", path, mode);
+    log_trace!("checking entry mode for {:?}, got: {:03o}", path, mode);
 
     check_mode(mode, perms, matching)
 }

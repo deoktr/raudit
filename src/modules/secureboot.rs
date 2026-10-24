@@ -42,7 +42,7 @@ pub fn is_secureboot_enabled() -> check::CheckReturn {
             } else {
                 (
                     check::CheckState::Warning,
-                    Some("Invalid SecureBoot variable format".to_string()),
+                    Some("invalid SecureBoot variable format".to_string()),
                 )
             }
         }

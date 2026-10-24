@@ -18,13 +18,12 @@
 
 use std::collections::HashMap;
 use std::fs;
-use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_error};
+use crate::check::{self, State};
 
 const LOGIN_DEFS_PATH: &str = "/etc/login.defs";
 
-static LOGIN_DEFS_CONFIG: OnceLock<LoginDefsConfig> = OnceLock::new();
+static LOGIN_DEFS_CONFIG: State<LoginDefsConfig> = State::new("login.defs config");
 
 /// Login.defs configuration.
 type LoginDefsConfig = HashMap<String, String>;
@@ -43,33 +42,20 @@ fn parse_login_defs(login_defs: String) -> LoginDefsConfig {
 }
 
 /// Get login.defs configuration by reading `/etc/login.defs`.
-fn get_login_defs() -> Result<LoginDefsConfig, std::io::Error> {
-    Ok(parse_login_defs(fs::read_to_string(LOGIN_DEFS_PATH)?))
+fn get_login_defs() -> Result<LoginDefsConfig, String> {
+    let content = fs::read_to_string(LOGIN_DEFS_PATH)
+        .map_err(|err| format!("failed to read {}: {}", LOGIN_DEFS_PATH, err))?;
+    Ok(parse_login_defs(content))
 }
 
 /// Init login.defs configuration by reading `/etc/login.defs`.
 pub fn init_login_defs() {
-    if LOGIN_DEFS_CONFIG.get().is_some() {
-        return;
-    }
-
-    match get_login_defs() {
-        Ok(c) => {
-            LOGIN_DEFS_CONFIG.get_or_init(|| c);
-            log_debug!("initialized login.defs");
-        }
-        Err(err) => log_error!("failed to initialize login defs: {}", err),
-    }
+    LOGIN_DEFS_CONFIG.init(get_login_defs);
 }
 
 /// Check login.defs value from a collected configuration.
 pub fn get_login_defs_value(key: &str) -> Result<Option<String>, String> {
-    let login_defs = match LOGIN_DEFS_CONFIG.get() {
-        Some(c) => c,
-        None => return Err("login defs configuration not initialized".to_string()),
-    };
-
-    Ok(login_defs.get(key).cloned())
+    Ok(LOGIN_DEFS_CONFIG.try_get()?.get(key).cloned())
 }
 
 /// Check login.defs value from a collected configuration.

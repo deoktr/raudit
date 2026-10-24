@@ -18,9 +18,9 @@
 
 use std::fs;
 use std::path::Path;
-use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_error, log_trace};
+use crate::check::{self, State};
+use crate::log_trace;
 
 const PROC_MOUNTS_PATH: &str = "/proc/mounts";
 
@@ -30,7 +30,7 @@ const SYS_BLOCK_PATH: &str = "/sys/block";
 /// infinite loops on unexpected sysfs layouts.
 const MAX_DEVICE_DEPTH: usize = 16;
 
-static MOUNT_CONFIG: OnceLock<MountConfig> = OnceLock::new();
+static MOUNT_CONFIG: State<MountConfig> = State::new("mounts");
 
 /// List of mount configurations.
 type MountConfig = Vec<Mount>;
@@ -39,10 +39,10 @@ type MountConfig = Vec<Mount>;
 type MountOptions = Vec<String>;
 
 /// A single mount configuration.
-#[allow(dead_code)]
 struct Mount {
     source: String,
     target: String,
+    #[allow(dead_code)]
     fs_type: String,
     options: MountOptions,
 }
@@ -118,69 +118,38 @@ fn parse_mounts(mounts: String) -> MountConfig {
 }
 
 /// Get mounts configuration by reading `/proc/mounts`.
-fn get_mounts() -> Result<MountConfig, std::io::Error> {
-    Ok(parse_mounts(fs::read_to_string(PROC_MOUNTS_PATH)?))
+fn get_mounts() -> Result<MountConfig, String> {
+    Ok(parse_mounts(fs::read_to_string(PROC_MOUNTS_PATH).map_err(
+        |err| format!("failed to read {}: {}", PROC_MOUNTS_PATH, err),
+    )?))
 }
 
 /// Init mounts configuration by reading `/proc/mounts`.
 pub fn init_mounts() {
-    if MOUNT_CONFIG.get().is_some() {
-        return;
-    }
-
-    match get_mounts() {
-        Ok(m) => {
-            MOUNT_CONFIG.get_or_init(|| m);
-            log_debug!("initialized mounts");
-        }
-        Err(err) => log_error!("failed to initialize mount config: {}", err),
-    }
+    MOUNT_CONFIG.init(get_mounts);
 }
 
 /// Get mount from a collected configuration.
-fn get_mount(mounts: &'static MountConfig, target: &str) -> Option<&'static Mount> {
-    mounts
-        .iter()
-        .find(|&mount| mount.target == target)
-        .map(|v| v as _)
+fn get_mount<'a>(mounts: &'a MountConfig, target: &str) -> Option<&'a Mount> {
+    mounts.iter().find(|mount| mount.target == target)
 }
 
 /// Ensure that mount exist.
 pub fn check_mount_present(target: &str) -> check::CheckReturn {
-    let mounts = match MOUNT_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("mount configuration not initialized".to_string()),
-            );
-        }
-    };
-
-    match get_mount(mounts, target) {
+    MOUNT_CONFIG.with(|mounts| match get_mount(mounts, target) {
         Some(_) => (check::CheckState::Pass, None),
         None => (check::CheckState::Fail, None),
-    }
+    })
 }
 
 /// Get mount options from a collected configuration.
-fn get_mount_options(mounts: &'static MountConfig, target: &str) -> Option<MountOptions> {
+fn get_mount_options(mounts: &MountConfig, target: &str) -> Option<MountOptions> {
     get_mount(mounts, target).map(|mount| mount.options.clone())
 }
 
 /// Ensure that option is set on mount target.
 pub fn check_mount_option(target: &str, option: &str) -> check::CheckReturn {
-    let mounts = match MOUNT_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("mount configuration not initialized".to_string()),
-            );
-        }
-    };
-
-    match get_mount_options(mounts, target) {
+    MOUNT_CONFIG.with(|mounts| match get_mount_options(mounts, target) {
         Some(options) => {
             if options.contains(&option.to_string()) {
                 (check::CheckState::Pass, None)
@@ -192,7 +161,7 @@ pub fn check_mount_option(target: &str, option: &str) -> check::CheckReturn {
             check::CheckState::Fail,
             Some("not a mount point".to_string()),
         ),
-    }
+    })
 }
 
 /// Resolve a device path to its `/sys/block` name, following symlinks like
@@ -245,41 +214,33 @@ fn device_is_luks(dev: &str, depth: usize) -> bool {
 
 /// Ensure the block device backing a mount target is encrypted with LUKS.
 pub fn check_luks_mount(target: &str) -> check::CheckReturn {
-    let mounts = match MOUNT_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("mount configuration not initialized".to_string()),
-            );
-        }
-    };
+    MOUNT_CONFIG.with(|mounts| {
+        let source = match get_mount(mounts, target) {
+            Some(mount) => &mount.source,
+            None => {
+                return (
+                    check::CheckState::Warning,
+                    Some(format!("target {} is not a mount", target)),
+                );
+            }
+        };
 
-    let source = match get_mount(mounts, target) {
-        Some(mount) => &mount.source,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some(format!("target {} is not a mount", target)),
-            );
-        }
-    };
+        let dev = match resolve_device_name(source) {
+            Some(dev) => dev,
+            None => {
+                return (
+                    check::CheckState::Warning,
+                    Some(format!("failed to resolve device {}", source)),
+                );
+            }
+        };
 
-    let dev = match resolve_device_name(source) {
-        Some(dev) => dev,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some(format!("failed to resolve device {}", source)),
-            );
+        if device_is_luks(&dev, 0) {
+            (check::CheckState::Pass, None)
+        } else {
+            (check::CheckState::Fail, None)
         }
-    };
-
-    if device_is_luks(&dev, 0) {
-        (check::CheckState::Pass, None)
-    } else {
-        (check::CheckState::Fail, None)
-    }
+    })
 }
 
 #[cfg(test)]

@@ -19,9 +19,11 @@
 mod execution;
 mod filter;
 mod output;
+mod state;
 mod types;
 
 pub use execution::*;
 pub use filter::*;
 pub use output::*;
+pub use state::*;
 pub use types::*;

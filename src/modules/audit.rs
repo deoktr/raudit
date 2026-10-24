@@ -22,18 +22,16 @@
 use core::str;
 use std::collections::HashMap;
 use std::fs;
-use std::io;
 use std::process;
 use std::process::Stdio;
-use std::sync::OnceLock;
 
 use crate::check;
-use crate::{log_debug, log_error};
+use crate::check::State;
 
 const AUDIT_CFG_PATH: &str = "/etc/audit/auditd.conf";
 
-static AUDIT_CONFIG: OnceLock<AuditConfig> = OnceLock::new();
-static AUDIT_RULES: OnceLock<AuditRules> = OnceLock::new();
+static AUDIT_CONFIG: State<AuditConfig> = State::new("audit config");
+static AUDIT_RULES: State<AuditRules> = State::new("audit rules");
 
 /// Audit configuration from `/etc/audit/auditd.conf`.
 type AuditConfig = HashMap<String, String>;
@@ -48,7 +46,7 @@ type AuditConfig = HashMap<String, String>;
 type AuditRules = Vec<String>;
 
 /// Get audit rules by running `auditctl -l`.
-fn get_audit_rules() -> Result<AuditRules, std::io::Error> {
+fn get_audit_rules() -> Result<AuditRules, String> {
     // FIXME: running `auditctl -l` is not enought to gather all audit rules!
     // for example `-e 2` is missing from the output
     // also note that some command are defined differently from the rule file
@@ -57,15 +55,20 @@ fn get_audit_rules() -> Result<AuditRules, std::io::Error> {
     cmd.stdin(Stdio::null());
     cmd.args(vec!["-l"]);
 
-    let output = cmd.output()?;
-    if let Ok(stderr) = str::from_utf8(&output.stderr)
-        && stderr == "You must be root to run this program.\n"
-    {
-        return Err(io::Error::new(
-            io::ErrorKind::PermissionDenied,
-            "failed to initialize audit rules, root required",
-        ));
-    };
+    let output = cmd
+        .output()
+        .map_err(|err| format!("failed to run \"auditctl -l\": {}", err))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let stderr = stderr.trim();
+
+        return Err(if stderr.is_empty() {
+            format!("\"auditctl -l\" {}", output.status)
+        } else {
+            format!("\"auditctl -l\" {}: {}", output.status, stderr)
+        });
+    }
 
     // one line is one rule, no need for parsing
     Ok(String::from_utf8_lossy(&output.stdout)
@@ -76,17 +79,7 @@ fn get_audit_rules() -> Result<AuditRules, std::io::Error> {
 
 /// Init audit rules by running `auditctl -l`.
 pub fn init_audit_rules() {
-    if AUDIT_RULES.get().is_some() {
-        return;
-    }
-
-    match get_audit_rules() {
-        Ok(c) => {
-            AUDIT_RULES.get_or_init(|| c);
-            log_debug!("initialized audit rules");
-        }
-        Err(err) => log_error!("failed to initialize audit rules: {}", err),
-    }
+    AUDIT_RULES.init(get_audit_rules);
 }
 
 /// Parse content of `/etc/audit/auditd.conf`.
@@ -103,57 +96,31 @@ fn parse_audit_config(login_defs: String) -> AuditConfig {
 }
 
 /// Get audit configuration by reading `/etc/audit/auditd.conf`.
-fn get_audit_config() -> Result<AuditConfig, io::Error> {
-    Ok(parse_audit_config(fs::read_to_string(AUDIT_CFG_PATH)?))
+fn get_audit_config() -> Result<AuditConfig, String> {
+    let content = fs::read_to_string(AUDIT_CFG_PATH)
+        .map_err(|err| format!("failed to read {}: {}", AUDIT_CFG_PATH, err))?;
+    Ok(parse_audit_config(content))
 }
 
 /// Init audit configuration by reading `/etc/audit/auditd.conf`.
 pub fn init_audit_config() {
-    if AUDIT_CONFIG.get().is_some() {
-        return;
-    }
-
-    match get_audit_config() {
-        Ok(c) => {
-            AUDIT_CONFIG.get_or_init(|| c);
-            log_debug!("initialized audit config");
-        }
-        Err(err) => log_error!("failed to initialize audit config: {}", err),
-    }
+    AUDIT_CONFIG.init(get_audit_config);
 }
 
 /// Check audit rule.
 pub fn check_audit_rule(rule: &str) -> check::CheckReturn {
-    let audit_rules = match AUDIT_RULES.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("audit rules not initialized".to_string()),
-            );
+    AUDIT_RULES.with(|audit_rules| {
+        if audit_rules.contains(&rule.to_string()) {
+            (check::CheckState::Pass, None)
+        } else {
+            (check::CheckState::Fail, Some("not present".to_string()))
         }
-    };
-
-    if audit_rules.contains(&rule.to_string()) {
-        (check::CheckState::Pass, None)
-    } else {
-        (check::CheckState::Fail, Some("not present".to_string()))
-    }
+    })
 }
 
 /// Check audit configuration value.
 pub fn check_audit_config(key: &str, value: &str) -> check::CheckReturn {
-    let audit_config = match AUDIT_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("audit rules not initialized".to_string()),
-            );
-        }
-    };
-
-    match audit_config.get(key) {
+    AUDIT_CONFIG.with(|audit_config| match audit_config.get(key) {
         Some(conf_value) => {
             if conf_value == value {
                 (check::CheckState::Pass, None)
@@ -168,5 +135,5 @@ pub fn check_audit_config(key: &str, value: &str) -> check::CheckReturn {
             check::CheckState::Fail,
             Some(format!("key {:?} not present", key)),
         ),
-    }
+    })
 }

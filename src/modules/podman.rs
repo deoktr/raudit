@@ -30,12 +30,12 @@ use serde_json::Value;
 use std::collections::HashMap;
 use std::process;
 use std::process::Stdio;
-use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_error, utils};
+use crate::check::{self, State};
+use crate::{log_debug, utils};
 
-static PODMAN_INFO: OnceLock<PodmanInfo> = OnceLock::new();
-static CONTAINERS: OnceLock<Containers> = OnceLock::new();
+static PODMAN_INFO: State<PodmanInfo> = State::new("podman info");
+static CONTAINERS: State<Containers> = State::new("podman containers");
 
 /// Podman info from `podman info -f json`.
 type PodmanInfo = Value;
@@ -54,25 +54,29 @@ fn get_podman_info() -> Result<PodmanInfo, String> {
     cmd.stdin(Stdio::null());
     cmd.args(vec!["info", "-f", "json"]);
 
-    let output = cmd.output().map_err(|e| e.to_string())?;
-    let stdout = str::from_utf8(&output.stdout).map_err(|e| e.to_string())?;
-    let config: PodmanInfo = serde_json::from_str(stdout).map_err(|e| e.to_string())?;
-    Ok(config)
+    let output = cmd
+        .output()
+        .map_err(|e| format!("failed to run \"podman info -f json\": {}", e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let stderr = stderr.trim();
+
+        return Err(if stderr.is_empty() {
+            format!("\"podman info -f json\" {}", output.status)
+        } else {
+            format!("\"podman info -f json\" {}: {}", output.status, stderr)
+        });
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    serde_json::from_str(&stdout)
+        .map_err(|e| format!("failed to parse \"podman info -f json\": {}", e))
 }
 
 /// Init podman info by running `podman info -f json`.
 pub fn init_podman_info() {
-    if PODMAN_INFO.get().is_some() {
-        return;
-    }
-
-    match get_podman_info() {
-        Ok(c) => {
-            PODMAN_INFO.get_or_init(|| c);
-            log_debug!("initialized podman info");
-        }
-        Err(err) => log_error!("failed to initialize podman info: {}", err),
-    }
+    PODMAN_INFO.init(get_podman_info);
 }
 
 /// Get container inspect by running `podman ps --format '{{.ID}}'` and
@@ -82,8 +86,25 @@ fn get_containers_inspect() -> Result<Containers, String> {
     podman_ps.stdin(Stdio::null());
     podman_ps.args(vec!["ps", "--format", "{{.ID}}"]);
 
-    let output = podman_ps.output().map_err(|e| e.to_string())?;
-    let stdout = str::from_utf8(&output.stdout).map_err(|e| e.to_string())?;
+    let output = podman_ps
+        .output()
+        .map_err(|e| format!("failed to run `podman ps --format \"{{.ID}}\"`: {}", e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let stderr = stderr.trim();
+
+        return Err(if stderr.is_empty() {
+            format!("`podman ps --format \"{{.ID}}\"` {}", output.status)
+        } else {
+            format!(
+                "`podman ps --format \"{{.ID}}\"` {}: {}",
+                output.status, stderr
+            )
+        });
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
     let ids: Vec<&str> = stdout.lines().collect();
 
     if ids.is_empty() {
@@ -95,14 +116,35 @@ fn get_containers_inspect() -> Result<Containers, String> {
 
     let mut args: Vec<&str> = vec!["inspect"];
     args.extend(ids);
-    podman_inspect.args(args);
+    podman_inspect.args(args.clone());
 
-    let output = podman_inspect.output().map_err(|e| e.to_string())?;
-    let stdout = str::from_utf8(&output.stdout).map_err(|e| e.to_string())?;
-    let inspect: Value = serde_json::from_str(stdout).map_err(|e| e.to_string())?;
+    let output = podman_inspect
+        .output()
+        .map_err(|e| format!("failed to run `podman {}`: {}", args.join(" "), e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let stderr = stderr.trim();
+
+        return Err(if stderr.is_empty() {
+            format!("`podman {}` {}", args.join(" "), output.status)
+        } else {
+            format!("`podman {}` {}: {}", args.join(" "), output.status, stderr)
+        });
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let inspect: Value = serde_json::from_str(&stdout)
+        .map_err(|e| format!("failed to parse `podman {}`: {}", args.join(" "), e))?;
+
     let inspects = match inspect.as_array() {
         Some(i) => i,
-        None => return Err("failed to parse \"podman inspect\" json: not an array".to_string()),
+        None => {
+            return Err(format!(
+                "failed to parse `podman {}`: not a json array",
+                args.join(" ")
+            ));
+        }
     };
 
     let mut containers: Containers = Containers::new();
@@ -117,28 +159,13 @@ fn get_containers_inspect() -> Result<Containers, String> {
 /// Initialize container inspect by running `podman ps --format '{{.ID}}'` and
 /// then `podman container inspect <ids>`.
 pub fn init_containers_inspect() {
-    if CONTAINERS.get().is_some() {
-        return;
-    }
-
-    match get_containers_inspect() {
-        Ok(c) => {
-            CONTAINERS.get_or_init(|| c);
-            log_debug!("initialized podman containers");
-        }
-        Err(err) => log_error!("failed to initialize podman containers: {}", err),
-    }
+    CONTAINERS.init(get_containers_inspect);
 }
 
 pub fn check_podman_info(pointer: &str, expected: Value) -> check::CheckReturn {
     let info = match PODMAN_INFO.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("podman info not initialized".to_string()),
-            );
-        }
+        Ok(c) => c,
+        Err(err) => return err,
     };
 
     match &info.pointer(pointer) {
@@ -166,13 +193,8 @@ pub fn check_podman_info(pointer: &str, expected: Value) -> check::CheckReturn {
 /// podman container inspect --format '{{.Id}}\t{{.HostConfig.Privileged}}' <id>
 pub fn podman_not_privileged() -> check::CheckReturn {
     let containers = match CONTAINERS.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("containers inspect not initialized".to_string()),
-            );
-        }
+        Ok(c) => c,
+        Err(err) => return err,
     };
 
     if containers.is_empty() {
@@ -208,13 +230,8 @@ pub fn podman_not_privileged() -> check::CheckReturn {
 /// podman container inspect --format '{{.Id}}={{.HostConfig.CapDrop}}' <id>
 pub fn podman_cap_drop() -> check::CheckReturn {
     let containers = match CONTAINERS.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("containers inspect not initialized".to_string()),
-            );
-        }
+        Ok(c) => c,
+        Err(err) => return err,
     };
 
     if containers.is_empty() {
@@ -250,13 +267,8 @@ pub fn podman_cap_drop() -> check::CheckReturn {
 /// podman container inspect --format '{{.Id}}\t{{.Config.User}}' <id>
 pub fn podman_user() -> check::CheckReturn {
     let containers = match CONTAINERS.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("containers inspect not initialized".to_string()),
-            );
-        }
+        Ok(c) => c,
+        Err(err) => return err,
     };
 
     if containers.is_empty() {
@@ -290,13 +302,8 @@ pub fn podman_user() -> check::CheckReturn {
 /// podman container inspect -l --format '{{.Id}}\t{{.AppArmorProfile}}'
 pub fn podman_apparmor() -> check::CheckReturn {
     let containers = match CONTAINERS.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("containers inspect not initialized".to_string()),
-            );
-        }
+        Ok(c) => c,
+        Err(err) => return err,
     };
 
     if containers.is_empty() {
@@ -331,13 +338,8 @@ pub fn podman_apparmor() -> check::CheckReturn {
 /// podman container inspect --format '{{.Id}}={{.HostConfig.ReadonlyRootfs}}' <id>
 pub fn podman_readonly_rootfs() -> check::CheckReturn {
     let containers = match CONTAINERS.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("containers inspect not initialized".to_string()),
-            );
-        }
+        Ok(c) => c,
+        Err(err) => return err,
     };
 
     if containers.is_empty() {

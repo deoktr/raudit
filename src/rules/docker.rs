@@ -168,21 +168,7 @@ pub fn add_checks() {
         "Ensure docker containers cannot acquire new privileges",
         Severity::High,
         vec!["container", "docker", "CIS", "server", "workstation"], // CIS Docker 2.14
-        || {
-            let pointer = "/SecurityOptions";
-            if let Some(Value::Array(arr)) = docker::get_docker_info_value(pointer) {
-                if arr.iter().any(|v| *v == Value::String("name=no-new-privileges".to_string())) {
-                    (check::CheckState::Pass, None)
-                } else {
-                    (check::CheckState::Fail, None)
-                }
-            } else {
-            (
-                check::CheckState::Warning,
-                Some(format!("pointer {:?} not found", pointer)),
-            )
-            }
-        },
+        || docker::check_docker_info_contains("/SecurityOptions", Value::String("name=no-new-privileges".to_string())),
         vec![ps::init_proc],
     )
     .skip_when(docker::skip_no_docker)
@@ -196,21 +182,7 @@ pub fn add_checks() {
         "Ensure docker builtin seccomp profile is used",
         Severity::High,
         vec!["container", "docker", "seccomp", "server", "workstation"],
-        || {
-            let pointer = "/SecurityOptions";
-            if let Some(Value::Array(arr)) = docker::get_docker_info_value(pointer) {
-                if arr.iter().any(|v| *v == Value::String("name=seccomp,profile=builtin".to_string())) {
-                    (check::CheckState::Pass, None)
-                } else {
-                    (check::CheckState::Fail, None)
-                }
-            } else {
-            (
-                check::CheckState::Warning,
-                Some(format!("pointer {:?} not found", pointer)),
-            )
-            }
-        },
+        || docker::check_docker_info_contains("/SecurityOptions", Value::String("name=seccomp,profile=builtin".to_string())),
         vec![ps::init_proc],
     )
     .skip_when(docker::skip_no_docker)

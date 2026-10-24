@@ -32,12 +32,12 @@ use serde_json::Value;
 use std::collections::HashMap;
 use std::process;
 use std::process::Stdio;
-use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_error, utils};
+use crate::check::{self, State};
+use crate::{log_debug, utils};
 
-static DOCKER_INFO: OnceLock<DockerInfo> = OnceLock::new();
-static CONTAINERS: OnceLock<Containers> = OnceLock::new();
+static DOCKER_INFO: State<DockerInfo> = State::new("docker info");
+static CONTAINERS: State<Containers> = State::new("docker containers");
 
 /// Docker info from `docker info -f json`.
 type DockerInfo = Value;
@@ -56,25 +56,29 @@ fn get_docker_info() -> Result<DockerInfo, String> {
     cmd.stdin(Stdio::null());
     cmd.args(vec!["info", "-f", "json"]);
 
-    let output = cmd.output().map_err(|e| e.to_string())?;
-    let stdout = str::from_utf8(&output.stdout).map_err(|e| e.to_string())?;
-    let config: DockerInfo = serde_json::from_str(stdout).map_err(|e| e.to_string())?;
-    Ok(config)
+    let output = cmd
+        .output()
+        .map_err(|e| format!("failed to run \"docker info -f json\": {}", e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let stderr = stderr.trim();
+
+        return Err(if stderr.is_empty() {
+            format!("\"docker info -f json\" {}", output.status)
+        } else {
+            format!("\"docker info -f json\" {}: {}", output.status, stderr)
+        });
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    serde_json::from_str(&stdout)
+        .map_err(|e| format!("failed to parse \"docker info -f json\" stdout: {}", e))
 }
 
 /// Init docker info by running `docker info -f json`.
 pub fn init_docker_info() {
-    if DOCKER_INFO.get().is_some() {
-        return;
-    }
-
-    match get_docker_info() {
-        Ok(c) => {
-            DOCKER_INFO.get_or_init(|| c);
-            log_debug!("initialized docker info");
-        }
-        Err(err) => log_error!("failed to initialize docker info: {}", err),
-    }
+    DOCKER_INFO.init(get_docker_info);
 }
 
 /// Get container inspect by running `docker ps --format '{{.ID}}'` and
@@ -84,8 +88,25 @@ fn get_containers_inspect() -> Result<Containers, String> {
     docker_ps.stdin(Stdio::null());
     docker_ps.args(vec!["ps", "--format", "{{.ID}}"]);
 
-    let output = docker_ps.output().map_err(|e| e.to_string())?;
-    let stdout = str::from_utf8(&output.stdout).map_err(|e| e.to_string())?;
+    let output = docker_ps
+        .output()
+        .map_err(|e| format!("failed to run `docker ps --format \"{{.ID}}\"`: {}", e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let stderr = stderr.trim();
+
+        return Err(if stderr.is_empty() {
+            format!("`docker ps --format \"{{.ID}}\"` {}", output.status)
+        } else {
+            format!(
+                "`docker ps --format \"{{.ID}}\"` {}: {}",
+                output.status, stderr
+            )
+        });
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
     let ids: Vec<&str> = stdout.lines().collect();
 
     if ids.is_empty() {
@@ -97,14 +118,35 @@ fn get_containers_inspect() -> Result<Containers, String> {
 
     let mut args: Vec<&str> = vec!["inspect"];
     args.extend(ids);
-    docker_inspect.args(args);
+    docker_inspect.args(args.clone());
 
-    let output = docker_inspect.output().map_err(|e| e.to_string())?;
-    let stdout = str::from_utf8(&output.stdout).map_err(|e| e.to_string())?;
-    let inspect: Value = serde_json::from_str(stdout).map_err(|e| e.to_string())?;
+    let output = docker_inspect
+        .output()
+        .map_err(|e| format!("failed to run `docker {}`: {}", args.join(" "), e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let stderr = stderr.trim();
+
+        return Err(if stderr.is_empty() {
+            format!("`docker {}` {}", args.join(" "), output.status)
+        } else {
+            format!("`docker {}` {}: {}", args.join(" "), output.status, stderr)
+        });
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let inspect: Value = serde_json::from_str(&stdout)
+        .map_err(|e| format!("failed to parse `docker {}`: {}", args.join(" "), e))?;
+
     let inspects = match inspect.as_array() {
         Some(i) => i,
-        None => return Err("failed to parse \"docker inspect\" json: not an array".to_string()),
+        None => {
+            return Err(format!(
+                "failed to parse `docker {}`: not a json array",
+                args.join(" ")
+            ));
+        }
     };
 
     let mut containers: Containers = Containers::new();
@@ -119,27 +161,12 @@ fn get_containers_inspect() -> Result<Containers, String> {
 /// Init container inspect by running `docker ps --format '{{.ID}}'` and
 /// then `docker container inspect <ids>`.
 pub fn init_containers_inspect() {
-    if CONTAINERS.get().is_some() {
-        return;
-    }
-
-    match get_containers_inspect() {
-        Ok(c) => {
-            CONTAINERS.get_or_init(|| c);
-            log_debug!("initialized docker containers");
-        }
-        Err(err) => log_error!("failed to initialize docker containers: {}", err),
-    }
-}
-
-/// Check a configuration from Docker, the pointer are defined by RFC6901.
-pub fn get_docker_info_value(pointer: &str) -> Option<&Value> {
-    DOCKER_INFO.get()?.pointer(pointer)
+    CONTAINERS.init(get_containers_inspect);
 }
 
 /// Check a configuration from Docker, the pointer are defined by RFC6901.
 pub fn check_docker_info(pointer: &str, expected: Value) -> check::CheckReturn {
-    match get_docker_info_value(pointer) {
+    DOCKER_INFO.with(|docker_info| match docker_info.pointer(pointer) {
         Some(val) => {
             if *val != expected {
                 (
@@ -154,13 +181,13 @@ pub fn check_docker_info(pointer: &str, expected: Value) -> check::CheckReturn {
             check::CheckState::Warning,
             Some(format!("pointer {:?} not found", pointer)),
         ),
-    }
+    })
 }
 
 /// Check a configuration from Docker is not equal (_ne), the pointer are
 /// defined by RFC6901.
 pub fn check_docker_info_ne(pointer: &str, expected: Value) -> check::CheckReturn {
-    match get_docker_info_value(pointer) {
+    DOCKER_INFO.with(|docker_info| match docker_info.pointer(pointer) {
         Some(val) => {
             if *val == expected {
                 (check::CheckState::Fail, None)
@@ -175,7 +202,29 @@ pub fn check_docker_info_ne(pointer: &str, expected: Value) -> check::CheckRetur
             check::CheckState::Warning,
             Some(format!("pointer {:?} not found", pointer)),
         ),
-    }
+    })
+}
+
+/// Check a configuration from Docker to contain a value, the pointer are
+/// defined by RFC6901.
+pub fn check_docker_info_contains(pointer: &str, expected: Value) -> check::CheckReturn {
+    DOCKER_INFO.with(|docker_info| {
+        if let Some(Value::Array(arr)) = docker_info.pointer(pointer) {
+            if arr.contains(&expected) {
+                (check::CheckState::Pass, None)
+            } else {
+                (
+                    check::CheckState::Fail,
+                    Some(format!("does not contain {:?}", expected)),
+                )
+            }
+        } else {
+            (
+                check::CheckState::Warning,
+                Some(format!("pointer {:?} not found", pointer)),
+            )
+        }
+    })
 }
 
 /// Ensure containers are not started with `--privileged` flag.
@@ -184,40 +233,32 @@ pub fn check_docker_info_ne(pointer: &str, expected: Value) -> check::CheckRetur
 /// Check manually with:
 /// docker container inspect --format '{{.Id}}={{.HostConfig.Privileged}}' <id>
 pub fn docker_not_privileged() -> check::CheckReturn {
-    let containers = match CONTAINERS.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("containers inspect not initialized".to_string()),
-            );
+    CONTAINERS.with(|containers| {
+        if containers.is_empty() {
+            return (check::CheckState::Pass, Some("no containers".to_string()));
         }
-    };
 
-    if containers.is_empty() {
-        return (check::CheckState::Pass, Some("no containers".to_string()));
-    }
+        let ids: Vec<String> = containers
+            .iter()
+            .filter_map(|(id, container)| {
+                let privileged = &container["HostConfig"]["Privileged"];
+                log_debug!("docker container {} privileged: {:?}", id, privileged);
 
-    let ids: Vec<String> = containers
-        .iter()
-        .filter_map(|(id, container)| {
-            let privileged = &container["HostConfig"]["Privileged"];
-            log_debug!("docker container {} privileged: {:?}", id, privileged);
+                if privileged == &Value::Bool(true) {
+                    Some(id.clone())
+                } else {
+                    None
+                }
+            })
+            .collect();
 
-            if privileged == &Value::Bool(true) {
-                Some(id.clone())
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    if ids.is_empty() {
-        (check::CheckState::Pass, None)
-    } else {
-        log_debug!("containers running with `--privileged`: {:?}", ids);
-        (check::CheckState::Fail, Some(ids.join(", ")))
-    }
+        if ids.is_empty() {
+            (check::CheckState::Pass, None)
+        } else {
+            log_debug!("containers running with `--privileged`: {:?}", ids);
+            (check::CheckState::Fail, Some(ids.join(", ")))
+        }
+    })
 }
 
 /// Ensure containers capabilities are dropped.
@@ -226,46 +267,38 @@ pub fn docker_not_privileged() -> check::CheckReturn {
 /// check manually with:
 /// docker container inspect --format '{{.Id}}={{.HostConfig.CapDrop}}' <id>
 pub fn docker_cap_drop() -> check::CheckReturn {
-    let containers = match CONTAINERS.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("containers inspect not initialized".to_string()),
-            );
+    CONTAINERS.with(|containers| {
+        if containers.is_empty() {
+            return (check::CheckState::Pass, Some("no containers".to_string()));
         }
-    };
 
-    if containers.is_empty() {
-        return (check::CheckState::Pass, Some("no containers".to_string()));
-    }
+        let ids: Vec<String> = containers
+            .iter()
+            .filter_map(|(id, container)| {
+                let capdrop_json = &container["HostConfig"]["CapDrop"];
+                log_debug!("docker container {} cap drop: {:?}", id, capdrop_json);
 
-    let ids: Vec<String> = containers
-        .iter()
-        .filter_map(|(id, container)| {
-            let capdrop_json = &container["HostConfig"]["CapDrop"];
-            log_debug!("docker container {} cap drop: {:?}", id, capdrop_json);
+                // if CapDrop == null then no cap drop is enabled
+                let capdrop = match capdrop_json.as_array() {
+                    Some(c) => c,
+                    None => return Some(id.clone()),
+                };
 
-            // if CapDrop == null then no cap drop is enabled
-            let capdrop = match capdrop_json.as_array() {
-                Some(c) => c,
-                None => return Some(id.clone()),
-            };
+                if capdrop.len() == 1 && capdrop[0] == Value::String("ALL".to_string()) {
+                    None
+                } else {
+                    Some(id.clone())
+                }
+            })
+            .collect();
 
-            if capdrop.len() == 1 && capdrop[0] == Value::String("ALL".to_string()) {
-                None
-            } else {
-                Some(id.clone())
-            }
-        })
-        .collect();
-
-    if ids.is_empty() {
-        (check::CheckState::Pass, None)
-    } else {
-        log_debug!("Missing cap drop on containers: {:?}", ids);
-        (check::CheckState::Fail, Some(ids.join(", ")))
-    }
+        if ids.is_empty() {
+            (check::CheckState::Pass, None)
+        } else {
+            log_debug!("Missing cap drop on containers: {:?}", ids);
+            (check::CheckState::Fail, Some(ids.join(", ")))
+        }
+    })
 }
 
 /// Ensure all containers are running with non-root user.
@@ -273,39 +306,31 @@ pub fn docker_cap_drop() -> check::CheckReturn {
 /// check manually with:
 /// docker container inspect --format '{{.Id}}={{.Config.User}}' <id>
 pub fn docker_container_user() -> check::CheckReturn {
-    let containers = match CONTAINERS.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("containers inspect not initialized".to_string()),
-            );
+    CONTAINERS.with(|containers| {
+        if containers.is_empty() {
+            return (check::CheckState::Pass, Some("no containers".to_string()));
         }
-    };
 
-    if containers.is_empty() {
-        return (check::CheckState::Pass, Some("no containers".to_string()));
-    }
+        let ids: Vec<String> = containers
+            .iter()
+            .filter_map(|(id, container)| {
+                let user = &container["Config"]["User"];
+                log_debug!("docker container {} user: {}", id, user);
+                if *user == Value::String("0".to_string()) {
+                    Some(id.clone())
+                } else {
+                    None
+                }
+            })
+            .collect();
 
-    let ids: Vec<String> = containers
-        .iter()
-        .filter_map(|(id, container)| {
-            let user = &container["Config"]["User"];
-            log_debug!("docker container {} user: {}", id, user);
-            if *user == Value::String("0".to_string()) {
-                Some(id.clone())
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    if ids.is_empty() {
-        (check::CheckState::Pass, None)
-    } else {
-        log_debug!("Running as root on containers: {:?}", ids);
-        (check::CheckState::Fail, Some(ids.join(", ")))
-    }
+        if ids.is_empty() {
+            (check::CheckState::Pass, None)
+        } else {
+            log_debug!("Running as root on containers: {:?}", ids);
+            (check::CheckState::Fail, Some(ids.join(", ")))
+        }
+    })
 }
 
 /// Ensure containers root filesystem is mounted as read-only.
@@ -314,38 +339,30 @@ pub fn docker_container_user() -> check::CheckReturn {
 /// Check manually with:
 /// docker container inspect --format '{{.Id}}={{.HostConfig.ReadonlyRootfs}}' <id>
 pub fn docker_readonly_rootfs() -> check::CheckReturn {
-    let containers = match CONTAINERS.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("containers inspect not initialized".to_string()),
-            );
+    CONTAINERS.with(|containers| {
+        if containers.is_empty() {
+            return (check::CheckState::Pass, Some("no containers".to_string()));
         }
-    };
 
-    if containers.is_empty() {
-        return (check::CheckState::Pass, Some("no containers".to_string()));
-    }
+        let ids: Vec<String> = containers
+            .iter()
+            .filter_map(|(id, container)| {
+                let readonly = &container["HostConfig"]["ReadonlyRootfs"];
+                log_debug!("docker container {} readonly rootfs: {:?}", id, readonly);
 
-    let ids: Vec<String> = containers
-        .iter()
-        .filter_map(|(id, container)| {
-            let readonly = &container["HostConfig"]["ReadonlyRootfs"];
-            log_debug!("docker container {} readonly rootfs: {:?}", id, readonly);
+                if readonly == &Value::Bool(false) {
+                    Some(id.clone())
+                } else {
+                    None
+                }
+            })
+            .collect();
 
-            if readonly == &Value::Bool(false) {
-                Some(id.clone())
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    if ids.is_empty() {
-        (check::CheckState::Pass, None)
-    } else {
-        log_debug!("containers running without read-only rootfs: {:?}", ids);
-        (check::CheckState::Fail, Some(ids.join(", ")))
-    }
+        if ids.is_empty() {
+            (check::CheckState::Pass, None)
+        } else {
+            log_debug!("containers running without read-only rootfs: {:?}", ids);
+            (check::CheckState::Fail, Some(ids.join(", ")))
+        }
+    })
 }

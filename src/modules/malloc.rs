@@ -16,33 +16,34 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use std::fs;
-use std::sync::OnceLock;
+use std::{fs, io};
 
-use crate::{check, log_debug};
+use crate::check::{self, State};
 
 // FIXME: on NixOS the file is `/etc/ld-nix.so.preload`
 const LD_SO_PRELOAD_PATH: &str = "/etc/ld.so.preload";
 
-static LD_SO_PRELOAD: OnceLock<LdSoPreload> = OnceLock::new();
+static LD_SO_PRELOAD: State<LdSoPreload> = State::new("ld.so.preload");
 
 /// LD preload configuration from `/etc/ld.so.preload`.
 type LdSoPreload = String;
 
 /// Get login.defs configuration by reading `/etc/ld.so.preload`.
-pub fn init_ld_so_preload() {
-    if LD_SO_PRELOAD.get().is_some() {
-        return;
+fn get_ld_so_preload() -> Result<LdSoPreload, String> {
+    match fs::read_to_string(LD_SO_PRELOAD_PATH) {
+        Ok(v) => Ok(v),
+        Err(e) => match e.kind() {
+            io::ErrorKind::NotFound => Ok(String::new()),
+            _ => {
+                Err(format!("failed to read {}: {}", LD_SO_PRELOAD_PATH, e))
+            }
+        },
     }
+}
 
-    LD_SO_PRELOAD.get_or_init(|| match fs::read_to_string(LD_SO_PRELOAD_PATH) {
-        Ok(content) => content,
-        // TODO: check error type, if the file does not exist then set LD_SO to
-        // an empty string, otherwise log error
-        Err(_) => "".to_owned(),
-    });
-
-    log_debug!("initialized ld.so.preload");
+/// Init login.defs configuration by reading `/etc/ld.so.preload`.
+pub fn init_ld_so_preload() {
+    LD_SO_PRELOAD.init(get_ld_so_preload);
 }
 
 /// Uses [scudo](https://llvm.org/docs/ScudoHardenedAllocator.html).
@@ -50,19 +51,13 @@ pub fn init_ld_so_preload() {
 /// Scudo Hardened Allocator is a user-mode allocator, originally based on LLVM
 /// Sanitizers’ `CombinedAllocator`.
 pub fn has_scudo_malloc() -> check::CheckReturn {
-    match LD_SO_PRELOAD.get() {
-        Some(config) => {
-            if config.contains("scudo") {
-                (check::CheckState::Pass, None)
-            } else {
-                (check::CheckState::Fail, None)
-            }
+    LD_SO_PRELOAD.with(|config| {
+        if config.contains("scudo") {
+            (check::CheckState::Pass, None)
+        } else {
+            (check::CheckState::Fail, None)
         }
-        None => (
-            check::CheckState::Warning,
-            Some("ld.so.preload not initialized".to_string()),
-        ),
-    }
+    })
 }
 
 // /// Uses [libhardened_malloc](https://github.com/GrapheneOS/hardened_malloc/).

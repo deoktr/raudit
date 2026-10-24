@@ -2089,7 +2089,7 @@
         "status_id": 2,
         "status": "Warning"
       },
-      "message": "containers inspect not initialized",
+      "message": "docker containers: failed to run `docker ps --format \"{.ID}\"`: No such file or directory (os error 2)",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -2122,7 +2122,7 @@
         "status_id": 2,
         "status": "Warning"
       },
-      "message": "containers inspect not initialized",
+      "message": "docker containers: failed to run `docker ps --format \"{.ID}\"`: No such file or directory (os error 2)",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -2155,7 +2155,7 @@
         "status_id": 2,
         "status": "Warning"
       },
-      "message": "containers inspect not initialized",
+      "message": "docker containers: failed to run `docker ps --format \"{.ID}\"`: No such file or directory (os error 2)",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -2427,7 +2427,7 @@
         "status_id": 2,
         "status": "Warning"
       },
-      "message": "pointer \"/Plugins/Authorization\" not found",
+      "message": "docker info: failed to run \"docker info -f json\": No such file or directory (os error 2)",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -2463,7 +2463,7 @@
         "status_id": 2,
         "status": "Warning"
       },
-      "message": "pointer \"/SecurityOptions\" not found",
+      "message": "docker info: failed to run \"docker info -f json\": No such file or directory (os error 2)",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -2499,7 +2499,7 @@
         "status_id": 2,
         "status": "Warning"
       },
-      "message": "pointer \"/SecurityOptions\" not found",
+      "message": "docker info: failed to run \"docker info -f json\": No such file or directory (os error 2)",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -3099,7 +3099,7 @@
         "status_id": 2,
         "status": "Warning"
       },
-      "message": "pointer \"/Swarm/ControlAvailable\" not found",
+      "message": "docker info: failed to run \"docker info -f json\": No such file or directory (os error 2)",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -3165,7 +3165,7 @@
         "status_id": 2,
         "status": "Warning"
       },
-      "message": "containers inspect not initialized",
+      "message": "docker containers: failed to run `docker ps --format \"{.ID}\"`: No such file or directory (os error 2)",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -54567,7 +54567,7 @@
         "status_id": 2,
         "status": "Warning"
       },
-      "message": "containers inspect not initialized",
+      "message": "podman containers: failed to run `podman ps --format \"{.ID}\"`: No such file or directory (os error 2)",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -54603,7 +54603,7 @@
         "status_id": 2,
         "status": "Warning"
       },
-      "message": "containers inspect not initialized",
+      "message": "podman containers: failed to run `podman ps --format \"{.ID}\"`: No such file or directory (os error 2)",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -54639,7 +54639,7 @@
         "status_id": 2,
         "status": "Warning"
       },
-      "message": "containers inspect not initialized",
+      "message": "podman containers: failed to run `podman ps --format \"{.ID}\"`: No such file or directory (os error 2)",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -54710,7 +54710,7 @@
         "status_id": 2,
         "status": "Warning"
       },
-      "message": "podman info not initialized",
+      "message": "podman info: failed to run \"podman info -f json\": No such file or directory (os error 2)",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -54746,7 +54746,7 @@
         "status_id": 2,
         "status": "Warning"
       },
-      "message": "containers inspect not initialized",
+      "message": "podman containers: failed to run `podman ps --format \"{.ID}\"`: No such file or directory (os error 2)",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -54782,7 +54782,7 @@
         "status_id": 2,
         "status": "Warning"
       },
-      "message": "containers inspect not initialized",
+      "message": "podman containers: failed to run `podman ps --format \"{.ID}\"`: No such file or directory (os error 2)",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -58647,7 +58647,7 @@
       "finding_info": {
         "uid": "SYK_038",
         "title": "Ensure sysctl \"kernel.nmi_watchdog\" = 1",
-        "desc": "Keep the NMI lockup detector enabled (prerequisite for hardlockup detection). Small performance cost, Ubuntu ships nmi_watchdog = 0."
+        "desc": "Keep the NMI lockup detector enabled (prerequisite for hardlockup detection). Small performance cost."
       },
       "compliance": {
         "standards": [
@@ -59634,7 +59634,7 @@
       "finding_info": {
         "uid": "SYU_001",
         "title": "Ensure sysctl \"user.max_user_namespaces\" <= 31231",
-        "desc": "Limit the number of user namespaces to reduce attack surface. May break the upower daemon in Ubuntu. KSPP recommends 0 to completely disable user namespaces."
+        "desc": "Limit the number of user namespaces to reduce attack surface. May break the upower daemon. KSPP recommends 0 to completely disable user namespaces."
       },
       "compliance": {
         "standards": [
@@ -62251,7 +62251,7 @@
       "finding_info": {
         "uid": "SYN_113",
         "title": "Ensure sysctl \"net.ipv4.ping_group_range\" = \"1\\t0\"",
-        "desc": "Disable unprivileged ICMP echo sockets (empty range). Ubuntu opens this to every group (0 2147483647), exposing the ICMP socket path to all users. Forcing setuid/capable ping(8) shrinks attack surface but breaks sandboxed ping."
+        "desc": "Disable unprivileged ICMP echo sockets (empty range). Forcing setuid/capable ping(8) shrinks attack surface but breaks sandboxed ping."
       },
       "compliance": {
         "standards": [
@@ -63767,7 +63767,7 @@
       "finding_info": {
         "uid": "SYN_237",
         "title": "Ensure sysctl \"net.ipv6.conf.all.accept_dad\" >= 1",
-        "desc": "Keep Duplicate Address Detection on (2 additionally disables the address when DAD fails). Prevents address-confusion accidents and some on-link spoofing. Ubuntu ships all = 0."
+        "desc": "Keep Duplicate Address Detection on (2 additionally disables the address when DAD fails). Prevents address-confusion accidents and some on-link spoofing."
       },
       "compliance": {
         "standards": [
@@ -64627,7 +64627,7 @@
         "status_id": 2,
         "status": "Warning"
       },
-      "message": "missing key",
+      "message": "missing key \"net.netfilter.nf_conntrack_tcp_be_liberal\"",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -64663,7 +64663,7 @@
         "status_id": 2,
         "status": "Warning"
       },
-      "message": "missing key",
+      "message": "missing key \"net.netfilter.nf_conntrack_tcp_ignore_invalid_rst\"",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -64699,7 +64699,7 @@
         "status_id": 2,
         "status": "Warning"
       },
-      "message": "missing key",
+      "message": "missing key \"net.netfilter.nf_conntrack_tcp_loose\"",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -64735,7 +64735,7 @@
         "status_id": 2,
         "status": "Warning"
       },
-      "message": "missing key",
+      "message": "missing key \"net.netfilter.nf_conntrack_checksum\"",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -64771,7 +64771,7 @@
         "status_id": 2,
         "status": "Warning"
       },
-      "message": "missing key",
+      "message": "missing key \"net.netfilter.nf_conntrack_log_invalid\"",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -64833,7 +64833,7 @@
       "finding_info": {
         "uid": "SYN_400",
         "title": "Ensure sysctl \"net.mptcp.enabled\" = 0",
-        "desc": "MPTCP is enabled by default on Ubuntu. An unused second TCP stack is pure attack surface with a steady CVE history. Alternatively blacklist the mptcp module."
+        "desc": "MPTCP, an unused second TCP stack is pure attack surface with a steady CVE history. Alternatively blacklist the mptcp module."
       },
       "compliance": {
         "standards": [

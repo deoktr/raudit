@@ -17,16 +17,15 @@
  */
 use std::collections::HashMap;
 use std::fs;
-use std::sync::OnceLock;
 
-use crate::{log_debug, log_error};
+use crate::{check::State, log_error};
 
 const KOSTYPE_PATH: &str = "/proc/sys/kernel/ostype";
 #[allow(dead_code)]
 const KOSRELEASE_PATH: &str = "/proc/sys/kernel/osrelease";
 const OS_RELEASE_PATH: &str = "/etc/os-release";
 
-static OS_RELEASE: OnceLock<OSRelease> = OnceLock::new();
+static OS_RELEASE: State<OSRelease> = State::new("osrelease");
 
 /// OS.
 #[allow(dead_code)]
@@ -42,15 +41,17 @@ type OSRelease = HashMap<String, String>;
 
 /// Init system OS type by reading `/proc/sys/kernel/ostype`.
 #[allow(dead_code)]
-pub fn init_kernel_os_type() -> Result<String, std::io::Error> {
-    let content = fs::read_to_string(KOSTYPE_PATH)?;
+pub fn init_kernel_os_type() -> Result<String, String> {
+    let content = fs::read_to_string(KOSTYPE_PATH)
+        .map_err(|err| format!("failed to read {}: {}", KOSTYPE_PATH, err))?;
     Ok(content.trim_end().to_string())
 }
 
 /// Init system OS release by reading `/proc/sys/kernel/osrelease`.
 #[allow(dead_code)]
-pub fn init_kernel_os_release() -> Result<String, std::io::Error> {
-    let content = fs::read_to_string(KOSRELEASE_PATH)?;
+pub fn init_kernel_os_release() -> Result<String, String> {
+    let content = fs::read_to_string(KOSRELEASE_PATH)
+        .map_err(|err| format!("failed to read {}: {}", KOSRELEASE_PATH, err))?;
     Ok(content.trim_end().to_string())
 }
 
@@ -71,32 +72,23 @@ fn parse_os_release(content: String) -> OSRelease {
 }
 
 /// Get OS release info from `/etc/os-release`.
-fn get_os_release() -> Result<OSRelease, std::io::Error> {
-    let content = fs::read_to_string(OS_RELEASE_PATH)?;
+fn get_os_release() -> Result<OSRelease, String> {
+    let content = fs::read_to_string(OS_RELEASE_PATH)
+        .map_err(|err| format!("failed to read {}: {}", OS_RELEASE_PATH, err))?;
     Ok(parse_os_release(content))
 }
 
 /// Init OS release info from `/etc/os-release`.
 pub fn init_os_release() {
-    if OS_RELEASE.get().is_some() {
-        return;
-    }
-
-    match get_os_release() {
-        Ok(m) => {
-            OS_RELEASE.get_or_init(|| m);
-            log_debug!("initialized os release");
-        }
-        Err(err) => log_error!("failed to initialize os release: {}", err),
-    }
+    OS_RELEASE.init(get_os_release);
 }
 
 /// Helper to check if current distro is Debian.
 pub fn is_debian() -> bool {
-    let os_release = match OS_RELEASE.get() {
-        Some(c) => c,
-        None => {
-            log_error!("os release not initialized");
+    let os_release = match OS_RELEASE.try_get() {
+        Ok(c) => c,
+        Err(err) => {
+            log_error!("{}", err);
             return false;
         }
     };
@@ -116,10 +108,10 @@ pub fn skip_not_debian() -> bool {
 /// Helper to check if current distro is ArchLinux.
 #[allow(dead_code)]
 pub fn is_arch() -> bool {
-    let os_release = match OS_RELEASE.get() {
-        Some(c) => c,
-        None => {
-            log_error!("os release not initialized");
+    let os_release = match OS_RELEASE.try_get() {
+        Ok(c) => c,
+        Err(err) => {
+            log_error!("{}", err);
             return false;
         }
     };

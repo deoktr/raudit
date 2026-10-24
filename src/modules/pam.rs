@@ -19,17 +19,19 @@
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
-use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_error, log_trace, log_warn};
+use crate::check::{self, State};
+use crate::{log_error, log_trace, log_warn};
 
-static PAM_CONFIG: OnceLock<PamConfig> = OnceLock::new();
+const PAM_DIR_PATH: &str = "/etc/pam.d/";
 
-/// PAM configuration.
+static PAM_RULES: State<PamRules> = State::new("pam rules");
+
+/// PAM rules.
 ///
 /// The key of the HashMap is the name of the service (name of the file).
 /// The value is a list of rules found in that file, or imported by it.
-type PamConfig = HashMap<String, Vec<PamRule>>;
+type PamRules = HashMap<String, Vec<PamRule>>;
 
 /// A single PAM rule (line).
 #[derive(Debug)]
@@ -171,24 +173,20 @@ fn parse_pam_file(path: PathBuf, content: String) -> Vec<PamRule> {
 }
 
 /// Get PAM configuration by reading files in `/etc/pam.d/`.
-fn get_pam() -> Result<PamConfig, std::io::Error> {
-    let paths: Vec<PathBuf> = fs::read_dir("/etc/pam.d/")?
+fn get_pam() -> Result<PamRules, String> {
+    let paths: Vec<PathBuf> = fs::read_dir(PAM_DIR_PATH)
+        .map_err(|err| format!("failed to open {}: {}", PAM_DIR_PATH, err))?
         .filter_map(|dentry| dentry.ok())
         .map(|dentry| dentry.path())
         .filter(|path| !path.is_dir())
         .collect();
 
-    let mut config: PamConfig = HashMap::new();
+    let mut config: PamRules = HashMap::new();
     for path in paths {
         let content = match fs::read_to_string(path.clone()) {
             Ok(p) => p,
-            Err(err) => {
-                log_error!(
-                    "Error opening {}: {}",
-                    path.to_string_lossy(),
-                    err.to_string()
-                );
-                continue;
+            Err(e) => {
+                return Err(format!("failed to open {}: {}", path.to_string_lossy(), e));
             }
         };
 
@@ -207,17 +205,7 @@ fn get_pam() -> Result<PamConfig, std::io::Error> {
 
 /// Init pam rules.
 pub fn init_pam() {
-    if PAM_CONFIG.get().is_some() {
-        return;
-    }
-
-    match get_pam() {
-        Ok(c) => {
-            PAM_CONFIG.get_or_init(|| c);
-            log_debug!("initialized pam");
-        }
-        Err(err) => log_error!("failed to initialize pam configuration: {}", err),
-    }
+    PAM_RULES.init(get_pam);
 }
 
 /// Get PAM rule from a collected configuration.
@@ -226,7 +214,7 @@ pub fn init_pam() {
 /// The `rule_type` being the PAM type, ex: `session` or `auth`.
 /// The `module` being lib (.so), ex: `pam_limits`.
 fn get_pam_rule(
-    config: &'static PamConfig,
+    config: &PamRules,
     service: &str,
     rule_type: &str,
     control: &str,
@@ -274,20 +262,12 @@ pub fn check_rule(
     control: &str,
     module: &str,
 ) -> check::CheckReturn {
-    let config = match PAM_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("pam configuration not initialized".to_string()),
-            );
-        }
-    };
-
-    match get_pam_rule(config, service, rule_type, control, module) {
-        Ok(()) => (check::CheckState::Pass, None),
-        Err(err) => (check::CheckState::Fail, Some(err.to_string())),
-    }
+    PAM_RULES.with(
+        |config| match get_pam_rule(config, service, rule_type, control, module) {
+            Ok(()) => (check::CheckState::Pass, None),
+            Err(err) => (check::CheckState::Fail, Some(err.to_string())),
+        },
+    )
 }
 
 // TODO:

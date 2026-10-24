@@ -17,13 +17,12 @@
  */
 
 use std::fs;
-use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_error};
+use crate::check::{self, State};
 
 const HOSTS_PATH: &str = "/etc/hosts";
 
-static HOSTS: OnceLock<Hosts> = OnceLock::new();
+static HOSTS: State<Hosts> = State::new("hosts");
 
 struct Host {
     addr: String,
@@ -55,45 +54,28 @@ fn parse_hosts(hosts: String) -> Hosts {
     entries
 }
 
-/// Get the system's hosts config from `/boot/grub/grub.cfg`.
-fn get_hosts() -> Result<Hosts, std::io::Error> {
-    Ok(parse_hosts(fs::read_to_string(HOSTS_PATH)?))
+/// Get the system's hosts config from `/etc/hosts`.
+fn get_hosts() -> Result<Hosts, String> {
+    let content = fs::read_to_string(HOSTS_PATH)
+        .map_err(|err| format!("failed to read {}: {}", HOSTS_PATH, err))?;
+    Ok(parse_hosts(content))
 }
 
-/// Init the system's hosts config from `/boot/grub/grub.cfg`.
+/// Init the system's hosts config from `/etc/hosts`.
 pub fn init_hosts() {
-    if HOSTS.get().is_some() {
-        return;
-    }
-
-    match get_hosts() {
-        Ok(h) => {
-            HOSTS.get_or_init(|| h);
-            log_debug!("initialized hosts");
-        }
-        Err(err) => log_error!("failed to initialize hosts: {}", err),
-    }
+    HOSTS.init(get_hosts);
 }
 
 /// Ensure that hosts entry is present.
 pub fn entry_present(addr: &str, value: &str) -> check::CheckReturn {
-    let hosts = match HOSTS.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("hosts configuration not initialized".to_string()),
-            );
+    HOSTS.with(|hosts| {
+        for host in hosts {
+            if host.addr == addr && host.value == value {
+                return (check::CheckState::Pass, None);
+            }
         }
-    };
-
-    for host in hosts {
-        if host.addr == addr && host.value == value {
-            return (check::CheckState::Pass, None);
-        }
-    }
-
-    (check::CheckState::Fail, None)
+        (check::CheckState::Fail, None)
+    })
 }
 
 #[cfg(test)]

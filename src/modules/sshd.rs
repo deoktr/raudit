@@ -19,12 +19,12 @@
 use std::collections::HashMap;
 use std::process;
 use std::process::Stdio;
-use std::sync::OnceLock;
 
+use crate::check::State;
 use crate::modules::ps;
-use crate::{check, log_debug, log_error, utils};
+use crate::{check, log_error, utils};
 
-static SSHD_CONFIG: OnceLock<SshdConfig> = OnceLock::new();
+static SSHD_CONFIG: State<SshdConfig> = State::new("sshd config");
 
 /// OpenSSH (sshd) configuration.
 type SshdConfig = HashMap<String, String>;
@@ -63,16 +63,20 @@ fn get_sshd_config() -> Result<SshdConfig, String> {
     cmd.stdin(Stdio::null());
     cmd.args(vec!["-T"]);
 
-    let output = cmd.output().map_err(|e| e.to_string())?;
+    let output = cmd
+        .output()
+        .map_err(|err| format!("failed to run \"sshd -T\": {}", err))?;
 
-    if let Some(status) = output.status.code()
-        && status != 0
-    {
-        return Err(format!(
-            "failed to get sshd configuration, got status code {} while running \"sshd -T\"",
-            status
-        ));
-    };
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let stderr = stderr.trim();
+
+        return Err(if stderr.is_empty() {
+            format!("\"sshd -T\" {}", output.status)
+        } else {
+            format!("\"sshd -T\" {}: {}", output.status, stderr)
+        });
+    }
 
     Ok(parse_sshd_config(
         String::from_utf8_lossy(&output.stdout).to_string(),
@@ -81,27 +85,12 @@ fn get_sshd_config() -> Result<SshdConfig, String> {
 
 /// Init the sshd (OpenSSH) configuration by running `sshd -T`.
 pub fn init_sshd_config() {
-    if SSHD_CONFIG.get().is_some() {
-        return;
-    }
-
-    match get_sshd_config() {
-        Ok(c) => {
-            SSHD_CONFIG.get_or_init(|| c);
-            log_debug!("initialized sshd config");
-        }
-        Err(err) => log_error!("failed to initialize sshd configuration: {}", err),
-    }
+    SSHD_CONFIG.init(get_sshd_config);
 }
 
 /// Get sshd configuration value from a collected configuration.
 pub fn get_sshd_config_value(key: &str) -> Result<String, String> {
-    let sshd_config = match SSHD_CONFIG.get() {
-        Some(c) => c,
-        None => return Err("ssh configuration not initialized".to_string()),
-    };
-
-    match sshd_config.get(key) {
+    match SSHD_CONFIG.try_get()?.get(key) {
         Some(val) => Ok(val.to_string()),
         None => Err(format!("{:?} not found in sshd configuration", key)),
     }
@@ -109,17 +98,7 @@ pub fn get_sshd_config_value(key: &str) -> Result<String, String> {
 
 /// Get sshd configuration value from a collected configuration.
 pub fn check_sshd_config(key: &str, value: &str) -> check::CheckReturn {
-    let sshd_config = match SSHD_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("sshd configuration not initialized".to_string()),
-            );
-        }
-    };
-
-    match sshd_config.get(key) {
+    SSHD_CONFIG.with(|sshd_config| match sshd_config.get(key) {
         Some(val) => {
             if val == value {
                 (check::CheckState::Pass, None)
@@ -128,5 +107,5 @@ pub fn check_sshd_config(key: &str, value: &str) -> check::CheckReturn {
             }
         }
         None => (check::CheckState::Fail, None),
-    }
+    })
 }

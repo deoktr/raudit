@@ -18,13 +18,12 @@
 
 use std::fs;
 use std::path::Path;
-use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_error};
+use crate::check::{self, State};
 
 const GRUB_CFG_PATH: &str = "/boot/grub/grub.cfg";
 
-static GRUB_CFG: OnceLock<GrubCfg> = OnceLock::new();
+static GRUB_CFG: State<GrubCfg> = State::new("grub config");
 
 /// Raw grub config from `/boot/grub/grub.cfg`.
 type GrubCfg = String;
@@ -35,43 +34,26 @@ pub fn skip_no_grub() -> bool {
 }
 
 /// Get the system's grub config from `/boot/grub/grub.cfg`.
-fn get_grub_cfg() -> Result<String, std::io::Error> {
+fn get_grub_cfg() -> Result<String, String> {
     fs::read_to_string(GRUB_CFG_PATH)
+        .map_err(|err| format!("failed to read {}: {}", GRUB_CFG_PATH, err))
 }
 
 /// Init the system's grub config from `/boot/grub/grub.cfg`.
 pub fn init_grub_cfg() {
-    if GRUB_CFG.get().is_some() {
-        return;
-    }
-
-    match get_grub_cfg() {
-        Ok(c) => {
-            GRUB_CFG.get_or_init(|| c);
-            log_debug!("initialized grub cfg");
-        }
-        Err(err) => log_error!("failed to initialize grub configuration: {}", err),
-    }
+    GRUB_CFG.init(get_grub_cfg);
 }
 
 /// Verify that grub is configured with a password.
 pub fn password_is_set() -> check::CheckReturn {
-    let grub_cfg = match GRUB_CFG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("grub configuration not initialized".to_string()),
-            );
+    GRUB_CFG.with(|grub_cfg| {
+        // NOTE: "\n" is to ensure they are not commented out
+        if grub_cfg.contains(&"\nset superusers".to_string())
+            && grub_cfg.contains(&"\npassword".to_string())
+        {
+            (check::CheckState::Pass, None)
+        } else {
+            (check::CheckState::Fail, None)
         }
-    };
-
-    // NOTE: "\n" is to ensure they are not commented out
-    if grub_cfg.contains(&"\nset superusers".to_string())
-        && grub_cfg.contains(&"\npassword".to_string())
-    {
-        (check::CheckState::Pass, None)
-    } else {
-        (check::CheckState::Fail, None)
-    }
+    })
 }

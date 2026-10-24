@@ -18,21 +18,23 @@
 
 use std::collections::HashMap;
 use std::fs;
-use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_error};
+use crate::check::{self, State};
+
+const PROC_PATH: &str = "/proc/";
 
 /// List of running process.
 ///
 /// Collected by reading the content of the `/proc/` dir.
 type Proc = HashMap<String, String>;
 
-static PROCESSES: OnceLock<Proc> = OnceLock::new();
+static PROCESSES: State<Proc> = State::new("processes");
 
-fn get_proc() -> Result<Proc, std::io::Error> {
+fn get_proc() -> Result<Proc, String> {
     let mut output = Proc::new();
 
-    let entries = fs::read_dir("/proc/")?;
+    let entries =
+        fs::read_dir(PROC_PATH).map_err(|err| format!("failed to open {}: {}", PROC_PATH, err))?;
     for entry in entries.flatten() {
         let path = entry.path();
         if !path.is_dir() {
@@ -66,17 +68,7 @@ fn get_proc() -> Result<Proc, std::io::Error> {
 
 /// Init proc.
 pub fn init_proc() {
-    if PROCESSES.get().is_some() {
-        return;
-    }
-
-    match get_proc() {
-        Ok(p) => {
-            PROCESSES.get_or_init(|| p);
-            log_debug!("initialized proc");
-        }
-        Err(err) => log_error!("failed to initialize proc: {}", err),
-    }
+    PROCESSES.init(get_proc);
 }
 
 /// Get the list of PID with this name.
@@ -94,22 +86,14 @@ pub fn get_pids(config: &Proc, name: &str) -> Option<Vec<String>> {
 
 /// Check if a process is running from it's name.
 pub fn is_running(name: &str) -> Result<bool, String> {
-    match PROCESSES.get() {
-        Some(procs) => Ok(get_pids(procs, name).is_some()),
-        None => Err("processes not initialized".to_string()),
-    }
+    Ok(get_pids(PROCESSES.try_get()?, name).is_some())
 }
 
 /// Check if a process is running from it's name.
 pub fn check_is_running(name: &str) -> check::CheckReturn {
     let procs = match PROCESSES.get() {
-        Some(procs) => procs,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("processes not initialized".to_string()),
-            );
-        }
+        Ok(procs) => procs,
+        Err(err) => return err,
     };
 
     match get_pids(procs, name) {
@@ -120,15 +104,7 @@ pub fn check_is_running(name: &str) -> check::CheckReturn {
 
 // get process flags
 fn get_proc_flags(name: &str) -> Result<Vec<String>, check::CheckReturn> {
-    let procs = match PROCESSES.get() {
-        Some(kparams) => kparams,
-        None => {
-            return Err((
-                check::CheckState::Warning,
-                Some("processes not initialized".to_string()),
-            ));
-        }
-    };
+    let procs = PROCESSES.get()?;
 
     let pids = match get_pids(procs, name) {
         Some(pids) => pids,

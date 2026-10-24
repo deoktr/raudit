@@ -18,13 +18,13 @@
 
 use std::process;
 use std::process::Stdio;
-use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_error, utils};
+use crate::check::State;
+use crate::{check, utils};
 
 const NGINX_CONF_PATH: &str = "/etc/nginx/nginx.conf";
 
-static NGINX_CONFIG: OnceLock<NginxConfig> = OnceLock::new();
+static NGINX_CONFIG: State<NginxConfig> = State::new("nginx configuration");
 
 /// A single nginx configuration directive (key = value).
 #[derive(Debug, Clone)]
@@ -126,7 +126,7 @@ fn parse_block_contents(lines: &[&str], pos: &mut usize) -> (Vec<NginxDirective>
 /// Get the first directive with the given name, searching recursively.
 #[allow(dead_code)]
 pub fn get_directive(name: &str) -> Option<String> {
-    let config = NGINX_CONFIG.get()?;
+    let config = NGINX_CONFIG.try_get().ok()?;
     find_directive_in_config(config, name)
 }
 
@@ -163,9 +163,9 @@ fn find_directive_in_block(block: &NginxBlock, name: &str) -> Option<String> {
 /// Get all directives with the given name, searching recursively.
 #[allow(dead_code)]
 pub fn get_directives(name: &str) -> Vec<String> {
-    let config = match NGINX_CONFIG.get() {
-        Some(c) => c,
-        None => return vec![],
+    let config = match NGINX_CONFIG.try_get() {
+        Ok(c) => c,
+        Err(_) => return vec![],
     };
     let mut results = Vec::new();
     collect_directives_from_config(config, name, &mut results);
@@ -206,17 +206,7 @@ pub fn has_header(header_name: &str) -> bool {
 /// Check a directive value against an expected value.
 #[allow(dead_code)]
 pub fn check_directive(name: &str, expected: &str) -> check::CheckReturn {
-    let config = match NGINX_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("nginx configuration not initialized".to_string()),
-            );
-        }
-    };
-
-    match find_directive_in_config(config, name) {
+    NGINX_CONFIG.with(|config| match find_directive_in_config(config, name) {
         Some(value) => {
             if value == expected {
                 (check::CheckState::Pass, None)
@@ -231,23 +221,13 @@ pub fn check_directive(name: &str, expected: &str) -> check::CheckReturn {
             check::CheckState::Fail,
             Some(format!("directive {:?} not found", name)),
         ),
-    }
+    })
 }
 
 /// Check that a directive does NOT contain a forbidden substring.
 #[allow(dead_code)]
 pub fn check_directive_not_contains(name: &str, forbidden: &str) -> check::CheckReturn {
-    let config = match NGINX_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("nginx configuration not initialized".to_string()),
-            );
-        }
-    };
-
-    match find_directive_in_config(config, name) {
+    NGINX_CONFIG.with(|config| match find_directive_in_config(config, name) {
         Some(value) => {
             if value.contains(forbidden) {
                 (
@@ -262,60 +242,44 @@ pub fn check_directive_not_contains(name: &str, forbidden: &str) -> check::Check
             check::CheckState::Fail,
             Some(format!("directive {:?} not found", name)),
         ),
-    }
+    })
 }
 
 /// Check that a specific add_header exists.
 pub fn check_header_present(header_name: &str) -> check::CheckReturn {
-    let config = match NGINX_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("nginx configuration not initialized".to_string()),
-            );
+    NGINX_CONFIG.with(|config| {
+        let mut results = Vec::new();
+        collect_directives_from_config(config, "add_header", &mut results);
+
+        if results.iter().any(|v| v.starts_with(header_name)) {
+            (check::CheckState::Pass, None)
+        } else {
+            (
+                check::CheckState::Fail,
+                Some(format!("header {:?} not found", header_name)),
+            )
         }
-    };
-
-    let mut results = Vec::new();
-    collect_directives_from_config(config, "add_header", &mut results);
-
-    if results.iter().any(|v| v.starts_with(header_name)) {
-        (check::CheckState::Pass, None)
-    } else {
-        (
-            check::CheckState::Fail,
-            Some(format!("header {:?} not found", header_name)),
-        )
-    }
+    })
 }
 
 /// Check that an HTTPS redirect exists (return 301 https).
 pub fn check_https_redirect() -> check::CheckReturn {
-    let config = match NGINX_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("nginx configuration not initialized".to_string()),
-            );
+    NGINX_CONFIG.with(|config| {
+        let mut results = Vec::new();
+        collect_directives_from_config(config, "return", &mut results);
+
+        if results
+            .iter()
+            .any(|v| v.contains("301") && v.contains("https"))
+        {
+            (check::CheckState::Pass, None)
+        } else {
+            (
+                check::CheckState::Fail,
+                Some("no HTTP to HTTPS redirect found".to_string()),
+            )
         }
-    };
-
-    let mut results = Vec::new();
-    collect_directives_from_config(config, "return", &mut results);
-
-    if results
-        .iter()
-        .any(|v| v.contains("301") && v.contains("https"))
-    {
-        (check::CheckState::Pass, None)
-    } else {
-        (
-            check::CheckState::Fail,
-            Some("no HTTP to HTTPS redirect found".to_string()),
-        )
-    }
+    })
 }
 
 /// Get nginx config by running `nginx -T`.
@@ -324,13 +288,22 @@ fn get_nginx_config() -> Result<NginxConfig, String> {
     cmd.stdin(Stdio::null());
     cmd.args(["-c", NGINX_CONF_PATH, "-T"]);
 
-    let output = cmd.output().map_err(|e| e.to_string())?;
+    let output = cmd
+        .output()
+        .map_err(|err| format!("failed to run \"nginx -c {} -T\": {}", NGINX_CONF_PATH, err))?;
 
-    if let Some(code) = output.status.code()
-        && code != 0
-    {
+    if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(format!("nginx -T exited with code {}: {}", code, stderr));
+        let stderr = stderr.trim();
+
+        return Err(if stderr.is_empty() {
+            format!("\"nginx -c {} -T\" {}", NGINX_CONF_PATH, output.status)
+        } else {
+            format!(
+                "\"nginx -c {} -T\" {}: {}",
+                NGINX_CONF_PATH, output.status, stderr
+            )
+        });
     }
 
     Ok(parse_nginx_config(&String::from_utf8_lossy(&output.stdout)))
@@ -338,17 +311,7 @@ fn get_nginx_config() -> Result<NginxConfig, String> {
 
 /// Init nginx configuration by running `nginx -T`.
 pub fn init_nginx_config() {
-    if NGINX_CONFIG.get().is_some() {
-        return;
-    }
-
-    match get_nginx_config() {
-        Ok(c) => {
-            NGINX_CONFIG.get_or_init(|| c);
-            log_debug!("initialized nginx config");
-        }
-        Err(err) => log_error!("failed to initialize nginx configuration: {}", err),
-    }
+    NGINX_CONFIG.init(get_nginx_config);
 }
 
 #[cfg(test)]

@@ -19,11 +19,10 @@
 use std::collections::HashMap;
 use std::process;
 use std::process::Stdio;
-use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_error};
+use crate::check::{self, State};
 
-static APT_CONFIG: OnceLock<AptConfig> = OnceLock::new();
+static APT_CONFIG: State<AptConfig> = State::new("apt config");
 
 /// Kenel params configuration from apt.
 type AptConfig = HashMap<String, String>;
@@ -44,12 +43,26 @@ fn parse_apt_config(stdout: String) -> AptConfig {
 }
 
 /// Get apt configuration by running `apt-config dump`.
-fn get_apt_config() -> Result<AptConfig, std::io::Error> {
+fn get_apt_config() -> Result<AptConfig, String> {
     let mut cmd = process::Command::new("apt-config");
     cmd.stdin(Stdio::null());
     cmd.args(vec!["dump"]);
 
-    let output = cmd.output()?;
+    let output = cmd
+        .output()
+        .map_err(|err| format!("failed to run \"apt-config dump\": {}", err))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let stderr = stderr.trim();
+
+        return Err(if stderr.is_empty() {
+            format!("\"apt-config dump\" {}", output.status)
+        } else {
+            format!("\"apt-config dump\" {}: {}", output.status, stderr)
+        });
+    }
+
     Ok(parse_apt_config(
         String::from_utf8_lossy(&output.stdout).to_string(),
     ))
@@ -57,32 +70,12 @@ fn get_apt_config() -> Result<AptConfig, std::io::Error> {
 
 /// Init apt configuration by running `apt-config dump`.
 pub fn init_apt_config() {
-    if APT_CONFIG.get().is_some() {
-        return;
-    }
-
-    match get_apt_config() {
-        Ok(c) => {
-            APT_CONFIG.get_or_init(|| c);
-            log_debug!("initialized apt config");
-        }
-        Err(err) => log_error!("failed to initialize apt config: {}", err),
-    }
+    APT_CONFIG.init(get_apt_config);
 }
 
 /// Ensure APT is configured correctly.
 pub fn check_apt(key: &str, value: &str) -> check::CheckReturn {
-    let config = match APT_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("apt configuration not initialized".to_string()),
-            );
-        }
-    };
-
-    match config.get(key) {
+    APT_CONFIG.with(|config| match config.get(key) {
         Some(conf_value) => {
             if conf_value == value {
                 (check::CheckState::Pass, None)
@@ -97,7 +90,7 @@ pub fn check_apt(key: &str, value: &str) -> check::CheckReturn {
             check::CheckState::Fail,
             Some(format!("key {:?} not present", key)),
         ),
-    }
+    })
 }
 
 fn matches_bool_value(conf_value: &str, expected: bool) -> bool {
@@ -109,17 +102,7 @@ fn matches_bool_value(conf_value: &str, expected: bool) -> bool {
 
 /// Ensure APT is configured correctly, when the key is a boolean.
 pub fn check_apt_bool(key: &str, value: bool) -> check::CheckReturn {
-    let config = match APT_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("apt configuration not initialized".to_string()),
-            );
-        }
-    };
-
-    match config.get(key) {
+    APT_CONFIG.with(|config| match config.get(key) {
         Some(conf_value) => {
             if matches_bool_value(conf_value, value) {
                 (check::CheckState::Pass, None)
@@ -134,7 +117,7 @@ pub fn check_apt_bool(key: &str, value: bool) -> check::CheckReturn {
             check::CheckState::Fail,
             Some(format!("key {:?} not present", key)),
         ),
-    }
+    })
 }
 
 #[cfg(test)]

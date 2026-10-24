@@ -10,6 +10,16 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+## [0.37.0] - 2026-10-24
+
+### Added
+
+- Add `check::State` for host state collected as dependency that keeps the reason of its failure to add to warnings in checks
+
+### Changed
+
+- Update init error messages to be more accurate
+
 ## [0.36.1] - 2026-10-22
 
 ### Added

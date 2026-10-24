@@ -19,11 +19,11 @@
 use std::collections::HashMap;
 use std::process;
 use std::process::Stdio;
-use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_error};
+use crate::check::{self, State};
+use crate::log_warn;
 
-static SYSCTL_CONFIG: OnceLock<SysctlConfig> = OnceLock::new();
+static SYSCTL_CONFIG: State<SysctlConfig> = State::new("sysctl configuration");
 
 /// Kernel params configuration from `sysctl --all`.
 type SysctlConfig = HashMap<String, String>;
@@ -46,24 +46,36 @@ fn get_sysctl_config() -> Result<SysctlConfig, String> {
     cmd.stdin(Stdio::null());
     cmd.args(vec!["--all"]);
 
-    Ok(parse_sysctl_config(
-        String::from_utf8_lossy(&cmd.output().map_err(|e| e.to_string())?.stdout).to_string(),
-    ))
+    let output = cmd
+        .output()
+        .map_err(|err| format!("failed to run \"sysctl --all\": {}", err))?;
+
+    let config = parse_sysctl_config(String::from_utf8_lossy(&output.stdout).to_string());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let stderr = stderr.trim();
+
+    // keep partial results, `sysctl --all` also fails on unreadable keys
+    if !config.is_empty() {
+        if !output.status.success() {
+            log_warn!("\"sysctl --all\" {}: {}", output.status, stderr);
+        }
+
+        return Ok(config);
+    }
+
+    if stderr.is_empty() {
+        Err(format!(
+            "\"sysctl --all\" {} and returned no key",
+            output.status
+        ))
+    } else {
+        Err(format!("\"sysctl --all\" returned no key: {}", stderr))
+    }
 }
 
 /// Init sysctl configuration by running `sysctl --all`.
 pub fn init_sysctl_config() {
-    if SYSCTL_CONFIG.get().is_some() {
-        return;
-    }
-
-    match get_sysctl_config() {
-        Ok(c) => {
-            SYSCTL_CONFIG.get_or_init(|| c);
-            log_debug!("initialized sysctl config");
-        }
-        Err(err) => log_error!("failed to initialize sysctl configuration: {}", err),
-    }
+    SYSCTL_CONFIG.init(get_sysctl_config);
 }
 
 pub trait SysctlValue {
@@ -73,64 +85,40 @@ pub trait SysctlValue {
 impl SysctlValue for &str {
     /// Get sysctl value from a collected configuration and compare it to &str.
     fn check_sysctl(&self, key: &str) -> check::CheckReturn {
-        let config = match SYSCTL_CONFIG.get() {
-            Some(c) => c,
-            None => {
-                return (
-                    check::CheckState::Warning,
-                    Some("sysctl configuration not initialized".to_string()),
-                );
-            }
-        };
-
-        match config.get(key) {
-            Some(value) => {
-                if value == self {
-                    (check::CheckState::Pass, None)
-                } else {
-                    (
-                        check::CheckState::Fail,
-                        Some(format!("{:?} != {:?}", value, self)),
-                    )
-                }
-            }
-            None => (check::CheckState::Warning, Some("missing key".to_string())),
-        }
+        SYSCTL_CONFIG.with(|config| match config.get(key) {
+            Some(value) if value == self => (check::CheckState::Pass, None),
+            Some(value) => (
+                check::CheckState::Fail,
+                Some(format!("{:?} != {:?}", value, self)),
+            ),
+            None => (
+                check::CheckState::Warning,
+                Some(format!("missing key {:?}", key)),
+            ),
+        })
     }
 }
 
 impl SysctlValue for i32 {
     /// Get sysctl value from a collected configuration and compare it to i32.
     fn check_sysctl(&self, key: &str) -> check::CheckReturn {
-        let config = match SYSCTL_CONFIG.get() {
-            Some(c) => c,
-            None => {
-                return (
-                    check::CheckState::Warning,
-                    Some("sysctl configuration not initialized".to_string()),
-                );
-            }
-        };
-
-        match config.get(key) {
+        SYSCTL_CONFIG.with(|config| match config.get(key) {
             Some(value) => match value.parse::<i32>() {
-                Ok(val) => {
-                    if val == *self {
-                        (check::CheckState::Pass, None)
-                    } else {
-                        (
-                            check::CheckState::Fail,
-                            Some(format!("{:?} != {:?}", val, self)),
-                        )
-                    }
-                }
+                Ok(val) if val == *self => (check::CheckState::Pass, None),
+                Ok(val) => (
+                    check::CheckState::Fail,
+                    Some(format!("{:?} != {:?}", val, self)),
+                ),
                 Err(err) => (
                     check::CheckState::Warning,
                     Some(format!("failed to convert {:?} to i32: {}", value, err)),
                 ),
             },
-            None => (check::CheckState::Warning, Some("missing key".to_string())),
-        }
+            None => (
+                check::CheckState::Warning,
+                Some(format!("missing key {:?}", key)),
+            ),
+        })
     }
 }
 
@@ -139,29 +127,23 @@ pub fn check_sysctl<T: SysctlValue>(key: &str, value: T) -> check::CheckReturn {
 }
 
 pub fn get_sysctl_i32_value(key: &str) -> Result<i32, String> {
-    let config = match SYSCTL_CONFIG.get() {
-        Some(c) => c,
-        None => return Err("sysctl configuration not initialized".to_string()),
-    };
+    let config = SYSCTL_CONFIG.try_get()?;
 
     match config.get(key) {
         Some(value) => match value.parse::<i32>() {
             Ok(val) => Ok(val),
             Err(err) => Err(err.to_string()),
         },
-        None => Err("missing key".to_string()),
+        None => Err(format!("missing key {:?}", key)),
     }
 }
 
 pub fn get_sysctl_str_value(key: &str) -> Result<String, String> {
-    let config = match SYSCTL_CONFIG.get() {
-        Some(c) => c,
-        None => return Err("sysctl configuration not initialized".to_string()),
-    };
+    let config = SYSCTL_CONFIG.try_get()?;
 
     match config.get(key) {
         Some(value) => Ok(value.clone()),
-        None => Err("missing key".to_string()),
+        None => Err(format!("missing key {:?}", key)),
     }
 }
 

@@ -17,15 +17,15 @@
  */
 
 use std::fs;
-use std::sync::OnceLock;
 
+use crate::check;
+use crate::check::State;
 use crate::modules::base;
-use crate::{check, log_debug, log_error};
 
 const GROUP_PATH: &str = "/etc/group";
 const SHADOW_PATH: &str = "/etc/gshadow";
 
-static GROUPS: OnceLock<Groups> = OnceLock::new();
+static GROUPS: State<Groups> = State::new("groups");
 
 /// Group configuration from `/etc/group`.
 type Groups = Vec<Group>;
@@ -78,23 +78,15 @@ fn parse_group(content: String) -> Groups {
 }
 
 /// Get groups from `/etc/group`.
-fn get_group() -> Result<Groups, std::io::Error> {
-    Ok(parse_group(fs::read_to_string(GROUP_PATH)?))
+fn get_group() -> Result<Groups, String> {
+    let content = fs::read_to_string(GROUP_PATH)
+        .map_err(|err| format!("failed to read {}: {}", GROUP_PATH, err))?;
+    Ok(parse_group(content))
 }
 
 /// Init groups from `/etc/group`.
 pub fn init_group() {
-    if GROUPS.get().is_some() {
-        return;
-    }
-
-    match get_group() {
-        Ok(g) => {
-            GROUPS.get_or_init(|| g);
-            log_debug!("initialized group");
-        }
-        Err(err) => log_error!("failed to initialize groups: {}", err),
-    }
+    GROUPS.init(get_group);
 }
 
 /// Ensure group shadow empty or missing.
@@ -106,132 +98,92 @@ pub fn empty_gshadow() -> check::CheckReturn {
 
 /// Ensure no group has a password set (not set to `x`).
 pub fn no_password_in_group() -> check::CheckReturn {
-    let groups = match GROUPS.get() {
-        Some(group) => group,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("group not initialized".to_string()),
-            );
+    GROUPS.with(|groups| {
+        let g: Vec<String> = groups
+            .iter()
+            .filter(|group| group.password != "x")
+            .map(|group| group.name.clone())
+            .collect();
+
+        if !g.is_empty() {
+            (check::CheckState::Fail, Some(g.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
         }
-    };
-
-    let g: Vec<String> = groups
-        .iter()
-        .filter(|group| group.password != "x")
-        .map(|group| group.name.clone())
-        .collect();
-
-    if !g.is_empty() {
-        (check::CheckState::Fail, Some(g.join(", ")))
-    } else {
-        (check::CheckState::Pass, None)
-    }
+    })
 }
 
 /// Ensure that only root has GID 0.
 pub fn one_gid_zero() -> check::CheckReturn {
-    let groups = match GROUPS.get() {
-        Some(group) => group,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("group not initialized".to_string()),
-            );
+    GROUPS.with(|groups| {
+        let g: Vec<String> = groups
+            .iter()
+            .filter(|group| group.gid == 0 && group.name != "root")
+            .map(|group| group.name.clone())
+            .collect();
+
+        if !g.is_empty() {
+            (check::CheckState::Fail, Some(g.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
         }
-    };
-
-    let g: Vec<String> = groups
-        .iter()
-        .filter(|group| group.gid == 0 && group.name != "root")
-        .map(|group| group.name.clone())
-        .collect();
-
-    if !g.is_empty() {
-        (check::CheckState::Fail, Some(g.join(", ")))
-    } else {
-        (check::CheckState::Pass, None)
-    }
+    })
 }
 
 /// Ensure no duplicate GIDs exist.
 pub fn no_dup_gid() -> check::CheckReturn {
-    let groups = match GROUPS.get() {
-        Some(group) => group,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("group not initialized".to_string()),
-            );
+    GROUPS.with(|groups| {
+        let g: Vec<String> = groups
+            .iter()
+            .filter(|group| groups.iter().filter(|g| g.gid == group.gid).count() > 1)
+            .map(|group| group.name.clone())
+            .collect();
+
+        if !g.is_empty() {
+            (check::CheckState::Fail, Some(g.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
         }
-    };
-
-    let g: Vec<String> = groups
-        .iter()
-        .filter(|group| groups.iter().filter(|g| g.gid == group.gid).count() > 1)
-        .map(|group| group.name.clone())
-        .collect();
-
-    if !g.is_empty() {
-        (check::CheckState::Fail, Some(g.join(", ")))
-    } else {
-        (check::CheckState::Pass, None)
-    }
+    })
 }
 
 /// Ensure no duplicate group names exist.
 pub fn no_dup_name() -> check::CheckReturn {
-    let groups = match GROUPS.get() {
-        Some(group) => group,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("group not initialized".to_string()),
-            );
+    GROUPS.with(|groups| {
+        let g: Vec<String> = groups
+            .iter()
+            .filter(|group| groups.iter().filter(|g| g.name == group.name).count() > 1)
+            .map(|group| group.name.clone())
+            .collect();
+
+        if !g.is_empty() {
+            (check::CheckState::Fail, Some(g.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
         }
-    };
-
-    let g: Vec<String> = groups
-        .iter()
-        .filter(|group| groups.iter().filter(|g| g.name == group.name).count() > 1)
-        .map(|group| group.name.clone())
-        .collect();
-
-    if !g.is_empty() {
-        (check::CheckState::Fail, Some(g.join(", ")))
-    } else {
-        (check::CheckState::Pass, None)
-    }
+    })
 }
 
 /// Ensure group is empty.
 pub fn no_members(group_name: &str) -> check::CheckReturn {
-    let groups = match GROUPS.get() {
-        Some(group) => group,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("group not initialized".to_string()),
-            );
-        }
-    };
+    GROUPS.with(|groups| {
+        for group in groups {
+            if group.name != group_name {
+                continue;
+            }
 
-    for group in groups {
-        if group.name != group_name {
-            continue;
+            if !group.user_list.is_empty() {
+                return (check::CheckState::Fail, Some(group.user_list.join(", ")));
+            } else {
+                return (check::CheckState::Pass, None);
+            }
         }
 
-        if !group.user_list.is_empty() {
-            return (check::CheckState::Fail, Some(group.user_list.join(", ")));
-        } else {
-            return (check::CheckState::Pass, None);
-        }
-    }
-
-    (
-        check::CheckState::Warning,
-        Some(format!("no \"{}\" group found", group_name)),
-    )
+        (
+            check::CheckState::Warning,
+            Some(format!("no \"{}\" group found", group_name)),
+        )
+    })
 }
 
 #[cfg(test)]

@@ -18,12 +18,10 @@
 
 use std::fs;
 use std::path::Path;
-use std::sync::OnceLock;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use crate::check;
+use crate::check::{self, State};
 use crate::modules::base;
-use crate::{log_debug, log_error};
 
 const PASSWD_PATH: &str = "/etc/passwd";
 const SHADOW_PATH: &str = "/etc/shadow";
@@ -34,8 +32,8 @@ const USERADD_PATH: &str = "/etc/default/useradd";
 /// UID_MIN as defined in `/etc/login.defs`.
 const UID_MIN: u32 = 1000;
 
-static PASSWD_CONFIG: OnceLock<PasswdConfig> = OnceLock::new();
-static SHADOW_CONFIG: OnceLock<ShadowConfig> = OnceLock::new();
+static PASSWD_CONFIG: State<PasswdConfig> = State::new("passwd");
+static SHADOW_CONFIG: State<ShadowConfig> = State::new("shadow");
 
 /// Passwd configuration from `/etc/passwd`.
 type PasswdConfig = Vec<Passwd>;
@@ -120,24 +118,14 @@ fn parse_passwd(content: String) -> PasswdConfig {
 
 /// Get the system's users from `/etc/passwd`.
 fn get_passwd() -> Result<PasswdConfig, String> {
-    Ok(parse_passwd(
-        fs::read_to_string(PASSWD_PATH).map_err(|e| e.to_string())?,
-    ))
+    let content = fs::read_to_string(PASSWD_PATH)
+        .map_err(|err| format!("failed to read {}: {}", PASSWD_PATH, err))?;
+    Ok(parse_passwd(content))
 }
 
 /// Init the system's users from `/etc/passwd`.
 pub fn init_passwd() {
-    if PASSWD_CONFIG.get().is_some() {
-        return;
-    }
-
-    match get_passwd() {
-        Ok(p) => {
-            PASSWD_CONFIG.get_or_init(|| p);
-            log_debug!("initialized passwd");
-        }
-        Err(err) => log_error!("failed to initialize passwd: {}", err),
-    };
+    PASSWD_CONFIG.init(get_passwd);
 }
 
 /// Parse the content of `/etc/passwd`.
@@ -207,178 +195,128 @@ fn parse_shadow(content: String) -> ShadowConfig {
 
 /// Get the system's users from `/etc/shadow`.
 fn get_shadow() -> Result<ShadowConfig, String> {
-    Ok(parse_shadow(
-        fs::read_to_string(SHADOW_PATH).map_err(|e| e.to_string())?,
-    ))
+    let content = fs::read_to_string(SHADOW_PATH)
+        .map_err(|err| format!("failed to read {}: {}", SHADOW_PATH, err))?;
+    Ok(parse_shadow(content))
 }
 
 /// Init the system's users from `/etc/shadow`.
 pub fn init_shadow() {
-    if SHADOW_CONFIG.get().is_some() {
-        return;
-    }
-
-    match get_shadow() {
-        Ok(s) => {
-            SHADOW_CONFIG.get_or_init(|| s);
-            log_debug!("initialized shadow");
-        }
-        Err(err) => log_error!("failed to initialize shadow: {}", err),
-    };
+    SHADOW_CONFIG.init(get_shadow);
 }
 
 /// Verify if any user has a password in passwd, not equal to `x`.
 pub fn no_password_in_passwd() -> check::CheckReturn {
-    let passwd = match PASSWD_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("passwd configuration not initialized".to_string()),
-            );
+    PASSWD_CONFIG.with(|passwd| {
+        let g: Vec<String> = passwd
+            .iter()
+            .filter(|entry| entry.password != "x")
+            .map(|entry| entry.username.clone())
+            .collect();
+
+        if !g.is_empty() {
+            (check::CheckState::Fail, Some(g.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
         }
-    };
-
-    let g: Vec<String> = passwd
-        .iter()
-        .filter(|entry| entry.password != "x")
-        .map(|entry| entry.username.clone())
-        .collect();
-
-    if !g.is_empty() {
-        (check::CheckState::Fail, Some(g.join(", ")))
-    } else {
-        (check::CheckState::Pass, None)
-    }
+    })
 }
 
 /// Verify that only root has UID 0.
 pub fn no_uid_zero() -> check::CheckReturn {
-    let passwd = match PASSWD_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("passwd configuration not initialized".to_string()),
-            );
+    PASSWD_CONFIG.with(|passwd| {
+        let g: Vec<String> = passwd
+            .iter()
+            .filter(|entry| entry.uid == 0 && entry.username != "root")
+            .map(|entry| entry.username.clone())
+            .collect();
+
+        if !g.is_empty() {
+            (check::CheckState::Fail, Some(g.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
         }
-    };
-
-    let g: Vec<String> = passwd
-        .iter()
-        .filter(|entry| entry.uid == 0 && entry.username != "root")
-        .map(|entry| entry.username.clone())
-        .collect();
-
-    if !g.is_empty() {
-        (check::CheckState::Fail, Some(g.join(", ")))
-    } else {
-        (check::CheckState::Pass, None)
-    }
+    })
 }
 
 /// Ensure all passwords are hashed with yescrypt.
 pub fn yescrypt_hashes() -> check::CheckReturn {
-    let shadow = match SHADOW_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("shadow configuration not initialized".to_string()),
-            );
-        }
-    };
-
-    // the full yescrypt format is:
-    // \$y\$[./A-Za-z0-9]+\$[./A-Za-z0-9]{,86}\$[./A-Za-z0-9]{43}
-    let usernames: Vec<String> = shadow
-        .iter()
-        .filter(|entry| {
-            !entry.password.starts_with("$y$")
+    SHADOW_CONFIG.with(|shadow| {
+        // the full yescrypt format is:
+        // \$y\$[./A-Za-z0-9]+\$[./A-Za-z0-9]{,86}\$[./A-Za-z0-9]{43}
+        let usernames: Vec<String> = shadow
+            .iter()
+            .filter(|entry| {
+                !entry.password.starts_with("$y$")
                 // all indicating the account is locked or disabled
                 && entry.password != "*"
                 // could be `!`, `!!`, or `!*`
                 && !entry.password.starts_with('!')
-        })
-        .map(|entry| entry.username.clone())
-        .collect();
+            })
+            .map(|entry| entry.username.clone())
+            .collect();
 
-    if !usernames.is_empty() {
-        (check::CheckState::Fail, Some(usernames.join(", ")))
-    } else {
-        (check::CheckState::Pass, None)
-    }
+        if !usernames.is_empty() {
+            (check::CheckState::Fail, Some(usernames.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
+        }
+    })
 }
 
 /// Ensure no accounts are locked, delete them.
 pub fn no_locked_account() -> check::CheckReturn {
-    let shadow = match SHADOW_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("shadow configuration not initialized".to_string()),
-            );
+    SHADOW_CONFIG.with(|shadow| {
+        let now = match SystemTime::now().duration_since(UNIX_EPOCH) {
+            Ok(c) => c,
+            Err(err) => return (check::CheckState::Warning, Some(format!("{}", err))),
+        };
+
+        let days_since_epoch = now.as_secs() / 86400;
+
+        // TODO: allow locked system accounts (UID < 1000)
+        // this is the default on ArchLinux
+        let usernames: Vec<String> = shadow
+            .iter()
+            .filter(|entry| match entry.expiration_date {
+                Some(expiration_date) => u64::from(expiration_date) <= days_since_epoch,
+                None => false,
+            })
+            .map(|entry| entry.username.clone())
+            .collect();
+
+        if !usernames.is_empty() {
+            (check::CheckState::Fail, Some(usernames.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
         }
-    };
-
-    let now = match SystemTime::now().duration_since(UNIX_EPOCH) {
-        Ok(c) => c,
-        Err(err) => return (check::CheckState::Warning, Some(format!("{}", err))),
-    };
-
-    let days_since_epoch = now.as_secs() / 86400;
-
-    // TODO: allow locked system accounts (UID < 1000)
-    // this is the default on ArchLinux
-    let usernames: Vec<String> = shadow
-        .iter()
-        .filter(|entry| match entry.expiration_date {
-            Some(expiration_date) => u64::from(expiration_date) <= days_since_epoch,
-            None => false,
-        })
-        .map(|entry| entry.username.clone())
-        .collect();
-
-    if !usernames.is_empty() {
-        (check::CheckState::Fail, Some(usernames.join(", ")))
-    } else {
-        (check::CheckState::Pass, None)
-    }
+    })
 }
 
 /// Ensure that all home directories exist.
 pub fn no_missing_home() -> check::CheckReturn {
-    let passwd = match PASSWD_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("passwd configuration not initialized".to_string()),
-            );
-        }
-    };
+    PASSWD_CONFIG.with(|passwd| {
+        let mut usernames: Vec<String> = vec![];
+        for user in passwd.iter() {
+            if (user.uid > 0 && user.uid < UID_MIN)
+                || user.shell.ends_with("/nologin")
+                || user.shell.ends_with("/false")
+            {
+                continue;
+            }
 
-    let mut usernames: Vec<String> = vec![];
-    for user in passwd.iter() {
-        if (user.uid > 0 && user.uid < UID_MIN)
-            || user.shell.ends_with("/nologin")
-            || user.shell.ends_with("/false")
-        {
-            continue;
+            let p = Path::new(&user.home);
+            if !p.exists() || !p.is_dir() {
+                usernames.push(user.username.clone());
+            }
         }
 
-        let p = Path::new(&user.home);
-        if !p.exists() || !p.is_dir() {
-            usernames.push(user.username.clone());
+        if !usernames.is_empty() {
+            (check::CheckState::Fail, Some(usernames.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
         }
-    }
-
-    if !usernames.is_empty() {
-        (check::CheckState::Fail, Some(usernames.join(", ")))
-    } else {
-        (check::CheckState::Pass, None)
-    }
+    })
 }
 
 // TODO: Ensure all groups in /etc/passwd exist in /etc/group
@@ -388,58 +326,42 @@ pub fn no_missing_home() -> check::CheckReturn {
 
 /// Ensure no duplicate UIDs exist.
 pub fn no_dup_uid() -> check::CheckReturn {
-    let passwd = match PASSWD_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("passwd configuration not initialized".to_string()),
-            );
+    PASSWD_CONFIG.with(|passwd| {
+        let usernames: Vec<String> = passwd
+            .iter()
+            .filter(|entry| passwd.iter().filter(|u| u.uid == entry.uid).count() > 1)
+            .map(|entry| entry.username.clone())
+            .collect();
+
+        if !usernames.is_empty() {
+            (check::CheckState::Fail, Some(usernames.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
         }
-    };
-
-    let usernames: Vec<String> = passwd
-        .iter()
-        .filter(|entry| passwd.iter().filter(|u| u.uid == entry.uid).count() > 1)
-        .map(|entry| entry.username.clone())
-        .collect();
-
-    if !usernames.is_empty() {
-        (check::CheckState::Fail, Some(usernames.join(", ")))
-    } else {
-        (check::CheckState::Pass, None)
-    }
+    })
 }
 
 /// Ensure no duplicate user names exist.
 pub fn no_dup_username() -> check::CheckReturn {
-    let passwd = match PASSWD_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("passwd configuration not initialized".to_string()),
-            );
+    PASSWD_CONFIG.with(|passwd| {
+        let usernames: Vec<String> = passwd
+            .iter()
+            .filter(|entry| {
+                passwd
+                    .iter()
+                    .filter(|u| u.username == entry.username)
+                    .count()
+                    > 1
+            })
+            .map(|entry| entry.username.clone())
+            .collect();
+
+        if !usernames.is_empty() {
+            (check::CheckState::Fail, Some(usernames.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
         }
-    };
-
-    let usernames: Vec<String> = passwd
-        .iter()
-        .filter(|entry| {
-            passwd
-                .iter()
-                .filter(|u| u.username == entry.username)
-                .count()
-                > 1
-        })
-        .map(|entry| entry.username.clone())
-        .collect();
-
-    if !usernames.is_empty() {
-        (check::CheckState::Fail, Some(usernames.join(", ")))
-    } else {
-        (check::CheckState::Pass, None)
-    }
+    })
 }
 
 /// Ensure no login is available on system accounts
@@ -447,33 +369,25 @@ pub fn no_dup_username() -> check::CheckReturn {
 /// Ensure that all system users (UID < 1000) can't login with a shell, either
 /// have `nologin`, or `false` as shell.
 pub fn no_login_sys_users() -> check::CheckReturn {
-    let config = match PASSWD_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("passwd configuration not initialized".to_string()),
-            );
-        }
-    };
-
-    let usernames: Vec<String> = config
-        .iter()
-        .filter(|user| {
-            (user.uid > 0 && user.uid < UID_MIN)
-                && !(user.shell.ends_with("/nologin")
+    PASSWD_CONFIG.with(|passwd| {
+        let usernames: Vec<String> = passwd
+            .iter()
+            .filter(|user| {
+                (user.uid > 0 && user.uid < UID_MIN)
+                    && !(user.shell.ends_with("/nologin")
                 || user.shell.ends_with("/false")
                 // on some distro user `sync` as `/bin/sync` shell
                 || user.shell.ends_with("/sync"))
-        })
-        .map(|entry| entry.username.clone())
-        .collect();
+            })
+            .map(|entry| entry.username.clone())
+            .collect();
 
-    if !usernames.is_empty() {
-        (check::CheckState::Fail, Some(usernames.join(", ")))
-    } else {
-        (check::CheckState::Pass, None)
-    }
+        if !usernames.is_empty() {
+            (check::CheckState::Fail, Some(usernames.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
+        }
+    })
 }
 
 /// Ensure /etc/shadow password fields are not empty.
@@ -481,27 +395,19 @@ pub fn no_login_sys_users() -> check::CheckReturn {
 /// An account with an empty password field means that anybody may log in as
 /// that user without providing a password.
 pub fn no_empty_shadow_password() -> check::CheckReturn {
-    let shadow = match SHADOW_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("shadow configuration not initialized".to_string()),
-            );
+    SHADOW_CONFIG.with(|shadow| {
+        let usernames: Vec<String> = shadow
+            .iter()
+            .filter(|user| user.password.is_empty())
+            .map(|entry| entry.username.clone())
+            .collect();
+
+        if !usernames.is_empty() {
+            (check::CheckState::Fail, Some(usernames.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
         }
-    };
-
-    let usernames: Vec<String> = shadow
-        .iter()
-        .filter(|user| user.password.is_empty())
-        .map(|entry| entry.username.clone())
-        .collect();
-
-    if !usernames.is_empty() {
-        (check::CheckState::Fail, Some(usernames.join(", ")))
-    } else {
-        (check::CheckState::Pass, None)
-    }
+    })
 }
 
 /// Ensure /etc/passwd password fields are not empty.
@@ -509,27 +415,19 @@ pub fn no_empty_shadow_password() -> check::CheckReturn {
 /// An account with an empty password field means that anybody may log in as
 /// that user without providing a password.
 pub fn no_empty_passwd_password() -> check::CheckReturn {
-    let passwd = match PASSWD_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("passwd configuration not initialized".to_string()),
-            );
+    PASSWD_CONFIG.with(|passwd| {
+        let usernames: Vec<String> = passwd
+            .iter()
+            .filter(|user| user.password.is_empty())
+            .map(|entry| entry.username.clone())
+            .collect();
+
+        if !usernames.is_empty() {
+            (check::CheckState::Fail, Some(usernames.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
         }
-    };
-
-    let usernames: Vec<String> = passwd
-        .iter()
-        .filter(|user| user.password.is_empty())
-        .map(|entry| entry.username.clone())
-        .collect();
-
-    if !usernames.is_empty() {
-        (check::CheckState::Fail, Some(usernames.join(", ")))
-    } else {
-        (check::CheckState::Pass, None)
-    }
+    })
 }
 
 /// Ensure `/etc/securetty` is empty or missing.
@@ -543,197 +441,149 @@ pub fn empty_securetty() -> check::CheckReturn {
 
 /// Ensure root account is disabled.
 pub fn root_account_disabled() -> check::CheckReturn {
-    let shadow = match SHADOW_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("shadow configuration not initialized".to_string()),
-            );
-        }
-    };
+    SHADOW_CONFIG.with(|shadow| {
+        PASSWD_CONFIG.with(|passwd| {
+            let root_shadow = shadow.iter().find(|entry| entry.username == "root");
+            let root_passwd = passwd.iter().find(|entry| entry.username == "root");
 
-    let passwd = match PASSWD_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("passwd configuration not initialized".to_string()),
-            );
-        }
-    };
+            let password_locked = match root_shadow {
+                Some(entry) => entry.password.starts_with('!') || entry.password == "*",
+                None => true,
+            };
 
-    let root_shadow = shadow.iter().find(|entry| entry.username == "root");
-    let root_passwd = passwd.iter().find(|entry| entry.username == "root");
+            let shell_disabled = match root_passwd {
+                Some(entry) => {
+                    entry.shell == "/usr/sbin/nologin"
+                        || entry.shell == "/sbin/nologin"
+                        || entry.shell == "/bin/false"
+                        || entry.shell == "/usr/bin/false"
+                }
+                None => false,
+            };
 
-    let password_locked = match root_shadow {
-        Some(entry) => entry.password.starts_with('!') || entry.password == "*",
-        None => true,
-    };
-
-    let shell_disabled = match root_passwd {
-        Some(entry) => {
-            entry.shell == "/usr/sbin/nologin"
-                || entry.shell == "/sbin/nologin"
-                || entry.shell == "/bin/false"
-                || entry.shell == "/usr/bin/false"
-        }
-        None => false,
-    };
-
-    if password_locked || shell_disabled {
-        (check::CheckState::Pass, None)
-    } else {
-        (
-            check::CheckState::Fail,
-            Some("root account is enabled".to_string()),
-        )
-    }
+            if password_locked || shell_disabled {
+                (check::CheckState::Pass, None)
+            } else {
+                (
+                    check::CheckState::Fail,
+                    Some("root account is enabled".to_string()),
+                )
+            }
+        })
+    })
 }
 
 pub fn no_rhosts_files() -> check::CheckReturn {
-    let passwd = match PASSWD_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("passwd configuration not initialized".to_string()),
-            );
+    PASSWD_CONFIG.with(|passwd| {
+        let mut found: Vec<String> = vec![];
+        for user in passwd.iter() {
+            if user.home.is_empty() || user.home == "/" {
+                continue;
+            }
+            let rhosts = Path::new(&user.home).join(".rhosts");
+            let shosts = Path::new(&user.home).join(".shosts");
+            if rhosts.exists() {
+                found.push(format!("{}:{}", user.username, rhosts.display()));
+            }
+            if shosts.exists() {
+                found.push(format!("{}:{}", user.username, shosts.display()));
+            }
         }
-    };
 
-    let mut found: Vec<String> = vec![];
-    for user in passwd.iter() {
-        if user.home.is_empty() || user.home == "/" {
-            continue;
+        if !found.is_empty() {
+            (check::CheckState::Fail, Some(found.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
         }
-        let rhosts = Path::new(&user.home).join(".rhosts");
-        let shosts = Path::new(&user.home).join(".shosts");
-        if rhosts.exists() {
-            found.push(format!("{}:{}", user.username, rhosts.display()));
-        }
-        if shosts.exists() {
-            found.push(format!("{}:{}", user.username, shosts.display()));
-        }
-    }
-
-    if !found.is_empty() {
-        (check::CheckState::Fail, Some(found.join(", ")))
-    } else {
-        (check::CheckState::Pass, None)
-    }
+    })
 }
 
 pub fn home_dirs_correct_ownership() -> check::CheckReturn {
-    let passwd = match PASSWD_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("passwd configuration not initialized".to_string()),
-            );
-        }
-    };
-
-    let mut wrong: Vec<String> = vec![];
-    for user in passwd.iter() {
-        if user.uid < UID_MIN || user.home.is_empty() || user.home == "/" {
-            continue;
-        }
-        let home = Path::new(&user.home);
-        if !home.exists() {
-            continue;
-        }
-        if let Ok(meta) = fs::metadata(home) {
-            use std::os::unix::fs::MetadataExt;
-            if meta.uid() != user.uid {
-                wrong.push(format!("{}: uid {}", user.username, meta.uid()));
+    PASSWD_CONFIG.with(|passwd| {
+        let mut wrong: Vec<String> = vec![];
+        for user in passwd.iter() {
+            if user.uid < UID_MIN || user.home.is_empty() || user.home == "/" {
+                continue;
+            }
+            let home = Path::new(&user.home);
+            if !home.exists() {
+                continue;
+            }
+            if let Ok(meta) = fs::metadata(home) {
+                use std::os::unix::fs::MetadataExt;
+                if meta.uid() != user.uid {
+                    wrong.push(format!("{}: uid {}", user.username, meta.uid()));
+                }
             }
         }
-    }
 
-    if !wrong.is_empty() {
-        (check::CheckState::Fail, Some(wrong.join(", ")))
-    } else {
-        (check::CheckState::Pass, None)
-    }
+        if !wrong.is_empty() {
+            (check::CheckState::Fail, Some(wrong.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
+        }
+    })
 }
 
 /// Ensure all users' home directories have permissions 750 or stricter.
 pub fn home_dirs_permissions() -> check::CheckReturn {
-    let passwd = match PASSWD_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("passwd configuration not initialized".to_string()),
-            );
-        }
-    };
-
-    let mut wrong: Vec<String> = vec![];
-    for user in passwd.iter() {
-        if user.uid < UID_MIN || user.home.is_empty() || user.home == "/" {
-            continue;
-        }
-        let home = Path::new(&user.home);
-        if !home.exists() {
-            continue;
-        }
-        if let Ok(meta) = fs::metadata(home) {
-            use std::os::unix::fs::MetadataExt;
-            let mode = meta.mode() & 0o777;
-            if mode & 0o022 != 0 {
-                wrong.push(format!("{}: {:o}", user.username, mode));
+    PASSWD_CONFIG.with(|passwd| {
+        let mut wrong: Vec<String> = vec![];
+        for user in passwd.iter() {
+            if user.uid < UID_MIN || user.home.is_empty() || user.home == "/" {
+                continue;
+            }
+            let home = Path::new(&user.home);
+            if !home.exists() {
+                continue;
+            }
+            if let Ok(meta) = fs::metadata(home) {
+                use std::os::unix::fs::MetadataExt;
+                let mode = meta.mode() & 0o777;
+                if mode & 0o022 != 0 {
+                    wrong.push(format!("{}: {:o}", user.username, mode));
+                }
             }
         }
-    }
 
-    if !wrong.is_empty() {
-        (check::CheckState::Fail, Some(wrong.join(", ")))
-    } else {
-        (check::CheckState::Pass, None)
-    }
+        if !wrong.is_empty() {
+            (check::CheckState::Fail, Some(wrong.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
+        }
+    })
 }
 
 pub fn no_world_writable_in_homes() -> check::CheckReturn {
-    let passwd = match PASSWD_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("passwd configuration not initialized".to_string()),
-            );
+    PASSWD_CONFIG.with(|passwd| {
+        let mut found: Vec<String> = vec![];
+        for user in passwd.iter() {
+            if user.uid < UID_MIN || user.home.is_empty() || user.home == "/" {
+                continue;
+            }
+            let home = Path::new(&user.home);
+            if !home.exists() {
+                continue;
+            }
+            walk_dir_world_writable(home, &mut found, 3);
         }
-    };
 
-    let mut found: Vec<String> = vec![];
-    for user in passwd.iter() {
-        if user.uid < UID_MIN || user.home.is_empty() || user.home == "/" {
-            continue;
+        if !found.is_empty() {
+            (
+                check::CheckState::Fail,
+                Some(
+                    found
+                        .iter()
+                        .take(10)
+                        .cloned()
+                        .collect::<Vec<_>>()
+                        .join(", "),
+                ),
+            )
+        } else {
+            (check::CheckState::Pass, None)
         }
-        let home = Path::new(&user.home);
-        if !home.exists() {
-            continue;
-        }
-        walk_dir_world_writable(home, &mut found, 3);
-    }
-
-    if !found.is_empty() {
-        (
-            check::CheckState::Fail,
-            Some(
-                found
-                    .iter()
-                    .take(10)
-                    .cloned()
-                    .collect::<Vec<_>>()
-                    .join(", "),
-            ),
-        )
-    } else {
-        (check::CheckState::Pass, None)
-    }
+    })
 }
 
 fn walk_dir_world_writable(dir: &Path, found: &mut Vec<String>, depth: u32) {
@@ -761,7 +611,8 @@ fn walk_dir_world_writable(dir: &Path, found: &mut Vec<String>, depth: u32) {
 
 /// Get the useradd configuration from `/etc/default/useradd`.
 fn get_useradd() -> Result<String, String> {
-    fs::read_to_string(USERADD_PATH).map_err(|e| e.to_string())
+    fs::read_to_string(USERADD_PATH)
+        .map_err(|err| format!("failed to read {}: {}", USERADD_PATH, err))
 }
 
 /// Verify that useradd is configured with `INACTIVE=0`.
@@ -783,27 +634,19 @@ pub fn useradd_inactive() -> check::CheckReturn {
 /// Verify that all users have inactivity_period set to 0, meaning their
 /// account is instantly locked when their password expires.
 pub fn inactivity_is_set() -> check::CheckReturn {
-    let shadow = match SHADOW_CONFIG.get() {
-        Some(c) => c,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("shadow configuration not initialized".to_string()),
-            );
+    SHADOW_CONFIG.with(|shadow| {
+        let g: Vec<String> = shadow
+            .iter()
+            .filter(|entry| entry.inactivity_period.is_none_or(|i| i != 0))
+            .map(|entry| entry.username.clone())
+            .collect();
+
+        if !g.is_empty() {
+            (check::CheckState::Fail, Some(g.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
         }
-    };
-
-    let g: Vec<String> = shadow
-        .iter()
-        .filter(|entry| entry.inactivity_period.is_none_or(|i| i != 0))
-        .map(|entry| entry.username.clone())
-        .collect();
-
-    if !g.is_empty() {
-        (check::CheckState::Fail, Some(g.join(", ")))
-    } else {
-        (check::CheckState::Pass, None)
-    }
+    })
 }
 
 #[cfg(test)]

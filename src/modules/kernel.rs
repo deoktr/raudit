@@ -18,15 +18,15 @@
 
 use std::fs;
 use std::path::Path;
-use std::sync::OnceLock;
 
-use crate::{check, log_debug, log_error};
+use crate::check::{self, State};
+use crate::{log_error, log_trace};
 
 const CMDLINE_PATH: &str = "/proc/cmdline";
 const OSRELEASE_PATH: &str = "/proc/sys/kernel/osrelease";
 
-static KERNEL_PARAMS: OnceLock<KernelParams> = OnceLock::new();
-static KERNEL_VERSION: OnceLock<(u32, u32, u32)> = OnceLock::new();
+static KERNEL_PARAMS: State<KernelParams> = State::new("kernel params");
+static KERNEL_VERSION: State<(u32, u32, u32)> = State::new("kernel version");
 
 /// Kernel params from `/proc/cmdline`.
 type KernelParams = Vec<String>;
@@ -69,42 +69,26 @@ fn parse_kernel_params(cmdline: &str) -> KernelParams {
 }
 
 /// Get kernel params by reading from `/proc/cmdline`.
-fn get_kernel_params() -> Result<KernelParams, std::io::Error> {
-    Ok(parse_kernel_params(&fs::read_to_string(CMDLINE_PATH)?))
+fn get_kernel_params() -> Result<KernelParams, String> {
+    let content = fs::read_to_string(CMDLINE_PATH)
+        .map_err(|err| format!("failed to read {}: {}", CMDLINE_PATH, err))?;
+    Ok(parse_kernel_params(&content))
 }
 
 /// Init kernel params by reading from `/proc/cmdline`.
 pub fn init_kernel_params() {
-    if KERNEL_PARAMS.get().is_some() {
-        return;
-    }
-
-    match get_kernel_params() {
-        Ok(c) => {
-            KERNEL_PARAMS.get_or_init(|| c);
-            log_debug!("initialized kernel params");
-        }
-        Err(err) => log_error!("failed to initialize kernel params: {}", err),
-    }
+    KERNEL_PARAMS.init(get_kernel_params)
 }
 
 /// Get kernel params presence from a collected configuration.
 pub fn check_kernel_params(variable: &str) -> check::CheckReturn {
-    let kparams = match KERNEL_PARAMS.get() {
-        Some(kparams) => kparams,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("kernel params not initialized".to_string()),
-            );
+    KERNEL_PARAMS.with(|kparams| {
+        if kparams.contains(&variable.to_string()) {
+            (check::CheckState::Pass, None)
+        } else {
+            (check::CheckState::Fail, None)
         }
-    };
-
-    if kparams.contains(&variable.to_string()) {
-        (check::CheckState::Pass, None)
-    } else {
-        (check::CheckState::Fail, None)
-    }
+    })
 }
 
 /// Parse a kernel version string like "6.8.0-45-generic" into (major, minor,
@@ -122,25 +106,25 @@ pub fn parse_kernel_version(version: &str) -> Option<(u32, u32, u32)> {
 }
 
 /// Init kernel version by reading `/proc/sys/kernel/osrelease`.
-pub fn init_kernel_version() {
-    if KERNEL_VERSION.get().is_some() {
-        return;
-    }
-
-    let content = match fs::read_to_string(OSRELEASE_PATH) {
-        Ok(c) => c,
-        Err(err) => {
-            log_error!("failed to read kernel osrelease: {}", err);
-            return;
+fn get_kernel_version() -> Result<(u32, u32, u32), String> {
+    let content = fs::read_to_string(OSRELEASE_PATH)
+        .map_err(|err| format!("failed to read {}: {}", OSRELEASE_PATH, err))?;
+    match parse_kernel_version(content.trim()) {
+        Some(v) => {
+            log_trace!("found kernel version: {}.{}.{}", v.0, v.1, v.2);
+            Ok(v)
         }
-    };
-
-    if let Some(v) = parse_kernel_version(content.trim()) {
-        KERNEL_VERSION.get_or_init(|| v);
-        log_debug!("initialized kernel version: {}.{}.{}", v.0, v.1, v.2);
-    } else {
-        log_error!("failed to parse kernel version from: {}", content.trim());
+        None => Err(format!(
+            "failed to parse kernel version from {}: {:?}",
+            OSRELEASE_PATH,
+            content.trim()
+        )),
     }
+}
+
+/// Init kernel version by reading `/proc/sys/kernel/osrelease`.
+pub fn init_kernel_version() {
+    KERNEL_VERSION.init(get_kernel_version);
 }
 
 /// Check if system needs a reboot.
@@ -161,13 +145,13 @@ pub fn check_reboot_required() -> check::CheckReturn {
 /// CopyFail. Vulnerable range: >= 4.14.0 and <= 6.19.12.
 pub fn skip_not_vulnerable_copyfail() -> bool {
     init_kernel_version();
-    match KERNEL_VERSION.get() {
-        Some(&(major, minor, patch)) => {
+    match KERNEL_VERSION.try_get() {
+        Ok(&(major, minor, patch)) => {
             let version = (major, minor, patch);
             !((4, 14, 0)..=(6, 19, 12)).contains(&version)
         }
-        None => {
-            log_error!("kernel version not initialized, skipping CopyFail check");
+        Err(err) => {
+            log_error!("skipping CopyFail check: {}", err);
             true
         }
     }

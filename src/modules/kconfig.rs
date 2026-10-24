@@ -17,14 +17,16 @@
  */
 
 use std::io::Read;
-use std::sync::OnceLock;
-use std::{collections::HashMap, fs, io, path::Path, path::PathBuf};
+use std::{collections::HashMap, fs, path::Path, path::PathBuf};
 
 use flate2::read::GzDecoder;
 
-use crate::{check, log_debug, log_error};
+use crate::check::State;
+use crate::{check, log_debug};
 
-static KERNEL_BUILD_CONFIG: OnceLock<KernelBuildConfig> = OnceLock::new();
+const OSRELEASE_PATH: &str = "/proc/sys/kernel/osrelease";
+
+static KERNEL_BUILD_CONFIG: State<KernelBuildConfig> = State::new("kernel build config");
 
 /// Kernel build configuration, parsed from the first available source of
 /// [get_kernel_build_config_paths].
@@ -39,10 +41,10 @@ pub fn skip_no_kbuild_config() -> bool {
 }
 
 /// Get the running kernel release from `/proc/sys/kernel/osrelease`.
-fn get_kernel_release() -> Result<String, io::Error> {
-    Ok(fs::read_to_string("/proc/sys/kernel/osrelease")?
-        .trim()
-        .to_string())
+fn get_kernel_release() -> Result<String, String> {
+    let content = fs::read_to_string(OSRELEASE_PATH)
+        .map_err(|err| format!("failed to read {}: {}", OSRELEASE_PATH, err))?;
+    Ok(content.trim().to_string())
 }
 
 /// Get the kernel build configuration sources, in order of preference:
@@ -52,7 +54,7 @@ fn get_kernel_release() -> Result<String, io::Error> {
 /// - `/proc/config.gz` present if the kernel had `CONFIG_IKCONFIG_PROC=y`
 ///
 /// [view_kernel_conf](https://docs.rockylinux.org/gemstones/core/view_kernel_conf/)
-fn get_kernel_build_config_paths() -> Result<Vec<PathBuf>, io::Error> {
+fn get_kernel_build_config_paths() -> Result<Vec<PathBuf>, String> {
     let kernel_version = get_kernel_release()?;
 
     Ok(vec![
@@ -65,13 +67,19 @@ fn get_kernel_build_config_paths() -> Result<Vec<PathBuf>, io::Error> {
 }
 
 /// Read a kernel build configuration file, gunzipping it when needed.
-fn read_kernel_build_config(path: &Path) -> Result<String, io::Error> {
+fn read_kernel_build_config(path: &Path) -> Result<String, String> {
     if !path.extension().is_some_and(|ext| ext == "gz") {
-        return fs::read_to_string(path);
+        return fs::read_to_string(path)
+            .map_err(|err| format!("failed to read {}: {}", path.display(), err));
     }
 
+    let file = fs::File::open(path)
+        .map_err(|err| format!("failed to open {}: {}", path.display(), err))?;
+
     let mut content = String::new();
-    GzDecoder::new(fs::File::open(path)?).read_to_string(&mut content)?;
+    GzDecoder::new(file)
+        .read_to_string(&mut content)
+        .map_err(|err| format!("failed to read {}: {}", path.display(), err))?;
 
     Ok(content)
 }
@@ -101,11 +109,8 @@ fn parse_kernel_build_config(cmdline: String) -> KernelBuildConfig {
 
 /// Get kernel build configuration from the first readable source of
 /// [get_kernel_build_config_paths].
-fn get_kernel_build_config() -> Result<KernelBuildConfig, io::Error> {
-    let mut err = io::Error::new(
-        io::ErrorKind::NotFound,
-        "no kernel build config source available",
-    );
+fn get_kernel_build_config() -> Result<KernelBuildConfig, String> {
+    let mut errors: Vec<String> = Vec::new();
 
     for path in get_kernel_build_config_paths()? {
         match read_kernel_build_config(&path) {
@@ -113,11 +118,14 @@ fn get_kernel_build_config() -> Result<KernelBuildConfig, io::Error> {
                 log_debug!("kernel build config read from {}", path.display());
                 return Ok(parse_kernel_build_config(content));
             }
-            Err(e) => err = e,
+            Err(err) => errors.push(err),
         }
     }
 
-    Err(err)
+    Err(format!(
+        "no kernel build config source available: {}",
+        errors.join(", ")
+    ))
 }
 
 /// Init kernel build configuration from the first readable source of
@@ -125,32 +133,12 @@ fn get_kernel_build_config() -> Result<KernelBuildConfig, io::Error> {
 ///
 /// [view_kernel_conf](https://docs.rockylinux.org/gemstones/core/view_kernel_conf/)
 pub fn init_kernel_build_config() {
-    if KERNEL_BUILD_CONFIG.get().is_some() {
-        return;
-    }
-
-    match get_kernel_build_config() {
-        Ok(c) => {
-            KERNEL_BUILD_CONFIG.get_or_init(|| c);
-            log_debug!("initialized kernel build config");
-        }
-        Err(err) => log_error!("failed to initialize kernel build config: {}", err),
-    }
+    KERNEL_BUILD_CONFIG.init(get_kernel_build_config);
 }
 
 /// Ensure kernel build parameter is set.
 pub fn check_option_is_set(param: &str) -> check::CheckReturn {
-    let config = match KERNEL_BUILD_CONFIG.get() {
-        Some(config) => config,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("kcompile config not initialized".to_string()),
-            );
-        }
-    };
-
-    match config.get(param) {
+    KERNEL_BUILD_CONFIG.with(|config| match config.get(param) {
         Some(val) => {
             if val != "is not set" {
                 (check::CheckState::Pass, None)
@@ -162,22 +150,12 @@ pub fn check_option_is_set(param: &str) -> check::CheckReturn {
             check::CheckState::Warning,
             Some("param not present".to_string()),
         ),
-    }
+    })
 }
 
 /// Ensure kernel parameter is not set.
 pub fn check_option_is_not_set(param: &str) -> check::CheckReturn {
-    let config = match KERNEL_BUILD_CONFIG.get() {
-        Some(config) => config,
-        None => {
-            return (
-                check::CheckState::Warning,
-                Some("kcompile config not initialized".to_string()),
-            );
-        }
-    };
-
-    match config.get(param) {
+    KERNEL_BUILD_CONFIG.with(|config| match config.get(param) {
         Some(val) => {
             if val == "is not set" {
                 (check::CheckState::Pass, None)
@@ -189,7 +167,7 @@ pub fn check_option_is_not_set(param: &str) -> check::CheckReturn {
             check::CheckState::Warning,
             Some("param not present".to_string()),
         ),
-    }
+    })
 }
 
 #[cfg(test)]
