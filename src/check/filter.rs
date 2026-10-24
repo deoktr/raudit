@@ -20,28 +20,62 @@ use super::types::{REPORT, Severity, SkipFn};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use std::collections::{HashMap, HashSet};
 
+/// Separator intersecting the tags of a single selector group.
+const TAG_INTERSECT: char = '+';
+
+type TagSelector = Vec<Vec<String>>;
+
+/// Parse raw tag values into a selector, a list of tag groups.
+///
+/// A group is a set of tags that must all be present on a check, and groups are
+/// alternatives of each other. Values are already split on the comma separator,
+/// so each of them becomes a group, and [`TAG_INTERSECT`] adds tags to it. So
+/// `["sysctl", "workstation"]` selects the union of both tags, while
+/// `["sysctl+workstation"]` selects their intersection (both must be present).
+pub fn parse_tag_selector(values: &[String]) -> TagSelector {
+    values
+        .iter()
+        .filter_map(|value| {
+            let group: Vec<String> = value
+                .split(TAG_INTERSECT)
+                .map(|tag| tag.trim())
+                .filter(|tag| !tag.is_empty())
+                .map(|tag| tag.to_string())
+                .collect();
+            (!group.is_empty()).then_some(group)
+        })
+        .collect()
+}
+
+/// Return true if `tags` matches at least one group of `selector`.
+fn matches_selector(tags: &[String], selector: &[Vec<String>]) -> bool {
+    selector
+        .iter()
+        .any(|group| group.iter().all(|tag| tags.contains(tag)))
+}
+
 /// Filter checks by their tags.
-pub fn filter_tags(tags: Vec<String>) {
-    if tags.is_empty() {
+pub fn filter_tags(selector: TagSelector) {
+    if selector.is_empty() {
         return;
     }
 
     let mut report = REPORT.lock().unwrap();
     report
         .checks
-        .retain(|check| tags.iter().any(|tag| check.tags.contains(tag)));
+        .retain(|check| matches_selector(&check.tags, &selector));
 }
 
 /// Filter out checks by their tags.
-pub fn filter_tags_exclude(tags: Vec<String>) {
-    if tags.is_empty() {
+pub fn filter_tags_exclude(selector: TagSelector) {
+    if selector.is_empty() {
         return;
     }
 
     let mut report = REPORT.lock().unwrap();
     report
         .checks
-        .retain(|check| !tags.iter().any(|tag| check.tags.contains(tag)));
+        .retain(|check| !matches_selector(&check.tags, &selector));
 }
 
 /// Filter checks by their ID prefix.

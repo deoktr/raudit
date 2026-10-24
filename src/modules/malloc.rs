@@ -34,9 +34,7 @@ fn get_ld_so_preload() -> Result<LdSoPreload, String> {
         Ok(v) => Ok(v),
         Err(e) => match e.kind() {
             io::ErrorKind::NotFound => Ok(String::new()),
-            _ => {
-                Err(format!("failed to read {}: {}", LD_SO_PRELOAD_PATH, e))
-            }
+            _ => Err(format!("failed to read {}: {}", LD_SO_PRELOAD_PATH, e)),
         },
     }
 }

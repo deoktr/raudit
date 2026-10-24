@@ -20,15 +20,103 @@ use crate::*;
 use clap::Parser;
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
+/// Extended help printed by `--help` after the list of options.
+const LONG_HELP: &str = r#"Selection:
+
+  By default every check runs. Each selection flag narrows that set down, and
+  the flags combine with AND: a check has to satisfy --tags, --filters and
+  --severity at the same time, and match neither --tags-exclude nor
+  --filters-exclude. Inside a single flag the values are alternatives, except
+  for the tag groups described below.
+
+  Checks that cannot apply to the host are skipped and hidden from the report,
+  use --no-skip to keep them.
+
+  Every selection flag prints the vocabulary it accepts when given no value:
+
+    raudit --tags              list all tags
+    raudit --filters           list all ID prefixes
+    raudit --severity-exact    list all severity levels
+
+Tags:
+
+  A tag is a free-form label attached to a check, and a check usually carries
+  several. They describe the role it targets (server, workstation), its cost
+  and applicability (slow, conditional), the subsystem it inspects (sysctl,
+  kernel, kconfig, modprobe, sshd, apt, pam, sudo, mount, docker, ...), the
+  source (CIS, STIG, KSPP, mozilla, tails).
+
+  Tags are selected with a comma separates list. A '+' joins the tags of a
+  group that all have to be present, so it is an intersection. Groups are
+  alternatives of each other:
+
+    --tags sysctl,workstation       every sysctl OR every workstation check
+    --tags sysctl+workstation       sysctl checks that also target workstations
+    --tags sysctl+workstation,apt   that intersection, plus every apt check
+
+  --tags-exclude takes the same grammar, and drops a check only when the whole
+  group matches:
+
+    --tags-exclude slow             drop every slow check
+    --tags-exclude slow+server      drop the slow checks targeting servers
+
+Filters:
+
+  A filter matches the check ID by prefix, so it selects either a family of
+  rules or one exact rule. Matching is a plain string prefix, so the shorter
+  the value the more it selects:
+
+    --filters APT                   every apt rule
+    --filters SYK,SYN               kernel and network sysctls
+    --filters SYK_00                SYK_001 up to SYK_009
+    --filters USR_001               one exact rule
+
+  --filters-exclude take the same grammar, and drops checks on match
+
+Severity:
+
+  Five ascending levels, matched case-insensitively: informational, low,
+  medium, high, critical. --severity is a floor and keeps everything above it,
+  --severity-exact is a closed set, and the two cannot be combined:
+
+    --severity high                 high and critical
+    --severity-exact medium,high    exactly those two
+
+Environment:
+
+  Every flag has an env var counterpart accepting the same values:
+
+    TAGS=sysctl+workstation SEVERITY=high raudit
+
+Examples:
+
+  Audit a workstation, without the noisy or expensive families:
+
+    raudit --severity high \
+           --tags workstation \
+           --tags-exclude modprobe,kernel_build_conf,sysctl,audit,kernel
+
+  Audit a server, high severity and above, only show failed or warnings:
+
+    raudit --tags server --severity high --no-print-passed
+
+  Kernel modules that a workstation should have disabled:
+
+    raudit --tags modprobe+workstation
+
+  Machine readable report for a single rule:
+
+    raudit --json --filters USR_001"#;
+
 /// Audit Linux systems security configurations
 #[derive(Debug, Parser)]
-#[command(version)]
+#[command(version, after_long_help = LONG_HELP)]
 struct Cli {
-    /// Comma-separated list of tags to include
+    /// Comma-separated list of tags to include, '+' requires all tags of a group
     #[arg(long, value_delimiter = ',', num_args(0..), env = "TAGS")]
     tags: Option<Vec<String>>,
 
-    /// Comma-separated list of tags to exclude
+    /// Comma-separated list of tags to exclude, '+' requires all tags of a group
     #[arg(long, value_delimiter = ',', num_args(0..), env = "TAGS_EXCLUDE")]
     tags_exclude: Option<Vec<String>>,
 
@@ -114,7 +202,7 @@ pub fn cli() {
             check::print_tags();
             return;
         }
-        Some(tags) => check::filter_tags(tags),
+        Some(ref tags) => check::filter_tags(check::parse_tag_selector(tags)),
     }
 
     match args.filters {
@@ -132,7 +220,9 @@ pub fn cli() {
             check::print_tags();
             return;
         }
-        Some(tags_exclude) => check::filter_tags_exclude(tags_exclude),
+        Some(ref tags_exclude) => {
+            check::filter_tags_exclude(check::parse_tag_selector(tags_exclude))
+        }
     }
 
     match args.filters_exclude {

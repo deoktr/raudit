@@ -67,18 +67,23 @@ struct Shadow {
     /// encrypted password
     password: String,
     /// date of last password change
+    #[allow(dead_code)]
     last_change: u64,
     /// minimum password age
+    #[allow(dead_code)]
     min_age: u32,
     /// maximum password age
+    #[allow(dead_code)]
     max_age: u32,
     /// password warning period
+    #[allow(dead_code)]
     warn_period: u32,
     /// password inactivity period
     inactivity_period: Option<u32>,
     /// account expiration date
     expiration_date: Option<u32>,
     /// reserved field
+    #[allow(dead_code)]
     reserved: String,
 }
 

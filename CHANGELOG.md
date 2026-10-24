@@ -10,6 +10,11 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+### Added
+
+- Add tag intersection to `--tags` and `--tags-exclude`, `+` joins the tags of a group
+- Add an extended guide to `raudit --help`
+
 ## [0.37.0] - 2026-10-24
 
 ### Added

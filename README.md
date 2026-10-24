@@ -58,6 +58,9 @@ built by the `deoktr/raudit` GitHub Actions workflow.
 
 ## Usage
 
+> [!NOTE]
+> Some checks requires root permissions to run.
+
 By default, all checks are running, you can reduce the number by filtering for
 your specific needs, and for cleaner outputs do not print checks that passed:
 
@@ -73,8 +76,26 @@ Server:
 raudit --tags server --tags-exclude paranoid,bin,clamav,modprobe,kernel_build_conf,mount_option,sysctl,audit,kernel
 ```
 
-> [!NOTE]
-> Some checks requires root permissions to run.
+Comma-separated tags are a union, `+` intersects the tags of a group:
+
+```bash
+# every sysctl check, plus every workstation check (union)
+raudit --tags sysctl,workstation
+
+# only the sysctl checks that also apply to workstations (intersection)
+raudit --tags sysctl+workstation
+
+# (sysctl AND workstation) OR (kernel AND server)
+raudit --tags sysctl+workstation,kernel+server
+```
+
+`--tags-exclude` takes the same grammar, and only drops the checks carrying
+every tag of a group:
+
+```bash
+# drop the slow checks, but keep the ones that do not target servers
+raudit --tags workstation --tags-exclude slow+server
+```
 
 Generate JSON report following
 [OCSF Compliance Finding (class 2003, schema 1.7.0)](https://schema.ocsf.io/1.7.0/classes/compliance_finding):
@@ -159,7 +180,7 @@ raudit --json --filters USR_001
 
 </details>
 
-Usage:
+Usage `raudit -h`:
 
 ```
 Audit Linux systems security configurations
@@ -168,9 +189,9 @@ Usage: raudit [OPTIONS]
 
 Options:
       --tags [<TAGS>...]
-          Comma-separated list of tags to include [env: TAGS=]
+          Comma-separated list of tags to include, '+' requires all tags of a group [env: TAGS=]
       --tags-exclude [<TAGS_EXCLUDE>...]
-          Comma-separated list of tags to exclude [env: TAGS_EXCLUDE=]
+          Comma-separated list of tags to exclude, '+' requires all tags of a group [env: TAGS_EXCLUDE=]
       --filters [<FILTERS>...]
           Comma-separated list of ID prefixes to include [env: FILTERS=]
       --filters-exclude [<FILTERS_EXCLUDE>...]
@@ -202,7 +223,7 @@ Options:
       --json
           Generate JSON output [env: JSON=]
   -h, --help
-          Print help
+          Print help (see more with '--help')
   -V, --version
           Print version
 ```
@@ -210,6 +231,11 @@ Options:
 > [!NOTE]
 > You can get the list of tags and filters, by using their corresponding flags
 > without any value.
+
+> [!NOTE]
+> `raudit --help` prints the same options followed by an extended guide, which
+> explains how selection flags combine, and what tags, filters and severities
+> are.
 
 ## Rules
 
@@ -321,6 +347,7 @@ Benchmark 1: ./target/release/raudit
 
 ## TODO
 
+- Update JSON OCSF format
 - Give much more detailed logs of the error
 - Create custom parsers for complex configurations (sudo, nginx, etc.)
 - Give the user's the ability to specify config paths, with globing

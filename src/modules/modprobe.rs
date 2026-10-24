@@ -511,10 +511,6 @@ pub fn check_module_disabled(module: &str) -> check::CheckReturn {
 mod tests {
     use super::*;
 
-    fn set(strings: &[&str]) -> HashSet<String> {
-        strings.iter().map(|s| s.to_string()).collect()
-    }
-
     #[test]
     fn test_parse_available_modules() {
         let modules = parse_available_modules(
