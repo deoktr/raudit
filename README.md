@@ -363,7 +363,6 @@ Benchmark 1: ./target/release/raudit
   users in a docker group, instead of failing the check that would force admins
   to create config
 - Add check to avoid check name or ID collision
-- Use macro `run!()` to log commands
 - Fix all TODO and FIXME in code
 - Add flag to force printing the description and the fix for all checks
 

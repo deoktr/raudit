@@ -23,7 +23,6 @@ use std::process::Command;
 use std::process::Stdio;
 
 use crate::check::{self, State};
-use crate::utils::run;
 
 const SYSTEMD_CONF_PATH: &str = "/etc/systemd/system.conf";
 
@@ -150,11 +149,18 @@ pub fn get_systemd_file(service: &str) -> Option<String> {
         return Some(lib_path);
     }
 
-    if let Some(p) =
-        run!("systemctl", "show", "-p", "FragmentPath", &service).strip_prefix("FragmentPath=")
-        && !p.is_empty()
-    {
-        return Some(p.to_string());
+    let mut cmd = Command::new("systemctl");
+    cmd.stdin(Stdio::null());
+    cmd.args(&["show", "-p", "FragmentPath", &service]);
+    if let Ok(output) = cmd.output() {
+        if let Some(p) = String::from_utf8_lossy(&output.stdout)
+            .to_string()
+            .replace("\n", "")
+            .strip_prefix("FragmentPath=")
+            && p.is_empty()
+        {
+            return Some(p.to_string());
+        }
     };
 
     let usr_lib_path = format!("/usr/lib/systemd/system/{}", service);

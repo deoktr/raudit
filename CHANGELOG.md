@@ -14,6 +14,11 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 - Add tag intersection to `--tags` and `--tags-exclude`, `+` joins the tags of a group
 - Add an extended guide to `raudit --help`
+- Add sudo checks `SUD_012`, `SUD_204`, and `SUD_205`
+
+### Changed
+
+- Update IDs for some sudo file-system checks
 
 ## [0.37.0] - 2026-10-24
 

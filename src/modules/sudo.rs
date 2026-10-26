@@ -172,7 +172,10 @@ pub fn check_sudo_defaults(defaults: &str) -> check::CheckReturn {
         if sudo_defaults.contains(&defaults.to_string()) {
             (check::CheckState::Pass, None)
         } else {
-            (check::CheckState::Fail, None)
+            (
+                check::CheckState::Fail,
+                Some(format!("`Defaults {}` is not present", defaults)),
+            )
         }
     })
 }
@@ -207,6 +210,26 @@ pub fn check_re_authentication_not_disabled() -> check::CheckReturn {
             (check::CheckState::Fail, Some(g.join(", ")))
         } else {
             (check::CheckState::Pass, None)
+        }
+    })
+}
+
+/// Ensure the sudoers `Defaults secure_path` is set.
+pub fn check_secure_path_set() -> check::CheckReturn {
+    SUDO_CONFIG_DEFAULTS.with(|defaults| {
+        let set = defaults.iter().any(|defaults| {
+            defaults
+                .split_whitespace()
+                .any(|token| token.starts_with("secure_path="))
+        });
+
+        if set {
+            (check::CheckState::Pass, None)
+        } else {
+            (
+                check::CheckState::Fail,
+                Some("`Defaults secure_path` is not present".to_string()),
+            )
         }
     })
 }

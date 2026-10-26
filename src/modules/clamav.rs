@@ -18,14 +18,15 @@
 
 // TODO: check if clamav runs periodic scans
 
-use crate::check;
-use crate::utils::run;
+use crate::{check, utils};
 
 /// Ensure ClamAV is installed.
 pub fn clamav_installed() -> check::CheckReturn {
-    if run!("clamscan", "--version") != "" {
-        (check::CheckState::Pass, None)
-    } else {
-        (check::CheckState::Fail, None)
+    match utils::which("clamscan") {
+        Some(_) => (check::CheckState::Pass, None),
+        None => (
+            check::CheckState::Fail,
+            Some("clamscan bin was not found".to_string()),
+        ),
     }
 }

@@ -141,6 +141,19 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
+        "SUD_012",
+        "Ensure that sudo default config \"secure_path\" is set",
+        Severity::High,
+        vec!["sudo", "CIS", "server", "workstation"],
+        sudo::check_secure_path_set,
+        vec![sudo::init_sudo],
+    )
+    .skip_when(sudo::skip_no_sudo)
+    .with_description("Without \"secure_path\" sudo inherits the caller's PATH, a user-writable directory earlier in it substitutes the command the rule meant to grant. \"ignore_dot\" only neutralises the \".\" entry, not a planted \"/home/foo/bin/systemctl\".")
+    .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults secure_path=\\\"/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin\\\"\"")
+    .register();
+
+    check::Check::new(
         "SUD_013",
         "Ensure that sudo default config \"lecture=\"always\"\" is set",
         Severity::Informational,
@@ -196,62 +209,88 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "SUD_017",
+        "SUD_200",
         "Ensure sudoers config file permissions is 440",
         Severity::High,
-        vec!["sudo", "server", "workstation"],
+        vec!["sudo", "fs", "server", "workstation"],
         || base::check_file_permission("/etc/sudoers", 0o440),
         vec![],
     )
     .skip_when(sudo::skip_no_sudo)
-    .with_description("Looser permissions on \"/etc/sudoers\" let unauthorized users read or modify the privilege policy: reading reveals exploitable rules, writing grants instant root via a self-added \"NOPASSWD ALL\" line.")
+    .with_description("Sudo will intentionally not use configurations that are world-writable or -readable, otherwise this could lead to privilege escalation.")
     .with_fix("chmod 440 /etc/sudoers")
     .register();
 
     check::Check::new(
-        "SUD_018",
+        "SUD_201",
         "Ensure /etc/sudoers config file is owned by root",
         Severity::High,
-        vec!["sudo", "server", "workstation"],
+        vec!["sudo", "fs", "server", "workstation"],
         || base::check_file_owner_id("/etc/sudoers", 0, 0),
         vec![],
     )
     .skip_when(sudo::skip_no_sudo)
-    .with_description("If \"/etc/sudoers\" is owned by a non-root user, that user can edit the privilege policy and grant themselves root.")
+    .with_description("Sudo will intentionally not use configurations that are world-writable or -readable, otherwise this could lead to privilege escalation.")
     .with_fix("chown root:root /etc/sudoers")
     .register();
 
     check::Check::new(
-        "SUD_019",
+        "SUD_202",
         "Ensure /etc/sudoers.d/ files permissions are 440",
         Severity::High,
-        vec!["sudo", "server", "workstation"],
+        vec!["sudo", "fs", "server", "workstation"],
         || base::check_dir_files_permission("/etc/sudoers.d/", 0o440),
         vec![],
     )
     .skip_when(sudo::skip_no_sudo)
-    .with_description("Looser permissions on \"/etc/sudoers.d/\" let unauthorized users read or modify the privilege policy: reading reveals exploitable rules, writing grants instant root via a self-added \"NOPASSWD ALL\" line.")
+    .with_description("Sudo will intentionally not use configurations that are world-writable or -readable, otherwise this could lead to privilege escalation.")
     .with_fix("chmod -R 440 /etc/sudoers.d/*")
     .register();
 
     check::Check::new(
-        "SUD_020",
+        "SUD_203",
         "Ensure /etc/sudoers.d/ files are owned by root",
         Severity::High,
-        vec!["sudo", "server", "workstation"],
+        vec!["sudo", "fs", "server", "workstation"],
         || base::check_dir_files_owner_id("/etc/sudoers.d/", 0, 0),
         vec![],
     )
     .skip_when(sudo::skip_no_sudo)
-    .with_description("If \"/etc/sudoers.d/\" is owned by a non-root user, that user can edit the privilege policy and grant themselves root.")
+    .with_description("Sudo will intentionally not use configurations that are world-writable or -readable, otherwise this could lead to privilege escalation.")
     .with_fix("chown -R root:root /etc/sudoers.d/*")
     .register();
 
     check::Check::new(
-        "SUD_100",
+        "SUD_204",
+        "Ensure /etc/sudoers.d directory is owned by root",
+        Severity::Critical,
+        vec!["sudo", "fs", "server", "workstation"],
+        || base::check_dir_owner_id("/etc/sudoers.d", 0, 0),
+        vec![],
+    )
+    .skip_when(sudo::skip_no_sudo)
+    .with_description("Sudo will intentionally not use configurations that are world-writable or -readable, otherwise this could lead to privilege escalation.")
+    .with_fix("chown root:root /etc/sudoers.d")
+    .register();
+
+    check::Check::new(
+        "SUD_205",
+        "Ensure /etc/sudoers.d directory permissions are 750 or stricter",
+        Severity::Critical,
+        vec!["sudo", "fs", "server", "workstation"],
+        || base::check_dir_permission("/etc/sudoers.d", 0o750),
+        vec![],
+    )
+    .skip_when(sudo::skip_no_sudo)
+    .with_description("Sudo will intentionally not use configurations that are world-writable or -readable, otherwise this could lead to privilege escalation.")
+    .with_fix("chmod 0750 /etc/sudoers.d")
+    .register();
+
+    check::Check::new(
+        "SUD_900",
         "Ensure audit rule for sudo log file is present",
         Severity::Medium,
-        vec!["sudo", "audit"],
+        vec!["sudo", "audit", "server"],
         || audit::check_audit_rule("-w /var/log/sudo.log -p wa -k log_file"),
         vec![audit::init_audit_rules],
     )

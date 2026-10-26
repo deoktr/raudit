@@ -172,30 +172,6 @@ pub fn wrap_text(text: &str, max_width: usize) -> Vec<String> {
     lines
 }
 
-/// Run a command without failing.
-macro_rules! run {
-    ($bin:tt) => {{
-        let mut cmd = std::process::Command::new($bin);
-        cmd.stdin(std::process::Stdio::null());
-        match cmd.output() {
-            Ok(output) => String::from_utf8_lossy(&output.stdout).to_string().replace("\n", ""),
-            Err(_) => "".to_string(),
-        }
-    }};
-
-    ($bin:tt, $($params:expr),*) => {{
-        let mut cmd = std::process::Command::new($bin);
-        cmd.stdin(std::process::Stdio::null());
-        cmd.args(&[$($params),*]);
-        match cmd.output() {
-            Ok(output) => String::from_utf8_lossy(&output.stdout).to_string().replace("\n", ""),
-            Err(_) => "".to_string(),
-        }
-    }};
-}
-
-pub(crate) use run;
-
 #[cfg(test)]
 mod tests {
     use super::*;
