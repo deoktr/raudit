@@ -4,8 +4,8 @@ use crate::modules::{mount, podman};
 
 pub fn add_checks() {
     check::Check::new(
-        "CNT_501",
-        "Ensure podman containers are not started with \"--privileged\" flag",
+        "PDM_001",
+        "Ensure podman containers are not started with `--privileged` flag",
         Severity::High,
         vec!["container", "podman", "server", "workstation"],
         podman::podman_not_privileged,
@@ -17,7 +17,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_502",
+        "PDM_002",
         "Ensure podman containers capabilities are dropped",
         Severity::High,
         vec!["container", "podman", "server", "workstation"],
@@ -26,11 +26,11 @@ pub fn add_checks() {
     )
     .skip_when(podman::skip_no_podman)
     .with_description("Dropping Linux capabilities reduces the kernel attack surface available to a compromised container, limiting the damage an attacker can do if they gain code execution. May break containers that require specific capabilities (e.g. NET_BIND_SERVICE for binding to low ports, SYS_PTRACE for debugging, NET_RAW for raw sockets).")
-    .with_fix("Start containers with flag \"--cap-drop all\"")
+    .with_fix("Start containers with flag `--cap-drop all`")
     .register();
 
     check::Check::new(
-        "CNT_503",
+        "PDM_003",
         "Ensure podman containers are started with a user",
         Severity::High,
         vec!["container", "podman", "server", "workstation"],
@@ -43,8 +43,8 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_504",
-        "Ensure podman mount point \"/var/lib/containers\" exist",
+        "PDM_004",
+        "Ensure podman mount point `/var/lib/containers` exist",
         Severity::Medium,
         vec!["container", "podman", "mount", "server", "workstation"],
         // TODO: get path by running: podman info -f '{{ .Store.RunRoot }}'
@@ -52,12 +52,12 @@ pub fn add_checks() {
         vec![mount::init_mounts],
     )
     .skip_when(podman::skip_no_podman)
-    .with_description("A separate filesystem for /var/lib/containers lets the operator apply hardened mount options (e.g. nodev, quotas) to container storage and prevents a runaway container from filling the root filesystem and breaking host services.")
-    .with_fix("Mount /var/lib/containers as a dedicated filesystem in /etc/fstab, consider `nodev` and disk quotas.")
+    .with_description("A separate filesystem for `/var/lib/containers` lets the operator apply hardened mount options (e.g. nodev, quotas) to container storage and prevents a runaway container from filling the root filesystem and breaking host services.")
+    .with_fix("Mount `/var/lib/containers` as a dedicated filesystem in `/etc/fstab`, consider `nodev` and disk quotas.")
     .register();
 
     check::Check::new(
-        "CNT_505",
+        "PDM_005",
         "Ensure apparmor is enabled for podman",
         Severity::Medium,
         vec!["container", "podman", "apparmor", "server", "workstation"],
@@ -75,7 +75,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_506",
+        "PDM_006",
         "Ensure podman containers are started with an apparmor profile",
         Severity::Medium,
         vec!["container", "podman", "apparmor", "server", "workstation"],
@@ -88,7 +88,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_507",
+        "PDM_007",
         "Ensure podman containers root filesystem is mounted as read-only",
         Severity::High,
         vec!["container", "podman", "server", "workstation"],

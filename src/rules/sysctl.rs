@@ -11,7 +11,7 @@ pub fn add_checks() {
         // TODO: allow for 1 as well
         2
     )
-    .with_description("Restrict kernel address visibility via /proc and other interfaces, regardless of user privileges, kernel pointers expose specific locations in kernel memory, will hide kernel symbol addresses in /proc/kallsyms.")
+    .with_description("Restrict kernel address visibility via `/proc` and other interfaces, regardless of user privileges, kernel pointers expose specific locations in kernel memory, will hide kernel symbol addresses in `/proc/kallsyms`.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -42,7 +42,7 @@ pub fn add_checks() {
         "kernel.dmesg_restrict",
         1
     )
-    .with_description("Restrict access to the kernel log buffer to users with CAP_SYSLOG. Kernel logs often contain sensitive information such as kernel pointers. Non-root users and scripts that read dmesg will no longer work.")
+    .with_description("Restrict access to the kernel log buffer to users with `CAP_SYSLOG`. Kernel logs often contain sensitive information such as kernel pointers. Non-root users and scripts that read dmesg will no longer work.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -78,7 +78,7 @@ pub fn add_checks() {
     // 2 or 3
     check::Check::new(
         "SYK_008",
-        "Ensure sysctl \"kernel.perf_event_paranoid\" = 2 or 3",
+        "Ensure sysctl `kernel.perf_event_paranoid` = 2 or 3",
         Severity::Medium,
         vec!["sysctl", "KSPP", "server", "workstation"],
         || {
@@ -98,8 +98,8 @@ pub fn add_checks() {
         },
         vec![sysctl::init_sysctl_config],
     )
-    .with_description("Restrict kernel profiling to users with CAP_PERFMON. The performance events system should not be accessible by unprivileged users, as it adds considerable kernel attack surface. Can be 2 or 3.")
-    .with_fix("Add \"kernel.perf_event_paranoid = 2\" (or 3) in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
+    .with_description("Restrict kernel profiling to users with `CAP_PERFMON`. The performance events system should not be accessible by unprivileged users, as it adds considerable kernel attack surface. Can be 2 or 3.")
+    .with_fix("Add `kernel.perf_event_paranoid = 2` (or 3) in `/etc/sysctl.d/*.conf` and run `sysctl --system`.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -109,7 +109,7 @@ pub fn add_checks() {
         "kernel.sysrq",
         0
     )
-    .with_description("Disable the SysRq magic keys. From the physical console, or from /proc/sysrq-trigger as root, they otherwise allow kernel memory and task dumps, forced remounts, syncs and reboots, leaking kernel information and disrupting availability. The Secure Attention Key (SAK) can no longer be utilized.")
+    .with_description("Disable the SysRq magic keys. From the physical console, or from `/proc/sysrq-trigger` as root, they otherwise allow kernel memory and task dumps, forced remounts, syncs and reboots, leaking kernel information and disrupting availability. The Secure Attention Key (SAK) can no longer be utilized.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -126,7 +126,7 @@ pub fn add_checks() {
     // 1 or 2
     check::Check::new(
         "SYK_011",
-        "Ensure sysctl \"kernel.unprivileged_bpf_disabled\" = 1 or 2",
+        "Ensure sysctl `kernel.unprivileged_bpf_disabled` = 1 or 2",
         Severity::Medium,
         vec!["sysctl", "bpf", "KSPP", "server", "workstation"],
         || {
@@ -147,9 +147,9 @@ pub fn add_checks() {
         vec![sysctl::init_sysctl_config],
     )
     .with_description(
-        "Restrict the bpf() syscall to users with CAP_BPF, unprivileged BPF is a major local privilege escalation surface. Can be 1 or 2, where 2 makes the restriction permanent until reboot. Breaks unprivileged BPF programs (e.g. rootless containers, network monitoring tools), leave it to 0 if using rootless containers.",
+        "Restrict the bpf() syscall to users with `CAP_BPF`, unprivileged BPF is a major local privilege escalation surface. Can be 1 or 2, where 2 makes the restriction permanent until reboot. Breaks unprivileged BPF programs (e.g. rootless containers, network monitoring tools), leave it to 0 if using rootless containers.",
     )
-    .with_fix("Add \"kernel.unprivileged_bpf_disabled = 1\" (or 2) in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
+    .with_fix("Add `kernel.unprivileged_bpf_disabled = 1` (or 2) in `/etc/sysctl.d/*.conf` and run `sysctl --system`.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -179,7 +179,7 @@ pub fn add_checks() {
         "kernel.modules_disabled",
         1
     )
-    .with_description("Permanently disable module loading once set. Any later attempt by an attacker, even with CAP_SYS_MODULE and root, to load a module is rejected by the kernel. This could prevent loading backdoor or vulnerable modules. For systems needing hot-add drivers, it prevents legitimate module loading.")
+    .with_description("Permanently disable module loading once set. Any later attempt by an attacker, even with `CAP_SYS_MODULE` and root, to load a module is rejected by the kernel. This could prevent loading backdoor or vulnerable modules. For systems needing hot-add drivers, it prevents legitimate module loading.")
     .register();
 
     // FIXME: only available on some kernels
@@ -197,7 +197,7 @@ pub fn add_checks() {
     // 2 or 3, CIS recommends 1
     check::Check::new(
         "SYK_016",
-        "Ensure sysctl \"kernel.yama.ptrace_scope\" >= 1",
+        "Ensure sysctl `kernel.yama.ptrace_scope` >= 1",
         Severity::Medium,
         vec!["sysctl", "KSPP", "server", "workstation"],
         || {
@@ -220,9 +220,9 @@ pub fn add_checks() {
     )
     .with_description("Limit ptrace() as it enables programs to inspect and modify other active processes. Prevents native code debugging which some programs use as a method to detect tampering. May cause breakages in anti-cheat software and programs running under Proton/WINE.
   - 1: Avoid non-ancestor ptrace access to running processes and their creds.
-  - 2: Restrict ptrace access to processes with CAP_SYS_PTRACE.
+  - 2: Restrict ptrace access to processes with `CAP_SYS_PTRACE`.
   - 3: Completely disable ptrace.")
-    .with_fix("Add \"kernel.yama.ptrace_scope = 1\" (or 2 or 3) in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
+    .with_fix("Add `kernel.yama.ptrace_scope = 1` (or 2 or 3) in `/etc/sysctl.d/*.conf` and run `sysctl --system`.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -242,7 +242,7 @@ pub fn add_checks() {
         "kernel.core_pattern",
         "|/bin/false"
     )
-    .with_description("Disable core dumps by piping them to /bin/false, which discards them. Core dumps capture secrets such as keys and the memory of privileged processes, and a piped pattern runs a root program on every crash, a classic persistence vector. This prevents post-mortem debugging of crashing processes. This setting may be overwritten by systemd-coredump.")
+    .with_description("Disable core dumps by piping them to `/bin/false`, which discards them. Core dumps capture secrets such as keys and the memory of privileged processes, and a piped pattern runs a root program on every crash, a classic persistence vector. This prevents post-mortem debugging of crashing processes. This setting may be overwritten by systemd-coredump.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -252,13 +252,13 @@ pub fn add_checks() {
         "kernel.core_uses_pid",
         1
     )
-    .with_description("Set core dump file name to \"core.PID\" instead of \"core\" as a form of defense-in-depth. Only useful if PID listings are hidden from non-root users and core dumps are permitted.")
+    .with_description("Set core dump file name to `core.PID` instead of `core` as a form of defense-in-depth. Only useful if PID listings are hidden from non-root users and core dumps are permitted.")
     .register();
 
     // TODO: verify kernel version to be above v6.2
     check::Check::new(
         "SYK_020",
-        "Ensure sysctl \"kernel.warn_limit\" >= 1 and <= 100",
+        "Ensure sysctl `kernel.warn_limit` >= 1 and <= 100",
         Severity::Medium,
         vec!["sysctl", "KSPP", "server", "workstation"],
         || {
@@ -279,14 +279,14 @@ pub fn add_checks() {
         },
         vec![sysctl::init_sysctl_config],
     )
-    .with_description("Panic after n kernel warnings, a warning often means reachable memory corruption and continuing risks further exploitation. 0 disables the warning count entirely and is the kernel default, so it must be non-zero, while 1 is equivalent to \"kernel.panic_on_warn=1\". The panic only reboots when \"kernel.panic\" is non-zero. Will have no effect if kernel param \"oops=panic\" is set, but is a better default if it is not. Adjust to your tolerance, KSPP default is 1. Requires Linux kernel >= 6.2.")
-    .with_fix("Add \"kernel.warn_limit = 100\" (any value between 1 and 100) in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
+    .with_description("Panic after n kernel warnings, a warning often means reachable memory corruption and continuing risks further exploitation. 0 disables the warning count entirely and is the kernel default, so it must be non-zero, while 1 is equivalent to `kernel.panic_on_warn=1`. The panic only reboots when `kernel.panic` is non-zero. Will have no effect if kernel param `oops=panic` is set, but is a better default if it is not. Adjust to your tolerance, KSPP default is 1. Requires Linux kernel >= 6.2.")
+    .with_fix("Add `kernel.warn_limit = 100` (any value between 1 and 100) in `/etc/sysctl.d/*.conf` and run `sysctl --system`.")
     .register();
 
     // TODO: kernel >= 6.2
     check::Check::new(
         "SYK_021",
-        "Ensure sysctl \"kernel.oops_limit\" >= 1 and <= 100",
+        "Ensure sysctl `kernel.oops_limit` >= 1 and <= 100",
         Severity::Medium,
         vec!["sysctl", "KSPP", "server", "workstation"],
         || {
@@ -307,8 +307,8 @@ pub fn add_checks() {
         },
         vec![sysctl::init_sysctl_config],
     )
-    .with_description("Panic after n kernel BUG/Oops, continuing in a corrupted state risks further exploitation. 0 disables the oops count entirely, so it must be non-zero, while 1 is equivalent to \"kernel.panic_on_oops=1\". The panic only reboots when \"kernel.panic\" is non-zero. Will have no effect if kernel param \"oops=panic\" is set, but is a better default if it is not. Adjust to your tolerance, KSPP default is 1.")
-    .with_fix("Add \"kernel.oops_limit = 100\" (any value between 1 and 100) in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
+    .with_description("Panic after n kernel BUG/Oops, continuing in a corrupted state risks further exploitation. 0 disables the oops count entirely, so it must be non-zero, while 1 is equivalent to `kernel.panic_on_oops=1`. The panic only reboots when `kernel.panic` is non-zero. Will have no effect if kernel param `oops=panic` is set, but is a better default if it is not. Adjust to your tolerance, KSPP default is 1.")
+    .with_fix("Add `kernel.oops_limit = 100` (any value between 1 and 100) in `/etc/sysctl.d/*.conf` and run `sysctl --system`.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -328,7 +328,7 @@ pub fn add_checks() {
         "kernel.printk_devkmsg",
         "off"
     )
-    .with_description("Block userspace writes to /dev/kmsg, preventing log spoofing and anti-forensics. Breaks legitimate kmsg writers (e.g. early systemd status messages).")
+    .with_description("Block userspace writes to `/dev/kmsg`, preventing log spoofing and anti-forensics. Breaks legitimate kmsg writers (e.g. early systemd status messages).")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -363,7 +363,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "SYK_027",
-        "Ensure sysctl \"kernel.seccomp.actions_logged\" is not empty",
+        "Ensure sysctl `kernel.seccomp.actions_logged` is not empty",
         Severity::Low,
         vec!["sysctl", "server", "workstation"],
         || {
@@ -381,12 +381,12 @@ pub fn add_checks() {
         vec![sysctl::init_sysctl_config],
     )
     .with_description("Keep the shipped seccomp audit-logging list non-empty (kill_process kill_thread trap errno user_notif trace log). Emptying it blinds monitoring of seccomp-blocked exploitation attempts.")
-    .with_fix("Set \"kernel.seccomp.actions_logged\" to the shipped default list in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
+    .with_fix("Set `kernel.seccomp.actions_logged` to the shipped default list in `/etc/sysctl.d/*.conf` and run `sysctl --system`.")
     .register();
 
     check::Check::new(
         "SYK_028",
-        "Ensure sysctl \"kernel.io_uring_group\" = -1 or 0",
+        "Ensure sysctl `kernel.io_uring_group` = -1 or 0",
         Severity::Informational,
         vec!["sysctl", "server", "workstation"],
         || {
@@ -407,7 +407,7 @@ pub fn add_checks() {
         vec![sysctl::init_sysctl_config],
     )
     .with_description("GID exempted from io_uring_disabled = 2. Leave unset (-1, or 0) so no group bypasses the io_uring restriction.")
-    .with_fix("Add \"kernel.io_uring_group = -1\" in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
+    .with_fix("Add `kernel.io_uring_group = -1` in `/etc/sysctl.d/*.conf` and run `sysctl --system`.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -417,7 +417,7 @@ pub fn add_checks() {
         "kernel.apparmor_restrict_unprivileged_userns",
         1
     )
-    .with_description("Restrict unprivileged user namespaces to processes with an AppArmor profile that allows them. Same goal as SYK_015 with less breakage, confined rootless containers still work.")
+    .with_description("Restrict unprivileged user namespaces to processes with an AppArmor profile that allows them. Confined rootless containers still work, compared to `kernel.unprivileged_userns_clone = 0`.")
     .with_link("https://gitlab.com/apparmor/apparmor/-/wikis/unprivileged_userns_restriction")
     .register();
 
@@ -599,7 +599,7 @@ pub fn add_checks() {
         "fs.protected_fifos",
         2
     )
-    .with_description("Disallow O_CREAT opens of FIFOs in world-writable sticky directories unless the owner of the directory is also the owner of the file, so an attacker cannot trick a privileged process into writing into a FIFO they control. Value 2 extends this to group-writable sticky directories. Makes data spoofing attacks more difficult and prevents unintentional writes to attacker-controlled files.")
+    .with_description("Disallow `O_CREAT` opens of FIFOs in world-writable sticky directories unless the owner of the directory is also the owner of the file, so an attacker cannot trick a privileged process into writing into a FIFO they control. Value 2 extends this to group-writable sticky directories. Makes data spoofing attacks more difficult and prevents unintentional writes to attacker-controlled files.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -609,7 +609,7 @@ pub fn add_checks() {
         "fs.protected_regular",
         2
     )
-    .with_description("Disallow O_CREAT opens of regular files in world-writable sticky directories unless the owner of the directory is also the owner of the file, so an attacker cannot pre-create a file that a privileged process then truncates and writes into. Value 2 extends this to group-writable sticky directories. Makes data spoofing attacks more difficult and prevents unintentional writes to attacker-controlled files.")
+    .with_description("Disallow `O_CREAT` opens of regular files in world-writable sticky directories unless the owner of the directory is also the owner of the file, so an attacker cannot pre-create a file that a privileged process then truncates and writes into. Value 2 extends this to group-writable sticky directories. Makes data spoofing attacks more difficult and prevents unintentional writes to attacker-controlled files.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -619,7 +619,7 @@ pub fn add_checks() {
         "fs.protected_symlinks",
         1
     )
-    .with_description("Restrict following symlinks in world-writable sticky directories: a symlink is only followed when it is outside such a directory, when the process following it owns it, or when the directory owner owns it. Symlink creation itself is unaffected. Hardens cross-privilege boundaries when a privileged process follows a symlink belonging to another user, mitigating many symlink-based TOCTOU races in world-writable directories like /tmp.")
+    .with_description("Restrict following symlinks in world-writable sticky directories: a symlink is only followed when it is outside such a directory, when the process following it owns it, or when the directory owner owns it. Symlink creation itself is unaffected. Hardens cross-privilege boundaries when a privileged process follows a symlink belonging to another user, mitigating many symlink-based TOCTOU races in world-writable directories like `/tmp`.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -634,7 +634,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "SYF_006",
-        "Ensure sysctl \"fs.binfmt_misc.status\" = 0",
+        "Ensure sysctl `fs.binfmt_misc.status` = 0",
         Severity::Medium,
         vec!["sysctl", "fs", "server", "workstation"],
         || {
@@ -649,7 +649,7 @@ pub fn add_checks() {
         vec![sysctl::init_sysctl_config],
     )
     .with_description("Disable the miscellaneous binary format virtual file system to prevent unintended code execution. Breaks the ability to execute foreign binary formats via binfmt_misc (e.g. QEMU user-mode emulation for running ARM binaries on x86, running .exe via Wine).")
-    .with_fix("Add \"fs.binfmt_misc.status = 0\" in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
+    .with_fix("Add `fs.binfmt_misc.status = 0` in `/etc/sysctl.d/*.conf` and run `sysctl --system`.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -669,7 +669,7 @@ pub fn add_checks() {
         "vm.unprivileged_userfaultfd",
         0
     )
-    .with_description("Restrict the userfaultfd() syscall to users with CAP_SYS_PTRACE. Reduces the likelihood of use-after-free exploits from heap sprays. Breaks applications that rely on userfaultfd for user-space paging (e.g. some Java GCs, game engines, databases with memory-mapped files).")
+    .with_description("Restrict the `userfaultfd()` syscall to users with `CAP_SYS_PTRACE`. Reduces the likelihood of use-after-free exploits from heap sprays. Breaks applications that rely on userfaultfd for user-space paging (e.g. some Java GCs, game engines, databases with memory-mapped files).")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -772,7 +772,7 @@ pub fn add_checks() {
         "dev.tty.ldisc_autoload",
         0
     )
-    .with_description("Restrict loading TTY line disciplines to users with CAP_SYS_MODULE. Prevents unprivileged users from loading arbitrary line disciplines. May break software that relies on dynamically loading TTY line disciplines (e.g. some serial port tools, pppd).")
+    .with_description("Restrict loading TTY line disciplines to users with `CAP_SYS_MODULE`. Prevents unprivileged users from loading arbitrary line disciplines. May break software that relies on dynamically loading TTY line disciplines (e.g. some serial port tools, pppd).")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -797,7 +797,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "SYU_001",
-        "Ensure sysctl \"user.max_user_namespaces\" <= 31231",
+        "Ensure sysctl `user.max_user_namespaces` <= 31231",
         Severity::High,
         vec!["sysctl", "KSPP", "server", "workstation"],
         || {
@@ -819,7 +819,7 @@ pub fn add_checks() {
         vec![sysctl::init_sysctl_config],
     )
     .with_description("Limit the number of user namespaces to reduce attack surface. May break the upower daemon. KSPP recommends 0 to completely disable user namespaces.")
-    .with_fix("Add \"user.max_user_namespaces = 31231\" (or lower) in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
+    .with_fix("Add `user.max_user_namespaces = 31231` (or lower) in `/etc/sysctl.d/*.conf` and run `sysctl --system`.")
     .register();
 
     sysctl::add_sysctl_max_check!(
@@ -919,12 +919,12 @@ pub fn add_checks() {
         "net.core.bpf_jit_kallsyms",
         0
     )
-    .with_description("Do not export JITed BPF image addresses through /proc/kallsyms. Root-only readable, reports Warning when audited as non-root.")
+    .with_description("Do not export JITed BPF image addresses through `/proc/kallsyms`. Root-only readable, reports Warning when audited as non-root.")
     .register();
 
     check::Check::new(
         "SYN_004",
-        "Ensure sysctl \"net.core.bpf_jit_limit\" != 0",
+        "Ensure sysctl `net.core.bpf_jit_limit` != 0",
         Severity::Low,
         vec!["sysctl", "bpf", "KSPP", "server", "workstation"],
         || {
@@ -942,7 +942,7 @@ pub fn add_checks() {
         vec![sysctl::init_sysctl_config],
     )
     .with_description("Cap memory allocatable to the BPF JIT (JIT-spray and DoS containment). On x86-64 the dedicated JIT region already bounds it, KSPP still recommends an explicit non-zero cap. Root-only readable, reports Warning when audited as non-root.")
-    .with_fix("Add \"net.core.bpf_jit_limit\" with a non-zero workload-tuned value in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
+    .with_fix("Add `net.core.bpf_jit_limit` with a non-zero workload-tuned value in `/etc/sysctl.d/*.conf` and run `sysctl --system`.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -1119,7 +1119,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "SYN_064",
-        "Ensure sysctl \"net.ipv4.icmp_ratelimit\" >= 1 and <= 100",
+        "Ensure sysctl `net.ipv4.icmp_ratelimit` >= 1 and <= 100",
         Severity::Medium,
         vec!["sysctl", "ipv4", "server", "workstation"],
         || {
@@ -1141,7 +1141,7 @@ pub fn add_checks() {
         vec![sysctl::init_sysctl_config],
     )
     .with_description("Rate-limit outgoing ICMP error replies, in milliseconds between replies per type. The kernel default is 1000. Blocks ICMP-rate side channels and slows network-scan reconnaissance. Must be non-zero, 0 disables the rate limiting entirely.")
-    .with_fix("Add \"net.ipv4.icmp_ratelimit = 100\" (any value between 1 and 100) in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
+    .with_fix("Add `net.ipv4.icmp_ratelimit = 100` (any value between 1 and 100) in `/etc/sysctl.d/*.conf` and run `sysctl --system`.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -1151,7 +1151,7 @@ pub fn add_checks() {
         "net.ipv4.icmp_ratemask",
         88089
     )
-    .with_description("Select which ICMP types are subject to the net.ipv4.icmp_ratelimit limit, as a bitmask of ICMP types. Mask 88089 covers the reconnaissance-aiding types (echo reply, destination unreachable, source quench, time exceeded, parameter problem, timestamp reply).")
+    .with_description("Select which ICMP types are subject to the `net.ipv4.icmp_ratelimit` limit, as a bitmask of ICMP types. Mask 88089 covers the reconnaissance-aiding types (echo reply, destination unreachable, source quench, time exceeded, parameter problem, timestamp reply).")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -1251,7 +1251,7 @@ pub fn add_checks() {
         "net.ipv4.conf.all.route_localnet",
         0
     )
-    .with_description("Disable routing of 127.0.0.0/8 to external networks. Prevents local net traffic from being routed outside the host.")
+    .with_description("Disable routing of `127.0.0.0/8` to external networks. Prevents local net traffic from being routed outside the host.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -1699,7 +1699,7 @@ pub fn add_checks() {
         "net.ipv6.conf.all.disable_ipv6",
         1
     )
-    .with_description("Disable IPv6 support on all interfaces. Informational only: CIS recommends it when IPv6 is not required, but turning the protocol off is not a security improvement over a hardened dual-stack host, the neighbor discovery, router advertisement and source routing checks already close the on-link attack paths, and the ipv6 module stays loaded so its code paths remain reachable in the kernel. Deletes every IPv6 address including ::1, which breaks dual-stack services, container and VM networking, and applications that bind or resolve localhost over IPv6. Interfaces created later inherit \"net.ipv6.conf.default.disable_ipv6\", and \"ipv6.disable=1\" on the kernel command line or blacklisting the ipv6 module is required to keep the stack out of the kernel entirely.")
+    .with_description("Disable IPv6 support on all interfaces. Informational only: CIS recommends it when IPv6 is not required, but turning the protocol off is not a security improvement over a hardened dual-stack host, the neighbor discovery, router advertisement and source routing checks already close the on-link attack paths, and the ipv6 module stays loaded so its code paths remain reachable in the kernel. Deletes every IPv6 address including `::1`, which breaks dual-stack services, container and VM networking, and applications that bind or resolve localhost over IPv6. Interfaces created later inherit `net.ipv6.conf.default.disable_ipv6`, and `ipv6.disable=1` on the kernel command line or blacklisting the ipv6 module is required to keep the stack out of the kernel entirely.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -1709,7 +1709,7 @@ pub fn add_checks() {
         "net.ipv6.conf.default.disable_ipv6",
         1
     )
-    .with_description("Disable IPv6 by default on interfaces created after this is applied, such as container veth pairs, tunnels, VLANs and bridges, which inherit \"net.ipv6.conf.default\" and would otherwise come up with IPv6 enabled. Informational only: as with \"net.ipv6.conf.all.disable_ipv6\", turning the protocol off is not a security improvement over a hardened dual-stack host, the neighbor discovery, router advertisement and source routing checks already close the on-link attack paths, and the ipv6 module stays loaded so its code paths remain reachable in the kernel. New interfaces keep no IPv6 address, not even a link-local one, which breaks IPv6 for containers, VMs and tunnels that expect it, and \"ipv6.disable=1\" on the kernel command line or blacklisting the ipv6 module is still required to keep the stack out of the kernel entirely.")
+    .with_description("Disable IPv6 by default on interfaces created after this is applied, such as container veth pairs, tunnels, VLANs and bridges, which inherit `net.ipv6.conf.default` and would otherwise come up with IPv6 enabled. Informational only: as with `net.ipv6.conf.all.disable_ipv6`, turning the protocol off is not a security improvement over a hardened dual-stack host, the neighbor discovery, router advertisement and source routing checks already close the on-link attack paths, and the ipv6 module stays loaded so its code paths remain reachable in the kernel. New interfaces keep no IPv6 address, not even a link-local one, which breaks IPv6 for containers, VMs and tunnels that expect it, and `ipv6.disable=1` on the kernel command line or blacklisting the ipv6 module is still required to keep the stack out of the kernel entirely.")
     .register();
 
     sysctl::add_sysctl_check!(
@@ -2168,7 +2168,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "SYN_247",
-        "Ensure sysctl \"net.ipv6.icmp.ratelimit\" >= 1 and <= 100",
+        "Ensure sysctl `net.ipv6.icmp.ratelimit` >= 1 and <= 100",
         Severity::High,
         vec!["sysctl", "ipv6", "server", "workstation"],
         || {
@@ -2190,7 +2190,7 @@ pub fn add_checks() {
         vec![sysctl::init_sysctl_config],
     )
     .with_description("ICMPv6 twin of SYN_064: rate-limit outgoing ICMPv6 errors to block rate side channels and slow reconnaissance. Kernel default 100. Must be non-zero, 0 disables the rate limiting entirely.")
-    .with_fix("Add \"net.ipv6.icmp.ratelimit = 100\" (any value between 1 and 100) in \"/etc/sysctl.d/*.conf\" and run \"sysctl --system\".")
+    .with_fix("Add `net.ipv6.icmp.ratelimit = 100` (any value between 1 and 100) in `/etc/sysctl.d/*.conf` and run `sysctl --system`.")
     .register();
 
     sysctl::add_sysctl_check!(

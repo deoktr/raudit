@@ -8,8 +8,8 @@ use serde_json::Value;
 
 pub fn add_checks() {
     check::Check::new(
-        "CNT_001",
-        "Ensure docker containers are not started with \"--privileged\" flag",
+        "DCK_001",
+        "Ensure docker containers are not started with `--privileged` flag",
         Severity::Critical,
         vec!["container", "docker", "server", "workstation"],
         docker::docker_not_privileged,
@@ -20,7 +20,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_002",
+        "DCK_002",
         "Ensure docker containers capabilities are dropped",
         Severity::High,
         vec!["container", "docker", "server", "workstation"],
@@ -32,7 +32,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_003",
+        "DCK_003",
         "Ensure docker containers are running with a user",
         Severity::High,
         vec!["container", "docker", "server", "workstation"],
@@ -45,8 +45,8 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_004",
-        "Ensure docker mount point \"/var/lib/docker\" exist",
+        "DCK_004",
+        "Ensure docker mount point `/var/lib/docker` exist",
         Severity::Medium,
         vec!["container", "docker", "mount", "CIS", "server"], // CIS Docker 1.1.1
         // TODO: get path by running: docker info -f '{{ .DockerRootDir }}'
@@ -60,7 +60,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_005",
+        "DCK_005",
         "Ensure docker network traffic is restricted between containers on the default bridge",
         Severity::Medium,
         vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.2
@@ -74,7 +74,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_006",
+        "DCK_006",
         "Ensure docker logging level is set to info",
         Severity::Medium,
         vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.3
@@ -85,11 +85,11 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Setting the log level to info ensures that security-relevant events are captured without excessive noise, enabling effective incident detection and forensic analysis.")
-    .with_fix("In \"/etc/docker/daemon.json\" add `{\"log-level\": \"info\"}`, or start the daemon with `--no-new-privileges` flag.")
+    .with_fix("In `/etc/docker/daemon.json` add `{\"log-level\": \"info\"}`, or start the daemon with `--no-new-privileges` flag.")
     .register();
 
     check::Check::new(
-        "CNT_007",
+        "DCK_007",
         "Ensure docker is allowed to make changes to iptables",
         Severity::High,
         vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.4
@@ -102,7 +102,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_008",
+        "DCK_008",
         "Ensure docker does not allow insecure registry",
         Severity::High,
         vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.5
@@ -117,7 +117,7 @@ pub fn add_checks() {
 
     // TODO: could remove since this driver is no longer supported
     check::Check::new(
-        "CNT_009",
+        "DCK_009",
         "Ensure docker storage driver is not aufs",
         Severity::Medium,
         vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.6
@@ -131,8 +131,8 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_010",
-        "Ensure docker storage options \"dm.basesize\" are not set",
+        "DCK_010",
+        "Ensure docker storage options `dm.basesize` are not set",
         Severity::Medium,
         vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.10
         // TODO: and check dockerd config file
@@ -149,7 +149,7 @@ pub fn add_checks() {
     // TODO: add rule to ensure Docker is up to date (CIS 1.2.2)
 
     check::Check::new(
-        "CNT_011",
+        "DCK_011",
         "Ensure docker uses an authorization plugin",
         Severity::High,
         vec!["container", "docker", "ps", "CIS", "server"], // CIS Docker 2.12
@@ -164,7 +164,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_012",
+        "DCK_012",
         "Ensure docker containers cannot acquire new privileges",
         Severity::High,
         vec!["container", "docker", "CIS", "server", "workstation"], // CIS Docker 2.14
@@ -173,12 +173,12 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Set no-new-privileges by default for new containers. Prevents processes inside containers from gaining additional privileges via setuid/setgid binaries or filesystem capabilities. Breaks containers that rely on privilege escalation (e.g. some init systems, sudo within containers).")
-    .with_fix("In \"/etc/docker/daemon.json\" add `{\"no-new-privileges\": true}`, or start the daemon with `--no-new-privileges` flag.")
+    .with_fix("In `/etc/docker/daemon.json` add `{\"no-new-privileges\": true}`, or start the daemon with `--no-new-privileges` flag.")
     .with_link("https://docs.docker.com/reference/cli/dockerd/")
     .register();
 
     check::Check::new(
-        "CNT_113",
+        "DCK_113",
         "Ensure docker builtin seccomp profile is used",
         Severity::High,
         vec!["container", "docker", "seccomp", "server", "workstation"],
@@ -187,12 +187,12 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("Use the builtin seccomp Docker profile to ensure some system calls are restricted within containers.")
-    .with_fix("In \"/etc/docker/daemon.json\" remove `{\"seccomp-profile\": \"unconfined\"}`, or start the daemon without `--seccomp-profile unconfined` flag.")
+    .with_fix("In `/etc/docker/daemon.json` remove `{\"seccomp-profile\": \"unconfined\"}`, or start the daemon without `--seccomp-profile unconfined` flag.")
     .with_link("https://docs.docker.com/reference/cli/dockerd/")
     .register();
 
     check::Check::new(
-        "CNT_013",
+        "DCK_013",
         "Ensure docker live restore is enabled",
         Severity::Low,
         vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.15
@@ -207,7 +207,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_014",
+        "DCK_014",
         "Ensure docker userland proxy is disabled",
         Severity::Medium,
         vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.16
@@ -217,12 +217,12 @@ pub fn add_checks() {
     )
     .skip_when(docker::skip_no_docker)
     .with_description("The userland proxy bypasses iptables filtering rules, which means network-based security policies are not enforced on proxied traffic, weakening network segmentation. Disabling it may break port publishing on systems where the kernel does not support hairpin NAT or when using the default bridge network on some platforms.")
-    .with_fix("In \"/etc/docker/daemon.json\" remove `{\"userlad-proxy\": false}`, or start the daemon without `--userlad-proxy false` flag.")
+    .with_fix("In `/etc/docker/daemon.json` remove `{\"userlad-proxy\": false}`, or start the daemon without `--userlad-proxy false` flag.")
     .with_link("https://docs.docker.com/reference/cli/dockerd/")
     .register();
 
     check::Check::new(
-        "CNT_015",
+        "DCK_015",
         "Ensure docker runs without experimental features",
         Severity::Medium,
         vec!["container", "docker", "ps", "CIS", "server", "workstation"], // CIS Docker 2.18
@@ -236,7 +236,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_016",
+        "DCK_016",
         "Ensure docker service file is owned by root",
         Severity::High,
         vec![
@@ -261,7 +261,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_017",
+        "DCK_017",
         "Ensure docker service file permissions 644 are set",
         Severity::High,
         vec![
@@ -286,7 +286,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_018",
+        "DCK_018",
         "Ensure systemd docker socket file is owned by root",
         Severity::Critical,
         vec![
@@ -311,7 +311,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_019",
+        "DCK_019",
         "Ensure systemd docker socket file permissions 644 are set",
         Severity::Critical,
         vec![
@@ -337,7 +337,7 @@ pub fn add_checks() {
 
     // TODO: allow missing
     check::Check::new(
-        "CNT_020",
+        "DCK_020",
         "Ensure docker etc directory is owned by root",
         Severity::High,
         vec!["container", "docker", "CIS", "server", "workstation"], // CIS Docker 3.5
@@ -350,7 +350,7 @@ pub fn add_checks() {
 
     // TODO: allow missing
     check::Check::new(
-        "CNT_021",
+        "DCK_021",
         "Ensure docker etc directory permissions is 755",
         Severity::High,
         vec!["container", "docker", "CIS", "server", "workstation"], // CIS Docker 3.6
@@ -363,7 +363,7 @@ pub fn add_checks() {
 
     // TODO: allow missing
     check::Check::new(
-        "CNT_022",
+        "DCK_022",
         "Ensure docker daemon.json config file is owned by root",
         Severity::High,
         vec!["container", "docker", "CIS", "server", "workstation"], // CIS Docker 3.17
@@ -376,7 +376,7 @@ pub fn add_checks() {
 
     // TODO: allow missing
     check::Check::new(
-        "CNT_023",
+        "DCK_023",
         "Ensure docker daemon.json config file permissions is 644",
         Severity::High,
         vec!["container", "docker", "CIS", "server", "workstation"], // CIS Docker 3.18
@@ -389,7 +389,7 @@ pub fn add_checks() {
 
     // TODO: allow missing
     check::Check::new(
-        "CNT_024",
+        "DCK_024",
         "Ensure default docker config file is owned by root",
         Severity::High,
         vec!["container", "docker", "CIS", "server", "workstation"], // CIS Docker 3.19
@@ -402,7 +402,7 @@ pub fn add_checks() {
 
     // TODO: allow missing
     check::Check::new(
-        "CNT_025",
+        "DCK_025",
         "Ensure default docker config file permissions is 644",
         Severity::High,
         vec!["container", "docker", "CIS", "server", "workstation"], // CIS Docker 3.20
@@ -415,7 +415,7 @@ pub fn add_checks() {
 
     // TODO: only if on RHEL/Centos
     check::Check::new(
-        "CNT_026",
+        "DCK_026",
         "Ensure sysconfig docker config file is owned by root",
         Severity::High,
         vec!["container", "docker", "CIS", "server", "workstation"], // CIS Docker 3.21
@@ -428,7 +428,7 @@ pub fn add_checks() {
 
     // TODO: only if on RHEL/Centos
     check::Check::new(
-        "CNT_027",
+        "DCK_027",
         "Ensure sysconfig docker config file permissions is 644",
         Severity::High,
         vec!["container", "docker", "CIS", "server", "workstation"], // CIS Docker 3.22
@@ -440,7 +440,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_028",
+        "DCK_028",
         "Ensure docker containerd socket file is owned by root",
         Severity::Critical,
         vec!["container", "docker", "CIS", "server", "workstation"], // CIS Docker 3.23
@@ -452,7 +452,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_029",
+        "DCK_029",
         "Ensure docker containerd socket file permissions is 660",
         Severity::Critical,
         vec!["container", "docker", "CIS", "server", "workstation"], // CIS Docker 3.24
@@ -464,7 +464,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_030",
+        "DCK_030",
         "Ensure docker swarm is disabled if not needed",
         Severity::Medium,
         vec!["container", "docker", "CIS", "server", "workstation"], // CIS Docker 5.1
@@ -476,7 +476,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_031",
+        "DCK_031",
         "Ensure docker group is empty",
         Severity::Critical,
         vec![
@@ -495,7 +495,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_032",
+        "DCK_032",
         "Ensure docker containers root filesystem is mounted as read-only",
         Severity::High,
         vec!["container", "docker", "server", "workstation"],
@@ -508,7 +508,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_100",
+        "DCK_100",
         "Ensure audit rule for docker daemon is present",
         Severity::Medium,
         vec![
@@ -527,7 +527,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_101",
+        "DCK_101",
         "Ensure audit rule for docker run files and directories is present",
         Severity::Medium,
         vec![
@@ -546,7 +546,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_102",
+        "DCK_102",
         "Ensure audit rule for docker var lib files and directories is present",
         Severity::Medium,
         vec![
@@ -565,7 +565,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_103",
+        "DCK_103",
         "Ensure audit rule for docker etc files and directories is present",
         Severity::Medium,
         vec![
@@ -585,7 +585,7 @@ pub fn add_checks() {
 
     // TODO: add CIS Docker 1.1.7 to 1.1.9
     check::Check::new(
-        "CNT_107",
+        "DCK_107",
         "Ensure audit rule for docker etc default file is present",
         Severity::Medium,
         vec![
@@ -604,7 +604,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_108",
+        "DCK_108",
         "Ensure audit rule for docker etc daemon file is present",
         Severity::Medium,
         vec![
@@ -623,7 +623,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_109",
+        "DCK_109",
         "Ensure audit rule for docker etc containerd config file is present",
         Severity::Medium,
         vec![
@@ -642,7 +642,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_110",
+        "DCK_110",
         "Ensure audit rule for docker sysconfig file is present",
         Severity::Medium,
         vec![
@@ -661,7 +661,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_111",
+        "DCK_111",
         "Ensure audit rule for docker containerd bin is present",
         Severity::Medium,
         vec![
@@ -680,7 +680,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CNT_112",
+        "DCK_112",
         "Ensure audit rule for docker runc bin is present",
         Severity::Medium,
         vec![
@@ -700,21 +700,21 @@ pub fn add_checks() {
 
     // TODO: what is this rule?
     // check::Check::new(
-    //     "CNT_113",
+    //     "DCK_113",
     //     "Ensure audit rule for docker containerd shim bin is present",
     //     vec!["container", "docker", "audit", "CIS", "server", "workstation"], // CIS Docker 1.1.15
     //     || audit::check_audit_rule("-w /usr/bin/containerd-shim -k docker"),
     //     vec![audit::init_audit_rules],
     // ).register();
     // check::Check::new(
-    //     "CNT_114",
+    //     "DCK_114",
     //     "Ensure audit rule for docker containerd shim v1 bin is present",
     //     vec!["container", "docker", "audit", "CIS", "server", "workstation"], // CIS Docker 1.1.16
     //     || audit::check_audit_rule("-w /usr/bin/containerd-shim-runc-v1 -k docker"),
     //     vec![audit::init_audit_rules],
     // ).register();
     // check::Check::new(
-    //     "CNT_115",
+    //     "DCK_115",
     //     "Ensure audit rule for docker containerd shim v2 bin is present",
     //     vec!["container", "docker", "audit", "CIS", "server", "workstation"], // CIS Docker 1.1.17
     //     || audit::check_audit_rule("-w /usr/bin/containerd-shim-runc-v2 -k docker"),

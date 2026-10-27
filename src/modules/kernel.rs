@@ -71,7 +71,7 @@ fn parse_kernel_params(cmdline: &str) -> KernelParams {
 /// Get kernel params by reading from `/proc/cmdline`.
 fn get_kernel_params() -> Result<KernelParams, String> {
     let content = fs::read_to_string(CMDLINE_PATH)
-        .map_err(|err| format!("failed to read {}: {}", CMDLINE_PATH, err))?;
+        .map_err(|err| format!("failed to read `{}`: {}", CMDLINE_PATH, err))?;
     Ok(parse_kernel_params(&content))
 }
 
@@ -108,14 +108,14 @@ pub fn parse_kernel_version(version: &str) -> Option<(u32, u32, u32)> {
 /// Init kernel version by reading `/proc/sys/kernel/osrelease`.
 fn get_kernel_version() -> Result<(u32, u32, u32), String> {
     let content = fs::read_to_string(OSRELEASE_PATH)
-        .map_err(|err| format!("failed to read {}: {}", OSRELEASE_PATH, err))?;
+        .map_err(|err| format!("failed to read `{}`: {}", OSRELEASE_PATH, err))?;
     match parse_kernel_version(content.trim()) {
         Some(v) => {
             log_trace!("found kernel version: {}.{}.{}", v.0, v.1, v.2);
             Ok(v)
         }
         None => Err(format!(
-            "failed to parse kernel version from {}: {:?}",
+            "failed to parse kernel version from {}: `{}`",
             OSRELEASE_PATH,
             content.trim()
         )),

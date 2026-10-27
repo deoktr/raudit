@@ -19,6 +19,7 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 ### Changed
 
 - Update IDs for some sudo file-system checks
+- Update the human readable output to highlight commands and files
 
 ## [0.37.0] - 2026-10-24
 

@@ -268,7 +268,7 @@ fn get_available_modules() -> Result<AvailableModules, String> {
     )
     .map_err(|err| {
         format!(
-            "failed to read /lib/modules/{}/modules.dep: {}",
+            "failed to read `/lib/modules/{}/modules.dep`: {}",
             kernel_release, err
         )
     })?;
@@ -295,7 +295,7 @@ fn get_compiled_in_modules() -> Result<CompiledInModules, String> {
     )
     .map_err(|err| {
         format!(
-            "failed to read /lib/modules/{}/modules.builtin: {}",
+            "failed to read `/lib/modules/{}/modules.builtin`: {}",
             kernel_release, err
         )
     })?;

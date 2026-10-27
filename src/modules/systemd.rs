@@ -59,7 +59,7 @@ fn parse_systemd_config(systemd_config: String) -> SystemdConfig {
 /// Get systemd configuration by reading `/etc/systemd/system.conf`.
 fn get_systemd_config() -> Result<SystemdConfig, String> {
     let content = fs::read_to_string(SYSTEMD_CONF_PATH)
-        .map_err(|err| format!("failed to read {}: {}", SYSTEMD_CONF_PATH, err))?;
+        .map_err(|err| format!("failed to read `{}`: {}", SYSTEMD_CONF_PATH, err))?;
     Ok(parse_systemd_config(content))
 }
 
@@ -83,16 +83,16 @@ fn get_systemd_active_units() -> Result<Vec<String>, String> {
 
     let output = cmd
         .output()
-        .map_err(|err| format!("failed to run \"systemctl list-units\": {}", err))?;
+        .map_err(|err| format!("failed to run `systemctl list-units`: {}", err))?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         let stderr = stderr.trim();
 
         return Err(if stderr.is_empty() {
-            format!("\"systemctl list-units\" {}", output.status)
+            format!("`systemctl list-units` {}", output.status)
         } else {
-            format!("\"systemctl list-units\" {}: {}", output.status, stderr)
+            format!("`systemctl list-units` {}: {}", output.status, stderr)
         });
     }
 
@@ -126,13 +126,13 @@ pub fn get_systemd_config_value(key: &str, value: &str) -> check::CheckReturn {
             } else {
                 (
                     check::CheckState::Fail,
-                    Some(format!("{:?} != {:?}", conf_value, value)),
+                    Some(format!("`{}` != `{}`", conf_value, value)),
                 )
             }
         }
         None => (
             check::CheckState::Fail,
-            Some(format!("missing key {:?}", key)),
+            Some(format!("missing key `{}`", key)),
         ),
     })
 }

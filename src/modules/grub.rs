@@ -36,7 +36,7 @@ pub fn skip_no_grub() -> bool {
 /// Get the system's grub config from `/boot/grub/grub.cfg`.
 fn get_grub_cfg() -> Result<String, String> {
     fs::read_to_string(GRUB_CFG_PATH)
-        .map_err(|err| format!("failed to read {}: {}", GRUB_CFG_PATH, err))
+        .map_err(|err| format!("failed to read `{}`: {}", GRUB_CFG_PATH, err))
 }
 
 /// Init the system's grub config from `/boot/grub/grub.cfg`.

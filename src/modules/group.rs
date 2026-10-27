@@ -80,7 +80,7 @@ fn parse_group(content: String) -> Groups {
 /// Get groups from `/etc/group`.
 fn get_group() -> Result<Groups, String> {
     let content = fs::read_to_string(GROUP_PATH)
-        .map_err(|err| format!("failed to read {}: {}", GROUP_PATH, err))?;
+        .map_err(|err| format!("failed to read `{}`: {}", GROUP_PATH, err))?;
     Ok(parse_group(content))
 }
 
@@ -181,7 +181,7 @@ pub fn no_members(group_name: &str) -> check::CheckReturn {
 
         (
             check::CheckState::Warning,
-            Some(format!("no \"{}\" group found", group_name)),
+            Some(format!("no `{}` group found", group_name)),
         )
     })
 }

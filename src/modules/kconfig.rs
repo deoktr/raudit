@@ -43,7 +43,7 @@ pub fn skip_no_kbuild_config() -> bool {
 /// Get the running kernel release from `/proc/sys/kernel/osrelease`.
 fn get_kernel_release() -> Result<String, String> {
     let content = fs::read_to_string(OSRELEASE_PATH)
-        .map_err(|err| format!("failed to read {}: {}", OSRELEASE_PATH, err))?;
+        .map_err(|err| format!("failed to read `{}`: {}", OSRELEASE_PATH, err))?;
     Ok(content.trim().to_string())
 }
 
@@ -70,7 +70,7 @@ fn get_kernel_build_config_paths() -> Result<Vec<PathBuf>, String> {
 fn read_kernel_build_config(path: &Path) -> Result<String, String> {
     if !path.extension().is_some_and(|ext| ext == "gz") {
         return fs::read_to_string(path)
-            .map_err(|err| format!("failed to read {}: {}", path.display(), err));
+            .map_err(|err| format!("failed to read `{}`: {}", path.display(), err));
     }
 
     let file = fs::File::open(path)
@@ -79,7 +79,7 @@ fn read_kernel_build_config(path: &Path) -> Result<String, String> {
     let mut content = String::new();
     GzDecoder::new(file)
         .read_to_string(&mut content)
-        .map_err(|err| format!("failed to read {}: {}", path.display(), err))?;
+        .map_err(|err| format!("failed to read `{}`: {}", path.display(), err))?;
 
     Ok(content)
 }

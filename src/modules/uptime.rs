@@ -27,11 +27,11 @@ static UPTIME: State<u64> = State::new("uptime");
 /// Get system uptime by reading `/proc/uptime`.
 fn get_uptime() -> Result<u64, String> {
     let content = fs::read_to_string(UPTIME_PATH)
-        .map_err(|err| format!("failed to read {}: {}", UPTIME_PATH, err))?;
+        .map_err(|err| format!("failed to read `{}`: {}", UPTIME_PATH, err))?;
 
     let Some((uptime, _idle)) = content.split_once(" ") else {
         return Err(format!(
-            "invalid {} file format: {:?}",
+            "invalid {} file format: `{}`",
             UPTIME_PATH,
             content.trim()
         ));
@@ -45,7 +45,7 @@ fn get_uptime() -> Result<u64, String> {
 
     seconds.parse::<u64>().map_err(|err| {
         format!(
-            "failed to parse {} value {:?}: {}",
+            "failed to parse {} value `{}`: {}",
             UPTIME_PATH, uptime, err
         )
     })

@@ -124,7 +124,7 @@ fn parse_passwd(content: String) -> PasswdConfig {
 /// Get the system's users from `/etc/passwd`.
 fn get_passwd() -> Result<PasswdConfig, String> {
     let content = fs::read_to_string(PASSWD_PATH)
-        .map_err(|err| format!("failed to read {}: {}", PASSWD_PATH, err))?;
+        .map_err(|err| format!("failed to read `{}`: {}", PASSWD_PATH, err))?;
     Ok(parse_passwd(content))
 }
 
@@ -201,7 +201,7 @@ fn parse_shadow(content: String) -> ShadowConfig {
 /// Get the system's users from `/etc/shadow`.
 fn get_shadow() -> Result<ShadowConfig, String> {
     let content = fs::read_to_string(SHADOW_PATH)
-        .map_err(|err| format!("failed to read {}: {}", SHADOW_PATH, err))?;
+        .map_err(|err| format!("failed to read `{}`: {}", SHADOW_PATH, err))?;
     Ok(parse_shadow(content))
 }
 
@@ -517,7 +517,7 @@ pub fn home_dirs_correct_ownership() -> check::CheckReturn {
             if let Ok(meta) = fs::metadata(home) {
                 use std::os::unix::fs::MetadataExt;
                 if meta.uid() != user.uid {
-                    wrong.push(format!("{}: uid {}", user.username, meta.uid()));
+                    wrong.push(format!("`{}`: uid {}", user.username, meta.uid()));
                 }
             }
         }
@@ -617,7 +617,7 @@ fn walk_dir_world_writable(dir: &Path, found: &mut Vec<String>, depth: u32) {
 /// Get the useradd configuration from `/etc/default/useradd`.
 fn get_useradd() -> Result<String, String> {
     fs::read_to_string(USERADD_PATH)
-        .map_err(|err| format!("failed to read {}: {}", USERADD_PATH, err))
+        .map_err(|err| format!("failed to read `{}`: {}", USERADD_PATH, err))
 }
 
 /// Verify that useradd is configured with `INACTIVE=0`.

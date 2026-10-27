@@ -17,9 +17,8 @@
  */
 
 pub const RESET_COLOR: &str = "\x1b[39m";
+
 pub const DIM_COLOR: &str = "\x1b[90m";
-pub const BOLD_COLOR: &str = "\x1b[1m";
-pub const RESET_BOLD_COLOR: &str = "\x1b[22m";
 
 pub const CHK_PASS_COLOR: &str = "\x1b[32m";
 pub const CHK_FAIL_COLOR: &str = "\x1b[31m";
@@ -31,3 +30,10 @@ pub const SEV_LOW_COLOR: &str = "\x1b[36m";
 pub const SEV_MEDIUM_COLOR: &str = "\x1b[33m";
 pub const SEV_HIGH_COLOR: &str = "\x1b[31m";
 pub const SEV_CRITICAL_COLOR: &str = "\x1b[91m";
+
+pub const BOLD_STYLE: &str = "\x1b[1m";
+pub const RESET_BOLD_STYLE: &str = "\x1b[22m";
+
+// dark gray background, light gray foreground
+pub const CODE_STYLE: &str = "\x1b[48;5;236m\x1b[38;5;254m";
+pub const RESET_CODE_STYLE: &str = "\x1b[49m\x1b[39m";

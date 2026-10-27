@@ -213,13 +213,13 @@ pub fn check_directive(name: &str, expected: &str) -> check::CheckReturn {
             } else {
                 (
                     check::CheckState::Fail,
-                    Some(format!("{:?} != {:?}", value, expected)),
+                    Some(format!("`{}` != `{}`", value, expected)),
                 )
             }
         }
         None => (
             check::CheckState::Fail,
-            Some(format!("directive {:?} not found", name)),
+            Some(format!("directive `{}` not found", name)),
         ),
     })
 }
@@ -232,7 +232,7 @@ pub fn check_directive_not_contains(name: &str, forbidden: &str) -> check::Check
             if value.contains(forbidden) {
                 (
                     check::CheckState::Fail,
-                    Some(format!("{:?} contains {:?}", value, forbidden)),
+                    Some(format!("`{}` contains `{}`", value, forbidden)),
                 )
             } else {
                 (check::CheckState::Pass, Some(value))
@@ -240,7 +240,7 @@ pub fn check_directive_not_contains(name: &str, forbidden: &str) -> check::Check
         }
         None => (
             check::CheckState::Fail,
-            Some(format!("directive {:?} not found", name)),
+            Some(format!("directive `{}` not found", name)),
         ),
     })
 }
@@ -256,7 +256,7 @@ pub fn check_header_present(header_name: &str) -> check::CheckReturn {
         } else {
             (
                 check::CheckState::Fail,
-                Some(format!("header {:?} not found", header_name)),
+                Some(format!("header `{}` not found", header_name)),
             )
         }
     })
@@ -290,17 +290,17 @@ fn get_nginx_config() -> Result<NginxConfig, String> {
 
     let output = cmd
         .output()
-        .map_err(|err| format!("failed to run \"nginx -c {} -T\": {}", NGINX_CONF_PATH, err))?;
+        .map_err(|err| format!("failed to run `nginx -c {} -T`: {}", NGINX_CONF_PATH, err))?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         let stderr = stderr.trim();
 
         return Err(if stderr.is_empty() {
-            format!("\"nginx -c {} -T\" {}", NGINX_CONF_PATH, output.status)
+            format!("`nginx -c {} -T` {}", NGINX_CONF_PATH, output.status)
         } else {
             format!(
-                "\"nginx -c {} -T\" {}: {}",
+                "`nginx -c {} -T` {}: {}",
                 NGINX_CONF_PATH, output.status, stderr
             )
         });

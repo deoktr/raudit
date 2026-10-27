@@ -43,7 +43,7 @@ type OSRelease = HashMap<String, String>;
 #[allow(dead_code)]
 pub fn init_kernel_os_type() -> Result<String, String> {
     let content = fs::read_to_string(KOSTYPE_PATH)
-        .map_err(|err| format!("failed to read {}: {}", KOSTYPE_PATH, err))?;
+        .map_err(|err| format!("failed to read `{}`: {}", KOSTYPE_PATH, err))?;
     Ok(content.trim_end().to_string())
 }
 
@@ -51,7 +51,7 @@ pub fn init_kernel_os_type() -> Result<String, String> {
 #[allow(dead_code)]
 pub fn init_kernel_os_release() -> Result<String, String> {
     let content = fs::read_to_string(KOSRELEASE_PATH)
-        .map_err(|err| format!("failed to read {}: {}", KOSRELEASE_PATH, err))?;
+        .map_err(|err| format!("failed to read `{}`: {}", KOSRELEASE_PATH, err))?;
     Ok(content.trim_end().to_string())
 }
 
@@ -74,7 +74,7 @@ fn parse_os_release(content: String) -> OSRelease {
 /// Get OS release info from `/etc/os-release`.
 fn get_os_release() -> Result<OSRelease, String> {
     let content = fs::read_to_string(OS_RELEASE_PATH)
-        .map_err(|err| format!("failed to read {}: {}", OS_RELEASE_PATH, err))?;
+        .map_err(|err| format!("failed to read `{}`: {}", OS_RELEASE_PATH, err))?;
     Ok(parse_os_release(content))
 }
 

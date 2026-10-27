@@ -57,7 +57,7 @@ fn parse_hosts(hosts: String) -> Hosts {
 /// Get the system's hosts config from `/etc/hosts`.
 fn get_hosts() -> Result<Hosts, String> {
     let content = fs::read_to_string(HOSTS_PATH)
-        .map_err(|err| format!("failed to read {}: {}", HOSTS_PATH, err))?;
+        .map_err(|err| format!("failed to read `{}`: {}", HOSTS_PATH, err))?;
     Ok(parse_hosts(content))
 }
 

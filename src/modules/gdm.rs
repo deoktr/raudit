@@ -47,7 +47,7 @@ pub fn no_gdm_auto_logon() -> check::CheckReturn {
         }
         Err(err) => (
             check::CheckState::Warning,
-            Some(format!("failed to read gdm configuration: {}", err)),
+            Some(format!("failed to read `{}`: {}", GDM_CFG_PATH, err)),
         ),
     }
 }

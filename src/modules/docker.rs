@@ -58,22 +58,22 @@ fn get_docker_info() -> Result<DockerInfo, String> {
 
     let output = cmd
         .output()
-        .map_err(|e| format!("failed to run \"docker info -f json\": {}", e))?;
+        .map_err(|e| format!("failed to run `docker info -f json`: {}", e))?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         let stderr = stderr.trim();
 
         return Err(if stderr.is_empty() {
-            format!("\"docker info -f json\" {}", output.status)
+            format!("`docker info -f json` {}", output.status)
         } else {
-            format!("\"docker info -f json\" {}: {}", output.status, stderr)
+            format!("`docker info -f json` {}: {}", output.status, stderr)
         });
     }
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     serde_json::from_str(&stdout)
-        .map_err(|e| format!("failed to parse \"docker info -f json\" stdout: {}", e))
+        .map_err(|e| format!("failed to parse `docker info -f json` stdout: {}", e))
 }
 
 /// Init docker info by running `docker info -f json`.
@@ -179,7 +179,7 @@ pub fn check_docker_info(pointer: &str, expected: Value) -> check::CheckReturn {
         }
         None => (
             check::CheckState::Warning,
-            Some(format!("pointer {:?} not found", pointer)),
+            Some(format!("pointer `{}` not found", pointer)),
         ),
     })
 }
@@ -200,7 +200,7 @@ pub fn check_docker_info_ne(pointer: &str, expected: Value) -> check::CheckRetur
         }
         None => (
             check::CheckState::Warning,
-            Some(format!("pointer {:?} not found", pointer)),
+            Some(format!("pointer `{}` not found", pointer)),
         ),
     })
 }
@@ -221,7 +221,7 @@ pub fn check_docker_info_contains(pointer: &str, expected: Value) -> check::Chec
         } else {
             (
                 check::CheckState::Warning,
-                Some(format!("pointer {:?} not found", pointer)),
+                Some(format!("pointer `{}` not found", pointer)),
             )
         }
     })

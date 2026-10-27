@@ -120,7 +120,7 @@ fn parse_mounts(mounts: String) -> MountConfig {
 /// Get mounts configuration by reading `/proc/mounts`.
 fn get_mounts() -> Result<MountConfig, String> {
     Ok(parse_mounts(fs::read_to_string(PROC_MOUNTS_PATH).map_err(
-        |err| format!("failed to read {}: {}", PROC_MOUNTS_PATH, err),
+        |err| format!("failed to read `{}`: {}", PROC_MOUNTS_PATH, err),
     )?))
 }
 

@@ -21,7 +21,7 @@ use crate::modules::{base, modprobe};
 /// Build the description for a blacklisted module check.
 fn description_blacklist(module: &str, description: &str) -> String {
     format!(
-        "Prevents the kernel module \"{}\" from auto-loading on hardware probe or subsystem request, reducing the attack surface from unused modules that could contain exploitable vulnerabilities. The module remains manually loadable by root if needed. {}",
+        "Prevents the kernel module `{}` from auto-loading on hardware probe or subsystem request, reducing the attack surface from unused modules that could contain exploitable vulnerabilities. The module remains manually loadable by root if needed. {}",
         module, description
     )
 }
@@ -29,7 +29,7 @@ fn description_blacklist(module: &str, description: &str) -> String {
 /// Build the description for a disabled module check.
 fn description_disabled(module: &str, description: &str) -> String {
     format!(
-        "Prohibits the kernel module \"{}\" from loading, reducing the attack surface from unused modules that could contain exploitable vulnerabilities. Note that as root it's still possible to update the configuration and load the module. {}",
+        "Prohibits the kernel module `{}` from loading, reducing the attack surface from unused modules that could contain exploitable vulnerabilities. Note that as root it's still possible to update the configuration and load the module. {}",
         module, description
     )
 }
@@ -37,7 +37,7 @@ fn description_disabled(module: &str, description: &str) -> String {
 /// Build the remediation text for a blacklisted-module check.
 fn fix_blacklist(module: &str) -> String {
     format!(
-        "Add entry in \"/etc/modprobe.d/blacklist.conf\" with: \"blacklist {}\"",
+        "Add entry in `/etc/modprobe.d/blacklist.conf` with: `blacklist {}`",
         module
     )
 }
@@ -45,7 +45,7 @@ fn fix_blacklist(module: &str) -> String {
 /// Build the remediation text for a disabled-module check.
 fn fix_disabled(module: &str) -> String {
     format!(
-        "Add entry in \"/etc/modprobe.d/disabled.conf\" with: \"install {} /bin/true\"",
+        "Add entry in `/etc/modprobe.d/disabled.conf` with: `install {} /bin/true`",
         module
     )
 }
@@ -54,7 +54,7 @@ pub fn add_checks() {
     // modprobe.d configuration directory and files (KMD_)
     check::Check::new(
         "KMD_001",
-        "Ensure \"/etc/modprobe.d\" directory is owned by root",
+        "Ensure `/etc/modprobe.d` directory is owned by root",
         Severity::High,
         vec!["module", "server", "workstation"],
         || base::check_dir_owner_id("/etc/modprobe.d", 0, 0),
@@ -66,7 +66,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMD_002",
-        "Ensure \"/etc/modprobe.d\" directory permissions is 755 or stricter",
+        "Ensure `/etc/modprobe.d` directory permissions is 755 or stricter",
         Severity::High,
         vec!["module", "server", "workstation"],
         || base::check_dir_permission_or_stricter("/etc/modprobe.d", 0o755),
@@ -78,32 +78,32 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMD_003",
-        "Ensure \"/etc/modprobe.d\" files are owned by root",
+        "Ensure `/etc/modprobe.d` files are owned by root",
         Severity::High,
         vec!["module", "server", "workstation"],
         || base::check_dir_files_owner_id("/etc/modprobe.d/", 0, 0),
         vec![],
     )
-    .with_description("Modprobe reads every \".conf\" file in /etc/modprobe.d to build the module loading policy, a config file owned by a non-root user lets that user blacklist, re-enable or change options of any module, allowing for local privilege escalation.")
+    .with_description("Modprobe reads every `.conf` file in /etc/modprobe.d to build the module loading policy, a config file owned by a non-root user lets that user blacklist, re-enable or change options of any module, allowing for local privilege escalation.")
     .with_fix("chown -R root:root /etc/modprobe.d/*")
     .register();
 
     check::Check::new(
         "KMD_004",
-        "Ensure \"/etc/modprobe.d\" files permissions are 644 or stricter",
+        "Ensure `/etc/modprobe.d` files permissions are 644 or stricter",
         Severity::High,
         vec!["module", "server", "workstation"],
         || base::check_dir_files_permission_or_stricter("/etc/modprobe.d/", 0o644),
         vec![],
     )
-    .with_description("Modprobe reads every \".conf\" file in /etc/modprobe.d to build the module loading policy, a writable config file lets unprivileged users blacklist, re-enable or change options of any module, allowing for local privilege escalation.")
+    .with_description("Modprobe reads every `.conf` file in /etc/modprobe.d to build the module loading policy, a writable config file lets unprivileged users blacklist, re-enable or change options of any module, allowing for local privilege escalation.")
     .with_fix("chmod -R 644 /etc/modprobe.d/*")
     .register();
 
     // blacklisted modules
     check::Check::new(
         "KMB_001",
-        "Ensure that kernel module \"amd76x_edac\" is blacklisted",
+        "Ensure that kernel module `amd76x_edac` is blacklisted",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_blacklist("amd76x_edac"),
@@ -118,7 +118,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMB_002",
-        "Ensure that kernel module \"cdrom\" is blacklisted",
+        "Ensure that kernel module `cdrom` is blacklisted",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_blacklist("cdrom"),
@@ -130,7 +130,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMB_003",
-        "Ensure that kernel module \"evbug\" is blacklisted",
+        "Ensure that kernel module `evbug` is blacklisted",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_blacklist("evbug"),
@@ -145,7 +145,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMB_004",
-        "Ensure that kernel module \"snd_aw2\" is blacklisted",
+        "Ensure that kernel module `snd_aw2` is blacklisted",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_blacklist("snd_aw2"),
@@ -160,7 +160,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMB_005",
-        "Ensure that kernel module \"snd_intel8x0\" is blacklisted",
+        "Ensure that kernel module `snd_intel8x0` is blacklisted",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_blacklist("snd_intel8x0"),
@@ -175,7 +175,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMB_006",
-        "Ensure that kernel module \"snd_intel8x0m\" is blacklisted",
+        "Ensure that kernel module `snd_intel8x0m` is blacklisted",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_blacklist("snd_intel8x0m"),
@@ -190,7 +190,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMB_007",
-        "Ensure that kernel module \"snd_pcsp\" is blacklisted",
+        "Ensure that kernel module `snd_pcsp` is blacklisted",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_blacklist("snd_pcsp"),
@@ -202,7 +202,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMB_008",
-        "Ensure that kernel module \"sr_mod\" is blacklisted",
+        "Ensure that kernel module `sr_mod` is blacklisted",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_blacklist("sr_mod"),
@@ -214,7 +214,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMB_009",
-        "Ensure that kernel module \"usbkbd\" is blacklisted",
+        "Ensure that kernel module `usbkbd` is blacklisted",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_blacklist("usbkbd"),
@@ -229,7 +229,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMB_010",
-        "Ensure that kernel module \"usbmouse\" is blacklisted",
+        "Ensure that kernel module `usbmouse` is blacklisted",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_blacklist("usbmouse"),
@@ -247,7 +247,7 @@ pub fn add_checks() {
     // testing, debug and development-only modules (KMT_)
     check::Check::new(
         "KMT_001",
-        "Ensure that kernel module \"adummy\" is disabled",
+        "Ensure that kernel module `adummy` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("adummy"),
@@ -262,7 +262,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_002",
-        "Ensure that kernel module \"atmtcp\" is disabled",
+        "Ensure that kernel module `atmtcp` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("atmtcp"),
@@ -277,7 +277,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_003",
-        "Ensure that kernel module \"comedi_example_test\" is disabled",
+        "Ensure that kernel module `comedi_example_test` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("comedi_example_test"),
@@ -292,7 +292,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_004",
-        "Ensure that kernel module \"comedi_test\" is disabled",
+        "Ensure that kernel module `comedi_test` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("comedi_test"),
@@ -304,7 +304,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_005",
-        "Ensure that kernel module \"dummy_can\" is disabled",
+        "Ensure that kernel module `dummy_can` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("dummy_can"),
@@ -319,7 +319,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_006",
-        "Ensure that kernel module \"dummy_irq\" is disabled",
+        "Ensure that kernel module `dummy_irq` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("dummy_irq"),
@@ -331,7 +331,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_007",
-        "Ensure that kernel module \"dvb_dummy_fe\" is disabled",
+        "Ensure that kernel module `dvb_dummy_fe` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("dvb_dummy_fe"),
@@ -343,7 +343,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_008",
-        "Ensure that kernel module \"dwc3_haps\" is disabled",
+        "Ensure that kernel module `dwc3_haps` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("dwc3_haps"),
@@ -358,7 +358,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_009",
-        "Ensure that kernel module \"ehset\" is disabled",
+        "Ensure that kernel module `ehset` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ehset"),
@@ -373,7 +373,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_010",
-        "Ensure that kernel module \"g_zero\" is disabled",
+        "Ensure that kernel module `g_zero` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("g_zero"),
@@ -388,7 +388,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_011",
-        "Ensure that kernel module \"gadgetfs\" is disabled",
+        "Ensure that kernel module `gadgetfs` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("gadgetfs"),
@@ -403,7 +403,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_012",
-        "Ensure that kernel module \"hangcheck_timer\" is disabled",
+        "Ensure that kernel module `hangcheck_timer` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hangcheck_timer"),
@@ -418,7 +418,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_013",
-        "Ensure that kernel module \"hci_vhci\" is disabled",
+        "Ensure that kernel module `hci_vhci` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hci_vhci"),
@@ -430,7 +430,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_014",
-        "Ensure that kernel module \"lvstest\" is disabled",
+        "Ensure that kernel module `lvstest` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("lvstest"),
@@ -445,7 +445,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_015",
-        "Ensure that kernel module \"mac80211_hwsim\" is disabled",
+        "Ensure that kernel module `mac80211_hwsim` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mac80211_hwsim"),
@@ -460,7 +460,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_016",
-        "Ensure that kernel module \"nfcsim\" is disabled",
+        "Ensure that kernel module `nfcsim` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nfcsim"),
@@ -472,7 +472,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_017",
-        "Ensure that kernel module \"ni_routes_test\" is disabled",
+        "Ensure that kernel module `ni_routes_test` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ni_routes_test"),
@@ -484,7 +484,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_018",
-        "Ensure that kernel module \"nosy\" is disabled",
+        "Ensure that kernel module `nosy` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nosy"),
@@ -496,7 +496,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_019",
-        "Ensure that kernel module \"null_blk\" is disabled",
+        "Ensure that kernel module `null_blk` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("null_blk"),
@@ -511,7 +511,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_020",
-        "Ensure that kernel module \"pkcs7_test_key\" is disabled",
+        "Ensure that kernel module `pkcs7_test_key` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pkcs7_test_key"),
@@ -526,7 +526,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_021",
-        "Ensure that kernel module \"pktgen\" is disabled",
+        "Ensure that kernel module `pktgen` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pktgen"),
@@ -541,7 +541,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_022",
-        "Ensure that kernel module \"pretimeout_panic\" is disabled",
+        "Ensure that kernel module `pretimeout_panic` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pretimeout_panic"),
@@ -556,7 +556,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_023",
-        "Ensure that kernel module \"raw_gadget\" is disabled",
+        "Ensure that kernel module `raw_gadget` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("raw_gadget"),
@@ -571,7 +571,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_024",
-        "Ensure that kernel module \"rc_loopback\" is disabled",
+        "Ensure that kernel module `rc_loopback` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("rc_loopback"),
@@ -583,7 +583,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_025",
-        "Ensure that kernel module \"snd_aloop\" is disabled",
+        "Ensure that kernel module `snd_aloop` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("snd_aloop"),
@@ -598,7 +598,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_026",
-        "Ensure that kernel module \"snd_dummy\" is disabled",
+        "Ensure that kernel module `snd_dummy` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("snd_dummy"),
@@ -613,7 +613,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_027",
-        "Ensure that kernel module \"snd_pcmtest\" is disabled",
+        "Ensure that kernel module `snd_pcmtest` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("snd_pcmtest"),
@@ -628,7 +628,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_028",
-        "Ensure that kernel module \"snd_virmidi\" is disabled",
+        "Ensure that kernel module `snd_virmidi` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("snd_virmidi"),
@@ -643,7 +643,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_029",
-        "Ensure that kernel module \"softdog\" is disabled",
+        "Ensure that kernel module `softdog` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("softdog"),
@@ -655,7 +655,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_030",
-        "Ensure that kernel module \"tcrypt\" is disabled",
+        "Ensure that kernel module `tcrypt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("tcrypt"),
@@ -667,7 +667,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_031",
-        "Ensure that kernel module \"usb_debug\" is disabled",
+        "Ensure that kernel module `usb_debug` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_debug"),
@@ -679,7 +679,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_032",
-        "Ensure that kernel module \"usbip_core\" is disabled",
+        "Ensure that kernel module `usbip_core` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usbip_core"),
@@ -694,7 +694,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_033",
-        "Ensure that kernel module \"usbip_host\" is disabled",
+        "Ensure that kernel module `usbip_host` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usbip_host"),
@@ -709,7 +709,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_034",
-        "Ensure that kernel module \"usbip_vudc\" is disabled",
+        "Ensure that kernel module `usbip_vudc` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usbip_vudc"),
@@ -724,7 +724,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_035",
-        "Ensure that kernel module \"usbmon\" is disabled",
+        "Ensure that kernel module `usbmon` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usbmon"),
@@ -736,7 +736,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_036",
-        "Ensure that kernel module \"usbtest\" is disabled",
+        "Ensure that kernel module `usbtest` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usbtest"),
@@ -751,7 +751,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_037",
-        "Ensure that kernel module \"vcan\" is disabled",
+        "Ensure that kernel module `vcan` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("vcan"),
@@ -763,7 +763,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_038",
-        "Ensure that kernel module \"vhci_hcd\" is disabled",
+        "Ensure that kernel module `vhci_hcd` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("vhci_hcd"),
@@ -778,7 +778,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_039",
-        "Ensure that kernel module \"vicodec\" is disabled",
+        "Ensure that kernel module `vicodec` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("vicodec"),
@@ -793,7 +793,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_040",
-        "Ensure that kernel module \"vim2m\" is disabled",
+        "Ensure that kernel module `vim2m` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("vim2m"),
@@ -808,7 +808,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_041",
-        "Ensure that kernel module \"vimc\" is disabled",
+        "Ensure that kernel module `vimc` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("vimc"),
@@ -823,7 +823,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_042",
-        "Ensure that kernel module \"virtual_ncidev\" is disabled",
+        "Ensure that kernel module `virtual_ncidev` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("virtual_ncidev"),
@@ -835,7 +835,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_043",
-        "Ensure that kernel module \"visl\" is disabled",
+        "Ensure that kernel module `visl` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("visl"),
@@ -850,7 +850,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_044",
-        "Ensure that kernel module \"vivid\" is disabled",
+        "Ensure that kernel module `vivid` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("vivid"),
@@ -862,7 +862,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_045",
-        "Ensure that kernel module \"vxcan\" is disabled",
+        "Ensure that kernel module `vxcan` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("vxcan"),
@@ -874,7 +874,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMT_046",
-        "Ensure that kernel module \"zloop\" is disabled",
+        "Ensure that kernel module `zloop` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("zloop"),
@@ -890,7 +890,7 @@ pub fn add_checks() {
     // AF_ALG crypto userspace interface (KMC_)
     check::Check::new(
         "KMC_001",
-        "Ensure that kernel module \"af_alg\" is disabled",
+        "Ensure that kernel module `af_alg` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("af_alg"),
@@ -902,7 +902,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMC_002",
-        "Ensure that kernel module \"algif_hash\" is disabled",
+        "Ensure that kernel module `algif_hash` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("algif_hash"),
@@ -917,7 +917,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMC_003",
-        "Ensure that kernel module \"algif_rng\" is disabled",
+        "Ensure that kernel module `algif_rng` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("algif_rng"),
@@ -929,7 +929,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMC_004",
-        "Ensure that kernel module \"algif_skcipher\" is disabled",
+        "Ensure that kernel module `algif_skcipher` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("algif_skcipher"),
@@ -944,7 +944,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMC_005",
-        "Ensure that kernel module \"crypto_user\" is disabled",
+        "Ensure that kernel module `crypto_user` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("crypto_user"),
@@ -960,7 +960,7 @@ pub fn add_checks() {
     // niche and legacy network protocols (KMN_)
     check::Check::new(
         "KMN_001",
-        "Ensure that kernel module \"6lowpan\" is disabled",
+        "Ensure that kernel module `6lowpan` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("6lowpan"),
@@ -975,7 +975,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_002",
-        "Ensure that kernel module \"6pack\" is disabled",
+        "Ensure that kernel module `6pack` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("6pack"),
@@ -987,7 +987,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_003",
-        "Ensure that kernel module \"af_802154\" is disabled",
+        "Ensure that kernel module `af_802154` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("af_802154"),
@@ -999,7 +999,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_004",
-        "Ensure that kernel module \"af_key\" is disabled",
+        "Ensure that kernel module `af_key` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("af_key"),
@@ -1014,7 +1014,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_005",
-        "Ensure that kernel module \"appletalk\" is disabled",
+        "Ensure that kernel module `appletalk` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("appletalk"),
@@ -1026,7 +1026,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_006",
-        "Ensure that kernel module \"arc_rawmode\" is disabled",
+        "Ensure that kernel module `arc_rawmode` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("arc_rawmode"),
@@ -1038,7 +1038,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_007",
-        "Ensure that kernel module \"arc_rimi\" is disabled",
+        "Ensure that kernel module `arc_rimi` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("arc_rimi"),
@@ -1050,7 +1050,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_008",
-        "Ensure that kernel module \"arcnet\" is disabled",
+        "Ensure that kernel module `arcnet` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("arcnet"),
@@ -1062,7 +1062,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_009",
-        "Ensure that kernel module \"arp_tables\" is disabled",
+        "Ensure that kernel module `arp_tables` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("arp_tables"),
@@ -1074,7 +1074,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_010",
-        "Ensure that kernel module \"arptable_filter\" is disabled",
+        "Ensure that kernel module `arptable_filter` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("arptable_filter"),
@@ -1086,7 +1086,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_011",
-        "Ensure that kernel module \"atm\" is disabled",
+        "Ensure that kernel module `atm` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("atm"),
@@ -1098,7 +1098,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_012",
-        "Ensure that kernel module \"avmfritz\" is disabled",
+        "Ensure that kernel module `avmfritz` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("avmfritz"),
@@ -1113,7 +1113,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_013",
-        "Ensure that kernel module \"ax25\" is disabled",
+        "Ensure that kernel module `ax25` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ax25"),
@@ -1125,7 +1125,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_014",
-        "Ensure that kernel module \"batman_adv\" is disabled",
+        "Ensure that kernel module `batman_adv` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("batman_adv"),
@@ -1137,7 +1137,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_015",
-        "Ensure that kernel module \"baycom_par\" is disabled",
+        "Ensure that kernel module `baycom_par` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("baycom_par"),
@@ -1152,7 +1152,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_016",
-        "Ensure that kernel module \"baycom_ser_fdx\" is disabled",
+        "Ensure that kernel module `baycom_ser_fdx` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("baycom_ser_fdx"),
@@ -1167,7 +1167,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_017",
-        "Ensure that kernel module \"baycom_ser_hdx\" is disabled",
+        "Ensure that kernel module `baycom_ser_hdx` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("baycom_ser_hdx"),
@@ -1182,7 +1182,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_018",
-        "Ensure that kernel module \"bpqether\" is disabled",
+        "Ensure that kernel module `bpqether` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("bpqether"),
@@ -1194,7 +1194,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_019",
-        "Ensure that kernel module \"br2684\" is disabled",
+        "Ensure that kernel module `br2684` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("br2684"),
@@ -1206,7 +1206,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_020",
-        "Ensure that kernel module \"c_can\" is disabled",
+        "Ensure that kernel module `c_can` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("c_can"),
@@ -1221,7 +1221,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_021",
-        "Ensure that kernel module \"c_can_pci\" is disabled",
+        "Ensure that kernel module `c_can_pci` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("c_can_pci"),
@@ -1236,7 +1236,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_022",
-        "Ensure that kernel module \"c_can_platform\" is disabled",
+        "Ensure that kernel module `c_can_platform` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("c_can_platform"),
@@ -1251,7 +1251,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_023",
-        "Ensure that kernel module \"caif\" is disabled",
+        "Ensure that kernel module `caif` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("caif"),
@@ -1266,7 +1266,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_024",
-        "Ensure that kernel module \"caif_socket\" is disabled",
+        "Ensure that kernel module `caif_socket` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("caif_socket"),
@@ -1281,7 +1281,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_025",
-        "Ensure that kernel module \"caif_usb\" is disabled",
+        "Ensure that kernel module `caif_usb` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("caif_usb"),
@@ -1296,7 +1296,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_026",
-        "Ensure that kernel module \"can\" is disabled",
+        "Ensure that kernel module `can` is disabled",
         Severity::High,
         vec!["module", "STIG", "server", "workstation"],
         || modprobe::check_module_disabled("can"),
@@ -1311,7 +1311,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_027",
-        "Ensure that kernel module \"can327\" is disabled",
+        "Ensure that kernel module `can327` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("can327"),
@@ -1326,7 +1326,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_028",
-        "Ensure that kernel module \"can_bcm\" is disabled",
+        "Ensure that kernel module `can_bcm` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("can_bcm"),
@@ -1341,7 +1341,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_029",
-        "Ensure that kernel module \"can_dev\" is disabled",
+        "Ensure that kernel module `can_dev` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("can_dev"),
@@ -1356,7 +1356,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_030",
-        "Ensure that kernel module \"can_gw\" is disabled",
+        "Ensure that kernel module `can_gw` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("can_gw"),
@@ -1371,7 +1371,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_031",
-        "Ensure that kernel module \"can_isotp\" is disabled",
+        "Ensure that kernel module `can_isotp` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("can_isotp"),
@@ -1386,7 +1386,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_032",
-        "Ensure that kernel module \"can_j1939\" is disabled",
+        "Ensure that kernel module `can_j1939` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("can_j1939"),
@@ -1401,7 +1401,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_033",
-        "Ensure that kernel module \"can_raw\" is disabled",
+        "Ensure that kernel module `can_raw` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("can_raw"),
@@ -1416,7 +1416,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_034",
-        "Ensure that kernel module \"capmode\" is disabled",
+        "Ensure that kernel module `capmode` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("capmode"),
@@ -1428,7 +1428,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_035",
-        "Ensure that kernel module \"cc770\" is disabled",
+        "Ensure that kernel module `cc770` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cc770"),
@@ -1443,7 +1443,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_036",
-        "Ensure that kernel module \"cc770_isa\" is disabled",
+        "Ensure that kernel module `cc770_isa` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cc770_isa"),
@@ -1458,7 +1458,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_037",
-        "Ensure that kernel module \"cc770_platform\" is disabled",
+        "Ensure that kernel module `cc770_platform` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cc770_platform"),
@@ -1473,7 +1473,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_038",
-        "Ensure that kernel module \"chnl_net\" is disabled",
+        "Ensure that kernel module `chnl_net` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("chnl_net"),
@@ -1488,7 +1488,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_039",
-        "Ensure that kernel module \"clip\" is disabled",
+        "Ensure that kernel module `clip` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("clip"),
@@ -1500,7 +1500,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_040",
-        "Ensure that kernel module \"com20020\" is disabled",
+        "Ensure that kernel module `com20020` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("com20020"),
@@ -1512,7 +1512,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_041",
-        "Ensure that kernel module \"com20020_cs\" is disabled",
+        "Ensure that kernel module `com20020_cs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("com20020_cs"),
@@ -1524,7 +1524,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_042",
-        "Ensure that kernel module \"com20020_pci\" is disabled",
+        "Ensure that kernel module `com20020_pci` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("com20020_pci"),
@@ -1536,7 +1536,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_043",
-        "Ensure that kernel module \"com90io\" is disabled",
+        "Ensure that kernel module `com90io` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("com90io"),
@@ -1548,7 +1548,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_044",
-        "Ensure that kernel module \"com90xx\" is disabled",
+        "Ensure that kernel module `com90xx` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("com90xx"),
@@ -1560,7 +1560,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_045",
-        "Ensure that kernel module \"ctucanfd\" is disabled",
+        "Ensure that kernel module `ctucanfd` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ctucanfd"),
@@ -1575,7 +1575,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_046",
-        "Ensure that kernel module \"ctucanfd_pci\" is disabled",
+        "Ensure that kernel module `ctucanfd_pci` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ctucanfd_pci"),
@@ -1590,7 +1590,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_047",
-        "Ensure that kernel module \"cxacru\" is disabled",
+        "Ensure that kernel module `cxacru` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cxacru"),
@@ -1602,7 +1602,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_048",
-        "Ensure that kernel module \"dccp\" is disabled",
+        "Ensure that kernel module `dccp` is disabled",
         Severity::High,
         vec!["module", "CIS", "STIG", "server", "workstation"],
         || modprobe::check_module_disabled("dccp"),
@@ -1617,7 +1617,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_049",
-        "Ensure that kernel module \"decnet\" is disabled",
+        "Ensure that kernel module `decnet` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("decnet"),
@@ -1632,7 +1632,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_050",
-        "Ensure that kernel module \"defxx\" is disabled",
+        "Ensure that kernel module `defxx` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("defxx"),
@@ -1644,7 +1644,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_051",
-        "Ensure that kernel module \"dsa_core\" is disabled",
+        "Ensure that kernel module `dsa_core` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("dsa_core"),
@@ -1659,7 +1659,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_052",
-        "Ensure that kernel module \"econet\" is disabled",
+        "Ensure that kernel module `econet` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("econet"),
@@ -1674,7 +1674,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_053",
-        "Ensure that kernel module \"ems_pci\" is disabled",
+        "Ensure that kernel module `ems_pci` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ems_pci"),
@@ -1689,7 +1689,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_054",
-        "Ensure that kernel module \"ems_pcmcia\" is disabled",
+        "Ensure that kernel module `ems_pcmcia` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ems_pcmcia"),
@@ -1704,7 +1704,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_055",
-        "Ensure that kernel module \"ems_usb\" is disabled",
+        "Ensure that kernel module `ems_usb` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ems_usb"),
@@ -1719,7 +1719,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_056",
-        "Ensure that kernel module \"eni\" is disabled",
+        "Ensure that kernel module `eni` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("eni"),
@@ -1731,7 +1731,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_057",
-        "Ensure that kernel module \"esd_402_pci\" is disabled",
+        "Ensure that kernel module `esd_402_pci` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("esd_402_pci"),
@@ -1746,7 +1746,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_058",
-        "Ensure that kernel module \"esd_usb\" is disabled",
+        "Ensure that kernel module `esd_usb` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("esd_usb"),
@@ -1761,7 +1761,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_059",
-        "Ensure that kernel module \"etas_es58x\" is disabled",
+        "Ensure that kernel module `etas_es58x` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("etas_es58x"),
@@ -1776,7 +1776,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_060",
-        "Ensure that kernel module \"f81601\" is disabled",
+        "Ensure that kernel module `f81601` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("f81601"),
@@ -1791,7 +1791,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_061",
-        "Ensure that kernel module \"f81604\" is disabled",
+        "Ensure that kernel module `f81604` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("f81604"),
@@ -1806,7 +1806,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_062",
-        "Ensure that kernel module \"farsync\" is disabled",
+        "Ensure that kernel module `farsync` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("farsync"),
@@ -1818,7 +1818,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_063",
-        "Ensure that kernel module \"fdp\" is disabled",
+        "Ensure that kernel module `fdp` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("fdp"),
@@ -1830,7 +1830,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_064",
-        "Ensure that kernel module \"fdp_i2c\" is disabled",
+        "Ensure that kernel module `fdp_i2c` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("fdp_i2c"),
@@ -1842,7 +1842,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_065",
-        "Ensure that kernel module \"fore_200e\" is disabled",
+        "Ensure that kernel module `fore_200e` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("fore_200e"),
@@ -1854,7 +1854,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_066",
-        "Ensure that kernel module \"fou\" is disabled",
+        "Ensure that kernel module `fou` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("fou"),
@@ -1866,7 +1866,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_067",
-        "Ensure that kernel module \"fou6\" is disabled",
+        "Ensure that kernel module `fou6` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("fou6"),
@@ -1878,7 +1878,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_068",
-        "Ensure that kernel module \"gs_usb\" is disabled",
+        "Ensure that kernel module `gs_usb` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("gs_usb"),
@@ -1893,7 +1893,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_069",
-        "Ensure that kernel module \"hci\" is disabled",
+        "Ensure that kernel module `hci` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hci"),
@@ -1908,7 +1908,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_070",
-        "Ensure that kernel module \"hdlc\" is disabled",
+        "Ensure that kernel module `hdlc` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hdlc"),
@@ -1920,7 +1920,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_071",
-        "Ensure that kernel module \"hdlc_cisco\" is disabled",
+        "Ensure that kernel module `hdlc_cisco` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hdlc_cisco"),
@@ -1935,7 +1935,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_072",
-        "Ensure that kernel module \"hdlc_fr\" is disabled",
+        "Ensure that kernel module `hdlc_fr` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hdlc_fr"),
@@ -1947,7 +1947,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_073",
-        "Ensure that kernel module \"hdlc_ppp\" is disabled",
+        "Ensure that kernel module `hdlc_ppp` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hdlc_ppp"),
@@ -1959,7 +1959,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_074",
-        "Ensure that kernel module \"hdlc_raw\" is disabled",
+        "Ensure that kernel module `hdlc_raw` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hdlc_raw"),
@@ -1971,7 +1971,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_075",
-        "Ensure that kernel module \"hdlc_raw_eth\" is disabled",
+        "Ensure that kernel module `hdlc_raw_eth` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hdlc_raw_eth"),
@@ -1986,7 +1986,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_076",
-        "Ensure that kernel module \"hdlc_x25\" is disabled",
+        "Ensure that kernel module `hdlc_x25` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hdlc_x25"),
@@ -1998,7 +1998,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_077",
-        "Ensure that kernel module \"hdlcdrv\" is disabled",
+        "Ensure that kernel module `hdlcdrv` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hdlcdrv"),
@@ -2010,7 +2010,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_078",
-        "Ensure that kernel module \"he\" is disabled",
+        "Ensure that kernel module `he` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("he"),
@@ -2022,7 +2022,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_079",
-        "Ensure that kernel module \"hfcmulti\" is disabled",
+        "Ensure that kernel module `hfcmulti` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hfcmulti"),
@@ -2037,7 +2037,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_080",
-        "Ensure that kernel module \"hfcpci\" is disabled",
+        "Ensure that kernel module `hfcpci` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hfcpci"),
@@ -2052,7 +2052,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_081",
-        "Ensure that kernel module \"hfcsusb\" is disabled",
+        "Ensure that kernel module `hfcsusb` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hfcsusb"),
@@ -2067,7 +2067,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_082",
-        "Ensure that kernel module \"hi311x\" is disabled",
+        "Ensure that kernel module `hi311x` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hi311x"),
@@ -2082,7 +2082,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_083",
-        "Ensure that kernel module \"hsr\" is disabled",
+        "Ensure that kernel module `hsr` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("hsr"),
@@ -2097,7 +2097,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_084",
-        "Ensure that kernel module \"idt77252\" is disabled",
+        "Ensure that kernel module `idt77252` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("idt77252"),
@@ -2109,7 +2109,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_085",
-        "Ensure that kernel module \"ieee802154\" is disabled",
+        "Ensure that kernel module `ieee802154` is disabled",
         Severity::High,
         vec!["module", "STIG", "server", "workstation"],
         || modprobe::check_module_disabled("ieee802154"),
@@ -2121,7 +2121,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_086",
-        "Ensure that kernel module \"ieee802154_6lowpan\" is disabled",
+        "Ensure that kernel module `ieee802154_6lowpan` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ieee802154_6lowpan"),
@@ -2136,7 +2136,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_087",
-        "Ensure that kernel module \"ieee802154_socket\" is disabled",
+        "Ensure that kernel module `ieee802154_socket` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ieee802154_socket"),
@@ -2151,7 +2151,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_088",
-        "Ensure that kernel module \"ife\" is disabled",
+        "Ensure that kernel module `ife` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("ife"),
@@ -2163,7 +2163,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_089",
-        "Ensure that kernel module \"ifi_canfd\" is disabled",
+        "Ensure that kernel module `ifi_canfd` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ifi_canfd"),
@@ -2178,7 +2178,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_090",
-        "Ensure that kernel module \"ila\" is disabled",
+        "Ensure that kernel module `ila` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("ila"),
@@ -2193,7 +2193,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_091",
-        "Ensure that kernel module \"ip_tables\" is disabled",
+        "Ensure that kernel module `ip_tables` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("ip_tables"),
@@ -2205,7 +2205,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_092",
-        "Ensure that kernel module \"iphase\" is disabled",
+        "Ensure that kernel module `iphase` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("iphase"),
@@ -2217,7 +2217,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_093",
-        "Ensure that kernel module \"ipx\" is disabled",
+        "Ensure that kernel module `ipx` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ipx"),
@@ -2232,7 +2232,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_094",
-        "Ensure that kernel module \"irda\" is disabled",
+        "Ensure that kernel module `irda` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("irda"),
@@ -2247,7 +2247,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_095",
-        "Ensure that kernel module \"isdnhdlc\" is disabled",
+        "Ensure that kernel module `isdnhdlc` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("isdnhdlc"),
@@ -2262,7 +2262,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_096",
-        "Ensure that kernel module \"janz_ican3\" is disabled",
+        "Ensure that kernel module `janz_ican3` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("janz_ican3"),
@@ -2277,7 +2277,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_097",
-        "Ensure that kernel module \"kcm\" is disabled",
+        "Ensure that kernel module `kcm` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("kcm"),
@@ -2292,7 +2292,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_098",
-        "Ensure that kernel module \"kvaser_pci\" is disabled",
+        "Ensure that kernel module `kvaser_pci` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("kvaser_pci"),
@@ -2307,7 +2307,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_099",
-        "Ensure that kernel module \"kvaser_pciefd\" is disabled",
+        "Ensure that kernel module `kvaser_pciefd` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("kvaser_pciefd"),
@@ -2322,7 +2322,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_100",
-        "Ensure that kernel module \"kvaser_usb\" is disabled",
+        "Ensure that kernel module `kvaser_usb` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("kvaser_usb"),
@@ -2337,7 +2337,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_101",
-        "Ensure that kernel module \"l1oip\" is disabled",
+        "Ensure that kernel module `l1oip` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("l1oip"),
@@ -2352,7 +2352,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_102",
-        "Ensure that kernel module \"l2tp_core\" is disabled",
+        "Ensure that kernel module `l2tp_core` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("l2tp_core"),
@@ -2367,7 +2367,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_103",
-        "Ensure that kernel module \"l2tp_debugfs\" is disabled",
+        "Ensure that kernel module `l2tp_debugfs` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("l2tp_debugfs"),
@@ -2382,7 +2382,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_104",
-        "Ensure that kernel module \"l2tp_eth\" is disabled",
+        "Ensure that kernel module `l2tp_eth` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("l2tp_eth"),
@@ -2397,7 +2397,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_105",
-        "Ensure that kernel module \"l2tp_ip\" is disabled",
+        "Ensure that kernel module `l2tp_ip` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("l2tp_ip"),
@@ -2412,7 +2412,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_106",
-        "Ensure that kernel module \"l2tp_ip6\" is disabled",
+        "Ensure that kernel module `l2tp_ip6` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("l2tp_ip6"),
@@ -2427,7 +2427,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_107",
-        "Ensure that kernel module \"l2tp_netlink\" is disabled",
+        "Ensure that kernel module `l2tp_netlink` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("l2tp_netlink"),
@@ -2442,7 +2442,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_108",
-        "Ensure that kernel module \"l2tp_ppp\" is disabled",
+        "Ensure that kernel module `l2tp_ppp` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("l2tp_ppp"),
@@ -2457,7 +2457,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_109",
-        "Ensure that kernel module \"lanai\" is disabled",
+        "Ensure that kernel module `lanai` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("lanai"),
@@ -2469,7 +2469,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_110",
-        "Ensure that kernel module \"lapb\" is disabled",
+        "Ensure that kernel module `lapb` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("lapb"),
@@ -2481,7 +2481,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_111",
-        "Ensure that kernel module \"lapbether\" is disabled",
+        "Ensure that kernel module `lapbether` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("lapbether"),
@@ -2493,7 +2493,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_112",
-        "Ensure that kernel module \"lec\" is disabled",
+        "Ensure that kernel module `lec` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("lec"),
@@ -2505,7 +2505,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_113",
-        "Ensure that kernel module \"mISDN_core\" is disabled",
+        "Ensure that kernel module `mISDN_core` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mISDN_core"),
@@ -2520,7 +2520,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_114",
-        "Ensure that kernel module \"mISDN_dsp\" is disabled",
+        "Ensure that kernel module `mISDN_dsp` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mISDN_dsp"),
@@ -2535,7 +2535,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_115",
-        "Ensure that kernel module \"mISDNinfineon\" is disabled",
+        "Ensure that kernel module `mISDNinfineon` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mISDNinfineon"),
@@ -2550,7 +2550,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_116",
-        "Ensure that kernel module \"mISDNipac\" is disabled",
+        "Ensure that kernel module `mISDNipac` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mISDNipac"),
@@ -2565,7 +2565,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_117",
-        "Ensure that kernel module \"mISDNisar\" is disabled",
+        "Ensure that kernel module `mISDNisar` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mISDNisar"),
@@ -2580,7 +2580,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_118",
-        "Ensure that kernel module \"m_can\" is disabled",
+        "Ensure that kernel module `m_can` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("m_can"),
@@ -2595,7 +2595,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_119",
-        "Ensure that kernel module \"m_can_pci\" is disabled",
+        "Ensure that kernel module `m_can_pci` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("m_can_pci"),
@@ -2610,7 +2610,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_120",
-        "Ensure that kernel module \"m_can_platform\" is disabled",
+        "Ensure that kernel module `m_can_platform` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("m_can_platform"),
@@ -2625,7 +2625,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_121",
-        "Ensure that kernel module \"mac802154\" is disabled",
+        "Ensure that kernel module `mac802154` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mac802154"),
@@ -2637,7 +2637,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_122",
-        "Ensure that kernel module \"mcba_usb\" is disabled",
+        "Ensure that kernel module `mcba_usb` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mcba_usb"),
@@ -2652,7 +2652,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_123",
-        "Ensure that kernel module \"mcp251xfd\" is disabled",
+        "Ensure that kernel module `mcp251xfd` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mcp251xfd"),
@@ -2667,7 +2667,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_124",
-        "Ensure that kernel module \"mei_phy\" is disabled",
+        "Ensure that kernel module `mei_phy` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mei_phy"),
@@ -2679,7 +2679,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_125",
-        "Ensure that kernel module \"microread\" is disabled",
+        "Ensure that kernel module `microread` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("microread"),
@@ -2691,7 +2691,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_126",
-        "Ensure that kernel module \"microread_i2c\" is disabled",
+        "Ensure that kernel module `microread_i2c` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("microread_i2c"),
@@ -2706,7 +2706,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_127",
-        "Ensure that kernel module \"microread_mei\" is disabled",
+        "Ensure that kernel module `microread_mei` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("microread_mei"),
@@ -2721,7 +2721,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_128",
-        "Ensure that kernel module \"mkiss\" is disabled",
+        "Ensure that kernel module `mkiss` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mkiss"),
@@ -2733,7 +2733,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_129",
-        "Ensure that kernel module \"mpls_gso\" is disabled",
+        "Ensure that kernel module `mpls_gso` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("mpls_gso"),
@@ -2745,7 +2745,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_130",
-        "Ensure that kernel module \"mpls_iptunnel\" is disabled",
+        "Ensure that kernel module `mpls_iptunnel` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("mpls_iptunnel"),
@@ -2757,7 +2757,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_131",
-        "Ensure that kernel module \"mpls_router\" is disabled",
+        "Ensure that kernel module `mpls_router` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("mpls_router"),
@@ -2769,7 +2769,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_132",
-        "Ensure that kernel module \"mpoa\" is disabled",
+        "Ensure that kernel module `mpoa` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mpoa"),
@@ -2781,7 +2781,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_133",
-        "Ensure that kernel module \"n_gsm\" is disabled",
+        "Ensure that kernel module `n_gsm` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("n_gsm"),
@@ -2796,7 +2796,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_134",
-        "Ensure that kernel module \"n_hdlc\" is disabled",
+        "Ensure that kernel module `n_hdlc` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("n_hdlc"),
@@ -2808,7 +2808,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_135",
-        "Ensure that kernel module \"nci\" is disabled",
+        "Ensure that kernel module `nci` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nci"),
@@ -2823,7 +2823,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_136",
-        "Ensure that kernel module \"nci_spi\" is disabled",
+        "Ensure that kernel module `nci_spi` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nci_spi"),
@@ -2838,7 +2838,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_137",
-        "Ensure that kernel module \"nci_uart\" is disabled",
+        "Ensure that kernel module `nci_uart` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nci_uart"),
@@ -2853,7 +2853,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_138",
-        "Ensure that kernel module \"nct6694_canfd\" is disabled",
+        "Ensure that kernel module `nct6694_canfd` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nct6694_canfd"),
@@ -2868,7 +2868,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_139",
-        "Ensure that kernel module \"netjet\" is disabled",
+        "Ensure that kernel module `netjet` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("netjet"),
@@ -2883,7 +2883,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_140",
-        "Ensure that kernel module \"netrom\" is disabled",
+        "Ensure that kernel module `netrom` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("netrom"),
@@ -2895,7 +2895,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_141",
-        "Ensure that kernel module \"nfc\" is disabled",
+        "Ensure that kernel module `nfc` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nfc"),
@@ -2910,7 +2910,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_142",
-        "Ensure that kernel module \"nfc_digital\" is disabled",
+        "Ensure that kernel module `nfc_digital` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nfc_digital"),
@@ -2925,7 +2925,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_143",
-        "Ensure that kernel module \"nfcmrvl\" is disabled",
+        "Ensure that kernel module `nfcmrvl` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nfcmrvl"),
@@ -2937,7 +2937,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_144",
-        "Ensure that kernel module \"nfcmrvl_i2c\" is disabled",
+        "Ensure that kernel module `nfcmrvl_i2c` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nfcmrvl_i2c"),
@@ -2949,7 +2949,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_145",
-        "Ensure that kernel module \"nfcmrvl_spi\" is disabled",
+        "Ensure that kernel module `nfcmrvl_spi` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nfcmrvl_spi"),
@@ -2961,7 +2961,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_146",
-        "Ensure that kernel module \"nfcmrvl_uart\" is disabled",
+        "Ensure that kernel module `nfcmrvl_uart` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nfcmrvl_uart"),
@@ -2973,7 +2973,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_147",
-        "Ensure that kernel module \"nfcmrvl_usb\" is disabled",
+        "Ensure that kernel module `nfcmrvl_usb` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nfcmrvl_usb"),
@@ -2985,7 +2985,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_148",
-        "Ensure that kernel module \"nhc_dest\" is disabled",
+        "Ensure that kernel module `nhc_dest` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nhc_dest"),
@@ -3000,7 +3000,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_149",
-        "Ensure that kernel module \"nhc_fragment\" is disabled",
+        "Ensure that kernel module `nhc_fragment` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nhc_fragment"),
@@ -3015,7 +3015,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_150",
-        "Ensure that kernel module \"nhc_hop\" is disabled",
+        "Ensure that kernel module `nhc_hop` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nhc_hop"),
@@ -3030,7 +3030,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_151",
-        "Ensure that kernel module \"nhc_ipv6\" is disabled",
+        "Ensure that kernel module `nhc_ipv6` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nhc_ipv6"),
@@ -3045,7 +3045,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_152",
-        "Ensure that kernel module \"nhc_mobility\" is disabled",
+        "Ensure that kernel module `nhc_mobility` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nhc_mobility"),
@@ -3060,7 +3060,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_153",
-        "Ensure that kernel module \"nhc_routing\" is disabled",
+        "Ensure that kernel module `nhc_routing` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nhc_routing"),
@@ -3075,7 +3075,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_154",
-        "Ensure that kernel module \"nhc_udp\" is disabled",
+        "Ensure that kernel module `nhc_udp` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nhc_udp"),
@@ -3090,7 +3090,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_155",
-        "Ensure that kernel module \"nicstar\" is disabled",
+        "Ensure that kernel module `nicstar` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nicstar"),
@@ -3102,7 +3102,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_156",
-        "Ensure that kernel module \"nsh\" is disabled",
+        "Ensure that kernel module `nsh` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("nsh"),
@@ -3114,7 +3114,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_157",
-        "Ensure that kernel module \"nxp_nci\" is disabled",
+        "Ensure that kernel module `nxp_nci` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nxp_nci"),
@@ -3126,7 +3126,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_158",
-        "Ensure that kernel module \"nxp_nci_i2c\" is disabled",
+        "Ensure that kernel module `nxp_nci_i2c` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nxp_nci_i2c"),
@@ -3138,7 +3138,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_159",
-        "Ensure that kernel module \"openvswitch\" is disabled",
+        "Ensure that kernel module `openvswitch` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("openvswitch"),
@@ -3153,7 +3153,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_160",
-        "Ensure that kernel module \"p8022\" is disabled",
+        "Ensure that kernel module `p8022` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("p8022"),
@@ -3168,7 +3168,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_161",
-        "Ensure that kernel module \"p8023\" is disabled",
+        "Ensure that kernel module `p8023` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("p8023"),
@@ -3183,7 +3183,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_162",
-        "Ensure that kernel module \"pc300too\" is disabled",
+        "Ensure that kernel module `pc300too` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pc300too"),
@@ -3195,7 +3195,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_163",
-        "Ensure that kernel module \"pci200syn\" is disabled",
+        "Ensure that kernel module `pci200syn` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pci200syn"),
@@ -3207,7 +3207,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_164",
-        "Ensure that kernel module \"peak_pci\" is disabled",
+        "Ensure that kernel module `peak_pci` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("peak_pci"),
@@ -3222,7 +3222,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_165",
-        "Ensure that kernel module \"peak_pciefd\" is disabled",
+        "Ensure that kernel module `peak_pciefd` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("peak_pciefd"),
@@ -3237,7 +3237,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_166",
-        "Ensure that kernel module \"peak_usb\" is disabled",
+        "Ensure that kernel module `peak_usb` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("peak_usb"),
@@ -3252,7 +3252,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_167",
-        "Ensure that kernel module \"phonet\" is disabled",
+        "Ensure that kernel module `phonet` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("phonet"),
@@ -3267,7 +3267,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_168",
-        "Ensure that kernel module \"phy_can_transceiver\" is disabled",
+        "Ensure that kernel module `phy_can_transceiver` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("phy_can_transceiver"),
@@ -3282,7 +3282,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_169",
-        "Ensure that kernel module \"plip\" is disabled",
+        "Ensure that kernel module `plip` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("plip"),
@@ -3294,7 +3294,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_170",
-        "Ensure that kernel module \"plx_pci\" is disabled",
+        "Ensure that kernel module `plx_pci` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("plx_pci"),
@@ -3309,7 +3309,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_171",
-        "Ensure that kernel module \"pn532_uart\" is disabled",
+        "Ensure that kernel module `pn532_uart` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pn532_uart"),
@@ -3321,7 +3321,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_172",
-        "Ensure that kernel module \"pn533\" is disabled",
+        "Ensure that kernel module `pn533` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pn533"),
@@ -3333,7 +3333,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_173",
-        "Ensure that kernel module \"pn533_i2c\" is disabled",
+        "Ensure that kernel module `pn533_i2c` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pn533_i2c"),
@@ -3345,7 +3345,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_174",
-        "Ensure that kernel module \"pn533_usb\" is disabled",
+        "Ensure that kernel module `pn533_usb` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pn533_usb"),
@@ -3357,7 +3357,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_175",
-        "Ensure that kernel module \"pn544\" is disabled",
+        "Ensure that kernel module `pn544` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pn544"),
@@ -3369,7 +3369,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_176",
-        "Ensure that kernel module \"pn544_i2c\" is disabled",
+        "Ensure that kernel module `pn544_i2c` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pn544_i2c"),
@@ -3381,7 +3381,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_177",
-        "Ensure that kernel module \"pn544_mei\" is disabled",
+        "Ensure that kernel module `pn544_mei` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pn544_mei"),
@@ -3393,7 +3393,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_178",
-        "Ensure that kernel module \"pn_pep\" is disabled",
+        "Ensure that kernel module `pn_pep` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pn_pep"),
@@ -3408,7 +3408,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_179",
-        "Ensure that kernel module \"port100\" is disabled",
+        "Ensure that kernel module `port100` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("port100"),
@@ -3420,7 +3420,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_180",
-        "Ensure that kernel module \"pppoatm\" is disabled",
+        "Ensure that kernel module `pppoatm` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pppoatm"),
@@ -3432,7 +3432,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_181",
-        "Ensure that kernel module \"psample\" is disabled",
+        "Ensure that kernel module `psample` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("psample"),
@@ -3444,7 +3444,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_182",
-        "Ensure that kernel module \"psnap\" is disabled",
+        "Ensure that kernel module `psnap` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("psnap"),
@@ -3459,7 +3459,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_183",
-        "Ensure that kernel module \"qrtr\" is disabled",
+        "Ensure that kernel module `qrtr` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("qrtr"),
@@ -3474,7 +3474,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_184",
-        "Ensure that kernel module \"qrtr_mhi\" is disabled",
+        "Ensure that kernel module `qrtr_mhi` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("qrtr_mhi"),
@@ -3489,7 +3489,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_185",
-        "Ensure that kernel module \"qrtr_smd\" is disabled",
+        "Ensure that kernel module `qrtr_smd` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("qrtr_smd"),
@@ -3504,7 +3504,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_186",
-        "Ensure that kernel module \"qrtr_tun\" is disabled",
+        "Ensure that kernel module `qrtr_tun` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("qrtr_tun"),
@@ -3519,7 +3519,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_187",
-        "Ensure that kernel module \"rds\" is disabled",
+        "Ensure that kernel module `rds` is disabled",
         Severity::High,
         vec!["module", "CIS", "STIG", "server", "workstation"],
         || modprobe::check_module_disabled("rds"),
@@ -3534,7 +3534,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_188",
-        "Ensure that kernel module \"rds_rdma\" is disabled",
+        "Ensure that kernel module `rds_rdma` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("rds_rdma"),
@@ -3549,7 +3549,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_189",
-        "Ensure that kernel module \"rds_tcp\" is disabled",
+        "Ensure that kernel module `rds_tcp` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("rds_tcp"),
@@ -3564,7 +3564,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_190",
-        "Ensure that kernel module \"rfc1051\" is disabled",
+        "Ensure that kernel module `rfc1051` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("rfc1051"),
@@ -3576,7 +3576,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_191",
-        "Ensure that kernel module \"rfc1201\" is disabled",
+        "Ensure that kernel module `rfc1201` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("rfc1201"),
@@ -3588,7 +3588,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_192",
-        "Ensure that kernel module \"rose\" is disabled",
+        "Ensure that kernel module `rose` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("rose"),
@@ -3600,7 +3600,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_193",
-        "Ensure that kernel module \"s3fwrn5\" is disabled",
+        "Ensure that kernel module `s3fwrn5` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("s3fwrn5"),
@@ -3612,7 +3612,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_194",
-        "Ensure that kernel module \"s3fwrn5_i2c\" is disabled",
+        "Ensure that kernel module `s3fwrn5_i2c` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("s3fwrn5_i2c"),
@@ -3624,7 +3624,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_195",
-        "Ensure that kernel module \"s3fwrn82_uart\" is disabled",
+        "Ensure that kernel module `s3fwrn82_uart` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("s3fwrn82_uart"),
@@ -3639,7 +3639,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_196",
-        "Ensure that kernel module \"sctp\" is disabled",
+        "Ensure that kernel module `sctp` is disabled",
         Severity::High,
         vec!["module", "CIS", "STIG", "server", "workstation"],
         || modprobe::check_module_disabled("sctp"),
@@ -3654,7 +3654,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_197",
-        "Ensure that kernel module \"sctp_diag\" is disabled",
+        "Ensure that kernel module `sctp_diag` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sctp_diag"),
@@ -3669,7 +3669,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_198",
-        "Ensure that kernel module \"sja1000\" is disabled",
+        "Ensure that kernel module `sja1000` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sja1000"),
@@ -3684,7 +3684,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_199",
-        "Ensure that kernel module \"sja1000_isa\" is disabled",
+        "Ensure that kernel module `sja1000_isa` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sja1000_isa"),
@@ -3699,7 +3699,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_200",
-        "Ensure that kernel module \"sja1000_platform\" is disabled",
+        "Ensure that kernel module `sja1000_platform` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sja1000_platform"),
@@ -3714,7 +3714,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_201",
-        "Ensure that kernel module \"skfp\" is disabled",
+        "Ensure that kernel module `skfp` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("skfp"),
@@ -3726,7 +3726,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_202",
-        "Ensure that kernel module \"slcan\" is disabled",
+        "Ensure that kernel module `slcan` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("slcan"),
@@ -3741,7 +3741,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_203",
-        "Ensure that kernel module \"smc\" is disabled",
+        "Ensure that kernel module `smc` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("smc"),
@@ -3756,7 +3756,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_204",
-        "Ensure that kernel module \"smc_diag\" is disabled",
+        "Ensure that kernel module `smc_diag` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("smc_diag"),
@@ -3771,7 +3771,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_205",
-        "Ensure that kernel module \"softing\" is disabled",
+        "Ensure that kernel module `softing` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("softing"),
@@ -3786,7 +3786,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_206",
-        "Ensure that kernel module \"softing_cs\" is disabled",
+        "Ensure that kernel module `softing_cs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("softing_cs"),
@@ -3801,7 +3801,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_207",
-        "Ensure that kernel module \"solos_pci\" is disabled",
+        "Ensure that kernel module `solos_pci` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("solos_pci"),
@@ -3813,7 +3813,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_208",
-        "Ensure that kernel module \"speedfax\" is disabled",
+        "Ensure that kernel module `speedfax` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("speedfax"),
@@ -3828,7 +3828,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_209",
-        "Ensure that kernel module \"speedtch\" is disabled",
+        "Ensure that kernel module `speedtch` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("speedtch"),
@@ -3840,7 +3840,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_210",
-        "Ensure that kernel module \"st21nfca_hci\" is disabled",
+        "Ensure that kernel module `st21nfca_hci` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("st21nfca_hci"),
@@ -3852,7 +3852,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_211",
-        "Ensure that kernel module \"st21nfca_i2c\" is disabled",
+        "Ensure that kernel module `st21nfca_i2c` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("st21nfca_i2c"),
@@ -3864,7 +3864,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_212",
-        "Ensure that kernel module \"st95hf\" is disabled",
+        "Ensure that kernel module `st95hf` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("st95hf"),
@@ -3876,7 +3876,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_213",
-        "Ensure that kernel module \"st_nci\" is disabled",
+        "Ensure that kernel module `st_nci` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("st_nci"),
@@ -3888,7 +3888,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_214",
-        "Ensure that kernel module \"st_nci_i2c\" is disabled",
+        "Ensure that kernel module `st_nci_i2c` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("st_nci_i2c"),
@@ -3900,7 +3900,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_215",
-        "Ensure that kernel module \"st_nci_spi\" is disabled",
+        "Ensure that kernel module `st_nci_spi` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("st_nci_spi"),
@@ -3912,7 +3912,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_216",
-        "Ensure that kernel module \"suni\" is disabled",
+        "Ensure that kernel module `suni` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("suni"),
@@ -3924,7 +3924,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_217",
-        "Ensure that kernel module \"tcan4x5x\" is disabled",
+        "Ensure that kernel module `tcan4x5x` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("tcan4x5x"),
@@ -3939,7 +3939,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_218",
-        "Ensure that kernel module \"tipc\" is disabled",
+        "Ensure that kernel module `tipc` is disabled",
         Severity::High,
         vec!["module", "CIS", "STIG", "server", "workstation"],
         || modprobe::check_module_disabled("tipc"),
@@ -3951,7 +3951,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_219",
-        "Ensure that kernel module \"tipc_diag\" is disabled",
+        "Ensure that kernel module `tipc_diag` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("tipc_diag"),
@@ -3963,7 +3963,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_220",
-        "Ensure that kernel module \"tls\" is disabled",
+        "Ensure that kernel module `tls` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("tls"),
@@ -3978,7 +3978,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_221",
-        "Ensure that kernel module \"trf7970a\" is disabled",
+        "Ensure that kernel module `trf7970a` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("trf7970a"),
@@ -3990,7 +3990,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_222",
-        "Ensure that kernel module \"ucan\" is disabled",
+        "Ensure that kernel module `ucan` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ucan"),
@@ -4005,7 +4005,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_223",
-        "Ensure that kernel module \"ueagle_atm\" is disabled",
+        "Ensure that kernel module `ueagle_atm` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ueagle_atm"),
@@ -4017,7 +4017,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_224",
-        "Ensure that kernel module \"usb_8dev\" is disabled",
+        "Ensure that kernel module `usb_8dev` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_8dev"),
@@ -4032,7 +4032,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_225",
-        "Ensure that kernel module \"usbatm\" is disabled",
+        "Ensure that kernel module `usbatm` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usbatm"),
@@ -4044,7 +4044,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_226",
-        "Ensure that kernel module \"vport_geneve\" is disabled",
+        "Ensure that kernel module `vport_geneve` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("vport_geneve"),
@@ -4059,7 +4059,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_227",
-        "Ensure that kernel module \"vport_gre\" is disabled",
+        "Ensure that kernel module `vport_gre` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("vport_gre"),
@@ -4074,7 +4074,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_228",
-        "Ensure that kernel module \"vport_vxlan\" is disabled",
+        "Ensure that kernel module `vport_vxlan` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("vport_vxlan"),
@@ -4089,7 +4089,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_229",
-        "Ensure that kernel module \"w6692\" is disabled",
+        "Ensure that kernel module `w6692` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w6692"),
@@ -4104,7 +4104,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_230",
-        "Ensure that kernel module \"wanxl\" is disabled",
+        "Ensure that kernel module `wanxl` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("wanxl"),
@@ -4116,7 +4116,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_231",
-        "Ensure that kernel module \"x25\" is disabled",
+        "Ensure that kernel module `x25` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("x25"),
@@ -4128,7 +4128,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_232",
-        "Ensure that kernel module \"xusbatm\" is disabled",
+        "Ensure that kernel module `xusbatm` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("xusbatm"),
@@ -4140,7 +4140,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMN_233",
-        "Ensure that kernel module \"yam\" is disabled",
+        "Ensure that kernel module `yam` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("yam"),
@@ -4153,7 +4153,7 @@ pub fn add_checks() {
     // legacy and uncommon filesystems (KMF_)
     check::Check::new(
         "KMF_001",
-        "Ensure that kernel module \"adfs\" is disabled",
+        "Ensure that kernel module `adfs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("adfs"),
@@ -4165,7 +4165,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_002",
-        "Ensure that kernel module \"affs\" is disabled",
+        "Ensure that kernel module `affs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("affs"),
@@ -4177,7 +4177,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_003",
-        "Ensure that kernel module \"befs\" is disabled",
+        "Ensure that kernel module `befs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("befs"),
@@ -4189,7 +4189,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_004",
-        "Ensure that kernel module \"bfs\" is disabled",
+        "Ensure that kernel module `bfs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("bfs"),
@@ -4201,7 +4201,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_005",
-        "Ensure that kernel module \"coda\" is disabled",
+        "Ensure that kernel module `coda` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("coda"),
@@ -4213,7 +4213,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_006",
-        "Ensure that kernel module \"cramfs\" is disabled",
+        "Ensure that kernel module `cramfs` is disabled",
         Severity::Medium,
         vec!["module", "CIS", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("cramfs"),
@@ -4228,7 +4228,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_007",
-        "Ensure that kernel module \"efs\" is disabled",
+        "Ensure that kernel module `efs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("efs"),
@@ -4240,7 +4240,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_008",
-        "Ensure that kernel module \"erofs\" is disabled",
+        "Ensure that kernel module `erofs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("erofs"),
@@ -4252,7 +4252,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_009",
-        "Ensure that kernel module \"exfat\" is disabled",
+        "Ensure that kernel module `exfat` is disabled",
         Severity::Medium,
         vec!["module", "server"],
         || modprobe::check_module_disabled("exfat"),
@@ -4267,7 +4267,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_010",
-        "Ensure that kernel module \"exofs\" is disabled",
+        "Ensure that kernel module `exofs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("exofs"),
@@ -4279,7 +4279,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_011",
-        "Ensure that kernel module \"f2fs\" is disabled",
+        "Ensure that kernel module `f2fs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("f2fs"),
@@ -4291,7 +4291,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_012",
-        "Ensure that kernel module \"freevxfs\" is disabled",
+        "Ensure that kernel module `freevxfs` is disabled",
         Severity::Medium,
         vec!["module", "CIS", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("freevxfs"),
@@ -4306,7 +4306,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_013",
-        "Ensure that kernel module \"hfs\" is disabled",
+        "Ensure that kernel module `hfs` is disabled",
         Severity::Medium,
         vec!["module", "CIS", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("hfs"),
@@ -4321,7 +4321,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_014",
-        "Ensure that kernel module \"hfsplus\" is disabled",
+        "Ensure that kernel module `hfsplus` is disabled",
         Severity::Medium,
         vec!["module", "CIS", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("hfsplus"),
@@ -4336,7 +4336,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_015",
-        "Ensure that kernel module \"hpfs\" is disabled",
+        "Ensure that kernel module `hpfs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hpfs"),
@@ -4348,7 +4348,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_016",
-        "Ensure that kernel module \"jffs2\" is disabled",
+        "Ensure that kernel module `jffs2` is disabled",
         Severity::Medium,
         vec!["module", "CIS", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("jffs2"),
@@ -4363,7 +4363,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_017",
-        "Ensure that kernel module \"jfs\" is disabled",
+        "Ensure that kernel module `jfs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("jfs"),
@@ -4375,7 +4375,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_018",
-        "Ensure that kernel module \"minix\" is disabled",
+        "Ensure that kernel module `minix` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("minix"),
@@ -4387,7 +4387,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_019",
-        "Ensure that kernel module \"mtd\" is disabled",
+        "Ensure that kernel module `mtd` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mtd"),
@@ -4399,7 +4399,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_020",
-        "Ensure that kernel module \"nilfs2\" is disabled",
+        "Ensure that kernel module `nilfs2` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nilfs2"),
@@ -4411,7 +4411,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_021",
-        "Ensure that kernel module \"ntfs\" is disabled",
+        "Ensure that kernel module `ntfs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ntfs"),
@@ -4423,7 +4423,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_022",
-        "Ensure that kernel module \"ntfs3\" is disabled",
+        "Ensure that kernel module `ntfs3` is disabled",
         Severity::Medium,
         vec!["module", "server"],
         || modprobe::check_module_disabled("ntfs3"),
@@ -4438,7 +4438,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_023",
-        "Ensure that kernel module \"ocfs2_dlm\" is disabled",
+        "Ensure that kernel module `ocfs2_dlm` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("ocfs2_dlm"),
@@ -4453,7 +4453,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_024",
-        "Ensure that kernel module \"ocfs2_dlmfs\" is disabled",
+        "Ensure that kernel module `ocfs2_dlmfs` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("ocfs2_dlmfs"),
@@ -4468,7 +4468,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_025",
-        "Ensure that kernel module \"ocfs2_nodemanager\" is disabled",
+        "Ensure that kernel module `ocfs2_nodemanager` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("ocfs2_nodemanager"),
@@ -4483,7 +4483,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_026",
-        "Ensure that kernel module \"ocfs2_stack_o2cb\" is disabled",
+        "Ensure that kernel module `ocfs2_stack_o2cb` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("ocfs2_stack_o2cb"),
@@ -4498,7 +4498,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_027",
-        "Ensure that kernel module \"ocfs2_stack_user\" is disabled",
+        "Ensure that kernel module `ocfs2_stack_user` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("ocfs2_stack_user"),
@@ -4513,7 +4513,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_028",
-        "Ensure that kernel module \"ocfs2_stackglue\" is disabled",
+        "Ensure that kernel module `ocfs2_stackglue` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("ocfs2_stackglue"),
@@ -4528,7 +4528,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_029",
-        "Ensure that kernel module \"omfs\" is disabled",
+        "Ensure that kernel module `omfs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("omfs"),
@@ -4540,7 +4540,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_030",
-        "Ensure that kernel module \"orangefs\" is disabled",
+        "Ensure that kernel module `orangefs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("orangefs"),
@@ -4552,7 +4552,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_031",
-        "Ensure that kernel module \"pstore_blk\" is disabled",
+        "Ensure that kernel module `pstore_blk` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pstore_blk"),
@@ -4567,7 +4567,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_032",
-        "Ensure that kernel module \"pstore_zone\" is disabled",
+        "Ensure that kernel module `pstore_zone` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pstore_zone"),
@@ -4582,7 +4582,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_033",
-        "Ensure that kernel module \"qnx4\" is disabled",
+        "Ensure that kernel module `qnx4` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("qnx4"),
@@ -4594,7 +4594,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_034",
-        "Ensure that kernel module \"qnx6\" is disabled",
+        "Ensure that kernel module `qnx6` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("qnx6"),
@@ -4606,7 +4606,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_035",
-        "Ensure that kernel module \"reiserfs\" is disabled",
+        "Ensure that kernel module `reiserfs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("reiserfs"),
@@ -4618,7 +4618,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_036",
-        "Ensure that kernel module \"romfs\" is disabled",
+        "Ensure that kernel module `romfs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("romfs"),
@@ -4630,7 +4630,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_037",
-        "Ensure that kernel module \"squashfs\" is disabled",
+        "Ensure that kernel module `squashfs` is disabled",
         Severity::Medium,
         vec!["module", "CIS", "server", "workstation"],
         || modprobe::check_module_disabled("squashfs"),
@@ -4645,7 +4645,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_038",
-        "Ensure that kernel module \"sysv\" is disabled",
+        "Ensure that kernel module `sysv` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sysv"),
@@ -4657,7 +4657,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_039",
-        "Ensure that kernel module \"ubifs\" is disabled",
+        "Ensure that kernel module `ubifs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ubifs"),
@@ -4669,7 +4669,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_040",
-        "Ensure that kernel module \"udf\" is disabled",
+        "Ensure that kernel module `udf` is disabled",
         Severity::Medium,
         vec!["module", "CIS", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("udf"),
@@ -4684,7 +4684,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_041",
-        "Ensure that kernel module \"ufs\" is disabled",
+        "Ensure that kernel module `ufs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ufs"),
@@ -4696,7 +4696,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_042",
-        "Ensure that kernel module \"vboxsf\" is disabled",
+        "Ensure that kernel module `vboxsf` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("vboxsf"),
@@ -4711,7 +4711,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_043",
-        "Ensure that kernel module \"zonefs\" is disabled",
+        "Ensure that kernel module `zonefs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("zonefs"),
@@ -4727,7 +4727,7 @@ pub fn add_checks() {
     // network filesystems and storage services (KMF_)
     check::Check::new(
         "KMF_060",
-        "Ensure that kernel module \"9p\" is disabled",
+        "Ensure that kernel module `9p` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("9p"),
@@ -4739,7 +4739,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_061",
-        "Ensure that kernel module \"9pnet\" is disabled",
+        "Ensure that kernel module `9pnet` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("9pnet"),
@@ -4751,7 +4751,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_062",
-        "Ensure that kernel module \"9pnet_fd\" is disabled",
+        "Ensure that kernel module `9pnet_fd` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("9pnet_fd"),
@@ -4763,7 +4763,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_063",
-        "Ensure that kernel module \"9pnet_rdma\" is disabled",
+        "Ensure that kernel module `9pnet_rdma` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("9pnet_rdma"),
@@ -4775,7 +4775,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_064",
-        "Ensure that kernel module \"9pnet_usbg\" is disabled",
+        "Ensure that kernel module `9pnet_usbg` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("9pnet_usbg"),
@@ -4787,7 +4787,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_065",
-        "Ensure that kernel module \"9pnet_virtio\" is disabled",
+        "Ensure that kernel module `9pnet_virtio` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("9pnet_virtio"),
@@ -4799,7 +4799,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_066",
-        "Ensure that kernel module \"9pnet_xen\" is disabled",
+        "Ensure that kernel module `9pnet_xen` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("9pnet_xen"),
@@ -4811,7 +4811,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_067",
-        "Ensure that kernel module \"aoe\" is disabled",
+        "Ensure that kernel module `aoe` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("aoe"),
@@ -4826,7 +4826,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_068",
-        "Ensure that kernel module \"auth_rpcgss\" is disabled",
+        "Ensure that kernel module `auth_rpcgss` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("auth_rpcgss"),
@@ -4841,7 +4841,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_069",
-        "Ensure that kernel module \"ceph\" is disabled",
+        "Ensure that kernel module `ceph` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("ceph"),
@@ -4853,7 +4853,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_070",
-        "Ensure that kernel module \"cifs\" is disabled",
+        "Ensure that kernel module `cifs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("cifs"),
@@ -4865,7 +4865,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_071",
-        "Ensure that kernel module \"cifs_arc4\" is disabled",
+        "Ensure that kernel module `cifs_arc4` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("cifs_arc4"),
@@ -4877,7 +4877,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_072",
-        "Ensure that kernel module \"cifs_md4\" is disabled",
+        "Ensure that kernel module `cifs_md4` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("cifs_md4"),
@@ -4889,7 +4889,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_073",
-        "Ensure that kernel module \"cxgbit\" is disabled",
+        "Ensure that kernel module `cxgbit` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("cxgbit"),
@@ -4901,7 +4901,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_074",
-        "Ensure that kernel module \"dlm\" is disabled",
+        "Ensure that kernel module `dlm` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("dlm"),
@@ -4913,7 +4913,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_075",
-        "Ensure that kernel module \"drbd\" is disabled",
+        "Ensure that kernel module `drbd` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("drbd"),
@@ -4928,7 +4928,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_076",
-        "Ensure that kernel module \"gfs2\" is disabled",
+        "Ensure that kernel module `gfs2` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("gfs2"),
@@ -4940,7 +4940,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_077",
-        "Ensure that kernel module \"grace\" is disabled",
+        "Ensure that kernel module `grace` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("grace"),
@@ -4955,7 +4955,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_078",
-        "Ensure that kernel module \"iscsi_target_mod\" is disabled",
+        "Ensure that kernel module `iscsi_target_mod` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("iscsi_target_mod"),
@@ -4970,7 +4970,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_079",
-        "Ensure that kernel module \"iscsi_tcp\" is disabled",
+        "Ensure that kernel module `iscsi_tcp` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("iscsi_tcp"),
@@ -4982,7 +4982,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_080",
-        "Ensure that kernel module \"kafs\" is disabled",
+        "Ensure that kernel module `kafs` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("kafs"),
@@ -4997,7 +4997,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_081",
-        "Ensure that kernel module \"ksmbd\" is disabled",
+        "Ensure that kernel module `ksmbd` is disabled",
         Severity::Critical,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ksmbd"),
@@ -5012,7 +5012,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_082",
-        "Ensure that kernel module \"libceph\" is disabled",
+        "Ensure that kernel module `libceph` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("libceph"),
@@ -5024,7 +5024,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_083",
-        "Ensure that kernel module \"libiscsi\" is disabled",
+        "Ensure that kernel module `libiscsi` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("libiscsi"),
@@ -5036,7 +5036,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_084",
-        "Ensure that kernel module \"lockd\" is disabled",
+        "Ensure that kernel module `lockd` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("lockd"),
@@ -5051,7 +5051,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_085",
-        "Ensure that kernel module \"nbd\" is disabled",
+        "Ensure that kernel module `nbd` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("nbd"),
@@ -5066,7 +5066,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_086",
-        "Ensure that kernel module \"nfs\" is disabled",
+        "Ensure that kernel module `nfs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("nfs"),
@@ -5078,7 +5078,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_087",
-        "Ensure that kernel module \"nfs_acl\" is disabled",
+        "Ensure that kernel module `nfs_acl` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("nfs_acl"),
@@ -5090,7 +5090,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_088",
-        "Ensure that kernel module \"nfs_common\" is disabled",
+        "Ensure that kernel module `nfs_common` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("nfs_common"),
@@ -5105,7 +5105,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_089",
-        "Ensure that kernel module \"nfs_layout_flexfiles\" is disabled",
+        "Ensure that kernel module `nfs_layout_flexfiles` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("nfs_layout_flexfiles"),
@@ -5117,7 +5117,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_090",
-        "Ensure that kernel module \"nfs_layout_nfsv41_files\" is disabled",
+        "Ensure that kernel module `nfs_layout_nfsv41_files` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("nfs_layout_nfsv41_files"),
@@ -5132,7 +5132,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_091",
-        "Ensure that kernel module \"nfsd\" is disabled",
+        "Ensure that kernel module `nfsd` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("nfsd"),
@@ -5144,7 +5144,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_092",
-        "Ensure that kernel module \"nfsv2\" is disabled",
+        "Ensure that kernel module `nfsv2` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("nfsv2"),
@@ -5156,7 +5156,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_093",
-        "Ensure that kernel module \"nfsv3\" is disabled",
+        "Ensure that kernel module `nfsv3` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("nfsv3"),
@@ -5168,7 +5168,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_094",
-        "Ensure that kernel module \"nfsv4\" is disabled",
+        "Ensure that kernel module `nfsv4` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("nfsv4"),
@@ -5180,7 +5180,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_095",
-        "Ensure that kernel module \"ocfs2\" is disabled",
+        "Ensure that kernel module `ocfs2` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("ocfs2"),
@@ -5192,7 +5192,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_096",
-        "Ensure that kernel module \"rbd\" is disabled",
+        "Ensure that kernel module `rbd` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("rbd"),
@@ -5204,7 +5204,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_097",
-        "Ensure that kernel module \"rnbd_client\" is disabled",
+        "Ensure that kernel module `rnbd_client` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("rnbd_client"),
@@ -5219,7 +5219,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_098",
-        "Ensure that kernel module \"rnbd_server\" is disabled",
+        "Ensure that kernel module `rnbd_server` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("rnbd_server"),
@@ -5234,7 +5234,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_099",
-        "Ensure that kernel module \"rpcrdma\" is disabled",
+        "Ensure that kernel module `rpcrdma` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("rpcrdma"),
@@ -5249,7 +5249,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_100",
-        "Ensure that kernel module \"rpcsec_gss_krb5\" is disabled",
+        "Ensure that kernel module `rpcsec_gss_krb5` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("rpcsec_gss_krb5"),
@@ -5264,7 +5264,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_101",
-        "Ensure that kernel module \"rxrpc\" is disabled",
+        "Ensure that kernel module `rxrpc` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("rxrpc"),
@@ -5279,7 +5279,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_102",
-        "Ensure that kernel module \"sbp_target\" is disabled",
+        "Ensure that kernel module `sbp_target` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("sbp_target"),
@@ -5291,7 +5291,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_103",
-        "Ensure that kernel module \"scsi_transport_iscsi\" is disabled",
+        "Ensure that kernel module `scsi_transport_iscsi` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("scsi_transport_iscsi"),
@@ -5306,7 +5306,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_104",
-        "Ensure that kernel module \"sunrpc\" is disabled",
+        "Ensure that kernel module `sunrpc` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("sunrpc"),
@@ -5321,7 +5321,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_105",
-        "Ensure that kernel module \"target_core_file\" is disabled",
+        "Ensure that kernel module `target_core_file` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("target_core_file"),
@@ -5336,7 +5336,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_106",
-        "Ensure that kernel module \"target_core_iblock\" is disabled",
+        "Ensure that kernel module `target_core_iblock` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("target_core_iblock"),
@@ -5351,7 +5351,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_107",
-        "Ensure that kernel module \"target_core_mod\" is disabled",
+        "Ensure that kernel module `target_core_mod` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("target_core_mod"),
@@ -5366,7 +5366,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_108",
-        "Ensure that kernel module \"target_core_pscsi\" is disabled",
+        "Ensure that kernel module `target_core_pscsi` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("target_core_pscsi"),
@@ -5381,7 +5381,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_109",
-        "Ensure that kernel module \"target_core_user\" is disabled",
+        "Ensure that kernel module `target_core_user` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("target_core_user"),
@@ -5396,7 +5396,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_110",
-        "Ensure that kernel module \"tcm_fc\" is disabled",
+        "Ensure that kernel module `tcm_fc` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("tcm_fc"),
@@ -5411,7 +5411,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_111",
-        "Ensure that kernel module \"tcm_loop\" is disabled",
+        "Ensure that kernel module `tcm_loop` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("tcm_loop"),
@@ -5426,7 +5426,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMF_112",
-        "Ensure that kernel module \"virtiofs\" is disabled",
+        "Ensure that kernel module `virtiofs` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("virtiofs"),
@@ -5442,7 +5442,7 @@ pub fn add_checks() {
     // bluetooth (KMO_)
     check::Check::new(
         "KMO_001",
-        "Ensure that kernel module \"ath3k\" is disabled",
+        "Ensure that kernel module `ath3k` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ath3k"),
@@ -5454,7 +5454,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_002",
-        "Ensure that kernel module \"bcm203x\" is disabled",
+        "Ensure that kernel module `bcm203x` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("bcm203x"),
@@ -5469,7 +5469,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_003",
-        "Ensure that kernel module \"bfusb\" is disabled",
+        "Ensure that kernel module `bfusb` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("bfusb"),
@@ -5481,7 +5481,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_004",
-        "Ensure that kernel module \"bluecard_cs\" is disabled",
+        "Ensure that kernel module `bluecard_cs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("bluecard_cs"),
@@ -5496,7 +5496,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_005",
-        "Ensure that kernel module \"bluetooth\" is disabled",
+        "Ensure that kernel module `bluetooth` is disabled",
         Severity::High,
         vec!["module", "STIG", "server", "workstation"],
         || modprobe::check_module_disabled("bluetooth"),
@@ -5508,7 +5508,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_006",
-        "Ensure that kernel module \"bluetooth_6lowpan\" is disabled",
+        "Ensure that kernel module `bluetooth_6lowpan` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("bluetooth_6lowpan"),
@@ -5520,7 +5520,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_007",
-        "Ensure that kernel module \"bnep\" is disabled",
+        "Ensure that kernel module `bnep` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("bnep"),
@@ -5535,7 +5535,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_008",
-        "Ensure that kernel module \"bpa10x\" is disabled",
+        "Ensure that kernel module `bpa10x` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("bpa10x"),
@@ -5550,7 +5550,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_009",
-        "Ensure that kernel module \"bt3c_cs\" is disabled",
+        "Ensure that kernel module `bt3c_cs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("bt3c_cs"),
@@ -5562,7 +5562,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_010",
-        "Ensure that kernel module \"btbcm\" is disabled",
+        "Ensure that kernel module `btbcm` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("btbcm"),
@@ -5574,7 +5574,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_011",
-        "Ensure that kernel module \"btintel\" is disabled",
+        "Ensure that kernel module `btintel` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("btintel"),
@@ -5586,7 +5586,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_012",
-        "Ensure that kernel module \"btintel_pcie\" is disabled",
+        "Ensure that kernel module `btintel_pcie` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("btintel_pcie"),
@@ -5601,7 +5601,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_013",
-        "Ensure that kernel module \"btmrvl\" is disabled",
+        "Ensure that kernel module `btmrvl` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("btmrvl"),
@@ -5613,7 +5613,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_014",
-        "Ensure that kernel module \"btmrvl_sdio\" is disabled",
+        "Ensure that kernel module `btmrvl_sdio` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("btmrvl_sdio"),
@@ -5625,7 +5625,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_015",
-        "Ensure that kernel module \"btmtk\" is disabled",
+        "Ensure that kernel module `btmtk` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("btmtk"),
@@ -5637,7 +5637,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_016",
-        "Ensure that kernel module \"btmtksdio\" is disabled",
+        "Ensure that kernel module `btmtksdio` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("btmtksdio"),
@@ -5649,7 +5649,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_017",
-        "Ensure that kernel module \"btmtkuart\" is disabled",
+        "Ensure that kernel module `btmtkuart` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("btmtkuart"),
@@ -5661,7 +5661,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_018",
-        "Ensure that kernel module \"btnxpuart\" is disabled",
+        "Ensure that kernel module `btnxpuart` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("btnxpuart"),
@@ -5673,7 +5673,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_019",
-        "Ensure that kernel module \"btqca\" is disabled",
+        "Ensure that kernel module `btqca` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("btqca"),
@@ -5685,7 +5685,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_020",
-        "Ensure that kernel module \"btrsi\" is disabled",
+        "Ensure that kernel module `btrsi` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("btrsi"),
@@ -5697,7 +5697,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_021",
-        "Ensure that kernel module \"btrtl\" is disabled",
+        "Ensure that kernel module `btrtl` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("btrtl"),
@@ -5709,7 +5709,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_022",
-        "Ensure that kernel module \"btsdio\" is disabled",
+        "Ensure that kernel module `btsdio` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("btsdio"),
@@ -5721,7 +5721,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_023",
-        "Ensure that kernel module \"btusb\" is disabled",
+        "Ensure that kernel module `btusb` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("btusb"),
@@ -5733,7 +5733,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_024",
-        "Ensure that kernel module \"dtl1_cs\" is disabled",
+        "Ensure that kernel module `dtl1_cs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("dtl1_cs"),
@@ -5748,7 +5748,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_025",
-        "Ensure that kernel module \"hci_bcm4377\" is disabled",
+        "Ensure that kernel module `hci_bcm4377` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hci_bcm4377"),
@@ -5763,7 +5763,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_026",
-        "Ensure that kernel module \"hci_nokia\" is disabled",
+        "Ensure that kernel module `hci_nokia` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hci_nokia"),
@@ -5778,7 +5778,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_027",
-        "Ensure that kernel module \"hci_uart\" is disabled",
+        "Ensure that kernel module `hci_uart` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hci_uart"),
@@ -5793,7 +5793,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_028",
-        "Ensure that kernel module \"hidp\" is disabled",
+        "Ensure that kernel module `hidp` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hidp"),
@@ -5808,7 +5808,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_029",
-        "Ensure that kernel module \"rfcomm\" is disabled",
+        "Ensure that kernel module `rfcomm` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("rfcomm"),
@@ -5823,7 +5823,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_030",
-        "Ensure that kernel module \"virtio_bt\" is disabled",
+        "Ensure that kernel module `virtio_bt` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("virtio_bt"),
@@ -5836,7 +5836,7 @@ pub fn add_checks() {
     // wireless LAN (Wi-Fi) (KMO_)
     check::Check::new(
         "KMO_040",
-        "Ensure that kernel module \"cfg80211\" is disabled",
+        "Ensure that kernel module `cfg80211` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("cfg80211"),
@@ -5848,7 +5848,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMO_041",
-        "Ensure that kernel module \"mac80211\" is disabled",
+        "Ensure that kernel module `mac80211` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("mac80211"),
@@ -5861,7 +5861,7 @@ pub fn add_checks() {
     // USB (KMU_)
     check::Check::new(
         "KMU_001",
-        "Ensure that kernel module \"adutux\" is disabled",
+        "Ensure that kernel module `adutux` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("adutux"),
@@ -5876,7 +5876,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_002",
-        "Ensure that kernel module \"apple_mfi_fastcharge\" is disabled",
+        "Ensure that kernel module `apple_mfi_fastcharge` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("apple_mfi_fastcharge"),
@@ -5891,7 +5891,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_003",
-        "Ensure that kernel module \"appledisplay\" is disabled",
+        "Ensure that kernel module `appledisplay` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("appledisplay"),
@@ -5906,7 +5906,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_004",
-        "Ensure that kernel module \"aqc111\" is disabled",
+        "Ensure that kernel module `aqc111` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("aqc111"),
@@ -5921,7 +5921,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_005",
-        "Ensure that kernel module \"ark3116\" is disabled",
+        "Ensure that kernel module `ark3116` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("ark3116"),
@@ -5936,7 +5936,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_006",
-        "Ensure that kernel module \"asix\" is disabled",
+        "Ensure that kernel module `asix` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("asix"),
@@ -5951,7 +5951,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_007",
-        "Ensure that kernel module \"ax88179_178a\" is disabled",
+        "Ensure that kernel module `ax88179_178a` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("ax88179_178a"),
@@ -5966,7 +5966,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_008",
-        "Ensure that kernel module \"bcma_hcd\" is disabled",
+        "Ensure that kernel module `bcma_hcd` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("bcma_hcd"),
@@ -5981,7 +5981,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_009",
-        "Ensure that kernel module \"belkin_sa\" is disabled",
+        "Ensure that kernel module `belkin_sa` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("belkin_sa"),
@@ -5996,7 +5996,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_010",
-        "Ensure that kernel module \"catc\" is disabled",
+        "Ensure that kernel module `catc` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("catc"),
@@ -6011,7 +6011,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_011",
-        "Ensure that kernel module \"cdc_eem\" is disabled",
+        "Ensure that kernel module `cdc_eem` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("cdc_eem"),
@@ -6026,7 +6026,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_012",
-        "Ensure that kernel module \"cdc_ether\" is disabled",
+        "Ensure that kernel module `cdc_ether` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("cdc_ether"),
@@ -6041,7 +6041,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_013",
-        "Ensure that kernel module \"cdc_mbim\" is disabled",
+        "Ensure that kernel module `cdc_mbim` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("cdc_mbim"),
@@ -6056,7 +6056,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_014",
-        "Ensure that kernel module \"cdc_ncm\" is disabled",
+        "Ensure that kernel module `cdc_ncm` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("cdc_ncm"),
@@ -6071,7 +6071,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_015",
-        "Ensure that kernel module \"cdc_wdm\" is disabled",
+        "Ensure that kernel module `cdc_wdm` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("cdc_wdm"),
@@ -6083,7 +6083,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_016",
-        "Ensure that kernel module \"ch341\" is disabled",
+        "Ensure that kernel module `ch341` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("ch341"),
@@ -6098,7 +6098,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_017",
-        "Ensure that kernel module \"ch9200\" is disabled",
+        "Ensure that kernel module `ch9200` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("ch9200"),
@@ -6113,7 +6113,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_018",
-        "Ensure that kernel module \"chaoskey\" is disabled",
+        "Ensure that kernel module `chaoskey` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("chaoskey"),
@@ -6128,7 +6128,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_019",
-        "Ensure that kernel module \"cp210x\" is disabled",
+        "Ensure that kernel module `cp210x` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("cp210x"),
@@ -6143,7 +6143,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_020",
-        "Ensure that kernel module \"cx82310_eth\" is disabled",
+        "Ensure that kernel module `cx82310_eth` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("cx82310_eth"),
@@ -6158,7 +6158,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_021",
-        "Ensure that kernel module \"cypress_cy7c63\" is disabled",
+        "Ensure that kernel module `cypress_cy7c63` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cypress_cy7c63"),
@@ -6173,7 +6173,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_022",
-        "Ensure that kernel module \"cypress_m8\" is disabled",
+        "Ensure that kernel module `cypress_m8` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("cypress_m8"),
@@ -6188,7 +6188,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_023",
-        "Ensure that kernel module \"cytherm\" is disabled",
+        "Ensure that kernel module `cytherm` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cytherm"),
@@ -6203,7 +6203,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_024",
-        "Ensure that kernel module \"digi_acceleport\" is disabled",
+        "Ensure that kernel module `digi_acceleport` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("digi_acceleport"),
@@ -6218,7 +6218,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_025",
-        "Ensure that kernel module \"dm9601\" is disabled",
+        "Ensure that kernel module `dm9601` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("dm9601"),
@@ -6233,7 +6233,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_026",
-        "Ensure that kernel module \"ehci_fsl\" is disabled",
+        "Ensure that kernel module `ehci_fsl` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ehci_fsl"),
@@ -6248,7 +6248,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_027",
-        "Ensure that kernel module \"emi26\" is disabled",
+        "Ensure that kernel module `emi26` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("emi26"),
@@ -6263,7 +6263,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_028",
-        "Ensure that kernel module \"emi62\" is disabled",
+        "Ensure that kernel module `emi62` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("emi62"),
@@ -6278,7 +6278,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_029",
-        "Ensure that kernel module \"ezusb\" is disabled",
+        "Ensure that kernel module `ezusb` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ezusb"),
@@ -6293,7 +6293,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_030",
-        "Ensure that kernel module \"f81232\" is disabled",
+        "Ensure that kernel module `f81232` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("f81232"),
@@ -6308,7 +6308,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_031",
-        "Ensure that kernel module \"f81534\" is disabled",
+        "Ensure that kernel module `f81534` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("f81534"),
@@ -6323,7 +6323,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_032",
-        "Ensure that kernel module \"fsl_mph_dr_of\" is disabled",
+        "Ensure that kernel module `fsl_mph_dr_of` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("fsl_mph_dr_of"),
@@ -6338,7 +6338,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_033",
-        "Ensure that kernel module \"ftdi_sio\" is disabled",
+        "Ensure that kernel module `ftdi_sio` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("ftdi_sio"),
@@ -6353,7 +6353,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_034",
-        "Ensure that kernel module \"g_acm_ms\" is disabled",
+        "Ensure that kernel module `g_acm_ms` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("g_acm_ms"),
@@ -6368,7 +6368,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_035",
-        "Ensure that kernel module \"g_audio\" is disabled",
+        "Ensure that kernel module `g_audio` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("g_audio"),
@@ -6383,7 +6383,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_036",
-        "Ensure that kernel module \"g_cdc\" is disabled",
+        "Ensure that kernel module `g_cdc` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("g_cdc"),
@@ -6398,7 +6398,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_037",
-        "Ensure that kernel module \"g_dbgp\" is disabled",
+        "Ensure that kernel module `g_dbgp` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("g_dbgp"),
@@ -6413,7 +6413,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_038",
-        "Ensure that kernel module \"g_ether\" is disabled",
+        "Ensure that kernel module `g_ether` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("g_ether"),
@@ -6428,7 +6428,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_039",
-        "Ensure that kernel module \"g_ffs\" is disabled",
+        "Ensure that kernel module `g_ffs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("g_ffs"),
@@ -6443,7 +6443,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_040",
-        "Ensure that kernel module \"g_hid\" is disabled",
+        "Ensure that kernel module `g_hid` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("g_hid"),
@@ -6458,7 +6458,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_041",
-        "Ensure that kernel module \"g_mass_storage\" is disabled",
+        "Ensure that kernel module `g_mass_storage` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("g_mass_storage"),
@@ -6473,7 +6473,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_042",
-        "Ensure that kernel module \"g_midi\" is disabled",
+        "Ensure that kernel module `g_midi` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("g_midi"),
@@ -6488,7 +6488,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_043",
-        "Ensure that kernel module \"g_ncm\" is disabled",
+        "Ensure that kernel module `g_ncm` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("g_ncm"),
@@ -6503,7 +6503,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_044",
-        "Ensure that kernel module \"g_nokia\" is disabled",
+        "Ensure that kernel module `g_nokia` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("g_nokia"),
@@ -6518,7 +6518,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_045",
-        "Ensure that kernel module \"g_printer\" is disabled",
+        "Ensure that kernel module `g_printer` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("g_printer"),
@@ -6533,7 +6533,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_046",
-        "Ensure that kernel module \"g_serial\" is disabled",
+        "Ensure that kernel module `g_serial` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("g_serial"),
@@ -6548,7 +6548,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_047",
-        "Ensure that kernel module \"g_webcam\" is disabled",
+        "Ensure that kernel module `g_webcam` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("g_webcam"),
@@ -6563,7 +6563,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_048",
-        "Ensure that kernel module \"gl620a\" is disabled",
+        "Ensure that kernel module `gl620a` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("gl620a"),
@@ -6578,7 +6578,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_049",
-        "Ensure that kernel module \"hso\" is disabled",
+        "Ensure that kernel module `hso` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("hso"),
@@ -6590,7 +6590,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_050",
-        "Ensure that kernel module \"huawei_cdc_ncm\" is disabled",
+        "Ensure that kernel module `huawei_cdc_ncm` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("huawei_cdc_ncm"),
@@ -6605,7 +6605,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_051",
-        "Ensure that kernel module \"idmouse\" is disabled",
+        "Ensure that kernel module `idmouse` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("idmouse"),
@@ -6620,7 +6620,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_052",
-        "Ensure that kernel module \"int51x1\" is disabled",
+        "Ensure that kernel module `int51x1` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("int51x1"),
@@ -6635,7 +6635,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_053",
-        "Ensure that kernel module \"io_edgeport\" is disabled",
+        "Ensure that kernel module `io_edgeport` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("io_edgeport"),
@@ -6650,7 +6650,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_054",
-        "Ensure that kernel module \"io_ti\" is disabled",
+        "Ensure that kernel module `io_ti` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("io_ti"),
@@ -6665,7 +6665,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_055",
-        "Ensure that kernel module \"iowarrior\" is disabled",
+        "Ensure that kernel module `iowarrior` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("iowarrior"),
@@ -6680,7 +6680,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_056",
-        "Ensure that kernel module \"ipaq\" is disabled",
+        "Ensure that kernel module `ipaq` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("ipaq"),
@@ -6695,7 +6695,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_057",
-        "Ensure that kernel module \"ipheth\" is disabled",
+        "Ensure that kernel module `ipheth` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("ipheth"),
@@ -6710,7 +6710,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_058",
-        "Ensure that kernel module \"isight_firmware\" is disabled",
+        "Ensure that kernel module `isight_firmware` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("isight_firmware"),
@@ -6725,7 +6725,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_059",
-        "Ensure that kernel module \"isp116x_hcd\" is disabled",
+        "Ensure that kernel module `isp116x_hcd` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("isp116x_hcd"),
@@ -6740,7 +6740,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_060",
-        "Ensure that kernel module \"isp1760\" is disabled",
+        "Ensure that kernel module `isp1760` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("isp1760"),
@@ -6755,7 +6755,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_061",
-        "Ensure that kernel module \"kalmia\" is disabled",
+        "Ensure that kernel module `kalmia` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("kalmia"),
@@ -6767,7 +6767,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_062",
-        "Ensure that kernel module \"kaweth\" is disabled",
+        "Ensure that kernel module `kaweth` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("kaweth"),
@@ -6782,7 +6782,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_063",
-        "Ensure that kernel module \"keyspan\" is disabled",
+        "Ensure that kernel module `keyspan` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("keyspan"),
@@ -6797,7 +6797,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_064",
-        "Ensure that kernel module \"kl5kusb105\" is disabled",
+        "Ensure that kernel module `kl5kusb105` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("kl5kusb105"),
@@ -6812,7 +6812,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_065",
-        "Ensure that kernel module \"lan78xx\" is disabled",
+        "Ensure that kernel module `lan78xx` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("lan78xx"),
@@ -6827,7 +6827,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_066",
-        "Ensure that kernel module \"ldusb\" is disabled",
+        "Ensure that kernel module `ldusb` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ldusb"),
@@ -6842,7 +6842,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_067",
-        "Ensure that kernel module \"legousbtower\" is disabled",
+        "Ensure that kernel module `legousbtower` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("legousbtower"),
@@ -6857,7 +6857,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_068",
-        "Ensure that kernel module \"lg_vl6000\" is disabled",
+        "Ensure that kernel module `lg_vl6000` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("lg_vl6000"),
@@ -6872,7 +6872,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_069",
-        "Ensure that kernel module \"libcomposite\" is disabled",
+        "Ensure that kernel module `libcomposite` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("libcomposite"),
@@ -6887,7 +6887,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_070",
-        "Ensure that kernel module \"mcs7830\" is disabled",
+        "Ensure that kernel module `mcs7830` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("mcs7830"),
@@ -6902,7 +6902,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_071",
-        "Ensure that kernel module \"mct_u232\" is disabled",
+        "Ensure that kernel module `mct_u232` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("mct_u232"),
@@ -6917,7 +6917,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_072",
-        "Ensure that kernel module \"mdc800\" is disabled",
+        "Ensure that kernel module `mdc800` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mdc800"),
@@ -6932,7 +6932,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_073",
-        "Ensure that kernel module \"metro_usb\" is disabled",
+        "Ensure that kernel module `metro_usb` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("metro_usb"),
@@ -6947,7 +6947,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_074",
-        "Ensure that kernel module \"mos7720\" is disabled",
+        "Ensure that kernel module `mos7720` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("mos7720"),
@@ -6962,7 +6962,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_075",
-        "Ensure that kernel module \"mos7840\" is disabled",
+        "Ensure that kernel module `mos7840` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("mos7840"),
@@ -6977,7 +6977,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_076",
-        "Ensure that kernel module \"mxuport\" is disabled",
+        "Ensure that kernel module `mxuport` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("mxuport"),
@@ -6992,7 +6992,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_077",
-        "Ensure that kernel module \"navman\" is disabled",
+        "Ensure that kernel module `navman` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("navman"),
@@ -7007,7 +7007,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_078",
-        "Ensure that kernel module \"net1080\" is disabled",
+        "Ensure that kernel module `net1080` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("net1080"),
@@ -7022,7 +7022,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_079",
-        "Ensure that kernel module \"omninet\" is disabled",
+        "Ensure that kernel module `omninet` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("omninet"),
@@ -7037,7 +7037,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_080",
-        "Ensure that kernel module \"opticon\" is disabled",
+        "Ensure that kernel module `opticon` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("opticon"),
@@ -7052,7 +7052,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_081",
-        "Ensure that kernel module \"option\" is disabled",
+        "Ensure that kernel module `option` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("option"),
@@ -7064,7 +7064,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_082",
-        "Ensure that kernel module \"oti6858\" is disabled",
+        "Ensure that kernel module `oti6858` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("oti6858"),
@@ -7079,7 +7079,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_083",
-        "Ensure that kernel module \"oxu210hp_hcd\" is disabled",
+        "Ensure that kernel module `oxu210hp_hcd` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("oxu210hp_hcd"),
@@ -7094,7 +7094,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_084",
-        "Ensure that kernel module \"pegasus\" is disabled",
+        "Ensure that kernel module `pegasus` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("pegasus"),
@@ -7109,7 +7109,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_085",
-        "Ensure that kernel module \"pl2303\" is disabled",
+        "Ensure that kernel module `pl2303` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("pl2303"),
@@ -7124,7 +7124,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_086",
-        "Ensure that kernel module \"plusb\" is disabled",
+        "Ensure that kernel module `plusb` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("plusb"),
@@ -7139,7 +7139,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_087",
-        "Ensure that kernel module \"qmi_wwan\" is disabled",
+        "Ensure that kernel module `qmi_wwan` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("qmi_wwan"),
@@ -7154,7 +7154,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_088",
-        "Ensure that kernel module \"quatech2\" is disabled",
+        "Ensure that kernel module `quatech2` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("quatech2"),
@@ -7169,7 +7169,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_089",
-        "Ensure that kernel module \"r8152\" is disabled",
+        "Ensure that kernel module `r8152` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("r8152"),
@@ -7184,7 +7184,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_090",
-        "Ensure that kernel module \"r8153_ecm\" is disabled",
+        "Ensure that kernel module `r8153_ecm` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("r8153_ecm"),
@@ -7199,7 +7199,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_091",
-        "Ensure that kernel module \"r8a66597_hcd\" is disabled",
+        "Ensure that kernel module `r8a66597_hcd` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("r8a66597_hcd"),
@@ -7214,7 +7214,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_092",
-        "Ensure that kernel module \"rndis_host\" is disabled",
+        "Ensure that kernel module `rndis_host` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("rndis_host"),
@@ -7229,7 +7229,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_093",
-        "Ensure that kernel module \"rtl8150\" is disabled",
+        "Ensure that kernel module `rtl8150` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("rtl8150"),
@@ -7244,7 +7244,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_094",
-        "Ensure that kernel module \"safe_serial\" is disabled",
+        "Ensure that kernel module `safe_serial` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("safe_serial"),
@@ -7259,7 +7259,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_095",
-        "Ensure that kernel module \"sierra\" is disabled",
+        "Ensure that kernel module `sierra` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("sierra"),
@@ -7271,7 +7271,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_096",
-        "Ensure that kernel module \"sierra_net\" is disabled",
+        "Ensure that kernel module `sierra_net` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("sierra_net"),
@@ -7286,7 +7286,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_097",
-        "Ensure that kernel module \"sisusbvga\" is disabled",
+        "Ensure that kernel module `sisusbvga` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sisusbvga"),
@@ -7301,7 +7301,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_098",
-        "Ensure that kernel module \"sl811_cs\" is disabled",
+        "Ensure that kernel module `sl811_cs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sl811_cs"),
@@ -7316,7 +7316,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_099",
-        "Ensure that kernel module \"sl811_hcd\" is disabled",
+        "Ensure that kernel module `sl811_hcd` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sl811_hcd"),
@@ -7331,7 +7331,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_100",
-        "Ensure that kernel module \"smsc75xx\" is disabled",
+        "Ensure that kernel module `smsc75xx` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("smsc75xx"),
@@ -7346,7 +7346,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_101",
-        "Ensure that kernel module \"smsc95xx\" is disabled",
+        "Ensure that kernel module `smsc95xx` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("smsc95xx"),
@@ -7361,7 +7361,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_102",
-        "Ensure that kernel module \"spcp8x5\" is disabled",
+        "Ensure that kernel module `spcp8x5` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("spcp8x5"),
@@ -7376,7 +7376,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_103",
-        "Ensure that kernel module \"sr9700\" is disabled",
+        "Ensure that kernel module `sr9700` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("sr9700"),
@@ -7391,7 +7391,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_104",
-        "Ensure that kernel module \"sr9800\" is disabled",
+        "Ensure that kernel module `sr9800` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("sr9800"),
@@ -7406,7 +7406,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_105",
-        "Ensure that kernel module \"ssb_hcd\" is disabled",
+        "Ensure that kernel module `ssb_hcd` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ssb_hcd"),
@@ -7421,7 +7421,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_106",
-        "Ensure that kernel module \"ssu100\" is disabled",
+        "Ensure that kernel module `ssu100` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("ssu100"),
@@ -7436,7 +7436,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_107",
-        "Ensure that kernel module \"symbolserial\" is disabled",
+        "Ensure that kernel module `symbolserial` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("symbolserial"),
@@ -7451,7 +7451,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_108",
-        "Ensure that kernel module \"tcm_usb_gadget\" is disabled",
+        "Ensure that kernel module `tcm_usb_gadget` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("tcm_usb_gadget"),
@@ -7466,7 +7466,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_109",
-        "Ensure that kernel module \"ti_usb_3410_5052\" is disabled",
+        "Ensure that kernel module `ti_usb_3410_5052` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("ti_usb_3410_5052"),
@@ -7481,7 +7481,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_110",
-        "Ensure that kernel module \"trancevibrator\" is disabled",
+        "Ensure that kernel module `trancevibrator` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("trancevibrator"),
@@ -7496,7 +7496,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_111",
-        "Ensure that kernel module \"uas\" is disabled",
+        "Ensure that kernel module `uas` is disabled",
         Severity::High,
         vec!["module", "server"],
         || modprobe::check_module_disabled("uas"),
@@ -7508,7 +7508,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_112",
-        "Ensure that kernel module \"udc_core\" is disabled",
+        "Ensure that kernel module `udc_core` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("udc_core"),
@@ -7523,7 +7523,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_113",
-        "Ensure that kernel module \"ums_alauda\" is disabled",
+        "Ensure that kernel module `ums_alauda` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ums_alauda"),
@@ -7538,7 +7538,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_114",
-        "Ensure that kernel module \"ums_cypress\" is disabled",
+        "Ensure that kernel module `ums_cypress` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ums_cypress"),
@@ -7553,7 +7553,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_115",
-        "Ensure that kernel module \"ums_datafab\" is disabled",
+        "Ensure that kernel module `ums_datafab` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ums_datafab"),
@@ -7568,7 +7568,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_116",
-        "Ensure that kernel module \"ums_eneub6250\" is disabled",
+        "Ensure that kernel module `ums_eneub6250` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ums_eneub6250"),
@@ -7583,7 +7583,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_117",
-        "Ensure that kernel module \"ums_freecom\" is disabled",
+        "Ensure that kernel module `ums_freecom` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ums_freecom"),
@@ -7598,7 +7598,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_118",
-        "Ensure that kernel module \"ums_isd200\" is disabled",
+        "Ensure that kernel module `ums_isd200` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ums_isd200"),
@@ -7613,7 +7613,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_119",
-        "Ensure that kernel module \"ums_jumpshot\" is disabled",
+        "Ensure that kernel module `ums_jumpshot` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ums_jumpshot"),
@@ -7628,7 +7628,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_120",
-        "Ensure that kernel module \"ums_karma\" is disabled",
+        "Ensure that kernel module `ums_karma` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ums_karma"),
@@ -7643,7 +7643,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_121",
-        "Ensure that kernel module \"ums_onetouch\" is disabled",
+        "Ensure that kernel module `ums_onetouch` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ums_onetouch"),
@@ -7658,7 +7658,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_122",
-        "Ensure that kernel module \"ums_realtek\" is disabled",
+        "Ensure that kernel module `ums_realtek` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ums_realtek"),
@@ -7673,7 +7673,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_123",
-        "Ensure that kernel module \"ums_sddr09\" is disabled",
+        "Ensure that kernel module `ums_sddr09` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ums_sddr09"),
@@ -7688,7 +7688,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_124",
-        "Ensure that kernel module \"ums_sddr55\" is disabled",
+        "Ensure that kernel module `ums_sddr55` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ums_sddr55"),
@@ -7703,7 +7703,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_125",
-        "Ensure that kernel module \"usb_f_acm\" is disabled",
+        "Ensure that kernel module `usb_f_acm` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_acm"),
@@ -7718,7 +7718,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_126",
-        "Ensure that kernel module \"usb_f_ecm\" is disabled",
+        "Ensure that kernel module `usb_f_ecm` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_ecm"),
@@ -7733,7 +7733,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_127",
-        "Ensure that kernel module \"usb_f_ecm_subset\" is disabled",
+        "Ensure that kernel module `usb_f_ecm_subset` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_ecm_subset"),
@@ -7748,7 +7748,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_128",
-        "Ensure that kernel module \"usb_f_eem\" is disabled",
+        "Ensure that kernel module `usb_f_eem` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_eem"),
@@ -7763,7 +7763,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_129",
-        "Ensure that kernel module \"usb_f_ffs\" is disabled",
+        "Ensure that kernel module `usb_f_ffs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_ffs"),
@@ -7778,7 +7778,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_130",
-        "Ensure that kernel module \"usb_f_fs\" is disabled",
+        "Ensure that kernel module `usb_f_fs` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_fs"),
@@ -7793,7 +7793,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_131",
-        "Ensure that kernel module \"usb_f_hid\" is disabled",
+        "Ensure that kernel module `usb_f_hid` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_hid"),
@@ -7808,7 +7808,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_132",
-        "Ensure that kernel module \"usb_f_mass_storage\" is disabled",
+        "Ensure that kernel module `usb_f_mass_storage` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_mass_storage"),
@@ -7823,7 +7823,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_133",
-        "Ensure that kernel module \"usb_f_midi\" is disabled",
+        "Ensure that kernel module `usb_f_midi` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_midi"),
@@ -7838,7 +7838,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_134",
-        "Ensure that kernel module \"usb_f_midi2\" is disabled",
+        "Ensure that kernel module `usb_f_midi2` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_midi2"),
@@ -7853,7 +7853,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_135",
-        "Ensure that kernel module \"usb_f_ncm\" is disabled",
+        "Ensure that kernel module `usb_f_ncm` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_ncm"),
@@ -7868,7 +7868,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_136",
-        "Ensure that kernel module \"usb_f_obex\" is disabled",
+        "Ensure that kernel module `usb_f_obex` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_obex"),
@@ -7883,7 +7883,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_137",
-        "Ensure that kernel module \"usb_f_phonet\" is disabled",
+        "Ensure that kernel module `usb_f_phonet` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_phonet"),
@@ -7898,7 +7898,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_138",
-        "Ensure that kernel module \"usb_f_printer\" is disabled",
+        "Ensure that kernel module `usb_f_printer` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_printer"),
@@ -7913,7 +7913,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_139",
-        "Ensure that kernel module \"usb_f_rndis\" is disabled",
+        "Ensure that kernel module `usb_f_rndis` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_rndis"),
@@ -7928,7 +7928,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_140",
-        "Ensure that kernel module \"usb_f_serial\" is disabled",
+        "Ensure that kernel module `usb_f_serial` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_serial"),
@@ -7943,7 +7943,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_141",
-        "Ensure that kernel module \"usb_f_ss_lb\" is disabled",
+        "Ensure that kernel module `usb_f_ss_lb` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_ss_lb"),
@@ -7958,7 +7958,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_142",
-        "Ensure that kernel module \"usb_f_tcm\" is disabled",
+        "Ensure that kernel module `usb_f_tcm` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_tcm"),
@@ -7973,7 +7973,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_143",
-        "Ensure that kernel module \"usb_f_uac1\" is disabled",
+        "Ensure that kernel module `usb_f_uac1` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_uac1"),
@@ -7988,7 +7988,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_144",
-        "Ensure that kernel module \"usb_f_uac1_legacy\" is disabled",
+        "Ensure that kernel module `usb_f_uac1_legacy` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_uac1_legacy"),
@@ -8003,7 +8003,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_145",
-        "Ensure that kernel module \"usb_f_uac2\" is disabled",
+        "Ensure that kernel module `usb_f_uac2` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_uac2"),
@@ -8018,7 +8018,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_146",
-        "Ensure that kernel module \"usb_f_uvc\" is disabled",
+        "Ensure that kernel module `usb_f_uvc` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_f_uvc"),
@@ -8033,7 +8033,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_147",
-        "Ensure that kernel module \"usb_storage\" is disabled",
+        "Ensure that kernel module `usb_storage` is disabled",
         Severity::High,
         vec!["module", "CIS", "STIG", "server"],
         || modprobe::check_module_disabled("usb_storage"),
@@ -8045,7 +8045,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_148",
-        "Ensure that kernel module \"usb_wwan\" is disabled",
+        "Ensure that kernel module `usb_wwan` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("usb_wwan"),
@@ -8060,7 +8060,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_149",
-        "Ensure that kernel module \"usbio\" is disabled",
+        "Ensure that kernel module `usbio` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usbio"),
@@ -8075,7 +8075,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_150",
-        "Ensure that kernel module \"usblcd\" is disabled",
+        "Ensure that kernel module `usblcd` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usblcd"),
@@ -8090,7 +8090,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_151",
-        "Ensure that kernel module \"usblp\" is disabled",
+        "Ensure that kernel module `usblp` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("usblp"),
@@ -8102,7 +8102,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_152",
-        "Ensure that kernel module \"usbnet\" is disabled",
+        "Ensure that kernel module `usbnet` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("usbnet"),
@@ -8117,7 +8117,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_153",
-        "Ensure that kernel module \"usbserial\" is disabled",
+        "Ensure that kernel module `usbserial` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("usbserial"),
@@ -8132,7 +8132,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_154",
-        "Ensure that kernel module \"usbsevseg\" is disabled",
+        "Ensure that kernel module `usbsevseg` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usbsevseg"),
@@ -8147,7 +8147,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_155",
-        "Ensure that kernel module \"usbtmc\" is disabled",
+        "Ensure that kernel module `usbtmc` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usbtmc"),
@@ -8159,7 +8159,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_156",
-        "Ensure that kernel module \"uss720\" is disabled",
+        "Ensure that kernel module `uss720` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("uss720"),
@@ -8174,7 +8174,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_157",
-        "Ensure that kernel module \"visor\" is disabled",
+        "Ensure that kernel module `visor` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("visor"),
@@ -8189,7 +8189,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_158",
-        "Ensure that kernel module \"whiteheat\" is disabled",
+        "Ensure that kernel module `whiteheat` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("whiteheat"),
@@ -8204,7 +8204,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_159",
-        "Ensure that kernel module \"xr_serial\" is disabled",
+        "Ensure that kernel module `xr_serial` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("xr_serial"),
@@ -8219,7 +8219,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_160",
-        "Ensure that kernel module \"yurex\" is disabled",
+        "Ensure that kernel module `yurex` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("yurex"),
@@ -8234,7 +8234,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMU_161",
-        "Ensure that kernel module \"zaurus\" is disabled",
+        "Ensure that kernel module `zaurus` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("zaurus"),
@@ -8250,7 +8250,7 @@ pub fn add_checks() {
     // fireWire (IEEE 1394) (KMK_)
     check::Check::new(
         "KMK_001",
-        "Ensure that kernel module \"dv1394\" is disabled",
+        "Ensure that kernel module `dv1394` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("dv1394"),
@@ -8265,7 +8265,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMK_002",
-        "Ensure that kernel module \"firewire_core\" is disabled",
+        "Ensure that kernel module `firewire_core` is disabled",
         Severity::High,
         vec!["module", "STIG", "server", "workstation"],
         || modprobe::check_module_disabled("firewire_core"),
@@ -8277,7 +8277,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMK_003",
-        "Ensure that kernel module \"firewire_net\" is disabled",
+        "Ensure that kernel module `firewire_net` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("firewire_net"),
@@ -8289,7 +8289,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMK_004",
-        "Ensure that kernel module \"firewire_ohci\" is disabled",
+        "Ensure that kernel module `firewire_ohci` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("firewire_ohci"),
@@ -8301,7 +8301,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMK_005",
-        "Ensure that kernel module \"firewire_sbp2\" is disabled",
+        "Ensure that kernel module `firewire_sbp2` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("firewire_sbp2"),
@@ -8313,7 +8313,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMK_006",
-        "Ensure that kernel module \"ohci1394\" is disabled",
+        "Ensure that kernel module `ohci1394` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ohci1394"),
@@ -8328,7 +8328,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMK_007",
-        "Ensure that kernel module \"raw1394\" is disabled",
+        "Ensure that kernel module `raw1394` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("raw1394"),
@@ -8343,7 +8343,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMK_008",
-        "Ensure that kernel module \"sbp2\" is disabled",
+        "Ensure that kernel module `sbp2` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sbp2"),
@@ -8358,7 +8358,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMK_009",
-        "Ensure that kernel module \"video1394\" is disabled",
+        "Ensure that kernel module `video1394` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("video1394"),
@@ -8374,7 +8374,7 @@ pub fn add_checks() {
     // thunderbolt (KMJ_)
     check::Check::new(
         "KMJ_001",
-        "Ensure that kernel module \"intel_wmi_thunderbolt\" is disabled",
+        "Ensure that kernel module `intel_wmi_thunderbolt` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("intel_wmi_thunderbolt"),
@@ -8389,7 +8389,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMJ_002",
-        "Ensure that kernel module \"thunderbolt\" is disabled",
+        "Ensure that kernel module `thunderbolt` is disabled",
         Severity::High,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("thunderbolt"),
@@ -8401,7 +8401,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMJ_003",
-        "Ensure that kernel module \"thunderbolt_net\" is disabled",
+        "Ensure that kernel module `thunderbolt_net` is disabled",
         Severity::High,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("thunderbolt_net"),
@@ -8413,7 +8413,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMJ_004",
-        "Ensure that kernel module \"typec_thunderbolt\" is disabled",
+        "Ensure that kernel module `typec_thunderbolt` is disabled",
         Severity::High,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("typec_thunderbolt"),
@@ -8429,7 +8429,7 @@ pub fn add_checks() {
     // GPS / GNSS (KMH_)
     check::Check::new(
         "KMH_001",
-        "Ensure that kernel module \"garmin_gps\" is disabled",
+        "Ensure that kernel module `garmin_gps` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("garmin_gps"),
@@ -8444,7 +8444,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMH_002",
-        "Ensure that kernel module \"gnss\" is disabled",
+        "Ensure that kernel module `gnss` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("gnss"),
@@ -8459,7 +8459,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMH_003",
-        "Ensure that kernel module \"gnss_mtk\" is disabled",
+        "Ensure that kernel module `gnss_mtk` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("gnss_mtk"),
@@ -8474,7 +8474,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMH_004",
-        "Ensure that kernel module \"gnss_serial\" is disabled",
+        "Ensure that kernel module `gnss_serial` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("gnss_serial"),
@@ -8489,7 +8489,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMH_005",
-        "Ensure that kernel module \"gnss_sirf\" is disabled",
+        "Ensure that kernel module `gnss_sirf` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("gnss_sirf"),
@@ -8504,7 +8504,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMH_006",
-        "Ensure that kernel module \"gnss_ubx\" is disabled",
+        "Ensure that kernel module `gnss_ubx` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("gnss_ubx"),
@@ -8519,7 +8519,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMH_007",
-        "Ensure that kernel module \"gnss_usb\" is disabled",
+        "Ensure that kernel module `gnss_usb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("gnss_usb"),
@@ -8535,7 +8535,7 @@ pub fn add_checks() {
     // optical, floppy and legacy removable media (KMP_)
     check::Check::new(
         "KMP_001",
-        "Ensure that kernel module \"alcor_pci\" is disabled",
+        "Ensure that kernel module `alcor_pci` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("alcor_pci"),
@@ -8550,7 +8550,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMP_002",
-        "Ensure that kernel module \"cb710\" is disabled",
+        "Ensure that kernel module `cb710` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("cb710"),
@@ -8565,7 +8565,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMP_003",
-        "Ensure that kernel module \"floppy\" is disabled",
+        "Ensure that kernel module `floppy` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("floppy"),
@@ -8577,7 +8577,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMP_004",
-        "Ensure that kernel module \"jmb38x_ms\" is disabled",
+        "Ensure that kernel module `jmb38x_ms` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("jmb38x_ms"),
@@ -8592,7 +8592,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMP_005",
-        "Ensure that kernel module \"memstick\" is disabled",
+        "Ensure that kernel module `memstick` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("memstick"),
@@ -8607,7 +8607,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMP_006",
-        "Ensure that kernel module \"ms_block\" is disabled",
+        "Ensure that kernel module `ms_block` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("ms_block"),
@@ -8622,7 +8622,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMP_007",
-        "Ensure that kernel module \"mspro_block\" is disabled",
+        "Ensure that kernel module `mspro_block` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("mspro_block"),
@@ -8637,7 +8637,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMP_008",
-        "Ensure that kernel module \"r592\" is disabled",
+        "Ensure that kernel module `r592` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("r592"),
@@ -8652,7 +8652,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMP_009",
-        "Ensure that kernel module \"rtsx_pci\" is disabled",
+        "Ensure that kernel module `rtsx_pci` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("rtsx_pci"),
@@ -8667,7 +8667,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMP_010",
-        "Ensure that kernel module \"rtsx_usb\" is disabled",
+        "Ensure that kernel module `rtsx_usb` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("rtsx_usb"),
@@ -8682,7 +8682,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMP_011",
-        "Ensure that kernel module \"rtsx_usb_ms\" is disabled",
+        "Ensure that kernel module `rtsx_usb_ms` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("rtsx_usb_ms"),
@@ -8697,7 +8697,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMP_012",
-        "Ensure that kernel module \"tifm_7xx1\" is disabled",
+        "Ensure that kernel module `tifm_7xx1` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("tifm_7xx1"),
@@ -8712,7 +8712,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMP_013",
-        "Ensure that kernel module \"tifm_core\" is disabled",
+        "Ensure that kernel module `tifm_core` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("tifm_core"),
@@ -8727,7 +8727,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMP_014",
-        "Ensure that kernel module \"tifm_ms\" is disabled",
+        "Ensure that kernel module `tifm_ms` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("tifm_ms"),
@@ -8743,7 +8743,7 @@ pub fn add_checks() {
     // audio and PC speaker (KMA_)
     check::Check::new(
         "KMA_001",
-        "Ensure that kernel module \"ac97\" is disabled",
+        "Ensure that kernel module `ac97` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ac97"),
@@ -8758,7 +8758,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_002",
-        "Ensure that kernel module \"ac97_codec\" is disabled",
+        "Ensure that kernel module `ac97_codec` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ac97_codec"),
@@ -8773,7 +8773,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_003",
-        "Ensure that kernel module \"ac97_plugin_ad1980\" is disabled",
+        "Ensure that kernel module `ac97_plugin_ad1980` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ac97_plugin_ad1980"),
@@ -8788,7 +8788,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_004",
-        "Ensure that kernel module \"ac97_plugin_wm97xx\" is disabled",
+        "Ensure that kernel module `ac97_plugin_wm97xx` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ac97_plugin_wm97xx"),
@@ -8803,7 +8803,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_005",
-        "Ensure that kernel module \"ad1816\" is disabled",
+        "Ensure that kernel module `ad1816` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ad1816"),
@@ -8818,7 +8818,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_006",
-        "Ensure that kernel module \"ad1848\" is disabled",
+        "Ensure that kernel module `ad1848` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ad1848"),
@@ -8833,7 +8833,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_007",
-        "Ensure that kernel module \"ad1889\" is disabled",
+        "Ensure that kernel module `ad1889` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ad1889"),
@@ -8848,7 +8848,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_008",
-        "Ensure that kernel module \"adlib_card\" is disabled",
+        "Ensure that kernel module `adlib_card` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("adlib_card"),
@@ -8863,7 +8863,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_009",
-        "Ensure that kernel module \"aedsp16\" is disabled",
+        "Ensure that kernel module `aedsp16` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("aedsp16"),
@@ -8878,7 +8878,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_010",
-        "Ensure that kernel module \"ali5455\" is disabled",
+        "Ensure that kernel module `ali5455` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ali5455"),
@@ -8893,7 +8893,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_011",
-        "Ensure that kernel module \"audio\" is disabled",
+        "Ensure that kernel module `audio` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("audio"),
@@ -8908,7 +8908,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_012",
-        "Ensure that kernel module \"awe_wave\" is disabled",
+        "Ensure that kernel module `awe_wave` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("awe_wave"),
@@ -8923,7 +8923,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_013",
-        "Ensure that kernel module \"btaudio\" is disabled",
+        "Ensure that kernel module `btaudio` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("btaudio"),
@@ -8938,7 +8938,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_014",
-        "Ensure that kernel module \"cmpci\" is disabled",
+        "Ensure that kernel module `cmpci` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cmpci"),
@@ -8953,7 +8953,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_015",
-        "Ensure that kernel module \"cs4232\" is disabled",
+        "Ensure that kernel module `cs4232` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cs4232"),
@@ -8968,7 +8968,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_016",
-        "Ensure that kernel module \"cs4281\" is disabled",
+        "Ensure that kernel module `cs4281` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cs4281"),
@@ -8983,7 +8983,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_017",
-        "Ensure that kernel module \"cs461x\" is disabled",
+        "Ensure that kernel module `cs461x` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cs461x"),
@@ -8998,7 +8998,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_018",
-        "Ensure that kernel module \"cs46xx\" is disabled",
+        "Ensure that kernel module `cs46xx` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cs46xx"),
@@ -9013,7 +9013,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_019",
-        "Ensure that kernel module \"dmasound_core\" is disabled",
+        "Ensure that kernel module `dmasound_core` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("dmasound_core"),
@@ -9028,7 +9028,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_020",
-        "Ensure that kernel module \"dmasound_pmac\" is disabled",
+        "Ensure that kernel module `dmasound_pmac` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("dmasound_pmac"),
@@ -9043,7 +9043,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_021",
-        "Ensure that kernel module \"emu10k1\" is disabled",
+        "Ensure that kernel module `emu10k1` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("emu10k1"),
@@ -9058,7 +9058,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_022",
-        "Ensure that kernel module \"es1370\" is disabled",
+        "Ensure that kernel module `es1370` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("es1370"),
@@ -9073,7 +9073,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_023",
-        "Ensure that kernel module \"es1371\" is disabled",
+        "Ensure that kernel module `es1371` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("es1371"),
@@ -9088,7 +9088,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_024",
-        "Ensure that kernel module \"esssolo1\" is disabled",
+        "Ensure that kernel module `esssolo1` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("esssolo1"),
@@ -9103,7 +9103,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_025",
-        "Ensure that kernel module \"forte\" is disabled",
+        "Ensure that kernel module `forte` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("forte"),
@@ -9118,7 +9118,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_026",
-        "Ensure that kernel module \"gus\" is disabled",
+        "Ensure that kernel module `gus` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("gus"),
@@ -9133,7 +9133,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_027",
-        "Ensure that kernel module \"harmony\" is disabled",
+        "Ensure that kernel module `harmony` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("harmony"),
@@ -9148,7 +9148,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_028",
-        "Ensure that kernel module \"i810_audio\" is disabled",
+        "Ensure that kernel module `i810_audio` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("i810_audio"),
@@ -9163,7 +9163,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_029",
-        "Ensure that kernel module \"kahlua\" is disabled",
+        "Ensure that kernel module `kahlua` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("kahlua"),
@@ -9178,7 +9178,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_030",
-        "Ensure that kernel module \"mad16\" is disabled",
+        "Ensure that kernel module `mad16` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mad16"),
@@ -9193,7 +9193,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_031",
-        "Ensure that kernel module \"maestro\" is disabled",
+        "Ensure that kernel module `maestro` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("maestro"),
@@ -9208,7 +9208,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_032",
-        "Ensure that kernel module \"maestro3\" is disabled",
+        "Ensure that kernel module `maestro3` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("maestro3"),
@@ -9223,7 +9223,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_033",
-        "Ensure that kernel module \"maui\" is disabled",
+        "Ensure that kernel module `maui` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("maui"),
@@ -9238,7 +9238,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_034",
-        "Ensure that kernel module \"mpu401\" is disabled",
+        "Ensure that kernel module `mpu401` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mpu401"),
@@ -9253,7 +9253,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_035",
-        "Ensure that kernel module \"nm256_audio\" is disabled",
+        "Ensure that kernel module `nm256_audio` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nm256_audio"),
@@ -9268,7 +9268,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_036",
-        "Ensure that kernel module \"opl3\" is disabled",
+        "Ensure that kernel module `opl3` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("opl3"),
@@ -9283,7 +9283,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_037",
-        "Ensure that kernel module \"opl3sa\" is disabled",
+        "Ensure that kernel module `opl3sa` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("opl3sa"),
@@ -9298,7 +9298,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_038",
-        "Ensure that kernel module \"opl3sa2\" is disabled",
+        "Ensure that kernel module `opl3sa2` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("opl3sa2"),
@@ -9313,7 +9313,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_039",
-        "Ensure that kernel module \"pas2\" is disabled",
+        "Ensure that kernel module `pas2` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pas2"),
@@ -9328,7 +9328,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_040",
-        "Ensure that kernel module \"pcspkr\" is disabled",
+        "Ensure that kernel module `pcspkr` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pcspkr"),
@@ -9340,7 +9340,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_041",
-        "Ensure that kernel module \"pss\" is disabled",
+        "Ensure that kernel module `pss` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pss"),
@@ -9355,7 +9355,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_042",
-        "Ensure that kernel module \"rme96xx\" is disabled",
+        "Ensure that kernel module `rme96xx` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("rme96xx"),
@@ -9370,7 +9370,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_043",
-        "Ensure that kernel module \"sb\" is disabled",
+        "Ensure that kernel module `sb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sb"),
@@ -9385,7 +9385,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_044",
-        "Ensure that kernel module \"sb_lib\" is disabled",
+        "Ensure that kernel module `sb_lib` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sb_lib"),
@@ -9400,7 +9400,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_045",
-        "Ensure that kernel module \"sequencer\" is disabled",
+        "Ensure that kernel module `sequencer` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sequencer"),
@@ -9415,7 +9415,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_046",
-        "Ensure that kernel module \"sgalaxy\" is disabled",
+        "Ensure that kernel module `sgalaxy` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sgalaxy"),
@@ -9430,7 +9430,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_047",
-        "Ensure that kernel module \"snd\" is disabled",
+        "Ensure that kernel module `snd` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("snd"),
@@ -9445,7 +9445,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_048",
-        "Ensure that kernel module \"snd_hda_core\" is disabled",
+        "Ensure that kernel module `snd_hda_core` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("snd_hda_core"),
@@ -9460,7 +9460,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_049",
-        "Ensure that kernel module \"snd_mixer_oss\" is disabled",
+        "Ensure that kernel module `snd_mixer_oss` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("snd_mixer_oss"),
@@ -9472,7 +9472,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_050",
-        "Ensure that kernel module \"snd_mpu401\" is disabled",
+        "Ensure that kernel module `snd_mpu401` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("snd_mpu401"),
@@ -9487,7 +9487,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_051",
-        "Ensure that kernel module \"snd_mpu401_uart\" is disabled",
+        "Ensure that kernel module `snd_mpu401_uart` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("snd_mpu401_uart"),
@@ -9502,7 +9502,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_052",
-        "Ensure that kernel module \"snd_mts64\" is disabled",
+        "Ensure that kernel module `snd_mts64` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("snd_mts64"),
@@ -9517,7 +9517,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_053",
-        "Ensure that kernel module \"snd_opl3_lib\" is disabled",
+        "Ensure that kernel module `snd_opl3_lib` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("snd_opl3_lib"),
@@ -9532,7 +9532,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_054",
-        "Ensure that kernel module \"snd_opl3_synth\" is disabled",
+        "Ensure that kernel module `snd_opl3_synth` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("snd_opl3_synth"),
@@ -9547,7 +9547,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_055",
-        "Ensure that kernel module \"snd_pcm\" is disabled",
+        "Ensure that kernel module `snd_pcm` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("snd_pcm"),
@@ -9562,7 +9562,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_056",
-        "Ensure that kernel module \"snd_pcm_oss\" is disabled",
+        "Ensure that kernel module `snd_pcm_oss` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("snd_pcm_oss"),
@@ -9577,7 +9577,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_057",
-        "Ensure that kernel module \"snd_portman2x4\" is disabled",
+        "Ensure that kernel module `snd_portman2x4` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("snd_portman2x4"),
@@ -9592,7 +9592,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_058",
-        "Ensure that kernel module \"snd_seq\" is disabled",
+        "Ensure that kernel module `snd_seq` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("snd_seq"),
@@ -9607,7 +9607,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_059",
-        "Ensure that kernel module \"snd_seq_device\" is disabled",
+        "Ensure that kernel module `snd_seq_device` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("snd_seq_device"),
@@ -9622,7 +9622,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_060",
-        "Ensure that kernel module \"snd_serial_u16550\" is disabled",
+        "Ensure that kernel module `snd_serial_u16550` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("snd_serial_u16550"),
@@ -9637,7 +9637,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_061",
-        "Ensure that kernel module \"snd_timer\" is disabled",
+        "Ensure that kernel module `snd_timer` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("snd_timer"),
@@ -9652,7 +9652,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_062",
-        "Ensure that kernel module \"snd_vx_lib\" is disabled",
+        "Ensure that kernel module `snd_vx_lib` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("snd_vx_lib"),
@@ -9667,7 +9667,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_063",
-        "Ensure that kernel module \"sonicvibes\" is disabled",
+        "Ensure that kernel module `sonicvibes` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sonicvibes"),
@@ -9682,7 +9682,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_064",
-        "Ensure that kernel module \"sound\" is disabled",
+        "Ensure that kernel module `sound` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sound"),
@@ -9697,7 +9697,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_065",
-        "Ensure that kernel module \"soundcard\" is disabled",
+        "Ensure that kernel module `soundcard` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("soundcard"),
@@ -9712,7 +9712,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_066",
-        "Ensure that kernel module \"soundcore\" is disabled",
+        "Ensure that kernel module `soundcore` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("soundcore"),
@@ -9727,7 +9727,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_067",
-        "Ensure that kernel module \"sscape\" is disabled",
+        "Ensure that kernel module `sscape` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sscape"),
@@ -9742,7 +9742,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_068",
-        "Ensure that kernel module \"trident\" is disabled",
+        "Ensure that kernel module `trident` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("trident"),
@@ -9757,7 +9757,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_069",
-        "Ensure that kernel module \"trix\" is disabled",
+        "Ensure that kernel module `trix` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("trix"),
@@ -9772,7 +9772,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_070",
-        "Ensure that kernel module \"uart401\" is disabled",
+        "Ensure that kernel module `uart401` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("uart401"),
@@ -9787,7 +9787,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_071",
-        "Ensure that kernel module \"uart6850\" is disabled",
+        "Ensure that kernel module `uart6850` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("uart6850"),
@@ -9802,7 +9802,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_072",
-        "Ensure that kernel module \"usb_midi\" is disabled",
+        "Ensure that kernel module `usb_midi` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("usb_midi"),
@@ -9817,7 +9817,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_073",
-        "Ensure that kernel module \"v_midi\" is disabled",
+        "Ensure that kernel module `v_midi` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("v_midi"),
@@ -9832,7 +9832,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_074",
-        "Ensure that kernel module \"via82cxxx_audio\" is disabled",
+        "Ensure that kernel module `via82cxxx_audio` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("via82cxxx_audio"),
@@ -9847,7 +9847,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_075",
-        "Ensure that kernel module \"wavefront\" is disabled",
+        "Ensure that kernel module `wavefront` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("wavefront"),
@@ -9862,7 +9862,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMA_076",
-        "Ensure that kernel module \"ymfpci\" is disabled",
+        "Ensure that kernel module `ymfpci` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ymfpci"),
@@ -9878,7 +9878,7 @@ pub fn add_checks() {
     // legacy framebuffers (fbdev) (KMR_)
     check::Check::new(
         "KMR_001",
-        "Ensure that kernel module \"arcfb\" is disabled",
+        "Ensure that kernel module `arcfb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("arcfb"),
@@ -9893,7 +9893,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_002",
-        "Ensure that kernel module \"arkfb\" is disabled",
+        "Ensure that kernel module `arkfb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("arkfb"),
@@ -9908,7 +9908,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_003",
-        "Ensure that kernel module \"aty128fb\" is disabled",
+        "Ensure that kernel module `aty128fb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("aty128fb"),
@@ -9923,7 +9923,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_004",
-        "Ensure that kernel module \"atyfb\" is disabled",
+        "Ensure that kernel module `atyfb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("atyfb"),
@@ -9938,7 +9938,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_005",
-        "Ensure that kernel module \"carminefb\" is disabled",
+        "Ensure that kernel module `carminefb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("carminefb"),
@@ -9953,7 +9953,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_006",
-        "Ensure that kernel module \"cirrusfb\" is disabled",
+        "Ensure that kernel module `cirrusfb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cirrusfb"),
@@ -9968,7 +9968,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_007",
-        "Ensure that kernel module \"cyber2000fb\" is disabled",
+        "Ensure that kernel module `cyber2000fb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cyber2000fb"),
@@ -9983,7 +9983,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_008",
-        "Ensure that kernel module \"cyblafb\" is disabled",
+        "Ensure that kernel module `cyblafb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cyblafb"),
@@ -9998,7 +9998,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_009",
-        "Ensure that kernel module \"fb_ddc\" is disabled",
+        "Ensure that kernel module `fb_ddc` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("fb_ddc"),
@@ -10013,7 +10013,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_010",
-        "Ensure that kernel module \"g450_pll\" is disabled",
+        "Ensure that kernel module `g450_pll` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("g450_pll"),
@@ -10028,7 +10028,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_011",
-        "Ensure that kernel module \"gx1fb\" is disabled",
+        "Ensure that kernel module `gx1fb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("gx1fb"),
@@ -10043,7 +10043,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_012",
-        "Ensure that kernel module \"hecubafb\" is disabled",
+        "Ensure that kernel module `hecubafb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hecubafb"),
@@ -10058,7 +10058,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_013",
-        "Ensure that kernel module \"hgafb\" is disabled",
+        "Ensure that kernel module `hgafb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hgafb"),
@@ -10073,7 +10073,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_014",
-        "Ensure that kernel module \"i2c_matroxfb\" is disabled",
+        "Ensure that kernel module `i2c_matroxfb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("i2c_matroxfb"),
@@ -10088,7 +10088,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_015",
-        "Ensure that kernel module \"i740fb\" is disabled",
+        "Ensure that kernel module `i740fb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("i740fb"),
@@ -10103,7 +10103,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_016",
-        "Ensure that kernel module \"i810fb\" is disabled",
+        "Ensure that kernel module `i810fb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("i810fb"),
@@ -10118,7 +10118,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_017",
-        "Ensure that kernel module \"intel_agp\" is disabled",
+        "Ensure that kernel module `intel_agp` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("intel_agp"),
@@ -10133,7 +10133,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_018",
-        "Ensure that kernel module \"intelfb\" is disabled",
+        "Ensure that kernel module `intelfb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("intelfb"),
@@ -10148,7 +10148,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_019",
-        "Ensure that kernel module \"kyrofb\" is disabled",
+        "Ensure that kernel module `kyrofb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("kyrofb"),
@@ -10163,7 +10163,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_020",
-        "Ensure that kernel module \"lxfb\" is disabled",
+        "Ensure that kernel module `lxfb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("lxfb"),
@@ -10178,7 +10178,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_021",
-        "Ensure that kernel module \"macmodes\" is disabled",
+        "Ensure that kernel module `macmodes` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("macmodes"),
@@ -10193,7 +10193,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_022",
-        "Ensure that kernel module \"matroxfb_DAC1064\" is disabled",
+        "Ensure that kernel module `matroxfb_DAC1064` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("matroxfb_DAC1064"),
@@ -10208,7 +10208,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_023",
-        "Ensure that kernel module \"matroxfb_Ti3026\" is disabled",
+        "Ensure that kernel module `matroxfb_Ti3026` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("matroxfb_Ti3026"),
@@ -10223,7 +10223,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_024",
-        "Ensure that kernel module \"matroxfb_accel\" is disabled",
+        "Ensure that kernel module `matroxfb_accel` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("matroxfb_accel"),
@@ -10238,7 +10238,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_025",
-        "Ensure that kernel module \"matroxfb_base\" is disabled",
+        "Ensure that kernel module `matroxfb_base` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("matroxfb_base"),
@@ -10253,7 +10253,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_026",
-        "Ensure that kernel module \"matroxfb_bases\" is disabled",
+        "Ensure that kernel module `matroxfb_bases` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("matroxfb_bases"),
@@ -10268,7 +10268,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_027",
-        "Ensure that kernel module \"matroxfb_crtc2\" is disabled",
+        "Ensure that kernel module `matroxfb_crtc2` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("matroxfb_crtc2"),
@@ -10283,7 +10283,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_028",
-        "Ensure that kernel module \"matroxfb_g450\" is disabled",
+        "Ensure that kernel module `matroxfb_g450` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("matroxfb_g450"),
@@ -10298,7 +10298,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_029",
-        "Ensure that kernel module \"matroxfb_maven\" is disabled",
+        "Ensure that kernel module `matroxfb_maven` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("matroxfb_maven"),
@@ -10313,7 +10313,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_030",
-        "Ensure that kernel module \"matroxfb_misc\" is disabled",
+        "Ensure that kernel module `matroxfb_misc` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("matroxfb_misc"),
@@ -10328,7 +10328,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_031",
-        "Ensure that kernel module \"mb862xxfb\" is disabled",
+        "Ensure that kernel module `mb862xxfb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mb862xxfb"),
@@ -10343,7 +10343,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_032",
-        "Ensure that kernel module \"metronomefb\" is disabled",
+        "Ensure that kernel module `metronomefb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("metronomefb"),
@@ -10358,7 +10358,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_033",
-        "Ensure that kernel module \"n411\" is disabled",
+        "Ensure that kernel module `n411` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("n411"),
@@ -10373,7 +10373,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_034",
-        "Ensure that kernel module \"neofb\" is disabled",
+        "Ensure that kernel module `neofb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("neofb"),
@@ -10388,7 +10388,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_035",
-        "Ensure that kernel module \"nvidiafb\" is disabled",
+        "Ensure that kernel module `nvidiafb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nvidiafb"),
@@ -10403,7 +10403,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_036",
-        "Ensure that kernel module \"ocfb\" is disabled",
+        "Ensure that kernel module `ocfb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ocfb"),
@@ -10418,7 +10418,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_037",
-        "Ensure that kernel module \"pm2fb\" is disabled",
+        "Ensure that kernel module `pm2fb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pm2fb"),
@@ -10433,7 +10433,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_038",
-        "Ensure that kernel module \"pm3fb\" is disabled",
+        "Ensure that kernel module `pm3fb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pm3fb"),
@@ -10448,7 +10448,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_039",
-        "Ensure that kernel module \"radeonfb\" is disabled",
+        "Ensure that kernel module `radeonfb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("radeonfb"),
@@ -10463,7 +10463,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_040",
-        "Ensure that kernel module \"rivafb\" is disabled",
+        "Ensure that kernel module `rivafb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("rivafb"),
@@ -10478,7 +10478,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_041",
-        "Ensure that kernel module \"s1d13xxxfb\" is disabled",
+        "Ensure that kernel module `s1d13xxxfb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("s1d13xxxfb"),
@@ -10493,7 +10493,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_042",
-        "Ensure that kernel module \"s3fb\" is disabled",
+        "Ensure that kernel module `s3fb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("s3fb"),
@@ -10508,7 +10508,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_043",
-        "Ensure that kernel module \"savagefb\" is disabled",
+        "Ensure that kernel module `savagefb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("savagefb"),
@@ -10523,7 +10523,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_044",
-        "Ensure that kernel module \"sis_agp\" is disabled",
+        "Ensure that kernel module `sis_agp` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sis_agp"),
@@ -10538,7 +10538,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_045",
-        "Ensure that kernel module \"sisfb\" is disabled",
+        "Ensure that kernel module `sisfb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sisfb"),
@@ -10553,7 +10553,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_046",
-        "Ensure that kernel module \"sm501fb\" is disabled",
+        "Ensure that kernel module `sm501fb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sm501fb"),
@@ -10568,7 +10568,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_047",
-        "Ensure that kernel module \"sm712fb\" is disabled",
+        "Ensure that kernel module `sm712fb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sm712fb"),
@@ -10583,7 +10583,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_048",
-        "Ensure that kernel module \"smscufx\" is disabled",
+        "Ensure that kernel module `smscufx` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("smscufx"),
@@ -10598,7 +10598,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_049",
-        "Ensure that kernel module \"ssd1307fb\" is disabled",
+        "Ensure that kernel module `ssd1307fb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ssd1307fb"),
@@ -10613,7 +10613,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_050",
-        "Ensure that kernel module \"sstfb\" is disabled",
+        "Ensure that kernel module `sstfb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sstfb"),
@@ -10628,7 +10628,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_051",
-        "Ensure that kernel module \"svgalib\" is disabled",
+        "Ensure that kernel module `svgalib` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("svgalib"),
@@ -10643,7 +10643,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_052",
-        "Ensure that kernel module \"tdfxfb\" is disabled",
+        "Ensure that kernel module `tdfxfb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("tdfxfb"),
@@ -10658,7 +10658,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_053",
-        "Ensure that kernel module \"tridentfb\" is disabled",
+        "Ensure that kernel module `tridentfb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("tridentfb"),
@@ -10673,7 +10673,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_054",
-        "Ensure that kernel module \"udlfb\" is disabled",
+        "Ensure that kernel module `udlfb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("udlfb"),
@@ -10688,7 +10688,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_055",
-        "Ensure that kernel module \"uvesafb\" is disabled",
+        "Ensure that kernel module `uvesafb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("uvesafb"),
@@ -10703,7 +10703,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_056",
-        "Ensure that kernel module \"vesafb\" is disabled",
+        "Ensure that kernel module `vesafb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("vesafb"),
@@ -10718,7 +10718,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_057",
-        "Ensure that kernel module \"vfb\" is disabled",
+        "Ensure that kernel module `vfb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("vfb"),
@@ -10733,7 +10733,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_058",
-        "Ensure that kernel module \"vga16fb\" is disabled",
+        "Ensure that kernel module `vga16fb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("vga16fb"),
@@ -10748,7 +10748,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_059",
-        "Ensure that kernel module \"viafb\" is disabled",
+        "Ensure that kernel module `viafb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("viafb"),
@@ -10763,7 +10763,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMR_060",
-        "Ensure that kernel module \"vt8623fb\" is disabled",
+        "Ensure that kernel module `vt8623fb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("vt8623fb"),
@@ -10779,7 +10779,7 @@ pub fn add_checks() {
     // media capture, DVB, infrared (KME_)
     check::Check::new(
         "KME_001",
-        "Ensure that kernel module \"ati_remote\" is disabled",
+        "Ensure that kernel module `ati_remote` is disabled",
         Severity::Low,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("ati_remote"),
@@ -10791,7 +10791,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_002",
-        "Ensure that kernel module \"cx2341x\" is disabled",
+        "Ensure that kernel module `cx2341x` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cx2341x"),
@@ -10806,7 +10806,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_003",
-        "Ensure that kernel module \"cypress_firmware\" is disabled",
+        "Ensure that kernel module `cypress_firmware` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cypress_firmware"),
@@ -10821,7 +10821,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_004",
-        "Ensure that kernel module \"dsbr100\" is disabled",
+        "Ensure that kernel module `dsbr100` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("dsbr100"),
@@ -10833,7 +10833,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_005",
-        "Ensure that kernel module \"dvb_core\" is disabled",
+        "Ensure that kernel module `dvb_core` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("dvb_core"),
@@ -10845,7 +10845,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_006",
-        "Ensure that kernel module \"dvb_pll\" is disabled",
+        "Ensure that kernel module `dvb_pll` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("dvb_pll"),
@@ -10857,7 +10857,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_007",
-        "Ensure that kernel module \"ene_ir\" is disabled",
+        "Ensure that kernel module `ene_ir` is disabled",
         Severity::Low,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("ene_ir"),
@@ -10869,7 +10869,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_008",
-        "Ensure that kernel module \"fintek_cir\" is disabled",
+        "Ensure that kernel module `fintek_cir` is disabled",
         Severity::Low,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("fintek_cir"),
@@ -10881,7 +10881,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_009",
-        "Ensure that kernel module \"firedtv\" is disabled",
+        "Ensure that kernel module `firedtv` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("firedtv"),
@@ -10896,7 +10896,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_010",
-        "Ensure that kernel module \"igorplugusb\" is disabled",
+        "Ensure that kernel module `igorplugusb` is disabled",
         Severity::Low,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("igorplugusb"),
@@ -10908,7 +10908,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_011",
-        "Ensure that kernel module \"iguanair\" is disabled",
+        "Ensure that kernel module `iguanair` is disabled",
         Severity::Low,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("iguanair"),
@@ -10920,7 +10920,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_012",
-        "Ensure that kernel module \"imon\" is disabled",
+        "Ensure that kernel module `imon` is disabled",
         Severity::Low,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("imon"),
@@ -10932,7 +10932,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_013",
-        "Ensure that kernel module \"ir_toy\" is disabled",
+        "Ensure that kernel module `ir_toy` is disabled",
         Severity::Low,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("ir_toy"),
@@ -10944,7 +10944,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_014",
-        "Ensure that kernel module \"ite_cir\" is disabled",
+        "Ensure that kernel module `ite_cir` is disabled",
         Severity::Low,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("ite_cir"),
@@ -10956,7 +10956,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_015",
-        "Ensure that kernel module \"m2m_deinterlace\" is disabled",
+        "Ensure that kernel module `m2m_deinterlace` is disabled",
         Severity::Medium,
         vec!["module", "server"],
         || modprobe::check_module_disabled("m2m_deinterlace"),
@@ -10971,7 +10971,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_016",
-        "Ensure that kernel module \"mc\" is disabled",
+        "Ensure that kernel module `mc` is disabled",
         Severity::Medium,
         vec!["module", "server"],
         || modprobe::check_module_disabled("mc"),
@@ -10986,7 +10986,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_017",
-        "Ensure that kernel module \"mceusb\" is disabled",
+        "Ensure that kernel module `mceusb` is disabled",
         Severity::Low,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("mceusb"),
@@ -10998,7 +10998,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_018",
-        "Ensure that kernel module \"nuvoton_cir\" is disabled",
+        "Ensure that kernel module `nuvoton_cir` is disabled",
         Severity::Low,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("nuvoton_cir"),
@@ -11010,7 +11010,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_019",
-        "Ensure that kernel module \"radio_shark\" is disabled",
+        "Ensure that kernel module `radio_shark` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("radio_shark"),
@@ -11022,7 +11022,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_020",
-        "Ensure that kernel module \"rc_core\" is disabled",
+        "Ensure that kernel module `rc_core` is disabled",
         Severity::Medium,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("rc_core"),
@@ -11034,7 +11034,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_021",
-        "Ensure that kernel module \"redrat3\" is disabled",
+        "Ensure that kernel module `redrat3` is disabled",
         Severity::Low,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("redrat3"),
@@ -11046,7 +11046,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_022",
-        "Ensure that kernel module \"serial_ir\" is disabled",
+        "Ensure that kernel module `serial_ir` is disabled",
         Severity::Low,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("serial_ir"),
@@ -11058,7 +11058,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_023",
-        "Ensure that kernel module \"shark2\" is disabled",
+        "Ensure that kernel module `shark2` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("shark2"),
@@ -11070,7 +11070,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_024",
-        "Ensure that kernel module \"streamzap\" is disabled",
+        "Ensure that kernel module `streamzap` is disabled",
         Severity::Low,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("streamzap"),
@@ -11082,7 +11082,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_025",
-        "Ensure that kernel module \"tea575x\" is disabled",
+        "Ensure that kernel module `tea575x` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("tea575x"),
@@ -11094,7 +11094,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_026",
-        "Ensure that kernel module \"ttpci_eeprom\" is disabled",
+        "Ensure that kernel module `ttpci_eeprom` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ttpci_eeprom"),
@@ -11109,7 +11109,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_027",
-        "Ensure that kernel module \"ttusbir\" is disabled",
+        "Ensure that kernel module `ttusbir` is disabled",
         Severity::Low,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("ttusbir"),
@@ -11121,7 +11121,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_028",
-        "Ensure that kernel module \"tuner\" is disabled",
+        "Ensure that kernel module `tuner` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("tuner"),
@@ -11133,7 +11133,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_029",
-        "Ensure that kernel module \"tveeprom\" is disabled",
+        "Ensure that kernel module `tveeprom` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("tveeprom"),
@@ -11148,7 +11148,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_030",
-        "Ensure that kernel module \"uvcvideo\" is disabled",
+        "Ensure that kernel module `uvcvideo` is disabled",
         Severity::Medium,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("uvcvideo"),
@@ -11160,7 +11160,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_031",
-        "Ensure that kernel module \"v4l2_async\" is disabled",
+        "Ensure that kernel module `v4l2_async` is disabled",
         Severity::Medium,
         vec!["module", "server"],
         || modprobe::check_module_disabled("v4l2_async"),
@@ -11175,7 +11175,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_032",
-        "Ensure that kernel module \"v4l2_cci\" is disabled",
+        "Ensure that kernel module `v4l2_cci` is disabled",
         Severity::Medium,
         vec!["module", "server"],
         || modprobe::check_module_disabled("v4l2_cci"),
@@ -11190,7 +11190,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_033",
-        "Ensure that kernel module \"v4l2_common\" is disabled",
+        "Ensure that kernel module `v4l2_common` is disabled",
         Severity::Medium,
         vec!["module", "server"],
         || modprobe::check_module_disabled("v4l2_common"),
@@ -11205,7 +11205,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_034",
-        "Ensure that kernel module \"v4l2_dv_timings\" is disabled",
+        "Ensure that kernel module `v4l2_dv_timings` is disabled",
         Severity::Medium,
         vec!["module", "server"],
         || modprobe::check_module_disabled("v4l2_dv_timings"),
@@ -11220,7 +11220,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_035",
-        "Ensure that kernel module \"v4l2_flash_led_class\" is disabled",
+        "Ensure that kernel module `v4l2_flash_led_class` is disabled",
         Severity::Medium,
         vec!["module", "server"],
         || modprobe::check_module_disabled("v4l2_flash_led_class"),
@@ -11235,7 +11235,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_036",
-        "Ensure that kernel module \"v4l2_fwnode\" is disabled",
+        "Ensure that kernel module `v4l2_fwnode` is disabled",
         Severity::Medium,
         vec!["module", "server"],
         || modprobe::check_module_disabled("v4l2_fwnode"),
@@ -11250,7 +11250,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_037",
-        "Ensure that kernel module \"v4l2_mem2mem\" is disabled",
+        "Ensure that kernel module `v4l2_mem2mem` is disabled",
         Severity::Medium,
         vec!["module", "server"],
         || modprobe::check_module_disabled("v4l2_mem2mem"),
@@ -11265,7 +11265,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_038",
-        "Ensure that kernel module \"videodev\" is disabled",
+        "Ensure that kernel module `videodev` is disabled",
         Severity::Medium,
         vec!["module", "server"],
         || modprobe::check_module_disabled("videodev"),
@@ -11280,7 +11280,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_039",
-        "Ensure that kernel module \"winbond_cir\" is disabled",
+        "Ensure that kernel module `winbond_cir` is disabled",
         Severity::Low,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("winbond_cir"),
@@ -11292,7 +11292,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KME_040",
-        "Ensure that kernel module \"xbox_remote\" is disabled",
+        "Ensure that kernel module `xbox_remote` is disabled",
         Severity::Low,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("xbox_remote"),
@@ -11305,7 +11305,7 @@ pub fn add_checks() {
     // input and gaming (KMG_)
     check::Check::new(
         "KMG_001",
-        "Ensure that kernel module \"emu10k1_gp\" is disabled",
+        "Ensure that kernel module `emu10k1_gp` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("emu10k1_gp"),
@@ -11317,7 +11317,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMG_002",
-        "Ensure that kernel module \"fm801_gp\" is disabled",
+        "Ensure that kernel module `fm801_gp` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("fm801_gp"),
@@ -11329,7 +11329,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMG_003",
-        "Ensure that kernel module \"gameport\" is disabled",
+        "Ensure that kernel module `gameport` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("gameport"),
@@ -11341,7 +11341,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMG_004",
-        "Ensure that kernel module \"joydev\" is disabled",
+        "Ensure that kernel module `joydev` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("joydev"),
@@ -11356,7 +11356,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMG_005",
-        "Ensure that kernel module \"mousedev\" is disabled",
+        "Ensure that kernel module `mousedev` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("mousedev"),
@@ -11371,7 +11371,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMG_006",
-        "Ensure that kernel module \"psmouse\" is disabled",
+        "Ensure that kernel module `psmouse` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("psmouse"),
@@ -11386,7 +11386,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMG_007",
-        "Ensure that kernel module \"xpad\" is disabled",
+        "Ensure that kernel module `xpad` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("xpad"),
@@ -11399,7 +11399,7 @@ pub fn add_checks() {
     // watchdogs (KMW_)
     check::Check::new(
         "KMW_001",
-        "Ensure that kernel module \"acquirewdt\" is disabled",
+        "Ensure that kernel module `acquirewdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("acquirewdt"),
@@ -11414,7 +11414,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_002",
-        "Ensure that kernel module \"advantech_ec_wdt\" is disabled",
+        "Ensure that kernel module `advantech_ec_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("advantech_ec_wdt"),
@@ -11429,7 +11429,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_003",
-        "Ensure that kernel module \"advantechwdt\" is disabled",
+        "Ensure that kernel module `advantechwdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("advantechwdt"),
@@ -11444,7 +11444,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_004",
-        "Ensure that kernel module \"alim1535_wdt\" is disabled",
+        "Ensure that kernel module `alim1535_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("alim1535_wdt"),
@@ -11459,7 +11459,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_005",
-        "Ensure that kernel module \"alim7101_wdt\" is disabled",
+        "Ensure that kernel module `alim7101_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("alim7101_wdt"),
@@ -11474,7 +11474,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_006",
-        "Ensure that kernel module \"cadence_wdt\" is disabled",
+        "Ensure that kernel module `cadence_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cadence_wdt"),
@@ -11489,7 +11489,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_007",
-        "Ensure that kernel module \"cgbc_wdt\" is disabled",
+        "Ensure that kernel module `cgbc_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cgbc_wdt"),
@@ -11504,7 +11504,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_008",
-        "Ensure that kernel module \"cpu5wdt\" is disabled",
+        "Ensure that kernel module `cpu5wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cpu5wdt"),
@@ -11519,7 +11519,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_009",
-        "Ensure that kernel module \"cros_ec_wdt\" is disabled",
+        "Ensure that kernel module `cros_ec_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cros_ec_wdt"),
@@ -11534,7 +11534,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_010",
-        "Ensure that kernel module \"da9052_wdt\" is disabled",
+        "Ensure that kernel module `da9052_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("da9052_wdt"),
@@ -11549,7 +11549,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_011",
-        "Ensure that kernel module \"da9055_wdt\" is disabled",
+        "Ensure that kernel module `da9055_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("da9055_wdt"),
@@ -11564,7 +11564,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_012",
-        "Ensure that kernel module \"da9062_wdt\" is disabled",
+        "Ensure that kernel module `da9062_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("da9062_wdt"),
@@ -11579,7 +11579,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_013",
-        "Ensure that kernel module \"da9063_wdt\" is disabled",
+        "Ensure that kernel module `da9063_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("da9063_wdt"),
@@ -11594,7 +11594,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_014",
-        "Ensure that kernel module \"dw_wdt\" is disabled",
+        "Ensure that kernel module `dw_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("dw_wdt"),
@@ -11609,7 +11609,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_015",
-        "Ensure that kernel module \"ebc_c384_wdt\" is disabled",
+        "Ensure that kernel module `ebc_c384_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ebc_c384_wdt"),
@@ -11624,7 +11624,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_016",
-        "Ensure that kernel module \"eurotechwdt\" is disabled",
+        "Ensure that kernel module `eurotechwdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("eurotechwdt"),
@@ -11639,7 +11639,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_017",
-        "Ensure that kernel module \"exar_wdt\" is disabled",
+        "Ensure that kernel module `exar_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("exar_wdt"),
@@ -11654,7 +11654,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_018",
-        "Ensure that kernel module \"f71808e_wdt\" is disabled",
+        "Ensure that kernel module `f71808e_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("f71808e_wdt"),
@@ -11669,7 +11669,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_019",
-        "Ensure that kernel module \"hpwdt\" is disabled",
+        "Ensure that kernel module `hpwdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hpwdt"),
@@ -11684,7 +11684,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_020",
-        "Ensure that kernel module \"i6300esb\" is disabled",
+        "Ensure that kernel module `i6300esb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("i6300esb"),
@@ -11699,7 +11699,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_021",
-        "Ensure that kernel module \"iTCO_vendor_support\" is disabled",
+        "Ensure that kernel module `iTCO_vendor_support` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("iTCO_vendor_support"),
@@ -11714,7 +11714,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_022",
-        "Ensure that kernel module \"iTCO_wdt\" is disabled",
+        "Ensure that kernel module `iTCO_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("iTCO_wdt"),
@@ -11729,7 +11729,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_023",
-        "Ensure that kernel module \"ib700wdt\" is disabled",
+        "Ensure that kernel module `ib700wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ib700wdt"),
@@ -11744,7 +11744,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_024",
-        "Ensure that kernel module \"ibmasr\" is disabled",
+        "Ensure that kernel module `ibmasr` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ibmasr"),
@@ -11759,7 +11759,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_025",
-        "Ensure that kernel module \"ie6xx_wdt\" is disabled",
+        "Ensure that kernel module `ie6xx_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ie6xx_wdt"),
@@ -11774,7 +11774,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_026",
-        "Ensure that kernel module \"intel_oc_wdt\" is disabled",
+        "Ensure that kernel module `intel_oc_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("intel_oc_wdt"),
@@ -11789,7 +11789,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_027",
-        "Ensure that kernel module \"it8712f_wdt\" is disabled",
+        "Ensure that kernel module `it8712f_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("it8712f_wdt"),
@@ -11804,7 +11804,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_028",
-        "Ensure that kernel module \"it87_wdt\" is disabled",
+        "Ensure that kernel module `it87_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("it87_wdt"),
@@ -11819,7 +11819,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_029",
-        "Ensure that kernel module \"kempld_wdt\" is disabled",
+        "Ensure that kernel module `kempld_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("kempld_wdt"),
@@ -11834,7 +11834,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_030",
-        "Ensure that kernel module \"lenovo_se10_wdt\" is disabled",
+        "Ensure that kernel module `lenovo_se10_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("lenovo_se10_wdt"),
@@ -11849,7 +11849,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_031",
-        "Ensure that kernel module \"lenovo_se30_wdt\" is disabled",
+        "Ensure that kernel module `lenovo_se30_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("lenovo_se30_wdt"),
@@ -11864,7 +11864,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_032",
-        "Ensure that kernel module \"machzwd\" is disabled",
+        "Ensure that kernel module `machzwd` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("machzwd"),
@@ -11879,7 +11879,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_033",
-        "Ensure that kernel module \"max63xx_wdt\" is disabled",
+        "Ensure that kernel module `max63xx_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("max63xx_wdt"),
@@ -11894,7 +11894,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_034",
-        "Ensure that kernel module \"mei_wdt\" is disabled",
+        "Ensure that kernel module `mei_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mei_wdt"),
@@ -11909,7 +11909,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_035",
-        "Ensure that kernel module \"mena21_wdt\" is disabled",
+        "Ensure that kernel module `mena21_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mena21_wdt"),
@@ -11924,7 +11924,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_036",
-        "Ensure that kernel module \"menf21bmc_wdt\" is disabled",
+        "Ensure that kernel module `menf21bmc_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("menf21bmc_wdt"),
@@ -11939,7 +11939,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_037",
-        "Ensure that kernel module \"menz69_wdt\" is disabled",
+        "Ensure that kernel module `menz69_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("menz69_wdt"),
@@ -11954,7 +11954,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_038",
-        "Ensure that kernel module \"mlx_wdt\" is disabled",
+        "Ensure that kernel module `mlx_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mlx_wdt"),
@@ -11969,7 +11969,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_039",
-        "Ensure that kernel module \"nct6694_wdt\" is disabled",
+        "Ensure that kernel module `nct6694_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nct6694_wdt"),
@@ -11984,7 +11984,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_040",
-        "Ensure that kernel module \"ni903x_wdt\" is disabled",
+        "Ensure that kernel module `ni903x_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ni903x_wdt"),
@@ -11999,7 +11999,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_041",
-        "Ensure that kernel module \"nic7018_wdt\" is disabled",
+        "Ensure that kernel module `nic7018_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nic7018_wdt"),
@@ -12014,7 +12014,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_042",
-        "Ensure that kernel module \"nv_tco\" is disabled",
+        "Ensure that kernel module `nv_tco` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("nv_tco"),
@@ -12029,7 +12029,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_043",
-        "Ensure that kernel module \"of_xilinx_wdt\" is disabled",
+        "Ensure that kernel module `of_xilinx_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("of_xilinx_wdt"),
@@ -12044,7 +12044,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_044",
-        "Ensure that kernel module \"pc87413_wdt\" is disabled",
+        "Ensure that kernel module `pc87413_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pc87413_wdt"),
@@ -12059,7 +12059,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_045",
-        "Ensure that kernel module \"pcwd_pci\" is disabled",
+        "Ensure that kernel module `pcwd_pci` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pcwd_pci"),
@@ -12074,7 +12074,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_046",
-        "Ensure that kernel module \"pcwd_usb\" is disabled",
+        "Ensure that kernel module `pcwd_usb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pcwd_usb"),
@@ -12089,7 +12089,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_047",
-        "Ensure that kernel module \"rave_sp_wdt\" is disabled",
+        "Ensure that kernel module `rave_sp_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("rave_sp_wdt"),
@@ -12104,7 +12104,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_048",
-        "Ensure that kernel module \"retu_wdt\" is disabled",
+        "Ensure that kernel module `retu_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("retu_wdt"),
@@ -12119,7 +12119,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_049",
-        "Ensure that kernel module \"sbc60xxwdt\" is disabled",
+        "Ensure that kernel module `sbc60xxwdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sbc60xxwdt"),
@@ -12134,7 +12134,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_050",
-        "Ensure that kernel module \"sbc_epx_c3\" is disabled",
+        "Ensure that kernel module `sbc_epx_c3` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sbc_epx_c3"),
@@ -12149,7 +12149,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_051",
-        "Ensure that kernel module \"sbc_fitpc2_wdt\" is disabled",
+        "Ensure that kernel module `sbc_fitpc2_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sbc_fitpc2_wdt"),
@@ -12164,7 +12164,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_052",
-        "Ensure that kernel module \"sc1200wdt\" is disabled",
+        "Ensure that kernel module `sc1200wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sc1200wdt"),
@@ -12179,7 +12179,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_053",
-        "Ensure that kernel module \"sch311x_wdt\" is disabled",
+        "Ensure that kernel module `sch311x_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sch311x_wdt"),
@@ -12194,7 +12194,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_054",
-        "Ensure that kernel module \"simatic_ipc_wdt\" is disabled",
+        "Ensure that kernel module `simatic_ipc_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("simatic_ipc_wdt"),
@@ -12209,7 +12209,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_055",
-        "Ensure that kernel module \"smsc37b787_wdt\" is disabled",
+        "Ensure that kernel module `smsc37b787_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("smsc37b787_wdt"),
@@ -12224,7 +12224,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_056",
-        "Ensure that kernel module \"sp5100_tco\" is disabled",
+        "Ensure that kernel module `sp5100_tco` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sp5100_tco"),
@@ -12239,7 +12239,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_057",
-        "Ensure that kernel module \"tqmx86_wdt\" is disabled",
+        "Ensure that kernel module `tqmx86_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("tqmx86_wdt"),
@@ -12254,7 +12254,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_058",
-        "Ensure that kernel module \"twl4030_wdt\" is disabled",
+        "Ensure that kernel module `twl4030_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("twl4030_wdt"),
@@ -12269,7 +12269,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_059",
-        "Ensure that kernel module \"via_wdt\" is disabled",
+        "Ensure that kernel module `via_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("via_wdt"),
@@ -12284,7 +12284,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_060",
-        "Ensure that kernel module \"w83627hf_wdt\" is disabled",
+        "Ensure that kernel module `w83627hf_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w83627hf_wdt"),
@@ -12299,7 +12299,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_061",
-        "Ensure that kernel module \"w83877f_wdt\" is disabled",
+        "Ensure that kernel module `w83877f_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w83877f_wdt"),
@@ -12314,7 +12314,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_062",
-        "Ensure that kernel module \"w83977f_wdt\" is disabled",
+        "Ensure that kernel module `w83977f_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w83977f_wdt"),
@@ -12329,7 +12329,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_063",
-        "Ensure that kernel module \"wafer5823wdt\" is disabled",
+        "Ensure that kernel module `wafer5823wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("wafer5823wdt"),
@@ -12344,7 +12344,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_064",
-        "Ensure that kernel module \"wdat_wdt\" is disabled",
+        "Ensure that kernel module `wdat_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("wdat_wdt"),
@@ -12359,7 +12359,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_065",
-        "Ensure that kernel module \"wdt_pci\" is disabled",
+        "Ensure that kernel module `wdt_pci` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("wdt_pci"),
@@ -12374,7 +12374,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_066",
-        "Ensure that kernel module \"wm831x_wdt\" is disabled",
+        "Ensure that kernel module `wm831x_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("wm831x_wdt"),
@@ -12389,7 +12389,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_067",
-        "Ensure that kernel module \"wm8350_wdt\" is disabled",
+        "Ensure that kernel module `wm8350_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("wm8350_wdt"),
@@ -12404,7 +12404,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMW_068",
-        "Ensure that kernel module \"ziirave_wdt\" is disabled",
+        "Ensure that kernel module `ziirave_wdt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ziirave_wdt"),
@@ -12420,7 +12420,7 @@ pub fn add_checks() {
     // platform management (Intel ME, PMT, MSR) (KMM_)
     check::Check::new(
         "KMM_001",
-        "Ensure that kernel module \"applicom\" is disabled",
+        "Ensure that kernel module `applicom` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("applicom"),
@@ -12435,7 +12435,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMM_002",
-        "Ensure that kernel module \"cpuid\" is disabled",
+        "Ensure that kernel module `cpuid` is disabled",
         Severity::Low,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("cpuid"),
@@ -12447,7 +12447,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMM_003",
-        "Ensure that kernel module \"dca\" is disabled",
+        "Ensure that kernel module `dca` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("dca"),
@@ -12462,7 +12462,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMM_004",
-        "Ensure that kernel module \"genwqe_card\" is disabled",
+        "Ensure that kernel module `genwqe_card` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("genwqe_card"),
@@ -12477,7 +12477,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMM_005",
-        "Ensure that kernel module \"gru\" is disabled",
+        "Ensure that kernel module `gru` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("gru"),
@@ -12492,7 +12492,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMM_006",
-        "Ensure that kernel module \"hpilo\" is disabled",
+        "Ensure that kernel module `hpilo` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hpilo"),
@@ -12507,7 +12507,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMM_007",
-        "Ensure that kernel module \"ibmasm\" is disabled",
+        "Ensure that kernel module `ibmasm` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ibmasm"),
@@ -12522,7 +12522,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMM_008",
-        "Ensure that kernel module \"pmt_class\" is disabled",
+        "Ensure that kernel module `pmt_class` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pmt_class"),
@@ -12534,7 +12534,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMM_009",
-        "Ensure that kernel module \"pmt_crashlog\" is disabled",
+        "Ensure that kernel module `pmt_crashlog` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pmt_crashlog"),
@@ -12549,7 +12549,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMM_010",
-        "Ensure that kernel module \"pmt_discovery\" is disabled",
+        "Ensure that kernel module `pmt_discovery` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pmt_discovery"),
@@ -12564,7 +12564,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMM_011",
-        "Ensure that kernel module \"pmt_telemetry\" is disabled",
+        "Ensure that kernel module `pmt_telemetry` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pmt_telemetry"),
@@ -12579,7 +12579,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMM_012",
-        "Ensure that kernel module \"uv_mmtimer\" is disabled",
+        "Ensure that kernel module `uv_mmtimer` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("uv_mmtimer"),
@@ -12594,7 +12594,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMM_013",
-        "Ensure that kernel module \"xp\" is disabled",
+        "Ensure that kernel module `xp` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("xp"),
@@ -12609,7 +12609,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMM_014",
-        "Ensure that kernel module \"xpc\" is disabled",
+        "Ensure that kernel module `xpc` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("xpc"),
@@ -12624,7 +12624,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMM_015",
-        "Ensure that kernel module \"xpnet\" is disabled",
+        "Ensure that kernel module `xpnet` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("xpnet"),
@@ -12640,7 +12640,7 @@ pub fn add_checks() {
     // industrial, embedded and exotic buses (KMI_)
     check::Check::new(
         "KMI_001",
-        "Ensure that kernel module \"104_quad_8\" is disabled",
+        "Ensure that kernel module `104_quad_8` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("104_quad_8"),
@@ -12652,7 +12652,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_002",
-        "Ensure that kernel module \"altera_cvp\" is disabled",
+        "Ensure that kernel module `altera_cvp` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("altera_cvp"),
@@ -12664,7 +12664,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_003",
-        "Ensure that kernel module \"altera_freeze_bridge\" is disabled",
+        "Ensure that kernel module `altera_freeze_bridge` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("altera_freeze_bridge"),
@@ -12676,7 +12676,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_004",
-        "Ensure that kernel module \"altera_pr_ip_core\" is disabled",
+        "Ensure that kernel module `altera_pr_ip_core` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("altera_pr_ip_core"),
@@ -12688,7 +12688,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_005",
-        "Ensure that kernel module \"altera_ps_spi\" is disabled",
+        "Ensure that kernel module `altera_ps_spi` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("altera_ps_spi"),
@@ -12700,7 +12700,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_006",
-        "Ensure that kernel module \"altera_stapl\" is disabled",
+        "Ensure that kernel module `altera_stapl` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("altera_stapl"),
@@ -12715,7 +12715,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_007",
-        "Ensure that kernel module \"amd_axi_w1\" is disabled",
+        "Ensure that kernel module `amd_axi_w1` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("amd_axi_w1"),
@@ -12730,7 +12730,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_008",
-        "Ensure that kernel module \"bcm_vk\" is disabled",
+        "Ensure that kernel module `bcm_vk` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("bcm_vk"),
@@ -12742,7 +12742,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_009",
-        "Ensure that kernel module \"cfag12864b\" is disabled",
+        "Ensure that kernel module `cfag12864b` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cfag12864b"),
@@ -12754,7 +12754,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_010",
-        "Ensure that kernel module \"cfag12864bfb\" is disabled",
+        "Ensure that kernel module `cfag12864bfb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("cfag12864bfb"),
@@ -12766,7 +12766,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_011",
-        "Ensure that kernel module \"charlcd\" is disabled",
+        "Ensure that kernel module `charlcd` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("charlcd"),
@@ -12778,7 +12778,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_012",
-        "Ensure that kernel module \"comedi\" is disabled",
+        "Ensure that kernel module `comedi` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("comedi"),
@@ -12790,7 +12790,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_013",
-        "Ensure that kernel module \"comedi_8254\" is disabled",
+        "Ensure that kernel module `comedi_8254` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("comedi_8254"),
@@ -12805,7 +12805,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_014",
-        "Ensure that kernel module \"comedi_8255\" is disabled",
+        "Ensure that kernel module `comedi_8255` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("comedi_8255"),
@@ -12820,7 +12820,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_015",
-        "Ensure that kernel module \"comedi_bond\" is disabled",
+        "Ensure that kernel module `comedi_bond` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("comedi_bond"),
@@ -12835,7 +12835,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_016",
-        "Ensure that kernel module \"comedi_isadma\" is disabled",
+        "Ensure that kernel module `comedi_isadma` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("comedi_isadma"),
@@ -12850,7 +12850,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_017",
-        "Ensure that kernel module \"comedi_parport\" is disabled",
+        "Ensure that kernel module `comedi_parport` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("comedi_parport"),
@@ -12865,7 +12865,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_018",
-        "Ensure that kernel module \"comedi_pci\" is disabled",
+        "Ensure that kernel module `comedi_pci` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("comedi_pci"),
@@ -12880,7 +12880,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_019",
-        "Ensure that kernel module \"comedi_pcmcia\" is disabled",
+        "Ensure that kernel module `comedi_pcmcia` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("comedi_pcmcia"),
@@ -12895,7 +12895,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_020",
-        "Ensure that kernel module \"comedi_usb\" is disabled",
+        "Ensure that kernel module `comedi_usb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("comedi_usb"),
@@ -12910,7 +12910,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_021",
-        "Ensure that kernel module \"counter\" is disabled",
+        "Ensure that kernel module `counter` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("counter"),
@@ -12922,7 +12922,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_022",
-        "Ensure that kernel module \"dfl\" is disabled",
+        "Ensure that kernel module `dfl` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("dfl"),
@@ -12934,7 +12934,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_023",
-        "Ensure that kernel module \"dfl_afu\" is disabled",
+        "Ensure that kernel module `dfl_afu` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("dfl_afu"),
@@ -12946,7 +12946,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_024",
-        "Ensure that kernel module \"dfl_fme\" is disabled",
+        "Ensure that kernel module `dfl_fme` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("dfl_fme"),
@@ -12958,7 +12958,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_025",
-        "Ensure that kernel module \"dfl_fme_br\" is disabled",
+        "Ensure that kernel module `dfl_fme_br` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("dfl_fme_br"),
@@ -12970,7 +12970,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_026",
-        "Ensure that kernel module \"dfl_fme_mgr\" is disabled",
+        "Ensure that kernel module `dfl_fme_mgr` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("dfl_fme_mgr"),
@@ -12982,7 +12982,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_027",
-        "Ensure that kernel module \"dfl_fme_region\" is disabled",
+        "Ensure that kernel module `dfl_fme_region` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("dfl_fme_region"),
@@ -12994,7 +12994,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_028",
-        "Ensure that kernel module \"dfl_n3000_nios\" is disabled",
+        "Ensure that kernel module `dfl_n3000_nios` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("dfl_n3000_nios"),
@@ -13006,7 +13006,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_029",
-        "Ensure that kernel module \"dfl_pci\" is disabled",
+        "Ensure that kernel module `dfl_pci` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("dfl_pci"),
@@ -13018,7 +13018,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_030",
-        "Ensure that kernel module \"ds2482\" is disabled",
+        "Ensure that kernel module `ds2482` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ds2482"),
@@ -13033,7 +13033,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_031",
-        "Ensure that kernel module \"ds2490\" is disabled",
+        "Ensure that kernel module `ds2490` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ds2490"),
@@ -13048,7 +13048,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_032",
-        "Ensure that kernel module \"dummy_stm\" is disabled",
+        "Ensure that kernel module `dummy_stm` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("dummy_stm"),
@@ -13063,7 +13063,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_033",
-        "Ensure that kernel module \"dw_xdata_pcie\" is disabled",
+        "Ensure that kernel module `dw_xdata_pcie` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("dw_xdata_pcie"),
@@ -13078,7 +13078,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_034",
-        "Ensure that kernel module \"enclosure\" is disabled",
+        "Ensure that kernel module `enclosure` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("enclosure"),
@@ -13090,7 +13090,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_035",
-        "Ensure that kernel module \"fpga_bridge\" is disabled",
+        "Ensure that kernel module `fpga_bridge` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("fpga_bridge"),
@@ -13102,7 +13102,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_036",
-        "Ensure that kernel module \"fpga_mgr\" is disabled",
+        "Ensure that kernel module `fpga_mgr` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("fpga_mgr"),
@@ -13114,7 +13114,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_037",
-        "Ensure that kernel module \"fpga_region\" is disabled",
+        "Ensure that kernel module `fpga_region` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("fpga_region"),
@@ -13126,7 +13126,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_038",
-        "Ensure that kernel module \"gb_beagleplay\" is disabled",
+        "Ensure that kernel module `gb_beagleplay` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("gb_beagleplay"),
@@ -13138,7 +13138,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_039",
-        "Ensure that kernel module \"gb_es2\" is disabled",
+        "Ensure that kernel module `gb_es2` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("gb_es2"),
@@ -13150,7 +13150,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_040",
-        "Ensure that kernel module \"greybus\" is disabled",
+        "Ensure that kernel module `greybus` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("greybus"),
@@ -13162,7 +13162,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_041",
-        "Ensure that kernel module \"hd44780\" is disabled",
+        "Ensure that kernel module `hd44780` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hd44780"),
@@ -13174,7 +13174,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_042",
-        "Ensure that kernel module \"hd44780_common\" is disabled",
+        "Ensure that kernel module `hd44780_common` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("hd44780_common"),
@@ -13189,7 +13189,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_043",
-        "Ensure that kernel module \"ht16k33\" is disabled",
+        "Ensure that kernel module `ht16k33` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ht16k33"),
@@ -13201,7 +13201,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_044",
-        "Ensure that kernel module \"i82092\" is disabled",
+        "Ensure that kernel module `i82092` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("i82092"),
@@ -13213,7 +13213,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_045",
-        "Ensure that kernel module \"i8254\" is disabled",
+        "Ensure that kernel module `i8254` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("i8254"),
@@ -13225,7 +13225,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_046",
-        "Ensure that kernel module \"idt_89hpesx\" is disabled",
+        "Ensure that kernel module `idt_89hpesx` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("idt_89hpesx"),
@@ -13240,7 +13240,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_047",
-        "Ensure that kernel module \"idt_gen2\" is disabled",
+        "Ensure that kernel module `idt_gen2` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("idt_gen2"),
@@ -13252,7 +13252,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_048",
-        "Ensure that kernel module \"idt_gen3\" is disabled",
+        "Ensure that kernel module `idt_gen3` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("idt_gen3"),
@@ -13264,7 +13264,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_049",
-        "Ensure that kernel module \"idtcps\" is disabled",
+        "Ensure that kernel module `idtcps` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("idtcps"),
@@ -13276,7 +13276,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_050",
-        "Ensure that kernel module \"img_ascii_lcd\" is disabled",
+        "Ensure that kernel module `img_ascii_lcd` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("img_ascii_lcd"),
@@ -13291,7 +13291,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_051",
-        "Ensure that kernel module \"industrialio\" is disabled",
+        "Ensure that kernel module `industrialio` is disabled",
         Severity::Low,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("industrialio"),
@@ -13303,7 +13303,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_052",
-        "Ensure that kernel module \"intel_qep\" is disabled",
+        "Ensure that kernel module `intel_qep` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("intel_qep"),
@@ -13315,7 +13315,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_053",
-        "Ensure that kernel module \"intel_th\" is disabled",
+        "Ensure that kernel module `intel_th` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("intel_th"),
@@ -13327,7 +13327,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_054",
-        "Ensure that kernel module \"intel_th_acpi\" is disabled",
+        "Ensure that kernel module `intel_th_acpi` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("intel_th_acpi"),
@@ -13342,7 +13342,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_055",
-        "Ensure that kernel module \"intel_th_gth\" is disabled",
+        "Ensure that kernel module `intel_th_gth` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("intel_th_gth"),
@@ -13357,7 +13357,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_056",
-        "Ensure that kernel module \"intel_th_msu\" is disabled",
+        "Ensure that kernel module `intel_th_msu` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("intel_th_msu"),
@@ -13372,7 +13372,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_057",
-        "Ensure that kernel module \"intel_th_msu_sink\" is disabled",
+        "Ensure that kernel module `intel_th_msu_sink` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("intel_th_msu_sink"),
@@ -13387,7 +13387,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_058",
-        "Ensure that kernel module \"intel_th_pci\" is disabled",
+        "Ensure that kernel module `intel_th_pci` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("intel_th_pci"),
@@ -13402,7 +13402,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_059",
-        "Ensure that kernel module \"intel_th_pti\" is disabled",
+        "Ensure that kernel module `intel_th_pti` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("intel_th_pti"),
@@ -13417,7 +13417,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_060",
-        "Ensure that kernel module \"intel_th_sth\" is disabled",
+        "Ensure that kernel module `intel_th_sth` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("intel_th_sth"),
@@ -13432,7 +13432,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_061",
-        "Ensure that kernel module \"interrupt_cnt\" is disabled",
+        "Ensure that kernel module `interrupt_cnt` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("interrupt_cnt"),
@@ -13444,7 +13444,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_062",
-        "Ensure that kernel module \"ipack\" is disabled",
+        "Ensure that kernel module `ipack` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ipack"),
@@ -13456,7 +13456,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_063",
-        "Ensure that kernel module \"ipoctal\" is disabled",
+        "Ensure that kernel module `ipoctal` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ipoctal"),
@@ -13468,7 +13468,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_064",
-        "Ensure that kernel module \"kcomedilib\" is disabled",
+        "Ensure that kernel module `kcomedilib` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("kcomedilib"),
@@ -13483,7 +13483,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_065",
-        "Ensure that kernel module \"ks0108\" is disabled",
+        "Ensure that kernel module `ks0108` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ks0108"),
@@ -13495,7 +13495,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_066",
-        "Ensure that kernel module \"lattice_ecp3_config\" is disabled",
+        "Ensure that kernel module `lattice_ecp3_config` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("lattice_ecp3_config"),
@@ -13510,7 +13510,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_067",
-        "Ensure that kernel module \"lattice_sysconfig\" is disabled",
+        "Ensure that kernel module `lattice_sysconfig` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("lattice_sysconfig"),
@@ -13522,7 +13522,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_068",
-        "Ensure that kernel module \"lattice_sysconfig_spi\" is disabled",
+        "Ensure that kernel module `lattice_sysconfig_spi` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("lattice_sysconfig_spi"),
@@ -13534,7 +13534,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_069",
-        "Ensure that kernel module \"lcd2s\" is disabled",
+        "Ensure that kernel module `lcd2s` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("lcd2s"),
@@ -13546,7 +13546,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_070",
-        "Ensure that kernel module \"line_display\" is disabled",
+        "Ensure that kernel module `line_display` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("line_display"),
@@ -13558,7 +13558,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_071",
-        "Ensure that kernel module \"lp\" is disabled",
+        "Ensure that kernel module `lp` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("lp"),
@@ -13570,7 +13570,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_072",
-        "Ensure that kernel module \"machxo2_spi\" is disabled",
+        "Ensure that kernel module `machxo2_spi` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("machxo2_spi"),
@@ -13582,7 +13582,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_073",
-        "Ensure that kernel module \"matrox_w1\" is disabled",
+        "Ensure that kernel module `matrox_w1` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("matrox_w1"),
@@ -13597,7 +13597,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_074",
-        "Ensure that kernel module \"max6959\" is disabled",
+        "Ensure that kernel module `max6959` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("max6959"),
@@ -13609,7 +13609,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_075",
-        "Ensure that kernel module \"mcb\" is disabled",
+        "Ensure that kernel module `mcb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mcb"),
@@ -13621,7 +13621,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_076",
-        "Ensure that kernel module \"mcb_lpc\" is disabled",
+        "Ensure that kernel module `mcb_lpc` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mcb_lpc"),
@@ -13633,7 +13633,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_077",
-        "Ensure that kernel module \"mcb_pci\" is disabled",
+        "Ensure that kernel module `mcb_pci` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mcb_pci"),
@@ -13645,7 +13645,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_078",
-        "Ensure that kernel module \"mchp_pci1xxxx_gp\" is disabled",
+        "Ensure that kernel module `mchp_pci1xxxx_gp` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("mchp_pci1xxxx_gp"),
@@ -13660,7 +13660,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_079",
-        "Ensure that kernel module \"mchp_pci1xxxx_gpio\" is disabled",
+        "Ensure that kernel module `mchp_pci1xxxx_gpio` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("mchp_pci1xxxx_gpio"),
@@ -13675,7 +13675,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_080",
-        "Ensure that kernel module \"mchp_pci1xxxx_otpe2p\" is disabled",
+        "Ensure that kernel module `mchp_pci1xxxx_otpe2p` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("mchp_pci1xxxx_otpe2p"),
@@ -13690,7 +13690,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_081",
-        "Ensure that kernel module \"microchip_spi\" is disabled",
+        "Ensure that kernel module `microchip_spi` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("microchip_spi"),
@@ -13702,7 +13702,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_082",
-        "Ensure that kernel module \"most_cdev\" is disabled",
+        "Ensure that kernel module `most_cdev` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("most_cdev"),
@@ -13714,7 +13714,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_083",
-        "Ensure that kernel module \"most_core\" is disabled",
+        "Ensure that kernel module `most_core` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("most_core"),
@@ -13726,7 +13726,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_084",
-        "Ensure that kernel module \"most_snd\" is disabled",
+        "Ensure that kernel module `most_snd` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("most_snd"),
@@ -13738,7 +13738,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_085",
-        "Ensure that kernel module \"most_usb\" is disabled",
+        "Ensure that kernel module `most_usb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("most_usb"),
@@ -13750,7 +13750,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_086",
-        "Ensure that kernel module \"nsm\" is disabled",
+        "Ensure that kernel module `nsm` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("nsm"),
@@ -13762,7 +13762,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_087",
-        "Ensure that kernel module \"ntb\" is disabled",
+        "Ensure that kernel module `ntb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ntb"),
@@ -13774,7 +13774,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_088",
-        "Ensure that kernel module \"ntb_msi_test\" is disabled",
+        "Ensure that kernel module `ntb_msi_test` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ntb_msi_test"),
@@ -13789,7 +13789,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_089",
-        "Ensure that kernel module \"ntb_netdev\" is disabled",
+        "Ensure that kernel module `ntb_netdev` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ntb_netdev"),
@@ -13804,7 +13804,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_090",
-        "Ensure that kernel module \"ntb_perf\" is disabled",
+        "Ensure that kernel module `ntb_perf` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ntb_perf"),
@@ -13816,7 +13816,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_091",
-        "Ensure that kernel module \"ntb_pingpong\" is disabled",
+        "Ensure that kernel module `ntb_pingpong` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ntb_pingpong"),
@@ -13831,7 +13831,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_092",
-        "Ensure that kernel module \"ntb_tool\" is disabled",
+        "Ensure that kernel module `ntb_tool` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ntb_tool"),
@@ -13843,7 +13843,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_093",
-        "Ensure that kernel module \"ntb_transport\" is disabled",
+        "Ensure that kernel module `ntb_transport` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ntb_transport"),
@@ -13858,7 +13858,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_094",
-        "Ensure that kernel module \"panel\" is disabled",
+        "Ensure that kernel module `panel` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("panel"),
@@ -13870,7 +13870,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_095",
-        "Ensure that kernel module \"parport\" is disabled",
+        "Ensure that kernel module `parport` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("parport"),
@@ -13882,7 +13882,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_096",
-        "Ensure that kernel module \"parport_cs\" is disabled",
+        "Ensure that kernel module `parport_cs` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("parport_cs"),
@@ -13894,7 +13894,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_097",
-        "Ensure that kernel module \"parport_pc\" is disabled",
+        "Ensure that kernel module `parport_pc` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("parport_pc"),
@@ -13906,7 +13906,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_098",
-        "Ensure that kernel module \"parport_serial\" is disabled",
+        "Ensure that kernel module `parport_serial` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("parport_serial"),
@@ -13918,7 +13918,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_099",
-        "Ensure that kernel module \"pcmcia\" is disabled",
+        "Ensure that kernel module `pcmcia` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pcmcia"),
@@ -13930,7 +13930,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_100",
-        "Ensure that kernel module \"pcmcia_core\" is disabled",
+        "Ensure that kernel module `pcmcia_core` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pcmcia_core"),
@@ -13942,7 +13942,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_101",
-        "Ensure that kernel module \"pcmcia_rsrc\" is disabled",
+        "Ensure that kernel module `pcmcia_rsrc` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pcmcia_rsrc"),
@@ -13954,7 +13954,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_102",
-        "Ensure that kernel module \"pd6729\" is disabled",
+        "Ensure that kernel module `pd6729` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pd6729"),
@@ -13966,7 +13966,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_103",
-        "Ensure that kernel module \"phantom\" is disabled",
+        "Ensure that kernel module `phantom` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("phantom"),
@@ -13978,7 +13978,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_104",
-        "Ensure that kernel module \"ppdev\" is disabled",
+        "Ensure that kernel module `ppdev` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("ppdev"),
@@ -13990,7 +13990,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_105",
-        "Ensure that kernel module \"rio_cm\" is disabled",
+        "Ensure that kernel module `rio_cm` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("rio_cm"),
@@ -14002,7 +14002,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_106",
-        "Ensure that kernel module \"rio_mport_cdev\" is disabled",
+        "Ensure that kernel module `rio_mport_cdev` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("rio_mport_cdev"),
@@ -14014,7 +14014,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_107",
-        "Ensure that kernel module \"rio_scan\" is disabled",
+        "Ensure that kernel module `rio_scan` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("rio_scan"),
@@ -14026,7 +14026,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_108",
-        "Ensure that kernel module \"seg_led_gpio\" is disabled",
+        "Ensure that kernel module `seg_led_gpio` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("seg_led_gpio"),
@@ -14038,7 +14038,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_109",
-        "Ensure that kernel module \"sgi_w1\" is disabled",
+        "Ensure that kernel module `sgi_w1` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("sgi_w1"),
@@ -14053,7 +14053,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_110",
-        "Ensure that kernel module \"siox_bus_gpio\" is disabled",
+        "Ensure that kernel module `siox_bus_gpio` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("siox_bus_gpio"),
@@ -14065,7 +14065,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_111",
-        "Ensure that kernel module \"siox_core\" is disabled",
+        "Ensure that kernel module `siox_core` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("siox_core"),
@@ -14077,7 +14077,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_112",
-        "Ensure that kernel module \"slimbus\" is disabled",
+        "Ensure that kernel module `slimbus` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("slimbus"),
@@ -14089,7 +14089,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_113",
-        "Ensure that kernel module \"smpro_errmon\" is disabled",
+        "Ensure that kernel module `smpro_errmon` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("smpro_errmon"),
@@ -14104,7 +14104,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_114",
-        "Ensure that kernel module \"smpro_misc\" is disabled",
+        "Ensure that kernel module `smpro_misc` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("smpro_misc"),
@@ -14116,7 +14116,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_115",
-        "Ensure that kernel module \"stm_console\" is disabled",
+        "Ensure that kernel module `stm_console` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("stm_console"),
@@ -14131,7 +14131,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_116",
-        "Ensure that kernel module \"stm_core\" is disabled",
+        "Ensure that kernel module `stm_core` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("stm_core"),
@@ -14143,7 +14143,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_117",
-        "Ensure that kernel module \"stm_ftrace\" is disabled",
+        "Ensure that kernel module `stm_ftrace` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("stm_ftrace"),
@@ -14158,7 +14158,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_118",
-        "Ensure that kernel module \"stm_heartbeat\" is disabled",
+        "Ensure that kernel module `stm_heartbeat` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("stm_heartbeat"),
@@ -14173,7 +14173,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_119",
-        "Ensure that kernel module \"stm_p_basic\" is disabled",
+        "Ensure that kernel module `stm_p_basic` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("stm_p_basic"),
@@ -14188,7 +14188,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_120",
-        "Ensure that kernel module \"stm_p_sys_t\" is disabled",
+        "Ensure that kernel module `stm_p_sys_t` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("stm_p_sys_t"),
@@ -14203,7 +14203,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_121",
-        "Ensure that kernel module \"tpci200\" is disabled",
+        "Ensure that kernel module `tpci200` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("tpci200"),
@@ -14215,7 +14215,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_122",
-        "Ensure that kernel module \"tps6594_esm\" is disabled",
+        "Ensure that kernel module `tps6594_esm` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("tps6594_esm"),
@@ -14230,7 +14230,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_123",
-        "Ensure that kernel module \"tps6594_pfsm\" is disabled",
+        "Ensure that kernel module `tps6594_pfsm` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation", "conditional"],
         || modprobe::check_module_disabled("tps6594_pfsm"),
@@ -14245,7 +14245,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_124",
-        "Ensure that kernel module \"tsi721_mport\" is disabled",
+        "Ensure that kernel module `tsi721_mport` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("tsi721_mport"),
@@ -14257,7 +14257,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_125",
-        "Ensure that kernel module \"uio\" is disabled",
+        "Ensure that kernel module `uio` is disabled",
         Severity::Low,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("uio"),
@@ -14272,7 +14272,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_126",
-        "Ensure that kernel module \"uio_aec\" is disabled",
+        "Ensure that kernel module `uio_aec` is disabled",
         Severity::Low,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("uio_aec"),
@@ -14287,7 +14287,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_127",
-        "Ensure that kernel module \"uio_cif\" is disabled",
+        "Ensure that kernel module `uio_cif` is disabled",
         Severity::Low,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("uio_cif"),
@@ -14302,7 +14302,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_128",
-        "Ensure that kernel module \"uio_dfl\" is disabled",
+        "Ensure that kernel module `uio_dfl` is disabled",
         Severity::Low,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("uio_dfl"),
@@ -14317,7 +14317,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_129",
-        "Ensure that kernel module \"uio_dmem_genirq\" is disabled",
+        "Ensure that kernel module `uio_dmem_genirq` is disabled",
         Severity::Low,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("uio_dmem_genirq"),
@@ -14332,7 +14332,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_130",
-        "Ensure that kernel module \"uio_hv_generic\" is disabled",
+        "Ensure that kernel module `uio_hv_generic` is disabled",
         Severity::Low,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("uio_hv_generic"),
@@ -14347,7 +14347,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_131",
-        "Ensure that kernel module \"uio_mf624\" is disabled",
+        "Ensure that kernel module `uio_mf624` is disabled",
         Severity::Low,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("uio_mf624"),
@@ -14362,7 +14362,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_132",
-        "Ensure that kernel module \"uio_netx\" is disabled",
+        "Ensure that kernel module `uio_netx` is disabled",
         Severity::Low,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("uio_netx"),
@@ -14377,7 +14377,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_133",
-        "Ensure that kernel module \"uio_pci_generic\" is disabled",
+        "Ensure that kernel module `uio_pci_generic` is disabled",
         Severity::Low,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("uio_pci_generic"),
@@ -14392,7 +14392,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_134",
-        "Ensure that kernel module \"uio_pci_generic_sva\" is disabled",
+        "Ensure that kernel module `uio_pci_generic_sva` is disabled",
         Severity::Low,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("uio_pci_generic_sva"),
@@ -14407,7 +14407,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_135",
-        "Ensure that kernel module \"uio_pdrv_genirq\" is disabled",
+        "Ensure that kernel module `uio_pdrv_genirq` is disabled",
         Severity::Low,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("uio_pdrv_genirq"),
@@ -14422,7 +14422,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_136",
-        "Ensure that kernel module \"uio_sercos3\" is disabled",
+        "Ensure that kernel module `uio_sercos3` is disabled",
         Severity::Low,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("uio_sercos3"),
@@ -14437,7 +14437,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_137",
-        "Ensure that kernel module \"vfio\" is disabled",
+        "Ensure that kernel module `vfio` is disabled",
         Severity::Low,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("vfio"),
@@ -14449,7 +14449,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_138",
-        "Ensure that kernel module \"vfio_iommu_type1\" is disabled",
+        "Ensure that kernel module `vfio_iommu_type1` is disabled",
         Severity::Low,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("vfio_iommu_type1"),
@@ -14461,7 +14461,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_139",
-        "Ensure that kernel module \"vfio_pci\" is disabled",
+        "Ensure that kernel module `vfio_pci` is disabled",
         Severity::Low,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("vfio_pci"),
@@ -14473,7 +14473,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_140",
-        "Ensure that kernel module \"vmk80xx\" is disabled",
+        "Ensure that kernel module `vmk80xx` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("vmk80xx"),
@@ -14488,7 +14488,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_141",
-        "Ensure that kernel module \"w1_ds2405\" is disabled",
+        "Ensure that kernel module `w1_ds2405` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w1_ds2405"),
@@ -14503,7 +14503,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_142",
-        "Ensure that kernel module \"w1_ds2406\" is disabled",
+        "Ensure that kernel module `w1_ds2406` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w1_ds2406"),
@@ -14518,7 +14518,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_143",
-        "Ensure that kernel module \"w1_ds2408\" is disabled",
+        "Ensure that kernel module `w1_ds2408` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w1_ds2408"),
@@ -14533,7 +14533,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_144",
-        "Ensure that kernel module \"w1_ds2413\" is disabled",
+        "Ensure that kernel module `w1_ds2413` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w1_ds2413"),
@@ -14548,7 +14548,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_145",
-        "Ensure that kernel module \"w1_ds2423\" is disabled",
+        "Ensure that kernel module `w1_ds2423` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w1_ds2423"),
@@ -14563,7 +14563,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_146",
-        "Ensure that kernel module \"w1_ds2430\" is disabled",
+        "Ensure that kernel module `w1_ds2430` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w1_ds2430"),
@@ -14578,7 +14578,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_147",
-        "Ensure that kernel module \"w1_ds2431\" is disabled",
+        "Ensure that kernel module `w1_ds2431` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w1_ds2431"),
@@ -14593,7 +14593,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_148",
-        "Ensure that kernel module \"w1_ds2433\" is disabled",
+        "Ensure that kernel module `w1_ds2433` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w1_ds2433"),
@@ -14608,7 +14608,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_149",
-        "Ensure that kernel module \"w1_ds2438\" is disabled",
+        "Ensure that kernel module `w1_ds2438` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w1_ds2438"),
@@ -14623,7 +14623,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_150",
-        "Ensure that kernel module \"w1_ds250x\" is disabled",
+        "Ensure that kernel module `w1_ds250x` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w1_ds250x"),
@@ -14638,7 +14638,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_151",
-        "Ensure that kernel module \"w1_ds2780\" is disabled",
+        "Ensure that kernel module `w1_ds2780` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w1_ds2780"),
@@ -14653,7 +14653,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_152",
-        "Ensure that kernel module \"w1_ds2781\" is disabled",
+        "Ensure that kernel module `w1_ds2781` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w1_ds2781"),
@@ -14668,7 +14668,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_153",
-        "Ensure that kernel module \"w1_ds2805\" is disabled",
+        "Ensure that kernel module `w1_ds2805` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w1_ds2805"),
@@ -14683,7 +14683,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_154",
-        "Ensure that kernel module \"w1_ds28e04\" is disabled",
+        "Ensure that kernel module `w1_ds28e04` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w1_ds28e04"),
@@ -14698,7 +14698,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_155",
-        "Ensure that kernel module \"w1_ds28e17\" is disabled",
+        "Ensure that kernel module `w1_ds28e17` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w1_ds28e17"),
@@ -14713,7 +14713,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_156",
-        "Ensure that kernel module \"w1_gpio\" is disabled",
+        "Ensure that kernel module `w1_gpio` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w1_gpio"),
@@ -14728,7 +14728,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_157",
-        "Ensure that kernel module \"w1_smem\" is disabled",
+        "Ensure that kernel module `w1_smem` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w1_smem"),
@@ -14743,7 +14743,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_158",
-        "Ensure that kernel module \"w1_therm\" is disabled",
+        "Ensure that kernel module `w1_therm` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w1_therm"),
@@ -14758,7 +14758,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_159",
-        "Ensure that kernel module \"w1_uart\" is disabled",
+        "Ensure that kernel module `w1_uart` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("w1_uart"),
@@ -14773,7 +14773,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_160",
-        "Ensure that kernel module \"wire\" is disabled",
+        "Ensure that kernel module `wire` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("wire"),
@@ -14788,7 +14788,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_161",
-        "Ensure that kernel module \"xilinx_core\" is disabled",
+        "Ensure that kernel module `xilinx_core` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("xilinx_core"),
@@ -14800,7 +14800,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_162",
-        "Ensure that kernel module \"xilinx_pr_decoupler\" is disabled",
+        "Ensure that kernel module `xilinx_pr_decoupler` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("xilinx_pr_decoupler"),
@@ -14812,7 +14812,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_163",
-        "Ensure that kernel module \"xilinx_selectmap\" is disabled",
+        "Ensure that kernel module `xilinx_selectmap` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("xilinx_selectmap"),
@@ -14824,7 +14824,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_164",
-        "Ensure that kernel module \"xilinx_spi\" is disabled",
+        "Ensure that kernel module `xilinx_spi` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("xilinx_spi"),
@@ -14836,7 +14836,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_165",
-        "Ensure that kernel module \"xillybus_class\" is disabled",
+        "Ensure that kernel module `xillybus_class` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("xillybus_class"),
@@ -14848,7 +14848,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_166",
-        "Ensure that kernel module \"xillybus_core\" is disabled",
+        "Ensure that kernel module `xillybus_core` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("xillybus_core"),
@@ -14860,7 +14860,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_167",
-        "Ensure that kernel module \"xillybus_pcie\" is disabled",
+        "Ensure that kernel module `xillybus_pcie` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("xillybus_pcie"),
@@ -14872,7 +14872,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_168",
-        "Ensure that kernel module \"xillyusb\" is disabled",
+        "Ensure that kernel module `xillyusb` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("xillyusb"),
@@ -14884,7 +14884,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMI_169",
-        "Ensure that kernel module \"yenta_socket\" is disabled",
+        "Ensure that kernel module `yenta_socket` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("yenta_socket"),
@@ -14897,7 +14897,7 @@ pub fn add_checks() {
     // virtualization-platform-specific modules (KMV_)
     check::Check::new(
         "KMV_001",
-        "Ensure that kernel module \"acrn\" is disabled",
+        "Ensure that kernel module `acrn` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("acrn"),
@@ -14909,7 +14909,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_002",
-        "Ensure that kernel module \"efi_secret\" is disabled",
+        "Ensure that kernel module `efi_secret` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("efi_secret"),
@@ -14924,7 +14924,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_003",
-        "Ensure that kernel module \"hv_balloon\" is disabled",
+        "Ensure that kernel module `hv_balloon` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("hv_balloon"),
@@ -14936,7 +14936,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_004",
-        "Ensure that kernel module \"hv_netvsc\" is disabled",
+        "Ensure that kernel module `hv_netvsc` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("hv_netvsc"),
@@ -14948,7 +14948,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_005",
-        "Ensure that kernel module \"hv_sock\" is disabled",
+        "Ensure that kernel module `hv_sock` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("hv_sock"),
@@ -14960,7 +14960,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_006",
-        "Ensure that kernel module \"hv_storvsc\" is disabled",
+        "Ensure that kernel module `hv_storvsc` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("hv_storvsc"),
@@ -14972,7 +14972,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_007",
-        "Ensure that kernel module \"hv_utils\" is disabled",
+        "Ensure that kernel module `hv_utils` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("hv_utils"),
@@ -14984,7 +14984,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_008",
-        "Ensure that kernel module \"hv_vmbus\" is disabled",
+        "Ensure that kernel module `hv_vmbus` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("hv_vmbus"),
@@ -14996,7 +14996,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_009",
-        "Ensure that kernel module \"kvm\" is disabled",
+        "Ensure that kernel module `kvm` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("kvm"),
@@ -15008,7 +15008,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_010",
-        "Ensure that kernel module \"kvm_amd\" is disabled",
+        "Ensure that kernel module `kvm_amd` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("kvm_amd"),
@@ -15020,7 +15020,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_011",
-        "Ensure that kernel module \"kvm_intel\" is disabled",
+        "Ensure that kernel module `kvm_intel` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("kvm_intel"),
@@ -15032,7 +15032,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_012",
-        "Ensure that kernel module \"mshv_root\" is disabled",
+        "Ensure that kernel module `mshv_root` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("mshv_root"),
@@ -15044,7 +15044,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_013",
-        "Ensure that kernel module \"nitro_enclaves\" is disabled",
+        "Ensure that kernel module `nitro_enclaves` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("nitro_enclaves"),
@@ -15059,7 +15059,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_014",
-        "Ensure that kernel module \"pvcalls_front\" is disabled",
+        "Ensure that kernel module `pvcalls_front` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("pvcalls_front"),
@@ -15071,7 +15071,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_015",
-        "Ensure that kernel module \"pvpanic\" is disabled",
+        "Ensure that kernel module `pvpanic` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("pvpanic"),
@@ -15083,7 +15083,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_016",
-        "Ensure that kernel module \"pvpanic_mmio\" is disabled",
+        "Ensure that kernel module `pvpanic_mmio` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("pvpanic_mmio"),
@@ -15095,7 +15095,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_017",
-        "Ensure that kernel module \"sev_guest\" is disabled",
+        "Ensure that kernel module `sev_guest` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("sev_guest"),
@@ -15110,7 +15110,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_018",
-        "Ensure that kernel module \"snd_xen_front\" is disabled",
+        "Ensure that kernel module `snd_xen_front` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("snd_xen_front"),
@@ -15122,7 +15122,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_019",
-        "Ensure that kernel module \"tdx_guest\" is disabled",
+        "Ensure that kernel module `tdx_guest` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("tdx_guest"),
@@ -15137,7 +15137,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_020",
-        "Ensure that kernel module \"tsm_report\" is disabled",
+        "Ensure that kernel module `tsm_report` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("tsm_report"),
@@ -15152,7 +15152,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_021",
-        "Ensure that kernel module \"vboxguest\" is disabled",
+        "Ensure that kernel module `vboxguest` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("vboxguest"),
@@ -15164,7 +15164,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_022",
-        "Ensure that kernel module \"vboxvideo\" is disabled",
+        "Ensure that kernel module `vboxvideo` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("vboxvideo"),
@@ -15176,7 +15176,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_023",
-        "Ensure that kernel module \"vhost\" is disabled",
+        "Ensure that kernel module `vhost` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("vhost"),
@@ -15188,7 +15188,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_024",
-        "Ensure that kernel module \"vhost_net\" is disabled",
+        "Ensure that kernel module `vhost_net` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("vhost_net"),
@@ -15200,7 +15200,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_025",
-        "Ensure that kernel module \"vhost_scsi\" is disabled",
+        "Ensure that kernel module `vhost_scsi` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("vhost_scsi"),
@@ -15212,7 +15212,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_026",
-        "Ensure that kernel module \"vhost_vsock\" is disabled",
+        "Ensure that kernel module `vhost_vsock` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("vhost_vsock"),
@@ -15224,7 +15224,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_027",
-        "Ensure that kernel module \"vmgenid\" is disabled",
+        "Ensure that kernel module `vmgenid` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("vmgenid"),
@@ -15236,7 +15236,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_028",
-        "Ensure that kernel module \"vmw_balloon\" is disabled",
+        "Ensure that kernel module `vmw_balloon` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("vmw_balloon"),
@@ -15248,7 +15248,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_029",
-        "Ensure that kernel module \"vmw_vmci\" is disabled",
+        "Ensure that kernel module `vmw_vmci` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("vmw_vmci"),
@@ -15260,7 +15260,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_030",
-        "Ensure that kernel module \"vmw_vsock_virtio_transport\" is disabled",
+        "Ensure that kernel module `vmw_vsock_virtio_transport` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("vmw_vsock_virtio_transport"),
@@ -15275,7 +15275,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_031",
-        "Ensure that kernel module \"vmw_vsock_virtio_transport_common\" is disabled",
+        "Ensure that kernel module `vmw_vsock_virtio_transport_common` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("vmw_vsock_virtio_transport_common"),
@@ -15290,7 +15290,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_032",
-        "Ensure that kernel module \"vmw_vsock_vmci_transport\" is disabled",
+        "Ensure that kernel module `vmw_vsock_vmci_transport` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("vmw_vsock_vmci_transport"),
@@ -15302,7 +15302,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_033",
-        "Ensure that kernel module \"vmwgfx\" is disabled",
+        "Ensure that kernel module `vmwgfx` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("vmwgfx"),
@@ -15314,7 +15314,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_034",
-        "Ensure that kernel module \"vsock\" is disabled",
+        "Ensure that kernel module `vsock` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("vsock"),
@@ -15326,7 +15326,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_035",
-        "Ensure that kernel module \"xen_blkback\" is disabled",
+        "Ensure that kernel module `xen_blkback` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("xen_blkback"),
@@ -15338,7 +15338,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_036",
-        "Ensure that kernel module \"xen_evtchn\" is disabled",
+        "Ensure that kernel module `xen_evtchn` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("xen_evtchn"),
@@ -15350,7 +15350,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_037",
-        "Ensure that kernel module \"xen_fbfront\" is disabled",
+        "Ensure that kernel module `xen_fbfront` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("xen_fbfront"),
@@ -15362,7 +15362,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_038",
-        "Ensure that kernel module \"xen_front_pgdir_shbuf\" is disabled",
+        "Ensure that kernel module `xen_front_pgdir_shbuf` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("xen_front_pgdir_shbuf"),
@@ -15374,7 +15374,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_039",
-        "Ensure that kernel module \"xen_gntalloc\" is disabled",
+        "Ensure that kernel module `xen_gntalloc` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("xen_gntalloc"),
@@ -15386,7 +15386,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_040",
-        "Ensure that kernel module \"xen_gntdev\" is disabled",
+        "Ensure that kernel module `xen_gntdev` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("xen_gntdev"),
@@ -15398,7 +15398,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_041",
-        "Ensure that kernel module \"xen_hcd\" is disabled",
+        "Ensure that kernel module `xen_hcd` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("xen_hcd"),
@@ -15410,7 +15410,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_042",
-        "Ensure that kernel module \"xen_netback\" is disabled",
+        "Ensure that kernel module `xen_netback` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("xen_netback"),
@@ -15422,7 +15422,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_043",
-        "Ensure that kernel module \"xen_pciback\" is disabled",
+        "Ensure that kernel module `xen_pciback` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("xen_pciback"),
@@ -15434,7 +15434,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_044",
-        "Ensure that kernel module \"xen_privcmd\" is disabled",
+        "Ensure that kernel module `xen_privcmd` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("xen_privcmd"),
@@ -15446,7 +15446,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_045",
-        "Ensure that kernel module \"xen_scsiback\" is disabled",
+        "Ensure that kernel module `xen_scsiback` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("xen_scsiback"),
@@ -15458,7 +15458,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_046",
-        "Ensure that kernel module \"xen_tpmfront\" is disabled",
+        "Ensure that kernel module `xen_tpmfront` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("xen_tpmfront"),
@@ -15470,7 +15470,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_047",
-        "Ensure that kernel module \"xen_wdt\" is disabled",
+        "Ensure that kernel module `xen_wdt` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("xen_wdt"),
@@ -15482,7 +15482,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMV_048",
-        "Ensure that kernel module \"xenfs\" is disabled",
+        "Ensure that kernel module `xenfs` is disabled",
         Severity::Medium,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("xenfs"),
@@ -15495,7 +15495,7 @@ pub fn add_checks() {
     // legacy NICs and replaced drivers (KML_)
     check::Check::new(
         "KML_001",
-        "Ensure that kernel module \"asus_acpi\" is disabled",
+        "Ensure that kernel module `asus_acpi` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("asus_acpi"),
@@ -15510,7 +15510,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KML_002",
-        "Ensure that kernel module \"ath_pci\" is disabled",
+        "Ensure that kernel module `ath_pci` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ath_pci"),
@@ -15522,7 +15522,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KML_003",
-        "Ensure that kernel module \"bcm43xx\" is disabled",
+        "Ensure that kernel module `bcm43xx` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("bcm43xx"),
@@ -15537,7 +15537,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KML_004",
-        "Ensure that kernel module \"de4x5\" is disabled",
+        "Ensure that kernel module `de4x5` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("de4x5"),
@@ -15549,7 +15549,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KML_005",
-        "Ensure that kernel module \"eepro100\" is disabled",
+        "Ensure that kernel module `eepro100` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("eepro100"),
@@ -15561,7 +15561,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KML_006",
-        "Ensure that kernel module \"eth1394\" is disabled",
+        "Ensure that kernel module `eth1394` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("eth1394"),
@@ -15576,7 +15576,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KML_007",
-        "Ensure that kernel module \"prism54\" is disabled",
+        "Ensure that kernel module `prism54` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("prism54"),
@@ -15589,7 +15589,7 @@ pub fn add_checks() {
     // miscellaneous (KMS_)
     check::Check::new(
         "KMS_001",
-        "Ensure that kernel module \"apds9802als\" is disabled",
+        "Ensure that kernel module `apds9802als` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("apds9802als"),
@@ -15604,7 +15604,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_002",
-        "Ensure that kernel module \"apds990x\" is disabled",
+        "Ensure that kernel module `apds990x` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("apds990x"),
@@ -15619,7 +15619,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_003",
-        "Ensure that kernel module \"at24\" is disabled",
+        "Ensure that kernel module `at24` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("at24"),
@@ -15634,7 +15634,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_004",
-        "Ensure that kernel module \"at25\" is disabled",
+        "Ensure that kernel module `at25` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("at25"),
@@ -15649,7 +15649,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_005",
-        "Ensure that kernel module \"bh1770glc\" is disabled",
+        "Ensure that kernel module `bh1770glc` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("bh1770glc"),
@@ -15664,7 +15664,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_006",
-        "Ensure that kernel module \"brd\" is disabled",
+        "Ensure that kernel module `brd` is disabled",
         Severity::Low,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("brd"),
@@ -15676,7 +15676,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_007",
-        "Ensure that kernel module \"ds1682\" is disabled",
+        "Ensure that kernel module `ds1682` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("ds1682"),
@@ -15691,7 +15691,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_008",
-        "Ensure that kernel module \"ee1004\" is disabled",
+        "Ensure that kernel module `ee1004` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("ee1004"),
@@ -15706,7 +15706,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_009",
-        "Ensure that kernel module \"fwctl\" is disabled",
+        "Ensure that kernel module `fwctl` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("fwctl"),
@@ -15721,7 +15721,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_010",
-        "Ensure that kernel module \"hmc6352\" is disabled",
+        "Ensure that kernel module `hmc6352` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("hmc6352"),
@@ -15736,7 +15736,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_011",
-        "Ensure that kernel module \"ics932s401\" is disabled",
+        "Ensure that kernel module `ics932s401` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("ics932s401"),
@@ -15751,7 +15751,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_012",
-        "Ensure that kernel module \"isl29003\" is disabled",
+        "Ensure that kernel module `isl29003` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("isl29003"),
@@ -15766,7 +15766,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_013",
-        "Ensure that kernel module \"isl29020\" is disabled",
+        "Ensure that kernel module `isl29020` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("isl29020"),
@@ -15781,7 +15781,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_014",
-        "Ensure that kernel module \"ks8995\" is disabled",
+        "Ensure that kernel module `ks8995` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("ks8995"),
@@ -15796,7 +15796,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_015",
-        "Ensure that kernel module \"lan9252\" is disabled",
+        "Ensure that kernel module `lan9252` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("lan9252"),
@@ -15811,7 +15811,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_016",
-        "Ensure that kernel module \"lis3lv02d\" is disabled",
+        "Ensure that kernel module `lis3lv02d` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("lis3lv02d"),
@@ -15826,7 +15826,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_017",
-        "Ensure that kernel module \"m24lr\" is disabled",
+        "Ensure that kernel module `m24lr` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("m24lr"),
@@ -15841,7 +15841,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_018",
-        "Ensure that kernel module \"max6875\" is disabled",
+        "Ensure that kernel module `max6875` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("max6875"),
@@ -15856,7 +15856,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_019",
-        "Ensure that kernel module \"mcp251x\" is disabled",
+        "Ensure that kernel module `mcp251x` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mcp251x"),
@@ -15871,7 +15871,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_020",
-        "Ensure that kernel module \"mctp\" is disabled",
+        "Ensure that kernel module `mctp` is disabled",
         Severity::Low,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("mctp"),
@@ -15886,7 +15886,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_021",
-        "Ensure that kernel module \"microcode\" is disabled",
+        "Ensure that kernel module `microcode` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("microcode"),
@@ -15901,7 +15901,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_022",
-        "Ensure that kernel module \"mlx5_fwctl\" is disabled",
+        "Ensure that kernel module `mlx5_fwctl` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("mlx5_fwctl"),
@@ -15916,7 +15916,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_023",
-        "Ensure that kernel module \"ntsync\" is disabled",
+        "Ensure that kernel module `ntsync` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("ntsync"),
@@ -15931,7 +15931,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_024",
-        "Ensure that kernel module \"pds_fwctl\" is disabled",
+        "Ensure that kernel module `pds_fwctl` is disabled",
         Severity::Low,
         vec!["module", "server", "workstation"],
         || modprobe::check_module_disabled("pds_fwctl"),
@@ -15946,7 +15946,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_025",
-        "Ensure that kernel module \"peci\" is disabled",
+        "Ensure that kernel module `peci` is disabled",
         Severity::Low,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("peci"),
@@ -15958,7 +15958,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_026",
-        "Ensure that kernel module \"peci_cpu\" is disabled",
+        "Ensure that kernel module `peci_cpu` is disabled",
         Severity::Low,
         vec!["module", "server", "conditional"],
         || modprobe::check_module_disabled("peci_cpu"),
@@ -15970,7 +15970,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_027",
-        "Ensure that kernel module \"tsl2550\" is disabled",
+        "Ensure that kernel module `tsl2550` is disabled",
         Severity::Low,
         vec!["module", "server"],
         || modprobe::check_module_disabled("tsl2550"),
@@ -15985,7 +15985,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "KMS_028",
-        "Ensure that kernel module \"ublk_drv\" is disabled",
+        "Ensure that kernel module `ublk_drv` is disabled",
         Severity::Low,
         vec!["module", "conditional"],
         || modprobe::check_module_disabled("ublk_drv"),

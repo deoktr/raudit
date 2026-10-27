@@ -6,7 +6,7 @@ pub fn add_checks() {
     // FIXME: breaks 'sudo apt update'
     check::Check::new(
         "SUD_001",
-        "Ensure that sudo default config \"noexec\" is set",
+        "Ensure that sudo default config `noexec` is set",
         Severity::High,
         vec!["sudo", "server", "workstation"],
         || sudo::check_sudo_defaults("noexec"),
@@ -14,7 +14,7 @@ pub fn add_checks() {
     )
     .skip_when(sudo::skip_no_sudo)
     .with_description("Prevent commands run via sudo from spawning further processes (blocks shell escapes from editors/pagers that link against the preloaded dummy exec(3) wrappers). Breaks legitimate commands that need to spawn subprocesses (e.g. running a shell, executing scripts that fork, some CI/CD tooling).")
-    .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults noexec\"")
+    .with_fix("In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults noexec`")
     .register();
 
     // requiretty is not supported on sudo-rs, the default sudo implementation
@@ -22,7 +22,7 @@ pub fn add_checks() {
     // <https://github.com/trifectatechfoundation/sudo-rs/issues/1245>
     check::Check::new(
         "SUD_002",
-        "Ensure that sudo default config \"requiretty\" is set",
+        "Ensure that sudo default config `requiretty` is set",
         Severity::Low,
         vec!["sudo", "server", "workstation"],
         || sudo::check_sudo_defaults("requiretty"),
@@ -30,13 +30,13 @@ pub fn add_checks() {
     )
     .skip_when(sudo::skip_no_sudo)
     .skip_when(sudo::skip_sudo_rs)
-    .with_description("Refuse to run unless sudo is invoked from a real tty, blocking exploitation paths via cron jobs or web shells. This slows down attacks but does not completely prevent them, just makes it a bit harder. May break remote management tools, can be ignored for a remote management user with: \"Defaults:user !noexec\".")
-    .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults requiretty\"")
+    .with_description("Refuse to run unless sudo is invoked from a real tty, blocking exploitation paths via cron jobs or web shells. This slows down attacks but does not completely prevent them, just makes it a bit harder. May break remote management tools, can be ignored for a remote management user with: `Defaults:user !noexec`.")
+    .with_fix("In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults requiretty`")
     .register();
 
     check::Check::new(
         "SUD_003",
-        "Ensure that sudo default config \"use_pty\" is set",
+        "Ensure that sudo default config `use_pty` is set",
         Severity::Medium,
         vec!["sudo", "CIS", "server", "workstation"],
         || sudo::check_sudo_defaults("use_pty"),
@@ -44,12 +44,12 @@ pub fn add_checks() {
     )
     .skip_when(sudo::skip_no_sudo)
     .with_description("Run the target command in a new pseudo-terminal so a compromised child cannot inject input into the parent tty.")
-    .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults use_pty\"")
+    .with_fix("In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults use_pty`")
     .register();
 
     check::Check::new(
         "SUD_004",
-        "Ensure that sudo default config \"umask=0027\" is set",
+        "Ensure that sudo default config `umask=0027` is set",
         Severity::High,
         vec!["sudo", "server", "workstation"],
         || sudo::check_sudo_defaults("umask=0027"),
@@ -57,25 +57,25 @@ pub fn add_checks() {
     )
     .skip_when(sudo::skip_no_sudo)
     .with_description("Force a restrictive umask on files created by sudo'd commands. Files created with sudo will have restrictive permissions (no access for others); may break scripts or workflows that expect world-readable files.")
-    .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults umask=0027\"")
+    .with_fix("In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults umask=0027`")
     .register();
 
     check::Check::new(
         "SUD_005",
-        "Ensure that sudo default config \"ignore_dot\" is set",
+        "Ensure that sudo default config `ignore_dot` is set",
         Severity::High,
         vec!["sudo", "server", "workstation"],
         || sudo::check_sudo_defaults("ignore_dot"),
         vec![sudo::init_sudo],
     )
     .skip_when(sudo::skip_no_sudo)
-    .with_description("Skip \".\" when searching PATH for the target binary. Without it, an attacker who drops a malicious binary into a sudo'd user's CWD can have it executed as root simply because PATH started with \".\".")
-    .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults ignore_dot\"")
+    .with_description("Skip `.` when searching PATH for the target binary. Without it, an attacker who drops a malicious binary into a sudo'd user's CWD can have it executed as root simply because PATH started with `.`.")
+    .with_fix("In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults ignore_dot`")
     .register();
 
     check::Check::new(
         "SUD_006",
-        "Ensure that sudo default config \"passwd_timeout=1\" is set",
+        "Ensure that sudo default config `passwd_timeout=1` is set",
         Severity::Informational,
         vec!["sudo", "server", "workstation"],
         || sudo::check_sudo_defaults("passwd_timeout=1"),
@@ -83,12 +83,12 @@ pub fn add_checks() {
     )
     .skip_when(sudo::skip_no_sudo)
     .with_description("Abort the password prompt after 1 minute idle.")
-    .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults passwd_timeout=1\"")
+    .with_fix("In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults passwd_timeout=1`")
     .register();
 
     check::Check::new(
         "SUD_007",
-        "Ensure that sudo default config \"env_reset\" is set",
+        "Ensure that sudo default config `env_reset` is set",
         Severity::High,
         vec!["sudo", "server", "workstation"],
         || sudo::check_sudo_defaults("env_reset"),
@@ -96,12 +96,12 @@ pub fn add_checks() {
     )
     .skip_when(sudo::skip_no_sudo)
     .with_description("Start the command with a minimal, sanitized environment (only variables on env_keep survive), blocks LD_PRELOAD-style attacks. Breaks scripts and applications that depend on user environment variables (e.g. PATH customizations, application-specific env vars) unless explicitly added to env_keep.")
-    .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults env_reset\"")
+    .with_fix("In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults env_reset`")
     .register();
 
     check::Check::new(
         "SUD_008",
-        "Ensure that sudo default config \"timestamp_timeout=0\" is set",
+        "Ensure that sudo default config `timestamp_timeout=0` is set",
         Severity::High,
         vec!["sudo", "server", "workstation"],
         || sudo::check_sudo_defaults("timestamp_timeout=0"),
@@ -109,12 +109,12 @@ pub fn add_checks() {
     )
     .skip_when(sudo::skip_no_sudo)
     .with_description("Never cache credentials, every sudo invocation re-prompts for the password.")
-    .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults timestamp_timeout=0\"")
+    .with_fix("In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults timestamp_timeout=0`")
     .register();
 
     check::Check::new(
         "SUD_010",
-        "Ensure that sudo default config \"mail_badpass\" is set",
+        "Ensure that sudo default config `mail_badpass` is set",
         Severity::Medium,
         vec!["sudo", "server", "workstation"],
         || sudo::check_sudo_defaults("mail_badpass"),
@@ -122,13 +122,13 @@ pub fn add_checks() {
     )
     .skip_when(sudo::skip_no_sudo)
     .with_description("Send mail to the sudo mailto address whenever a user enters an incorrect password at the sudo prompt.")
-    .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults mail_badpass\"")
+    .with_fix("In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults mail_badpass`")
     .register();
 
     // sudo-rs does not support logfile, it sends all it's logs to syslog
     check::Check::new(
         "SUD_011",
-        "Ensure that sudo default config \"logfile=\"/var/log/sudo.log\"\" is set",
+        "Ensure that sudo default config `logfile=\"/var/log/sudo.log\"` is set",
         Severity::Medium,
         vec!["sudo", "CIS", "server", "workstation"],
         || sudo::check_sudo_defaults("logfile=\"/var/log/sudo.log\""),
@@ -137,25 +137,25 @@ pub fn add_checks() {
     .skip_when(sudo::skip_no_sudo)
     .skip_when(sudo::skip_sudo_rs)
     .with_description("Append a record of every sudo command (success and failure) to this file in addition to syslog.")
-    .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults logfile=\"/var/log/sudo.log\"\"")
+    .with_fix("In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults logfile=\"/var/log/sudo.log\"`")
     .register();
 
     check::Check::new(
         "SUD_012",
-        "Ensure that sudo default config \"secure_path\" is set",
+        "Ensure that sudo default config `secure_path` is set",
         Severity::High,
         vec!["sudo", "CIS", "server", "workstation"],
         sudo::check_secure_path_set,
         vec![sudo::init_sudo],
     )
     .skip_when(sudo::skip_no_sudo)
-    .with_description("Without \"secure_path\" sudo inherits the caller's PATH, a user-writable directory earlier in it substitutes the command the rule meant to grant. \"ignore_dot\" only neutralises the \".\" entry, not a planted \"/home/foo/bin/systemctl\".")
-    .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults secure_path=\\\"/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin\\\"\"")
+    .with_description("Without `secure_path` sudo inherits the caller's PATH, a user-writable directory earlier in it substitutes the command the rule meant to grant. `ignore_dot` only neutralises the `.` entry, not a planted `/home/foo/bin/systemctl`.")
+    .with_fix("In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults secure_path=\\\"/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin\\\"`")
     .register();
 
     check::Check::new(
         "SUD_013",
-        "Ensure that sudo default config \"lecture=\"always\"\" is set",
+        "Ensure that sudo default config `lecture=\"always\"` is set",
         Severity::Informational,
         vec!["sudo", "server", "workstation"],
         || sudo::check_sudo_defaults("lecture=\"always\""),
@@ -163,12 +163,12 @@ pub fn add_checks() {
     )
     .skip_when(sudo::skip_no_sudo)
     .with_description("The sudo lecture warns users about the responsibilities and risks of elevated privileges before every invocation. Always-on mode ensures the warning is never silently skipped.")
-    .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults lecture=\"always\"\"")
+    .with_fix("In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults lecture=\"always\"`")
     .register();
 
     check::Check::new(
         "SUD_014",
-        "Ensure that sudo default config \"lecture_file=\"/usr/share/doc/sudo_lecture.txt\"\" is set",
+        "Ensure that sudo default config `lecture_file=\"/usr/share/doc/sudo_lecture.txt\"` is set",
         Severity::Informational,
         vec!["sudo", "server", "workstation"],
         // TODO: should also check the content of the file
@@ -177,21 +177,21 @@ pub fn add_checks() {
     )
     .skip_when(sudo::skip_no_sudo)
     .with_description("Point the sudo lecture at an organization-specific text so every sudo invocation reminds users of local policy instead of the default generic warning.")
-    .with_fix("In \"/etc/sudoers\" or \"/etc/sudoers.d/*\" add: \"Defaults lecture_file=\"/usr/share/doc/sudo_lecture.txt\"\" and provide that file with the org's warning text.")
+    .with_fix("In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults lecture_file=\"/usr/share/doc/sudo_lecture.txt\"` and provide that file with the org's warning text.")
     .register();
 
     check::Check::new(
         "SUD_015",
-        "Ensure that sudoers config does not contain \"NOPASSWD\"",
+        "Ensure that sudoers config does not contain `NOPASSWD`",
         Severity::Critical,
         vec!["sudo", "CIS", "server", "workstation"],
         sudo::check_has_no_nopaswd,
         vec![sudo::init_sudo],
     )
     .skip_when(sudo::skip_no_sudo)
-    .with_description("\"NOPASSWD\" lets a sudo-able account escalate to root with no password prompt at all. An attacker who steals only the user's session token (no password) immediately becomes root. Defeats the whole point of sudo's auth gate.")
+    .with_description("`NOPASSWD` lets a sudo-able account escalate to root with no password prompt at all. An attacker who steals only the user's session token (no password) immediately becomes root. Defeats the whole point of sudo's auth gate.")
     .with_fix(
-        "In \"/etc/sudoers\" and \"/etc/sudoers.d/*\" remove all instances with \"NOPASSWD\"",
+        "In `/etc/sudoers` and `/etc/sudoers.d/*` remove all instances with `NOPASSWD`",
     )
     .register();
 
@@ -204,8 +204,8 @@ pub fn add_checks() {
         vec![sudo::init_sudo],
     )
     .skip_when(sudo::skip_no_sudo)
-    .with_description("\"!authenticate\" disables the password prompt entirely for matching rules, the same effect as \"NOPASSWD\" via the negated tag form, often missed by NOPASSWD-only audits. Removes the auth gate that protects every sudo invocation.")
-    .with_fix("In \"/etc/sudoers\" and \"/etc/sudoers.d/*\" remove all instances with \"!authenticate\"")
+    .with_description("`!authenticate` disables the password prompt entirely for matching rules, the same effect as `NOPASSWD` via the negated tag form, often missed by NOPASSWD-only audits. Removes the auth gate that protects every sudo invocation.")
+    .with_fix("In `/etc/sudoers` and `/etc/sudoers.d/*` remove all instances with `!authenticate`")
     .register();
 
     check::Check::new(
@@ -295,6 +295,6 @@ pub fn add_checks() {
         vec![audit::init_audit_rules],
     )
     .with_description("Monitoring the sudo log file for writes and attribute changes detects attempts to tamper with privilege escalation records.")
-    .with_fix("Add \"-w /var/log/sudo.log -p wa -k log_file\" to a file under \"/etc/audit/rules.d/\" and \"augenrules --load\".")
+    .with_fix("Add `-w /var/log/sudo.log -p wa -k log_file` to a file under `/etc/audit/rules.d/` and `augenrules --load`.")
     .register();
 }

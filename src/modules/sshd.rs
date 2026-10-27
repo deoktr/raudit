@@ -65,16 +65,16 @@ fn get_sshd_config() -> Result<SshdConfig, String> {
 
     let output = cmd
         .output()
-        .map_err(|err| format!("failed to run \"sshd -T\": {}", err))?;
+        .map_err(|err| format!("failed to run `sshd -T`: {}", err))?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         let stderr = stderr.trim();
 
         return Err(if stderr.is_empty() {
-            format!("\"sshd -T\" {}", output.status)
+            format!("`sshd -T` {}", output.status)
         } else {
-            format!("\"sshd -T\" {}: {}", output.status, stderr)
+            format!("`sshd -T` {}: {}", output.status, stderr)
         });
     }
 
@@ -92,7 +92,7 @@ pub fn init_sshd_config() {
 pub fn get_sshd_config_value(key: &str) -> Result<String, String> {
     match SSHD_CONFIG.try_get()?.get(key) {
         Some(val) => Ok(val.to_string()),
-        None => Err(format!("{:?} not found in sshd configuration", key)),
+        None => Err(format!("`{}` not found in sshd configuration", key)),
     }
 }
 

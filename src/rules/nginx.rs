@@ -15,7 +15,7 @@ pub fn add_checks() {
     )
     .skip_when(nginx::skip_no_nginx)
     .with_description("The server_tokens directive controls whether nginx sends its version number in error pages and the Server response header. This is not directly a security measure as it offer no protection against attacks, but prevent information leakage about update management that could reflect a company security and operational posture.")
-    .with_fix("Add \"server_tokens off;\" in the http block.")
+    .with_fix("Add `server_tokens off;` in the http block.")
     .register();
 
     check::Check::new(
@@ -28,7 +28,7 @@ pub fn add_checks() {
     )
     .skip_when(nginx::skip_no_nginx)
     .with_description("The X-Frame-Options header prevents clickjacking attacks by controlling whether the page can be embedded in frames.")
-    .with_fix("Add 'add_header X-Frame-Options \"DENY\" always;' in the http or server block.")
+    .with_fix("Add `add_header X-Frame-Options \"DENY\" always;` in the http or server block.")
     .with_link("https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options")
     .register();
 
@@ -42,7 +42,7 @@ pub fn add_checks() {
     )
     .skip_when(nginx::skip_no_nginx)
     .with_description("The X-Content-Type-Options header prevents MIME type sniffing, which can lead to XSS attacks.")
-    .with_fix("Add 'add_header X-Content-Type-Options \"nosniff\" always;' in the http or server block.")
+    .with_fix("Add `add_header X-Content-Type-Options \"nosniff\" always;` in the http or server block.")
     .with_link("https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options")
     .register();
 
@@ -56,7 +56,7 @@ pub fn add_checks() {
     )
     .skip_when(nginx::skip_no_nginx)
     .with_description("HSTS tells browsers to only connect over HTTPS, preventing protocol downgrade attacks and cookie hijacking.")
-    .with_fix("Add 'add_header Strict-Transport-Security \"max-age=63072000; includeSubDomains; preload\" always;' in the http or server block.")
+    .with_fix("Add `add_header Strict-Transport-Security \"max-age=63072000; includeSubDomains; preload\" always;` in the http or server block.")
     .with_link("https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security")
     .register();
 

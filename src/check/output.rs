@@ -75,6 +75,44 @@ fn styled(attribute: &str, reset: &str, text: &str) -> String {
     }
 }
 
+/// Highlight with `CODE_BACKGROUND` the backtick delimited spans of `line`,
+/// they wrap commands, file paths and configuration entries.
+fn highlight_code(line: &str, in_code: &mut bool) -> String {
+    if !config::is_colored_output_enabled() {
+        return line.to_string();
+    }
+
+    let mut out = String::with_capacity(line.len());
+    let mut rest = line;
+
+    if *in_code {
+        out.push_str(consts::CODE_STYLE);
+    }
+
+    while let Some((before, after)) = rest.split_once('`') {
+        out.push_str(before);
+
+        if *in_code {
+            out.push('`');
+            out.push_str(consts::RESET_CODE_STYLE);
+        } else {
+            out.push_str(consts::CODE_STYLE);
+            out.push('`');
+        }
+
+        *in_code = !*in_code;
+        rest = after;
+    }
+
+    out.push_str(rest);
+
+    if *in_code {
+        out.push_str(consts::RESET_CODE_STYLE);
+    }
+
+    out
+}
+
 /// Print the check header, wrapping the title to the output width.
 fn print_check_header(check: &Check) {
     let color = check.state_color();
@@ -98,15 +136,16 @@ fn print_check_header(check: &Check) {
 /// Print a line belonging to a check, wrapped to the output width.
 fn print_check_line(text: &str) {
     let prefix = styled(consts::DIM_COLOR, consts::RESET_COLOR, CHILD_PREFIX);
+    let mut in_code = false;
 
     for line in utils::wrap_text(text, CHILD_WIDTH) {
-        println!("{}{}", prefix, line);
+        println!("{}{}", prefix, highlight_code(&line, &mut in_code));
     }
 }
 
 /// Print a check detail, with its label in bold, wrapped to the output width.
 fn print_check_detail(label: &str, text: &str) {
-    let label = styled(consts::BOLD_COLOR, consts::RESET_BOLD_COLOR, label);
+    let label = styled(consts::BOLD_STYLE, consts::RESET_BOLD_STYLE, label);
     print_check_line(format!("{} {}", label, text).trim_end());
 }
 

@@ -133,7 +133,10 @@ fn get_proc_flags(name: &str) -> Result<Vec<String>, check::CheckReturn> {
         Err(err) => {
             return Err((
                 check::CheckState::Warning,
-                Some(format!("failed to read file: {}", err)),
+                Some(format!(
+                    "failed to read `/proc/{}/cmdline`: {}",
+                    pids[0], err
+                )),
             ));
         }
     };

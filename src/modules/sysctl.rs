@@ -48,7 +48,7 @@ fn get_sysctl_config() -> Result<SysctlConfig, String> {
 
     let output = cmd
         .output()
-        .map_err(|err| format!("failed to run \"sysctl --all\": {}", err))?;
+        .map_err(|err| format!("failed to run `sysctl --all`: {}", err))?;
 
     let config = parse_sysctl_config(String::from_utf8_lossy(&output.stdout).to_string());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -57,7 +57,7 @@ fn get_sysctl_config() -> Result<SysctlConfig, String> {
     // keep partial results, `sysctl --all` also fails on unreadable keys
     if !config.is_empty() {
         if !output.status.success() {
-            log_warn!("\"sysctl --all\" {}: {}", output.status, stderr);
+            log_warn!("`sysctl --all` {}: {}", output.status, stderr);
         }
 
         return Ok(config);
@@ -65,11 +65,11 @@ fn get_sysctl_config() -> Result<SysctlConfig, String> {
 
     if stderr.is_empty() {
         Err(format!(
-            "\"sysctl --all\" {} and returned no key",
+            "`sysctl --all` {} and returned no key",
             output.status
         ))
     } else {
-        Err(format!("\"sysctl --all\" returned no key: {}", stderr))
+        Err(format!("`sysctl --all` returned no key: {}", stderr))
     }
 }
 
@@ -89,11 +89,11 @@ impl SysctlValue for &str {
             Some(value) if value == self => (check::CheckState::Pass, None),
             Some(value) => (
                 check::CheckState::Fail,
-                Some(format!("{:?} != {:?}", value, self)),
+                Some(format!("`{}` != `{}`", value, self)),
             ),
             None => (
                 check::CheckState::Warning,
-                Some(format!("missing key {:?}", key)),
+                Some(format!("missing key `{}`", key)),
             ),
         })
     }
@@ -107,16 +107,16 @@ impl SysctlValue for i32 {
                 Ok(val) if val == *self => (check::CheckState::Pass, None),
                 Ok(val) => (
                     check::CheckState::Fail,
-                    Some(format!("{:?} != {:?}", val, self)),
+                    Some(format!("{} != {}", val, self)),
                 ),
                 Err(err) => (
                     check::CheckState::Warning,
-                    Some(format!("failed to convert {:?} to i32: {}", value, err)),
+                    Some(format!("failed to convert `{}` to i32: {}", value, err)),
                 ),
             },
             None => (
                 check::CheckState::Warning,
-                Some(format!("missing key {:?}", key)),
+                Some(format!("missing key `{}`", key)),
             ),
         })
     }
@@ -134,7 +134,7 @@ pub fn get_sysctl_i32_value(key: &str) -> Result<i32, String> {
             Ok(val) => Ok(val),
             Err(err) => Err(err.to_string()),
         },
-        None => Err(format!("missing key {:?}", key)),
+        None => Err(format!("missing key `{}`", key)),
     }
 }
 
@@ -143,7 +143,7 @@ pub fn get_sysctl_str_value(key: &str) -> Result<String, String> {
 
     match config.get(key) {
         Some(value) => Ok(value.clone()),
-        None => Err(format!("missing key {:?}", key)),
+        None => Err(format!("missing key `{}`", key)),
     }
 }
 
@@ -151,14 +151,14 @@ macro_rules! add_sysctl_check {
     ($id:tt, $severity:expr, $tags:expr, $key:tt, $val:tt) => {
         $crate::check::Check::new(
             $id,
-            format!("Ensure sysctl {:?} = {:?}", $key, $val).as_str(),
+            format!("Ensure sysctl `{} = {}`", $key, $val).as_str(),
             $severity,
             $tags,
             || $crate::modules::sysctl::check_sysctl($key, $val),
             vec![$crate::modules::sysctl::init_sysctl_config],
         )
         .with_fix(&format!(
-            "Add \"{} = {}\" in a sysctl config file \"/etc/sysctl.d/*.conf\". Then run \"sysctl --system\".",
+            "Add `{} = {}` in a sysctl config file `/etc/sysctl.d/*.conf`. Then run `sysctl --system`.",
             $key, $val,
         ))
     };
@@ -168,7 +168,7 @@ macro_rules! add_sysctl_min_check {
     ($id:tt, $severity:expr, $tags:expr, $key:tt, $val:tt) => {
         $crate::check::Check::new(
             $id,
-            format!("Ensure sysctl {:?} >= {:?}", $key, $val).as_str(),
+            format!("Ensure sysctl `{} >= {}`", $key, $val).as_str(),
             $severity,
             $tags,
             || {
@@ -190,7 +190,7 @@ macro_rules! add_sysctl_min_check {
             vec![$crate::modules::sysctl::init_sysctl_config],
         )
         .with_fix(&format!(
-            "Add \"{} = {}\" (or higher) in a sysctl config file \"/etc/sysctl.d/*.conf\". Then run \"sysctl --system\".",
+            "Add `{} = {}` (or higher) in a sysctl config file `/etc/sysctl.d/*.conf`. Then run `sysctl --system`.",
             $key, $val,
         ))
     };
@@ -200,7 +200,7 @@ macro_rules! add_sysctl_max_check {
     ($id:tt, $severity:expr, $tags:expr, $key:tt, $val:tt) => {
         $crate::check::Check::new(
             $id,
-            format!("Ensure sysctl {:?} <= {:?}", $key, $val).as_str(),
+            format!("Ensure sysctl `{} <= {}`", $key, $val).as_str(),
             $severity,
             $tags,
             || {
@@ -222,7 +222,7 @@ macro_rules! add_sysctl_max_check {
             vec![$crate::modules::sysctl::init_sysctl_config],
         )
         .with_fix(&format!(
-            "Add \"{} = {}\" (or lower) in a sysctl config file \"/etc/sysctl.d/*.conf\". Then run \"sysctl --system\".",
+            "Add `{} = {}` (or lower) in a sysctl config file `/etc/sysctl.d/*.conf`. Then run `sysctl --system`.",
             $key, $val,
         ))
     };

@@ -5,7 +5,7 @@ use crate::modules::malloc;
 pub fn add_checks() {
     // check::Check::new(
     //     "LIB_001",
-    //     "Ensure \"libhardened_malloc\" hardened malloc is used system wide",
+    //     "Ensure `libhardened_malloc` hardened malloc is used system wide",
     //     vec!["malloc", "workstation"],
     //     malloc::has_libhardened_malloc,
     //     vec![malloc::init_ld_so_preload],
@@ -13,7 +13,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "LIB_001",
-        "Ensure \"scudo\" hardened malloc is used system wide",
+        "Ensure `scudo` hardened malloc is used system wide",
         Severity::Medium,
         vec!["malloc", "workstation"],
         malloc::has_scudo_malloc,

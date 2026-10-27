@@ -56,22 +56,22 @@ fn get_podman_info() -> Result<PodmanInfo, String> {
 
     let output = cmd
         .output()
-        .map_err(|e| format!("failed to run \"podman info -f json\": {}", e))?;
+        .map_err(|e| format!("failed to run `podman info -f json`: {}", e))?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         let stderr = stderr.trim();
 
         return Err(if stderr.is_empty() {
-            format!("\"podman info -f json\" {}", output.status)
+            format!("`podman info -f json` {}", output.status)
         } else {
-            format!("\"podman info -f json\" {}: {}", output.status, stderr)
+            format!("`podman info -f json` {}: {}", output.status, stderr)
         });
     }
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     serde_json::from_str(&stdout)
-        .map_err(|e| format!("failed to parse \"podman info -f json\": {}", e))
+        .map_err(|e| format!("failed to parse `podman info -f json`: {}", e))
 }
 
 /// Init podman info by running `podman info -f json`.
@@ -181,7 +181,7 @@ pub fn check_podman_info(pointer: &str, expected: Value) -> check::CheckReturn {
         }
         None => (
             check::CheckState::Warning,
-            Some(format!("pointer {} not found", pointer)),
+            Some(format!("pointer `{}` not found", pointer)),
         ),
     }
 }

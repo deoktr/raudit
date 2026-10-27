@@ -44,7 +44,7 @@ fn parse_login_defs(login_defs: String) -> LoginDefsConfig {
 /// Get login.defs configuration by reading `/etc/login.defs`.
 fn get_login_defs() -> Result<LoginDefsConfig, String> {
     let content = fs::read_to_string(LOGIN_DEFS_PATH)
-        .map_err(|err| format!("failed to read {}: {}", LOGIN_DEFS_PATH, err))?;
+        .map_err(|err| format!("failed to read `{}`: {}", LOGIN_DEFS_PATH, err))?;
     Ok(parse_login_defs(content))
 }
 

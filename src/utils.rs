@@ -216,16 +216,16 @@ mod tests {
     fn test_wrap_text_stops_bold() {
         let text = format!(
             "{}bold{} normal text here",
-            consts::BOLD_COLOR,
-            consts::RESET_BOLD_COLOR
+            consts::BOLD_STYLE,
+            consts::RESET_BOLD_STYLE
         );
         assert_eq!(
             wrap_text(&text, 12),
             vec![
                 format!(
                     "{}bold{} normal",
-                    consts::BOLD_COLOR,
-                    consts::RESET_BOLD_COLOR
+                    consts::BOLD_STYLE,
+                    consts::RESET_BOLD_STYLE
                 ),
                 "text here".to_string(),
             ]

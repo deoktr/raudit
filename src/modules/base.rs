@@ -134,7 +134,7 @@ fn check_mode(mode: u32, perms: u32, matching: ModeMatch) -> check::CheckReturn 
         (
             check::CheckState::Fail,
             Some(format!(
-                "wanted \"{:03o}\"{} got \"{:03o}\"",
+                "wanted `{:03o}`{} got `{:03o}`",
                 perms,
                 matching.hint(),
                 mode
@@ -148,10 +148,7 @@ fn check_owner(muid: u32, mgid: u32, uid: u32, gid: u32) -> check::CheckReturn {
     if muid != uid || mgid != gid {
         (
             check::CheckState::Fail,
-            Some(format!(
-                "wanted \"{}:{}\" got \"{}:{}\"",
-                uid, gid, muid, mgid
-            )),
+            Some(format!("wanted `{}:{}` got `{}:{}`", uid, gid, muid, mgid)),
         )
     } else {
         (check::CheckState::Pass, None)
@@ -266,7 +263,7 @@ where
             Err(err) => {
                 return (
                     check::CheckState::Warning,
-                    Some(format!("error on path {:?}: {}", path, err)),
+                    Some(format!("error on path `{}`: {}", path, err)),
                 );
             }
         };
@@ -297,7 +294,7 @@ fn check_dir_files_permission_common(
         match message {
             Some(message) => (
                 state,
-                Some(format!("file {:?} permission: {}", file, message)),
+                Some(format!("file `{}` permission: {}", file.display(), message)),
             ),
             None => (state, None),
         }
@@ -406,7 +403,10 @@ pub fn check_dir_files_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckR
     check_dir_files(path, |file, metadata| {
         let (state, message) = entry_owner(metadata, file, uid, gid);
         match message {
-            Some(message) => (state, Some(format!("file: {:?}: {}", file, message))),
+            Some(message) => (
+                state,
+                Some(format!("file: `{}`: {}", file.display(), message)),
+            ),
             None => (state, None),
         }
     })
@@ -433,7 +433,7 @@ pub fn check_file_content_regex(path: &str, pattern: &str) -> check::CheckReturn
             _ => {
                 return (
                     check::CheckState::Warning,
-                    Some(format!("failed to read file: {}", err)),
+                    Some(format!("failed to read `{}`: {}", path, err)),
                 );
             }
         },

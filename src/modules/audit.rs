@@ -57,16 +57,16 @@ fn get_audit_rules() -> Result<AuditRules, String> {
 
     let output = cmd
         .output()
-        .map_err(|err| format!("failed to run \"auditctl -l\": {}", err))?;
+        .map_err(|err| format!("failed to run `auditctl -l`: {}", err))?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         let stderr = stderr.trim();
 
         return Err(if stderr.is_empty() {
-            format!("\"auditctl -l\" {}", output.status)
+            format!("`auditctl -l` {}", output.status)
         } else {
-            format!("\"auditctl -l\" {}: {}", output.status, stderr)
+            format!("`auditctl -l` {}: {}", output.status, stderr)
         });
     }
 
@@ -98,7 +98,7 @@ fn parse_audit_config(login_defs: String) -> AuditConfig {
 /// Get audit configuration by reading `/etc/audit/auditd.conf`.
 fn get_audit_config() -> Result<AuditConfig, String> {
     let content = fs::read_to_string(AUDIT_CFG_PATH)
-        .map_err(|err| format!("failed to read {}: {}", AUDIT_CFG_PATH, err))?;
+        .map_err(|err| format!("failed to read `{}`: {}", AUDIT_CFG_PATH, err))?;
     Ok(parse_audit_config(content))
 }
 
@@ -133,7 +133,7 @@ pub fn check_audit_config(key: &str, value: &str) -> check::CheckReturn {
         }
         None => (
             check::CheckState::Fail,
-            Some(format!("key {:?} not present", key)),
+            Some(format!("key `{}` not present", key)),
         ),
     })
 }

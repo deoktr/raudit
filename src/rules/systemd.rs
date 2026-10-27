@@ -5,7 +5,7 @@ use crate::modules::{base, systemd};
 pub fn add_checks() {
     check::Check::new(
         "SYD_001",
-        "Ensure that systemd config \"CtrlAltDelBurstAction=none\"",
+        "Ensure that systemd config `CtrlAltDelBurstAction=none`",
         Severity::Low,
         vec!["systemd", "server", "workstation"],
         || systemd::get_systemd_config_value("CtrlAltDelBurstAction", "none"),
@@ -13,7 +13,7 @@ pub fn add_checks() {
     )
     .skip_when(systemd::skip_no_systemd)
     .with_description("Disables the ability to rapidly trigger system reboots, protecting against accidental or malicious reboot attempts.")
-    .with_fix("In \"/etc/systemd/system.conf\" under \"[Manager]\" add: \"CtrlAltDelBurstAction=none\"")
+    .with_fix("In `/etc/systemd/system.conf` under `[Manager]` add: `CtrlAltDelBurstAction=none`")
     .register();
 
     // NOTE: Nix installs a system service for a user

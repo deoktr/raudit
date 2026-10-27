@@ -5,7 +5,7 @@ use crate::modules::{base, sshd, systemd};
 pub fn add_checks() {
     check::Check::new(
         "SSH_001",
-        "Ensure that sshd is configured with \"fingerprinthash SHA256\"",
+        "Ensure that sshd is configured with `fingerprinthash SHA256`",
         Severity::Medium,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("fingerprinthash", "SHA256"),
@@ -13,12 +13,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("SHA-256 host-key fingerprints are collision-resistant and fit on one terminal line, unlike MD5. Using a weak hash risks accepting a forged fingerprint during first-connect trust-on-first-use.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"FingerprintHash SHA256\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `FingerprintHash SHA256`")
     .register();
 
     check::Check::new(
         "SSH_002",
-        "Ensure that sshd is configured with \"syslogfacility AUTH\"",
+        "Ensure that sshd is configured with `syslogfacility AUTH`",
         Severity::Low,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("syslogfacility", "AUTH"),
@@ -26,12 +26,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("Routing sshd logs to the AUTH facility keeps authentication events alongside PAM, sudo, and su in the same log stream, simplifying correlation in SIEM rules and incident-response queries. Only useful if you are collecting logs via syslog.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"SyslogFacility AUTH\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `SyslogFacility AUTH`")
     .register();
 
     check::Check::new(
         "SSH_003",
-        "Ensure that sshd is configured with \"loglevel VERBOSE\"",
+        "Ensure that sshd is configured with `loglevel VERBOSE`",
         Severity::Low,
         vec!["sshd", "CIS", "mozilla", "server"],
         || sshd::check_sshd_config("loglevel", "VERBOSE"),
@@ -39,12 +39,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("VERBOSE logging records the fingerprint of every key used to authenticate, turning silent key compromises into detectable events and providing forensic evidence for incident response.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"LogLevel VERBOSE\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `LogLevel VERBOSE`")
     .register();
 
     check::Check::new(
         "SSH_004",
-        "Ensure that sshd is configured with \"logingracetime\" <= 60",
+        "Ensure that sshd is configured with `logingracetime` <= 60",
         Severity::Medium,
         vec!["sshd", "CIS", "server"],
         || {
@@ -70,12 +70,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("A long LoginGraceTime lets an attacker hold open many half-finished auth attempts that consume sshd connection slots, enabling slow-DoS or password-spray campaigns. 60s is enough for legitimate logins. Increase on very slow connection if you timeout.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"LoginGraceTime 60\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `LoginGraceTime 60`")
     .register();
 
     check::Check::new(
         "SSH_005",
-        "Ensure that sshd is configured with \"permitrootlogin no\"",
+        "Ensure that sshd is configured with `permitrootlogin no`",
         Severity::Critical,
         vec!["sshd", "CIS", "mozilla", "server"],
         || sshd::check_sshd_config("permitrootlogin", "no"),
@@ -83,12 +83,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("Direct SSH login as root collapses two security barriers into one: an attacker who phishes or cracks the root password gets immediate full control with no intermediate user account, and audit logs cannot attribute the action to a specific user. Requires an alternative out-of-band access method (e.g. console, serial) for emergency root access.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"PermitRootLogin no\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `PermitRootLogin no`")
     .register();
 
     check::Check::new(
         "SSH_006",
-        "Ensure that sshd is configured with \"strictmodes yes\"",
+        "Ensure that sshd is configured with `strictmodes yes`",
         Severity::Medium,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("strictmodes", "yes"),
@@ -96,12 +96,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("StrictModes makes sshd refuse to read authorized_keys/.ssh files that are world- or group-writable. Without it, an attacker who gains any write access to a user's home dir can append a key to authorized_keys and gain persistent SSH login.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"StrictModes yes\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `StrictModes yes`")
     .register();
 
     check::Check::new(
         "SSH_007",
-        "Ensure that sshd is configured with \"maxauthtries\" <= 4",
+        "Ensure that sshd is configured with `maxauthtries` <= 4",
         Severity::Medium,
         vec!["sshd", "CIS", "server"],
         || {
@@ -127,12 +127,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("Capping authentication attempts per TCP connection, increasing the protection against brute-force attacks.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"MaxAuthTries 4\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `MaxAuthTries 4`")
     .register();
 
     check::Check::new(
         "SSH_008",
-        "Ensure that sshd is configured with \"maxsessions\" <= 5",
+        "Ensure that sshd is configured with `maxsessions` <= 5",
         Severity::Low,
         vec!["sshd", "CIS", "server"],
         || {
@@ -158,12 +158,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("Limiting multiplexed sessions per connection caps the damage from a single stolen socket: an attacker who hijacks one authenticated channel cannot fan out to dozens of shells, exec channels, or port forwards. Users relying on SSH multiplexing (e.g. ControlMaster) to run many parallel sessions (CI/CD pipelines, mass deployments) may hit the limit.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"MaxSessions 5\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `MaxSessions 5`")
     .register();
 
     check::Check::new(
         "SSH_009",
-        "Ensure that sshd is configured with \"hostbasedauthentication no\"",
+        "Ensure that sshd is configured with `hostbasedauthentication no`",
         Severity::High,
         vec!["sshd", "CIS", "server"],
         || sshd::check_sshd_config("hostbasedauthentication", "no"),
@@ -171,13 +171,13 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("HostbasedAuthentication trusts the client host's identity rather than a user credential, an attacker who compromises any trusted client can hop into the server as any user without further authentication.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"HostbasedAuthentication no\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `HostbasedAuthentication no`")
     .register();
 
     // TODO: removed configuration
     // check::Check::new(
     //     "SSH_010",
-    //     "Ensure that sshd is configured with \"ignorerhosts\" = \"yes\"",
+    //     "Ensure that sshd is configured with `ignorerhosts` = `yes`",
     //     vec!["sshd", "CIS", "server"],
     //     || sshd::check_sshd_config("ignorerhosts", "yes"),
     //     vec![sshd::init_sshd_config],
@@ -186,7 +186,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_011",
-        "Ensure that sshd is configured with \"ignoreuserknownhosts yes\"",
+        "Ensure that sshd is configured with `ignoreuserknownhosts yes`",
         Severity::Medium,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("ignoreuserknownhosts", "yes"),
@@ -194,12 +194,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("IgnoreUserKnownHosts forces sshd to trust only the system-wide known_hosts during host-based authentication, preventing a user from whitelisting a rogue host and bypassing the admin's trust anchors. Even if host-based authentication is disable this is a better default in case it ever is.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"IgnoreUserKnownHosts yes\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `IgnoreUserKnownHosts yes`")
     .register();
 
     check::Check::new(
         "SSH_012",
-        "Ensure that sshd is configured with \"pubkeyauthentication yes\"",
+        "Ensure that sshd is configured with `pubkeyauthentication yes`",
         Severity::Critical,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("pubkeyauthentication", "yes"),
@@ -207,12 +207,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("Requiring public-key authentication eliminates password-based logins, blocking online brute-force and credential-stuffing attacks that exploit weak or reused passwords.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"AuthenticationMethods publickey\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `AuthenticationMethods publickey`")
     .register();
 
     check::Check::new(
         "SSH_013",
-        "Ensure that sshd is configured with \"passwordauthentication no\"",
+        "Ensure that sshd is configured with `passwordauthentication no`",
         Severity::Critical,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("passwordauthentication", "no"),
@@ -220,12 +220,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("Use key authentication instead of password based.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"PasswordAuthentication no\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `PasswordAuthentication no`")
     .register();
 
     check::Check::new(
         "SSH_014",
-        "Ensure that sshd is configured with \"kbdinteractiveauthentication no\"",
+        "Ensure that sshd is configured with `kbdinteractiveauthentication no`",
         Severity::High,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("kbdinteractiveauthentication", "no"),
@@ -233,12 +233,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("Keyboard-interactive authentication can fall back to PAM password prompts, re-opening the exact brute-force path that public-key-only mode is meant to close. Disable it unless a specific PAM two-factor module requires it.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"KbdInteractiveAuthentication no\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `KbdInteractiveAuthentication no`")
     .register();
 
     check::Check::new(
         "SSH_015",
-        "Ensure that sshd is configured with \"permitemptypasswords no\"",
+        "Ensure that sshd is configured with `permitemptypasswords no`",
         Severity::Critical,
         vec!["sshd", "CIS", "STIG", "server"],
         || sshd::check_sshd_config("permitemptypasswords", "no"),
@@ -246,12 +246,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("PermitEmptyPasswords yes lets accounts with empty password fields log in over SSH with no password. Use as security in depth if password authentication must be enabled.")
-    .with_fix("In \"/etc/ssh/sshd_config\" remove: \"PermitEmptyPasswords yes\"")
+    .with_fix("In `/etc/ssh/sshd_config` remove: `PermitEmptyPasswords yes`")
     .register();
 
     check::Check::new(
         "SSH_016",
-        "Ensure that sshd is configured with \"kerberosauthentication no\"",
+        "Ensure that sshd is configured with `kerberosauthentication no`",
         Severity::Medium,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("kerberosauthentication", "no"),
@@ -259,25 +259,25 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("Unless the host is on a Kerberos realm, KerberosAuthentication just adds attack surface and a parser exposed to network input. Disabling it removes that surface entirely.")
-    .with_fix("In \"/etc/ssh/sshd_config\" remove: \"KerberosAuthentication yes\"")
+    .with_fix("In `/etc/ssh/sshd_config` remove: `KerberosAuthentication yes`")
     .register();
 
     check::Check::new(
         "SSH_017",
-        "Ensure that sshd is configured with \"kerberosorlocalpasswd no\"",
+        "Ensure that sshd is configured with `kerberosorlocalpasswd no`",
         Severity::High,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("kerberosorlocalpasswd", "no"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
-    .with_description("KerberosOrLocalPasswd yes lets sshd silently fall back to \"/etc/passwd-style\" authentication when Kerberos fails, defeating the intent to require Kerberos and re-exposing local password attacks. Defence-in-depth in case Kerberos is used.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"KerberosOrLocalPasswd no\"")
+    .with_description("KerberosOrLocalPasswd yes lets sshd silently fall back to `/etc/passwd-style` authentication when Kerberos fails, defeating the intent to require Kerberos and re-exposing local password attacks. Defence-in-depth in case Kerberos is used.")
+    .with_fix("In `/etc/ssh/sshd_config` add: `KerberosOrLocalPasswd no`")
     .register();
 
     check::Check::new(
         "SSH_018",
-        "Ensure that sshd is configured with \"kerberosticketcleanup yes\"",
+        "Ensure that sshd is configured with `kerberosticketcleanup yes`",
         Severity::Medium,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("kerberosticketcleanup", "yes"),
@@ -285,12 +285,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("Without ticket cleanup, Kerberos credentials linger after the SSH session ends, a later attacker who reaches the host can reuse them to access other Kerberized services as the ticket's principal. Defence-in-depth in case Kerberos is used.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"KerberosTicketCleanup yes\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `KerberosTicketCleanup yes`")
     .register();
 
     check::Check::new(
         "SSH_019",
-        "Ensure that sshd is configured with \"gssapiauthentication no\"",
+        "Ensure that sshd is configured with `gssapiauthentication no`",
         Severity::Medium,
         vec!["sshd", "CIS", "server"],
         || sshd::check_sshd_config("gssapiauthentication", "no"),
@@ -298,12 +298,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("GSSAPI exposes additional code and parsers to remote attackers before authentication completes, on hosts not on a GSSAPI/Kerberos realm it is pure attack surface.")
-    .with_fix("In \"/etc/ssh/sshd_config\" remove: \"GSSAPIAuthentication yes\"")
+    .with_fix("In `/etc/ssh/sshd_config` remove: `GSSAPIAuthentication yes`")
     .register();
 
     check::Check::new(
         "SSH_020",
-        "Ensure that sshd is configured with \"gssapicleanupcredentials yes\"",
+        "Ensure that sshd is configured with `gssapicleanupcredentials yes`",
         Severity::Low,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("gssapicleanupcredentials", "yes"),
@@ -311,25 +311,25 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("Leftover GSSAPI credentials after a session ends are reusable by anyone who later reaches the host as that user. Security in depth in case Kerberos is used.")
-    .with_fix("In \"/etc/ssh/sshd_config\" remove: \"GSSAPICleanupCredentials no\"")
+    .with_fix("In `/etc/ssh/sshd_config` remove: `GSSAPICleanupCredentials no`")
     .register();
 
     check::Check::new(
         "SSH_044",
-        "Ensure that sshd is configured with \"usepam yes\"",
+        "Ensure that sshd is configured with `usepam yes`",
         Severity::Critical,
         vec!["sshd", "CIS", "STIG", "server"],
         || sshd::check_sshd_config("usepam", "yes"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
-    .with_description("\"UsePAM yes\" routes sshd through PAM, picking up account-lockout, faillock, lecturing, and other PAM-stack hardening. Without it, those controls are bypassed entirely on the SSH path.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"UsePAM yes\"")
+    .with_description("`UsePAM yes` routes sshd through PAM, picking up account-lockout, faillock, lecturing, and other PAM-stack hardening. Without it, those controls are bypassed entirely on the SSH path.")
+    .with_fix("In `/etc/ssh/sshd_config` add: `UsePAM yes`")
     .register();
 
     check::Check::new(
         "SSH_025",
-        "Ensure that sshd is configured with \"disableforwarding yes\"",
+        "Ensure that sshd is configured with `disableforwarding yes`",
         Severity::Medium,
         vec!["sshd", "CIS", "server"],
         || sshd::check_sshd_config("disableforwarding", "yes"),
@@ -337,12 +337,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("DisableForwarding blocks all forwarding types (tunnel, agent, X11) in one switch. An attacker with a shell cannot pivot through the SSH session to reach internal services or expose the agent socket.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"DisableForwarding yes\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `DisableForwarding yes`")
     .register();
 
     check::Check::new(
         "SSH_021",
-        "Ensure that sshd is configured with \"x11forwarding no\"",
+        "Ensure that sshd is configured with `x11forwarding no`",
         Severity::Medium,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("x11forwarding", "no"),
@@ -350,12 +350,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("X11 forwarding exposes the X server to the remote host, which can inject keystrokes, capture screenshots, or exploit X11 vulnerabilities. Disable it unless graphical applications are required.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"X11Forwarding no\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `X11Forwarding no`")
     .register();
 
     check::Check::new(
         "SSH_026",
-        "Ensure that sshd is configured with \"gatewayports no\"",
+        "Ensure that sshd is configured with `gatewayports no`",
         Severity::Medium,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("gatewayports", "no"),
@@ -363,12 +363,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("GatewayPorts allows remote hosts to connect to ports forwarded for the user, turning the SSH server into an open relay. Attackers can expose internal services to the network.")
-    .with_fix("In \"/etc/ssh/sshd_config\" remove: \"GatewayPorts yes\"")
+    .with_fix("In `/etc/ssh/sshd_config` remove: `GatewayPorts yes`")
     .register();
 
     check::Check::new(
         "SSH_027",
-        "Ensure that sshd is configured with \"x11uselocalhost yes\"",
+        "Ensure that sshd is configured with `x11uselocalhost yes`",
         Severity::Medium,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("x11uselocalhost", "yes"),
@@ -376,12 +376,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("Binding forwarded X11 displays to localhost-only prevents remote hosts from connecting to the X socket. Without it, any host that can reach the server can grab the X session.")
-    .with_fix("In \"/etc/ssh/sshd_config\" remove: \"X11UseLocalhost no\"")
+    .with_fix("In `/etc/ssh/sshd_config` remove: `X11UseLocalhost no`")
     .register();
 
     check::Check::new(
         "SSH_028",
-        "Ensure that sshd is configured with \"printmotd no\"",
+        "Ensure that sshd is configured with `printmotd no`",
         Severity::Low,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("printmotd", "no"),
@@ -389,12 +389,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("The message-of-the-day can reveal OS version, hostname, or infrastructure details useful for targeting. Disable it if PAM already prints a vetted banner, to avoid leaking information.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"PrintMotd no\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `PrintMotd no`")
     .register();
 
     check::Check::new(
         "SSH_029",
-        "Ensure that sshd is configured with \"permituserenvironment no\"",
+        "Ensure that sshd is configured with `permituserenvironment no`",
         Severity::High,
         vec!["sshd", "CIS", "server"],
         || sshd::check_sshd_config("permituserenvironment", "no"),
@@ -402,12 +402,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("PermitUserEnvironment lets users set arbitrary environment variables via ~/.ssh/environment, including LD_PRELOAD to hijack libraries loaded by sshd child processes. This bypasses env_reset and other sshd security controls.")
-    .with_fix("In \"/etc/ssh/sshd_config\" remove: \"PermitUserEnvironment yes\"")
+    .with_fix("In `/etc/ssh/sshd_config` remove: `PermitUserEnvironment yes`")
     .register();
 
     check::Check::new(
         "SSH_030",
-        "Ensure that sshd is configured with \"clientaliveinterval\" <= 15",
+        "Ensure that sshd is configured with `clientaliveinterval` <= 15",
         Severity::Medium,
         vec!["sshd", "CIS", "server"],
         || {
@@ -433,12 +433,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("ClientAliveInterval sends encrypted keep-alives at this interval. Setting it to 15s or less ensures dead or hijacked sessions are reaped quickly, reducing the window for session hijacking.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"ClientAliveInterval 15\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `ClientAliveInterval 15`")
     .register();
 
     check::Check::new(
         "SSH_031",
-        "Ensure that sshd is configured with \"clientalivecountmax 3\"",
+        "Ensure that sshd is configured with `clientalivecountmax 3`",
         Severity::Medium,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("clientalivecountmax", "3"),
@@ -446,12 +446,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("Together with ClientAliveInterval, this caps how many missed keepalives a session can survive before sshd terminates it, closing dead sessions denies attackers a parked authenticated channel to reuse.")
-    .with_fix("In \"/etc/ssh/sshd_config\" set: \"ClientAliveCountMax 3\"")
+    .with_fix("In `/etc/ssh/sshd_config` set: `ClientAliveCountMax 3`")
     .register();
 
     check::Check::new(
         "SSH_032",
-        "Ensure that sshd is configured with \"tcpkeepalive no\"",
+        "Ensure that sshd is configured with `tcpkeepalive no`",
         Severity::Low,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("tcpkeepalive", "no"),
@@ -459,12 +459,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("TCPKeepAlive sends unencrypted keep-alives that can be spoofed, making sshd believe a dead connection is still alive. Disable it and rely on ClientAliveInterval for encrypted keep-alives instead.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"TCPKeepAlive no\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `TCPKeepAlive no`")
     .register();
 
     check::Check::new(
         "SSH_033",
-        "Ensure that sshd is configured with \"usedns no\"",
+        "Ensure that sshd is configured with `usedns no`",
         Severity::Low,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("usedns", "no"),
@@ -472,12 +472,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("UseDNS triggers reverse-DNS lookups on every connection, leaking client IPs to the configured resolver and adding latency. Disable it unless hostnames are required in logs.")
-    .with_fix("In \"/etc/ssh/sshd_config\" remove: \"UseDNS yes\"")
+    .with_fix("In `/etc/ssh/sshd_config` remove: `UseDNS yes`")
     .register();
 
     check::Check::new(
         "SSH_034",
-        "Ensure that sshd is configured with \"permittunnel no\"",
+        "Ensure that sshd is configured with `permittunnel no`",
         Severity::Medium,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("permittunnel", "no"),
@@ -485,12 +485,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("Prevent SSH session from creating a tun/tap device, making it a bit harder for an attacker to bridge networks. Breaks SSH VPN tunneling (ssh -w) for users who rely on it for secure remote network access.")
-    .with_fix("In \"/etc/ssh/sshd_config\" remove: \"PermitTunnel yes\"")
+    .with_fix("In `/etc/ssh/sshd_config` remove: `PermitTunnel yes`")
     .register();
 
     check::Check::new(
         "SSH_035",
-        "Ensure that sshd is configured with \"maxstartups 10:30:60\"",
+        "Ensure that sshd is configured with `maxstartups 10:30:60`",
         Severity::Medium,
         vec!["sshd", "CIS", "server"],
         || sshd::check_sshd_config("maxstartups", "10:30:60"),
@@ -498,12 +498,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("MaxStartups rate-limits unauthenticated connections: after 10 pending, new connections are dropped with 30% probability, rising to 100% at 60 pending. This thwarts connection-slurping DoS and slows password-spray campaigns. Legitimate bulk SSH connections (CI/CD, mass deployments) may be dropped during peak auth times; increase the threshold on busy bastion hosts.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"MaxStartups 10:30:60\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `MaxStartups 10:30:60`")
     .register();
 
     check::Check::new(
         "SSH_036",
-        "Ensure that sshd is configured with \"printlastlog yes\"",
+        "Ensure that sshd is configured with `printlastlog yes`",
         Severity::Low,
         vec!["sshd", "server"],
         || sshd::check_sshd_config("printlastlog", "yes"),
@@ -513,12 +513,12 @@ pub fn add_checks() {
     .with_description(
         "Could help detect an unauthorized connection if the last login is not recognized.",
     )
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"PrintLastLog yes\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `PrintLastLog yes`")
     .register();
 
     check::Check::new(
         "SSH_037",
-        "Ensure that sshd is configured with \"allowgroups sshusers\"",
+        "Ensure that sshd is configured with `allowgroups sshusers`",
         Severity::High,
         vec!["sshd", "server"],
         // TODO: ensure the group also exist
@@ -528,13 +528,13 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("SSH access should be restricted to a group of users. Users not in the specified group will be denied SSH access, including system administrators not added to the group.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"AllowGroups sshusers\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `AllowGroups sshusers`")
     .register();
 
     // TODO: make skip it depending based on version, OpenSSH 6.7+
     // check::Check::new(
     //     "SSH_038",
-    //     "Ensure that sshd is configured with \"kexalgorithms\" = \"curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256\"",
+    //     "Ensure that sshd is configured with `kexalgorithms` = `curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256`",
     //     vec!["sshd", "mozilla", "server"],
     //     || {
     //         sshd::check_sshd_config(
@@ -547,7 +547,7 @@ pub fn add_checks() {
     // NOTE: for OpenSSH 10+:
     check::Check::new(
         "SSH_038",
-        "Ensure that sshd is configured with \"kexalgorithms mlkem768x25519-sha256,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521\"",
+        "Ensure that sshd is configured with `kexalgorithms mlkem768x25519-sha256,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521`",
         Severity::High,
         vec!["sshd", "mozilla", "server"],
         || {
@@ -560,12 +560,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("Pinning key-exchange algorithms to a vetted modern set blocks downgrade to weak/legacy KEX (e.g. SHA-1-based DH groups) and includes post-quantum hybrids (mlkem, sntrup) so today's recorded sessions cannot be decrypted by future quantum-capable adversaries. Older SSH clients that only support legacy algorithms will be unable to connect.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"KexAlgorithms mlkem768x25519-sha256,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `KexAlgorithms mlkem768x25519-sha256,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521`")
     .register();
 
     check::Check::new(
         "SSH_039",
-        "Ensure that sshd is configured with \"ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr\"",
+        "Ensure that sshd is configured with `ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr`",
         Severity::High,
         vec!["sshd", "mozilla", "server"],
         || {
@@ -578,12 +578,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("Pinning ciphers to authenticated-encryption (AEAD) and CTR-with-MAC modes blocks downgrade to CBC, RC4, and 3DES, historically broken to recover plaintext from captured SSH traffic. Older SSH clients that only support legacy ciphers will be unable to connect.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr`")
     .register();
 
     check::Check::new(
         "SSH_040",
-        "Ensure that sshd is configured with \"macs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com\"",
+        "Ensure that sshd is configured with `macs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com`",
         Severity::High,
         vec!["sshd", "mozilla", "server"],
         || {
@@ -596,12 +596,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("Pinning MACs to encrypt-then-MAC (ETM) SHA-2 family blocks the historically-broken MD5/SHA-1 MACs and the encrypt-and-MAC ordering that has produced timing oracles in OpenSSH. Older SSH clients that only support legacy MACs will be unable to connect.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com`")
     .register();
 
     check::Check::new(
         "SSH_041",
-        "Ensure that sshd is configured with \"authenticationmethods publickey\"",
+        "Ensure that sshd is configured with `authenticationmethods publickey`",
         Severity::Critical,
         vec!["sshd", "mozilla", "server"],
         || sshd::check_sshd_config("authenticationmethods", "publickey"),
@@ -609,12 +609,12 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("Enforces the use of publickey for authentication, eliminating fall-back paths to credential auth.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"AuthenticationMethods publickey\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `AuthenticationMethods publickey`")
     .register();
 
     check::Check::new(
         "SSH_042",
-        "Ensure that sshd is configured with \"subsystem sftp /usr/lib/openssh/sftp-server -f AUTHPRIV -l INFO\"",
+        "Ensure that sshd is configured with `subsystem sftp /usr/lib/openssh/sftp-server -f AUTHPRIV -l INFO`",
         Severity::Low,
         vec!["sshd", "mozilla", "server"],
         || {
@@ -627,7 +627,7 @@ pub fn add_checks() {
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("Configure SFTP to log to AUTHPRIV at INFO, every file transfer over SFTP appears in the auth log, turning otherwise-silent file exfil over SSH into something that can be detected and audited.")
-    .with_fix("In \"/etc/ssh/sshd_config\" add: \"Subsystem sftp /usr/lib/openssh/sftp-server -f AUTHPRIV -l INFO\"")
+    .with_fix("In `/etc/ssh/sshd_config` add: `Subsystem sftp /usr/lib/openssh/sftp-server -f AUTHPRIV -l INFO`")
     .register();
 
     check::Check::new(
@@ -670,7 +670,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_047",
-        "Ensure \"/etc/ssh\" directory is owned by root",
+        "Ensure `/etc/ssh` directory is owned by root",
         Severity::High,
         vec!["sshd", "server"],
         || base::check_dir_owner_id("/etc/ssh", 0, 0),
@@ -683,7 +683,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_048",
-        "Ensure \"/etc/ssh\" directory permissions is 755",
+        "Ensure `/etc/ssh` directory permissions is 755",
         Severity::High,
         vec!["sshd", "server"],
         || base::check_dir_permission("/etc/ssh", 0o755),
@@ -696,7 +696,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_049",
-        "Ensure \"/etc/ssh/sshd_config\" file is owned by root",
+        "Ensure `/etc/ssh/sshd_config` file is owned by root",
         Severity::High,
         vec!["sshd", "server"],
         || base::check_file_owner_id("/etc/ssh/sshd_config", 0, 0),
@@ -709,7 +709,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_050",
-        "Ensure \"/etc/ssh/sshd_config\" file permissions is 644 or stricter",
+        "Ensure `/etc/ssh/sshd_config` file permissions is 644 or stricter",
         Severity::High,
         vec!["sshd", "server"],
         || base::check_file_permission_or_stricter("/etc/ssh/sshd_config", 0o644),
@@ -722,7 +722,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_051",
-        "Ensure \"/etc/ssh/sshd_config.d/\" directory is owned by root",
+        "Ensure `/etc/ssh/sshd_config.d/` directory is owned by root",
         Severity::High,
         vec!["sshd", "server"],
         || base::check_dir_owner_id("/etc/ssh/sshd_config.d", 0, 0),
@@ -735,7 +735,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_052",
-        "Ensure \"/etc/ssh/sshd_config.d/\" files are owned by root",
+        "Ensure `/etc/ssh/sshd_config.d/` files are owned by root",
         Severity::High,
         vec!["sshd", "server"],
         || base::check_dir_files_owner_id("/etc/ssh/sshd_config.d/", 0, 0),
@@ -748,7 +748,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_053",
-        "Ensure \"/etc/ssh/sshd_config.d/\" files permissions are 644 or stricter",
+        "Ensure `/etc/ssh/sshd_config.d/` files permissions are 644 or stricter",
         Severity::High,
         vec!["sshd", "server"],
         || base::check_dir_files_permission_or_stricter("/etc/ssh/sshd_config.d/", 0o644),
@@ -857,7 +857,7 @@ pub fn add_checks() {
     // own forwarders.
     // check::Check::new(
     //     "SSH_022",
-    //     "Ensure that sshd is configured with \"allowagentforwarding\" = \"no\"",
+    //     "Ensure that sshd is configured with `allowagentforwarding` = `no`",
     //     vec!["sshd", "server"],
     //     || sshd::check_sshd_config("allowagentforwarding", "no"),
     //     vec![sshd::init_sshd_config],
@@ -867,7 +867,7 @@ pub fn add_checks() {
     // their own forwarders.
     // check::Check::new(
     //     "SSH_023",
-    //     "Ensure that sshd is configured with \"allowstreamlocalforwarding\" = \"no\"",
+    //     "Ensure that sshd is configured with `allowstreamlocalforwarding` = `no`",
     //     vec!["sshd", "server"],
     //     || sshd::check_sshd_config("allowstreamlocalforwarding", "no"),
     //     vec![sshd::init_sshd_config],
@@ -877,7 +877,7 @@ pub fn add_checks() {
     // forwarders.
     // check::Check::new(
     //     "SSH_024",
-    //     "Ensure that sshd is configured with \"allowtcpforwarding\" = \"no\"",
+    //     "Ensure that sshd is configured with `allowtcpforwarding` = `no`",
     //     vec!["sshd", "server"],
     //     || sshd::check_sshd_config("allowtcpforwarding", "no"),
     //     vec![sshd::init_sshd_config],

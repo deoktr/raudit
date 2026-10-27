@@ -50,16 +50,16 @@ fn get_apt_config() -> Result<AptConfig, String> {
 
     let output = cmd
         .output()
-        .map_err(|err| format!("failed to run \"apt-config dump\": {}", err))?;
+        .map_err(|err| format!("failed to run `apt-config dump`: {}", err))?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         let stderr = stderr.trim();
 
         return Err(if stderr.is_empty() {
-            format!("\"apt-config dump\" {}", output.status)
+            format!("`apt-config dump` {}", output.status)
         } else {
-            format!("\"apt-config dump\" {}: {}", output.status, stderr)
+            format!("`apt-config dump` {}: {}", output.status, stderr)
         });
     }
 
@@ -88,7 +88,7 @@ pub fn check_apt(key: &str, value: &str) -> check::CheckReturn {
         }
         None => (
             check::CheckState::Fail,
-            Some(format!("key {:?} not present", key)),
+            Some(format!("key `{}` not present", key)),
         ),
     })
 }
@@ -115,7 +115,7 @@ pub fn check_apt_bool(key: &str, value: bool) -> check::CheckReturn {
         }
         None => (
             check::CheckState::Fail,
-            Some(format!("key {:?} not present", key)),
+            Some(format!("key `{}` not present", key)),
         ),
     })
 }
