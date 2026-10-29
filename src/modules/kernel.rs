@@ -20,7 +20,7 @@ use std::fs;
 use std::path::Path;
 
 use crate::check::{self, State};
-use crate::{log_error, log_trace};
+use crate::{log_debug, log_error, log_trace};
 
 const CMDLINE_PATH: &str = "/proc/cmdline";
 const OSRELEASE_PATH: &str = "/proc/sys/kernel/osrelease";
@@ -86,14 +86,75 @@ pub fn check_kernel_params(variable: &str) -> check::CheckReturn {
         if kparams.contains(&variable.to_string()) {
             (check::CheckState::Pass, None)
         } else {
-            (check::CheckState::Fail, None)
+            (check::CheckState::Fail, Some("param absent".to_string()))
         }
+    })
+}
+
+/// Get kernel params absence from a collected configuration.
+pub fn check_kernel_params_absent(variable: &str) -> check::CheckReturn {
+    KERNEL_PARAMS.with(|kparams| {
+        if !kparams.contains(&variable.to_string()) {
+            (check::CheckState::Pass, None)
+        } else {
+            (check::CheckState::Fail, Some("param present".to_string()))
+        }
+    })
+}
+
+/// Find the argument matching `variable`, either the bare name or `name=value`.
+fn find_kernel_param<'a>(kparams: &'a KernelParams, variable: &str) -> Option<&'a String> {
+    kparams.iter().find(|param| {
+        param.as_str() == variable
+            || param
+                .strip_prefix(variable)
+                .is_some_and(|rest| rest.starts_with('='))
+    })
+}
+
+/// Value carried by a kernel param, empty when it is a bare flag.
+fn kernel_param_value(param: &str) -> &str {
+    param.split_once('=').map(|(_, value)| value).unwrap_or("")
+}
+
+/// Ensure a kernel param is present with one of the accepted values.
+///
+/// For parameters where several values are hardened enough.
+pub fn check_kernel_params_value_in(variable: &str, allowed: &[&str]) -> check::CheckReturn {
+    KERNEL_PARAMS.with(|kparams| match find_kernel_param(kparams, variable) {
+        None => (check::CheckState::Fail, Some("param absent".to_string())),
+        Some(param) if allowed.contains(&kernel_param_value(param)) => {
+            (check::CheckState::Pass, None)
+        }
+        Some(param) => (
+            check::CheckState::Fail,
+            Some(format!(
+                "`{param}` is not one of {}",
+                allowed
+                    .iter()
+                    .map(|value| format!("`{variable}={value}`"))
+                    .collect::<Vec<String>>()
+                    .join(", ")
+            )),
+        ),
+    })
+}
+
+/// Ensure a kernel param does not carry one of the values disabling a feature.
+pub fn check_kernel_params_value_absent(variable: &str, forbidden: &[&str]) -> check::CheckReturn {
+    KERNEL_PARAMS.with(|kparams| match find_kernel_param(kparams, variable) {
+        None => (check::CheckState::Pass, None),
+        Some(param) if forbidden.contains(&kernel_param_value(param)) => (
+            check::CheckState::Fail,
+            Some(format!("param present as `{param}`")),
+        ),
+        Some(_) => (check::CheckState::Pass, None),
     })
 }
 
 /// Parse a kernel version string like "6.8.0-45-generic" into (major, minor,
 /// patch).
-pub fn parse_kernel_version(version: &str) -> Option<(u32, u32, u32)> {
+fn parse_kernel_version(version: &str) -> Option<(u32, u32, u32)> {
     let numeric_part: String = version
         .chars()
         .take_while(|c| c.is_ascii_digit() || *c == '.')
@@ -127,6 +188,37 @@ pub fn init_kernel_version() {
     KERNEL_VERSION.init(get_kernel_version);
 }
 
+/// Version of the running kernel, as `(major, minor, patch)`.
+///
+/// Collected on first use, so other modules can compare the running kernel with
+/// the release that introduced or removed a feature without declaring a
+/// dependency on [init_kernel_version].
+pub fn kernel_version() -> Result<(u32, u32, u32), String> {
+    init_kernel_version();
+    KERNEL_VERSION.try_get().copied()
+}
+
+/// Apply `skip` to the version of the running kernel.
+fn skip_on_kernel_version(skip: impl FnOnce((u32, u32, u32)) -> bool) -> bool {
+    match kernel_version() {
+        Ok(version) => skip(version),
+        Err(err) => {
+            log_debug!("kernel version not available, keeping the check: {err}");
+            false
+        }
+    }
+}
+
+/// Skip a check when the running kernel is older than `version`.
+pub fn skip_kernel_before(version: (u32, u32, u32)) -> bool {
+    skip_on_kernel_version(|running| running < version)
+}
+
+/// Skip a check when the running kernel is `version` or newer.
+pub fn skip_kernel_since(version: (u32, u32, u32)) -> bool {
+    skip_on_kernel_version(|running| running >= version)
+}
+
 /// Check if system needs a reboot.
 pub fn check_reboot_required() -> check::CheckReturn {
     // TODO: on RHEL use `needs-restarting -r` command, status 0 no reboot
@@ -144,12 +236,8 @@ pub fn check_reboot_required() -> check::CheckReturn {
 /// Skip check when the running kernel is not in the vulnerable range for
 /// CopyFail. Vulnerable range: >= 4.14.0 and <= 6.19.12.
 pub fn skip_not_vulnerable_copyfail() -> bool {
-    init_kernel_version();
-    match KERNEL_VERSION.try_get() {
-        Ok(&(major, minor, patch)) => {
-            let version = (major, minor, patch);
-            !((4, 14, 0)..=(6, 19, 12)).contains(&version)
-        }
+    match kernel_version() {
+        Ok(version) => !((4, 14, 0)..=(6, 19, 12)).contains(&version),
         Err(err) => {
             log_error!("skipping CopyFail check: {}", err);
             true
@@ -197,6 +285,42 @@ mod tests {
         // backslash are literals
         assert_eq!(parse_kernel_params(r#"a=b\ c"#), [r"a=b\", "c"]);
         assert_eq!(parse_kernel_params(r#"a="b c"#), ["a=b c"]);
+    }
+
+    #[test]
+    fn test_find_kernel_param() {
+        let params = parse_kernel_params("quiet slab_nomerge slab_merge=1 slub_debug=FZ");
+
+        // matched by name, whatever the value carried by the argument
+        assert_eq!(
+            find_kernel_param(&params, "slab_merge").unwrap(),
+            "slab_merge=1"
+        );
+        assert_eq!(
+            find_kernel_param(&params, "slub_debug").unwrap(),
+            "slub_debug=FZ"
+        );
+        assert_eq!(
+            find_kernel_param(&params, "slab_nomerge").unwrap(),
+            "slab_nomerge"
+        );
+        assert_eq!(find_kernel_param(&params, "quiet").unwrap(), "quiet");
+
+        // a prefix of a name is not a name, and `slab_nomerge` is not `slab_merge`
+        assert!(find_kernel_param(&params, "slub_merge").is_none());
+        assert!(find_kernel_param(&params, "slab").is_none());
+        assert!(find_kernel_param(&params, "slub_debug=FZP").is_none());
+    }
+
+    #[test]
+    fn test_kernel_param_value() {
+        assert_eq!(
+            kernel_param_value("lockdown=confidentiality"),
+            "confidentiality"
+        );
+        assert_eq!(kernel_param_value("mod.opt=a b c"), "a b c");
+        assert_eq!(kernel_param_value("nokaslr"), "");
+        assert_eq!(kernel_param_value("rodata="), "");
     }
 
     #[test]

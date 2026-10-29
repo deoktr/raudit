@@ -307,7 +307,7 @@ cargo test
 Run locally:
 
 ```bash
-cargo run -- --help
+cargo run -- -h
 ```
 
 ## Security
@@ -323,21 +323,12 @@ cargo install cargo-audit --locked
 cargo audit
 ```
 
-## Benchmark
-
-With: `hyperfine -i ./target/release/raudit`:
-
-```
-Benchmark 1: ./target/release/raudit
-  Time (mean ± σ):     116.5 ms ±   5.3 ms    [User: 89.7 ms, System: 127.8 ms]
-  Range (min … max):   110.6 ms … 132.7 ms    24 runs
-```
-
 ## Sources
 
 - [Linux self-protection.rst](https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst)
 - [Tails kernel_hardening](https://tails.net/contribute/design/kernel_hardening/)
 - [Kicksecure/security-misc](https://github.com/Kicksecure/security-misc)
+- [ArchLinux Security](https://wiki.archlinux.org/title/Security)
 
 ## Alternatives
 
@@ -347,6 +338,7 @@ Benchmark 1: ./target/release/raudit
 
 ## TODO
 
+- Add version based skips for every checks that would require it
 - Update JSON OCSF format
 - Give much more detailed logs of the error
 - Create custom parsers for complex configurations (sudo, nginx, etc.)

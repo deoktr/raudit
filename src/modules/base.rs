@@ -22,7 +22,59 @@ use std::os::unix::fs::FileTypeExt;
 use std::os::unix::fs::MetadataExt;
 use std::path::Path;
 
-use crate::{check, log_trace};
+use crate::{check, log_debug, log_trace, utils};
+
+/// Architecture of the running kernel, from the `machine` name of `uname`.
+fn kernel_arch(machine: &str) -> Option<&'static str> {
+    match machine {
+        "x86_64" => Some("x86_64"),
+        "i386" | "i486" | "i586" | "i686" => Some("x86_32"),
+        "aarch64" => Some("arm64"),
+        machine if machine.starts_with("armv") => Some("arm32"),
+        "riscv64" => Some("riscv64"),
+        "riscv32" => Some("riscv32"),
+        "ppc64le" => Some("ppc64le"),
+        "ppc64" => Some("ppc64"),
+        "s390x" => Some("s390x"),
+        "loongarch64" => Some("loongarch64"),
+        "mips" | "mips64" => Some("mips"),
+        _ => None,
+    }
+}
+
+/// Architecture of the running kernel, None when it is not one of
+/// [kernel_arch].
+fn get_kernel_arch() -> Option<&'static str> {
+    match utils::get_arch() {
+        Ok(machine) => kernel_arch(&machine),
+        Err(err) => {
+            log_debug!("machine name not available: {err}");
+            None
+        }
+    }
+}
+
+/// Skip a check when the running kernel is not one of `arches`.
+pub fn skip_not_arch(arches: &[&str]) -> bool {
+    match get_kernel_arch() {
+        Some(arch) => !arches.contains(&arch),
+        None => {
+            log_debug!("unknown kernel architecture, keeping the check");
+            false
+        }
+    }
+}
+
+/// Skip a check when the running kernel is one of `arches`.
+pub fn skip_arch(arches: &[&str]) -> bool {
+    match get_kernel_arch() {
+        Some(arch) => arches.contains(&arch),
+        None => {
+            log_debug!("unknown kernel architecture, keeping the check");
+            false
+        }
+    }
+}
 
 /// Check if file is either empty or not present.
 pub fn empty_or_missing_file(path: &str) -> check::CheckReturn {

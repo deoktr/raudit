@@ -137,7 +137,12 @@ pub fn init_kernel_build_config() {
 }
 
 /// Ensure kernel build parameter is set.
-pub fn check_option_is_set(param: &str) -> check::CheckReturn {
+///
+/// Missing define the behavior on missing parameter:
+/// 0 = warning
+/// 1 = pass
+/// 2 = fail
+fn option_is_set(param: &str, missing: u8) -> check::CheckReturn {
     KERNEL_BUILD_CONFIG.with(|config| match config.get(param) {
         Some(val) => {
             if val != "is not set" {
@@ -146,15 +151,37 @@ pub fn check_option_is_set(param: &str) -> check::CheckReturn {
                 (check::CheckState::Fail, Some("param not set".to_string()))
             }
         }
-        None => (
-            check::CheckState::Warning,
-            Some("param not present".to_string()),
-        ),
+        None => match missing {
+            1 => (check::CheckState::Pass, None),
+            2 => (
+                check::CheckState::Fail,
+                Some("param not present".to_string()),
+            ),
+            _ => (
+                check::CheckState::Warning,
+                Some("param not present".to_string()),
+            ),
+        },
     })
 }
 
+/// Ensure kernel build parameter is set.
+pub fn check_option_is_set(param: &str) -> check::CheckReturn {
+    option_is_set(param, 0)
+}
+
+/// Ensure kernel build parameter is set fail on missing.
+pub fn check_option_is_set_not_missing(param: &str) -> check::CheckReturn {
+    option_is_set(param, 2)
+}
+
 /// Ensure kernel parameter is not set.
-pub fn check_option_is_not_set(param: &str) -> check::CheckReturn {
+///
+/// Missing define the behavior on missing parameter:
+/// 0 = warning
+/// 1 = pass
+/// 2 = fail
+fn option_is_not_set(param: &str, missing: u8) -> check::CheckReturn {
     KERNEL_BUILD_CONFIG.with(|config| match config.get(param) {
         Some(val) => {
             if val == "is not set" {
@@ -163,11 +190,75 @@ pub fn check_option_is_not_set(param: &str) -> check::CheckReturn {
                 (check::CheckState::Fail, Some("param set".to_string()))
             }
         }
+        None => match missing {
+            1 => (check::CheckState::Pass, None),
+            2 => (
+                check::CheckState::Fail,
+                Some("param not present".to_string()),
+            ),
+            _ => (
+                check::CheckState::Warning,
+                Some("param not present".to_string()),
+            ),
+        },
+    })
+}
+
+/// Ensure kernel parameter is not set.
+pub fn check_option_is_not_set(param: &str) -> check::CheckReturn {
+    option_is_not_set(param, 0)
+}
+
+/// Ensure kernel parameter is not set but can be missing.
+pub fn check_option_is_not_set_or_missing(param: &str) -> check::CheckReturn {
+    option_is_not_set(param, 1)
+}
+
+/// Ensure a kernel build option carries an exact value.
+pub fn check_option_value(param: &str, expected: &str) -> check::CheckReturn {
+    KERNEL_BUILD_CONFIG.with(|config| match config.get(param) {
         None => (
             check::CheckState::Warning,
             Some("param not present".to_string()),
         ),
+        Some(val) if val == expected => (check::CheckState::Pass, None),
+        Some(val) if val == "is not set" => {
+            (check::CheckState::Fail, Some("param not set".to_string()))
+        }
+        Some(val) => (
+            check::CheckState::Fail,
+            Some(format!("{val} != {expected}")),
+        ),
     })
+}
+
+/// Ensure a kernel build option value contains at least one of `needles`.
+pub fn check_option_value_contains(param: &str, needles: &[&str]) -> check::CheckReturn {
+    KERNEL_BUILD_CONFIG.with(|config| option_value_contains(config, param, needles))
+}
+
+/// Look for one of `needles` in the value of an option of the build config.
+fn option_value_contains(
+    config: &KernelBuildConfig,
+    param: &str,
+    needles: &[&str],
+) -> check::CheckReturn {
+    match config.get(param) {
+        None => (
+            check::CheckState::Warning,
+            Some("param not present".to_string()),
+        ),
+        Some(val) if val == "is not set" => {
+            (check::CheckState::Fail, Some("param not set".to_string()))
+        }
+        Some(val) if needles.iter().any(|needle| val.contains(needle)) => {
+            (check::CheckState::Pass, None)
+        }
+        Some(val) => (
+            check::CheckState::Fail,
+            Some(format!("{val} contains none of {}", needles.join(", "))),
+        ),
+    }
 }
 
 #[cfg(test)]

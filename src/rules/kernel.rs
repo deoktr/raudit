@@ -1,8 +1,6 @@
-// - tails: https://tails.net/contribute/design/kernel_hardening/
-
 use crate::check;
 use crate::check::Severity;
-use crate::modules::kernel;
+use crate::modules::{base, kernel};
 
 pub fn add_checks() {
     check::Check::new(
@@ -25,19 +23,10 @@ pub fn add_checks() {
         || kernel::check_kernel_params("slab_debug=FZ"),
         vec![kernel::init_kernel_params],
     )
-    .with_description("Enables front and end zone poisoning in slab allocator, helping detect memory corruption, buffer overflows, and use-after-free vulnerabilities by inserting canary values around memory allocations. Significant performance overhead due to extra memory usage and checks on every allocation/free.")
+    .skip_when(|| kernel::skip_kernel_before((6, 9, 0)))
+    .with_description("Enables front and end zone poisoning in slab allocator, helping detect memory corruption, buffer overflows, and use-after-free vulnerabilities by inserting canary values around memory allocations. Renamed from `slub_debug` in v6.9, the old spelling is still accepted as an alias. Significant performance overhead due to extra memory usage and checks on every allocation/free.")
     .with_fix("Add `slab_debug=FZ` to bootloader kernel params.")
     .register();
-
-    // NOTE: after 5.3 replaced by `init_on_free=1`
-    // check::Check::new(
-    //     "KNP_003",
-    //     "Ensure that kernel flag `page_poison=1` is present",
-    //     vec!["kernel", "KSPP", "server", "workstation"],
-    //     || kernel::check_kernel_params("page_poison=1"),
-    //     vec![kernel::init_kernel_params],
-    // )
-    // .register();
 
     check::Check::new(
         "KNP_004",
@@ -47,7 +36,7 @@ pub fn add_checks() {
         || kernel::check_kernel_params("page_alloc.shuffle=1"),
         vec![kernel::init_kernel_params],
     )
-    .with_description("Enable the kernel page allocator to randomize free lists during early boot. Limits some data exfiltration and ROP attacks that rely on inferring sensitive data location, also improves performance by optimizing memory-side cache utilization. Needs CONFIG_SHUFFLE_PAGE_ALLOCATOR=y kernel build config too.")
+    .with_description("Enable the kernel page allocator to randomize free lists during early boot. Limits some data exfiltration and ROP attacks that rely on inferring sensitive data location, also improves performance by optimizing memory-side cache utilization. Needs `CONFIG_SHUFFLE_PAGE_ALLOCATOR=y` kernel build config too.")
     .with_fix("Add `page_alloc.shuffle=1` to bootloader kernel params.")
     .register();
 
@@ -55,12 +44,26 @@ pub fn add_checks() {
         "KNP_005",
         "Ensure that kernel flag `init_on_alloc=1` is present",
         Severity::Medium,
-        vec!["kernel", "KSPP", "server", "workstation"],
+        vec!["kernel", "KSPP", "server", "workstation", "conditional"],
         || kernel::check_kernel_params("init_on_alloc=1"),
         vec![kernel::init_kernel_params],
     )
-    .with_description("Zero memory at allocation time. Mitigates use-after-free exploits by erasing sensitive information in memory. Performance overhead from zeroing every allocation; impact varies by workload.")
+    .skip_when(|| kernel::skip_kernel_before((5, 3, 0)))
+    .with_description("Zero memory at allocation time. Mitigates use-after-free exploits by erasing sensitive information in memory. Performance overhead from zeroing every allocation. Impact varies by workload.")
     .with_fix("Add `init_on_alloc=1` to bootloader kernel params.")
+    .register();
+
+    // NOTE: after 5.3 replaced by `init_on_alloc=1 init_on_free=1`
+    check::Check::new(
+        "KNP_003",
+        "Ensure that kernel flag `page_poison=1` is present",
+        Severity::Medium,
+        vec!["kernel", "KSPP", "server", "workstation"],
+        || kernel::check_kernel_params("page_poison=1"),
+        vec![kernel::init_kernel_params],
+    )
+    .skip_when(|| kernel::skip_kernel_since((5, 3, 0)))
+    .with_fix("Add `page_poison=1` to bootloader kernel params.")
     .register();
 
     check::Check::new(
@@ -71,6 +74,7 @@ pub fn add_checks() {
         || kernel::check_kernel_params("init_on_free=1"),
         vec![kernel::init_kernel_params],
     )
+    .skip_when(|| kernel::skip_kernel_before((5, 3, 0)))
     .with_description("Zero memory at free time. Mitigates use-after-free exploits by erasing sensitive information in memory. Performance overhead from zeroing every freed page; impact varies by workload.")
     .with_fix("Add `init_on_free=1` to bootloader kernel params.")
     .register();
@@ -88,7 +92,6 @@ pub fn add_checks() {
     .with_fix("Add `pti=on` to bootloader kernel params.")
     .register();
 
-    // TODO: since v5.13
     check::Check::new(
         "KNP_008",
         "Ensure that kernel flag `randomize_kstack_offset=on` is present",
@@ -97,11 +100,11 @@ pub fn add_checks() {
         || kernel::check_kernel_params("randomize_kstack_offset=on"),
         vec![kernel::init_kernel_params],
     )
+    .skip_when(|| kernel::skip_kernel_before((5, 13, 0)))
     .with_description("Enable randomization of the kernel stack offset on syscall entries. Hardens against memory corruption attacks due to increased entropy limits attacks relying on deterministic stack addresses or cross-syscall address exposure. Minor performance overhead from extra randomization on every syscall.")
     .with_fix("Add `randomize_kstack_offset=on` to bootloader kernel params.")
     .register();
 
-    // TODO: only for x86_64
     check::Check::new(
         "KNP_009",
         "Ensure that kernel flag `vsyscall=none` is present",
@@ -110,6 +113,7 @@ pub fn add_checks() {
         || kernel::check_kernel_params("vsyscall=none"),
         vec![kernel::init_kernel_params],
     )
+    .skip_when(|| base::skip_not_arch(&["x86_64"]))
     .with_description("Disable vsyscalls to reduce attack surface as they have been replaced by vDSO vulnerable to ROP attacks as vsyscalls are located at fixed addresses in memory. Specific to x86_64 arch. Breaks very old binaries (pre-glibc 2.22) and some legacy applications that rely on vsyscalls.")
     .with_fix("Add `vsyscall=none` to bootloader kernel params.")
     .register();
@@ -154,17 +158,16 @@ pub fn add_checks() {
 
     check::Check::new(
         "KNP_013",
-        "Ensure that kernel flag `lockdown=integrity` is present",
+        "Ensure that kernel flag `lockdown=integrity` or `lockdown=confidentiality` is present",
         Severity::High,
-        vec!["kernel", "server", "workstation"],
-        // TODO: allow for either "integrity" or "confidentiality" flags, from
+        vec!["kernel", "KSPP", "server", "workstation"],
         // arch wiki: It is recommended to use integrity, unless your specific
         // threat model dictates otherwise.
-        || kernel::check_kernel_params("lockdown=integrity"),
+        || kernel::check_kernel_params_value_in("lockdown", &["integrity", "confidentiality"]),
         vec![kernel::init_kernel_params],
     )
-    .with_description("Enable kernel lockdown to enforce security boundary between user and kernel space, enforces module signature verification kernel lockdown LSM can eliminate many methods that user space code could abuse for privilege escalation. Some applications may cease to work which rely on low-level access to either hardware or the kernel.")
-    .with_fix("Add `lockdown=integrity` to bootloader kernel params.")
+    .with_description("Enable kernel lockdown to enforce security boundary between user and kernel space, enforces module signature verification kernel lockdown LSM can eliminate many methods that user space code could abuse for privilege escalation. `integrity` blocks the interfaces that let userspace modify the running kernel (`/dev/mem`, `kexec` of an unsigned image, some MSR and PCI config space writes), `confidentiality` additionally blocks the ones that let it read kernel memory, so it is the stronger mode and the one KSPP asks for. Use `integrity` unless the threat model dictates otherwise. Some applications may cease to work which rely on low-level access to either hardware or the kernel. A kernel built with `CONFIG_LOCK_DOWN_KERNEL_FORCE_CONFIDENTIALITY` or `CONFIG_LOCK_DOWN_KERNEL_FORCE_INTEGRITY` is locked down whatever the command line says, and this parameter is then only needed to raise the level.")
+    .with_fix("Add `lockdown=confidentiality` (or `lockdown=integrity`) to bootloader kernel params.")
     .with_link("https://man.archlinux.org/man/kernel_lockdown.7")
     .register();
 
@@ -193,7 +196,6 @@ pub fn add_checks() {
     .with_link("https://docs.kernel.org/dev-tools/kfence.html")
     .register();
 
-    // TODO: only for x86_64
     check::Check::new(
         "KNP_017",
         "Ensure that kernel flag `vdso32=0` is present",
@@ -202,6 +204,7 @@ pub fn add_checks() {
         || kernel::check_kernel_params("vdso32=0"),
         vec![kernel::init_kernel_params],
     )
+    .skip_when(|| base::skip_not_arch(&["x86_64"]))
     .with_description("Disables the 32-bit vDSO, removing a small fixed-address ROP-friendly mapping from 64-bit processes that don't need it. Reduces predictable kernel-exposed addresses available to exploits. Breaks 32-bit applications that rely on vDSO for fast time-related syscalls (e.g. gettimeofday).")
     .with_fix("Add `vdso32=0` to bootloader kernel params.")
     .register();
@@ -314,13 +317,17 @@ pub fn add_checks() {
     .with_fix("Add `extra_latent_entropy` to bootloader kernel params.")
     .register();
 
-    // check::Check::new(
-    //     "KNP_028",
-    //     "Ensure that kernel flag `ipv6.disable=1` is present",
-    //     vec!["kernel", "server", "workstation"],
-    //     || kernel::check_kernel_params("ipv6.disable=1"),
-    //     vec![kernel::init_kernel_params],
-    // ).register();
+    check::Check::new(
+        "KNP_028",
+        "Ensure that kernel flag `ipv6.disable=1` is present",
+        Severity::Informational,
+        vec!["kernel", "server", "workstation", "conditional"],
+        || kernel::check_kernel_params("ipv6.disable=1"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Disable IPv6 support. Informational only: CIS recommends it when IPv6 is not required, but turning the protocol off is not a security improvement over a hardened dual-stack host. Keeps the stack out of the kernel entirely.")
+    .with_fix("Add `ipv6.disable=1` to bootloader kernel params.")
+    .register();
 
     check::Check::new(
         "KNP_029",
@@ -334,7 +341,6 @@ pub fn add_checks() {
     .with_fix("Add `ia32_emulation=0` to bootloader kernel params.")
     .register();
 
-    // TODO: only for x86_64
     check::Check::new(
         "KNP_016",
         "Ensure that kernel flag `cfi=kcfi` is present",
@@ -343,11 +349,11 @@ pub fn add_checks() {
         || kernel::check_kernel_params("cfi=kcfi"),
         vec![kernel::init_kernel_params],
     )
+    .skip_when(|| base::skip_not_arch(&["x86_64"]))
     .with_description("Disable FineIBT since it is weaker than pure KCFI.")
     .with_fix("Add `cfi=kcfi` to bootloader kernel params.")
     .register();
 
-    // from: kernel-hardening-checker
     check::Check::new(
         "KNP_064",
         "Ensure that kernel flag `hardened_usercopy=1` is present",
@@ -361,15 +367,6 @@ pub fn add_checks() {
     .with_link("https://lwn.net/Articles/695991/")
     .register();
 
-    // Remount secure
-    // https://github.com/Kicksecure/security-misc/blob/master/etc/default/grub.d/40_remount_secure.cfg
-    // remount Secure provides enhanced security via mount options:
-    // - 0 (no security): disable remount Secure
-    // - 1 (low security): re-mount with nodev and nosuid only
-    // - 2 (medium security): re-mount with nodev, nosuid, and noexec for most
-    // mount points, excluding /home
-    // - 3 (highest security): re-mount with nodev, nosuid, and noexec for all
-    // mount points including /home
     check::Check::new(
         "KNP_027",
         "Ensure that kernel flag `remountsecure=3` is present",
@@ -378,12 +375,10 @@ pub fn add_checks() {
         || kernel::check_kernel_params("remountsecure=3"),
         vec![kernel::init_kernel_params],
     )
-    .with_description("Re-mount all filesystems at boot with the strictest options: nodev, nosuid, and noexec for every mount point including /home. Prevents executable payloads on writable mounts. May break scripts, JIT-generated code, plugins, interpreters.")
+    .with_description("Re-mount filesystems at boot with restrictive mount options. The level is set by `remountsecure=<0-3>`: `0` (no security) disables the feature, `1` (low security) re-mounts with `nodev` and `nosuid` only, `2` (medium security) adds `noexec` for most mount points excluding `/home`, `3` (highest security) applies `nodev`, `nosuid`, and `noexec` to all mount points including `/home`. Blocks execution of payloads dropped on writable mounts, device node creation, and abuse of setuid binaries. Levels 2 and 3 may break scripts, JIT-generated code, plugins, and interpreters; level 3 can additionally break software installed under `/home`.")
     .with_fix("Add `remountsecure=3` to bootloader kernel params.")
     .register();
 
-    // X86 64 and 32 CPU mitigations
-    // https://github.com/Kicksecure/security-misc/blob/master/etc/default/grub.d/40_cpu_mitigations.cfg
     check::Check::new(
         "KNP_030",
         "Ensure that kernel flag `mitigations=auto` is present",
@@ -392,6 +387,7 @@ pub fn add_checks() {
         || kernel::check_kernel_params("mitigations=auto"),
         vec![kernel::init_kernel_params],
     )
+    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Enable all CPU vulnerability mitigations automatically. Protects against Spectre, Meltdown, MDS, TSX Async Abort, and other speculative-execution side-channel attacks. Performance overhead from all active mitigations; impact varies by CPU and workload (typically 5-30%).")
     .with_fix("Add `mitigations=auto` to bootloader kernel params.")
     .register();
@@ -708,19 +704,18 @@ pub fn add_checks() {
     .with_link("https://github.com/Kicksecure/security-misc/blob/master/etc/default/grub.d/41_quiet_boot.cfg%23security-misc-shared")
     .register();
 
-    // TODO: fron v5.14 to v6.16
-    // check::Check::new(
-    //     "KNP_062",
-    //     "Ensure that kernel flag `slub_debug=FZ` is present",
-    //     Severity::Medium,
-    //     vec!["kernel", "KSPP", "server", "workstation", "tails"],
-    //     || kernel::check_kernel_params("slub_debug=FZ"),
-    //     vec![kernel::init_kernel_params],
-    // )
-    // .with_fix("Add `slub_debug=FZ` to bootloader kernel params.")
-    // .register();
+    check::Check::new(
+        "KNP_062",
+        "Ensure that kernel flag `slub_debug=FZ` is present",
+        Severity::Medium,
+        vec!["kernel", "KSPP", "server", "workstation", "tails"],
+        || kernel::check_kernel_params("slub_debug=FZ"),
+        vec![kernel::init_kernel_params],
+    )
+    .skip_when(|| kernel::skip_kernel_since((6, 9, 0)))
+    .with_fix("Add `slub_debug=FZ` to bootloader kernel params.")
+    .register();
 
-    // TODO: since v6.17
     check::Check::new(
         "KNP_063",
         "Ensure that kernel flag `hash_pointers=always` is present",
@@ -729,7 +724,356 @@ pub fn add_checks() {
         || kernel::check_kernel_params("hash_pointers=always"),
         vec![kernel::init_kernel_params],
     )
-    .with_description("Hash all kernel pointers printed via printk and other output paths. Prevents kernel address leaks that aid exploitation via dmesg, /proc/kallsyms, and other interfaces.")
+    .skip_when(|| kernel::skip_kernel_before((6, 17, 0)))
+    .with_description("Hash all kernel pointers printed via printk and other output paths. Prevents kernel address leaks that aid exploitation via dmesg, `/proc/kallsyms`, and other interfaces.")
     .with_fix("Add `hash_pointers=always` to bootloader kernel params.")
+    .register();
+
+    check::Check::new(
+        "KNP_200",
+        "Ensure that kernel flag `nokaslr` is not present",
+        Severity::High,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_absent("nokaslr"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Keep Kernel Address Space Layout Randomization (KASLR) active at boot. `nokaslr` disables both the kernel image randomization (`CONFIG_RANDOMIZE_BASE` kconfig) and the kernel memory sections randomization (`CONFIG_RANDOMIZE_MEMORY` kconfig) whatever the kernel build is, so a hardened config becomes fully deterministic and every kernel address can be precomputed by an exploit.")
+    .with_fix("Remove `nokaslr` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_201",
+        "Ensure that kernel flag `slab_merge` is not present",
+        Severity::Medium,
+        vec!["kernel", "KSPP", "server", "workstation"],
+        || kernel::check_kernel_params_absent("slab_merge"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Keep slab caches unmerged at boot. `slab_merge` re-enables merging whatever the kernel was built with, undoing both `slab_nomerge` and `CONFIG_SLAB_MERGE_DEFAULT` being disabled: caches of the same size are shared again, so a heap overflow or use-after-free on one object can reach the allocations of unrelated subsystems and the cache layout becomes predictable. The parameter exists to revert a hardened build while debugging.")
+    .with_fix("Remove `slab_merge` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_202",
+        "Ensure that kernel flag `slub_merge` is not present",
+        Severity::Medium,
+        vec!["kernel", "KSPP", "server", "workstation"],
+        || kernel::check_kernel_params_absent("slub_merge"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("The SLUB spelling of `slab_merge`, still accepted by the kernel: it re-enables slab cache merging at boot and undoes `slab_nomerge` and `CONFIG_SLAB_MERGE_DEFAULT` not set. Both spellings have to be absent, since the kernel applies whichever it parses last, so a bootloader entry can carry one and not the other.")
+    .with_fix("Remove `slub_merge` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_203",
+        "Ensure that kernel flag `nopti` is not present",
+        Severity::High,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_absent("nopti"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Keep Kernel Page Table Isolation active. `nopti` unmaps nothing at the user/kernel boundary whatever the build is, so Meltdown (CVE-2017-5754) becomes exploitable again and a speculative read of a kernel address leaks data through a cache side channel. It is the same switch as `pti=off`, and `CONFIG_MITIGATION_PAGE_TABLE_ISOLATION` only decides whether the code exists.")
+    .with_fix("Remove `nopti` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_204",
+        "Ensure that kernel flag `kpti` is not one of `kpti=off`, `kpti=0`",
+        Severity::High,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_value_absent("kpti", &["off", "0"]),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Keep Kernel Page Table Isolation active, the other spelling of the `nopti` switch: `kpti=off` and `kpti=0` disable the user/kernel page table split at boot, making Meltdown (CVE-2017-5754) exploitable again whatever `CONFIG_MITIGATION_PAGE_TABLE_ISOLATION` was built with. `kpti=on` and `kpti=auto` are the safe values.")
+    .with_fix("Remove `kpti=off`, `kpti=0` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_205",
+        "Ensure that kernel flag `nosmap` is not present",
+        Severity::High,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_absent("nosmap"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Keep Supervisor Mode Access Prevention active. `nosmap` lets kernel code dereference userspace addresses freely again, so a missing bounds check or a confused deputy in a syscall handler becomes a direct read or write of user memory. It defeats `CONFIG_X86_SMAP` and the arm64 PAN equivalents.")
+    .with_fix("Remove `nosmap` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_206",
+        "Ensure that kernel flag `nosmep` is not present",
+        Severity::High,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_absent("nosmep"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Keep Supervisor Mode Execution Prevention active. `nosmep` lets the kernel execute userspace pages again, which is what turns a write-what-where primitive into control flow by pointing a function pointer at attacker-controlled memory.")
+    .with_fix("Remove `nosmep` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_207",
+        "Ensure that kernel flag `nospectre_v1` is not present",
+        Severity::High,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_absent("nospectre_v1"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Keep the Spectre v1 (CVE-2017-5753) mitigation active. `nospectre_v1` removes the bounds masking and `nospec` helpers, so an out-of-bounds index used speculatively in a syscall or ioctl path leaks whatever the attacker trains it to read.")
+    .with_fix("Remove `nospectre_v1` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_208",
+        "Ensure that kernel flag `nospectre_v2` is not present",
+        Severity::High,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_absent("nospectre_v2"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Keep the Spectre v2 (CVE-2017-5715) mitigation active. `nospectre_v2` disables the retpoline or eIBRS protection of kernel indirect branches, so a poisoned branch predictor trained from userspace or another guest can steer kernel control flow.")
+    .with_fix("Remove `nospectre_v2` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_209",
+        "Ensure that kernel flag `nospec_store_bypass_disable` is not present",
+        Severity::High,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_absent("nospec_store_bypass_disable"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Keep the Speculative Store Bypass mitigation (CVE-2018-3639, Spectre v4) active. This parameter is the long spelling of `ssbd=off`: a speculative load can again bypass a recent store and read data from another context.")
+    .with_fix("Remove `nospec_store_bypass_disable` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_210",
+        "Ensure that kernel flag `ssbd` is not one of `ssbd=off`",
+        Severity::High,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_value_absent("ssbd", &["off", "0"]),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Do not disable the Speculative Store Bypass mitigation (CVE-2018-3639, Spectre v4) at boot. `ssbd=off` turns it off for every task, which lets a speculative load bypass a recent store and read data another context wrote; `ssbd=kernel` and `ssbd=force-on` are the hardened settings, `ssbd=prctl` and `ssbd=seccomp` leave it to each process.")
+    .with_fix("Remove `ssbd=off` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_211",
+        "Ensure that kernel flag `nospectre_bhb` is not present",
+        Severity::High,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_absent("nospectre_bhb"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Keep the Spectre-BHB mitigation active on arm64. `nospectre_bhb` stops the kernel from clearing the branch history on exception entry, so a history trained in userspace can steer kernel indirect branches even with eIBRS or retpolines in place (CVE-2022-23960).")
+    .with_fix("Remove `nospectre_bhb` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_212",
+        "Ensure that kernel flag `clearcpuid` is not present",
+        Severity::Medium,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_absent("clearcpuid"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Do not clear CPU feature bits at boot. `clearcpuid=` hides a feature from the kernel and from userspace, which is a supported way to turn off the mitigations that depend on it (SME, SMAP, IBT, XSAVE and the rest) without touching the config, and it silently degrades whatever the kernel thought the CPU could do.")
+    .with_fix("Remove `clearcpuid` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_213",
+        "Ensure that kernel flag `setcpuid` is not present",
+        Severity::Medium,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_absent("setcpuid"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Do not set CPU feature bits that the hardware does not report. `setcpuid=` makes the kernel believe a feature exists, which either crashes when the instruction is executed or enables a code path that was never validated on this part; it is the counterpart of `clearcpuid`.")
+    .with_fix("Remove `setcpuid` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_214",
+        "Ensure that kernel flag `dis_ucode_ldr` is not present",
+        Severity::High,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_absent("dis_ucode_ldr"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Keep CPU microcode loading enabled. `dis_ucode_ldr` stops the kernel from applying microcode updates at boot, which is how the hardware side of most speculative execution, MDS and errata mitigations is delivered: the `CONFIG_MICROCODE` build option stays on and the vulnerabilities come back anyway.")
+    .with_fix("Remove `dis_ucode_ldr` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_215",
+        "Ensure that kernel flag `no_hash_pointers` is not present",
+        Severity::High,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_absent("no_hash_pointers"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Keep kernel pointers hashed in log and `/proc` output. `no_hash_pointers` makes `%p` print the real address, which defeats `kernel.kptr_restrict` and `CONFIG_RANDOMIZE_BASE`/`CONFIG_RANDOMIZE_MEMORY` together: one log line is enough to compute every other kernel address. It is the counterpart of `hash_pointers=always`.")
+    .with_fix("Remove `no_hash_pointers` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_216",
+        "Ensure that kernel flag `norandmaps` is not present",
+        Severity::High,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_absent("norandmaps"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Keep userspace address space layout randomization active. `norandmaps` places every mapping of every process at a predictable address, so a stack, heap or library overflow no longer needs an information leak to be aimed, and it undoes `CONFIG_ARCH_MMAP_RND_BITS`.")
+    .with_fix("Remove `norandmaps` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_217",
+        "Ensure that kernel flag `sysrq_always_enabled` is not present",
+        Severity::Medium,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_absent("sysrq_always_enabled"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Do not force every SysRq function on. The parameter overrides both the `CONFIG_MAGIC_SYSRQ_DEFAULT_ENABLE` mask and `/proc/sys/kernel/sysrq` at runtime, so anyone at the console or on the serial line can dump tasks and registers, show memory contents, kill processes and reboot the machine.")
+    .with_fix("Remove `sysrq_always_enabled` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_218",
+        "Ensure that kernel flag `arm64.nobti` is not present",
+        Severity::Medium,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_absent("arm64.nobti"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Keep Branch Target Identification active on arm64. `arm64.nobti` disables the hardware marking of valid indirect branch targets, which is what stops a hijacked pointer from jumping into the middle of a function.")
+    .with_fix("Remove `arm64.nobti` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_219",
+        "Ensure that kernel flag `arm64.nopauth` is not present",
+        Severity::High,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_absent("arm64.nopauth"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Keep pointer authentication active on arm64. `arm64.nopauth` turns off the keyed signing of return addresses and pointers, so an overwritten return address is followed instead of faulting.")
+    .with_fix("Remove `arm64.nopauth` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_220",
+        "Ensure that kernel flag `arm64.nomte` is not present",
+        Severity::Medium,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_absent("arm64.nomte"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Keep the Memory Tagging Extension active on arm64. `arm64.nomte` removes the hardware tagging that catches use-after-free and out-of-bounds accesses, both for kernel allocations (`CONFIG_KASAN_HW_TAGS`) and for the processes that opt into MTE.")
+    .with_fix("Remove `arm64.nomte` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_221",
+        "Ensure that kernel flag `arm64.nogcs` is not present",
+        Severity::Medium,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_absent("arm64.nogcs"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Keep the Guarded Control Stack active on arm64. `arm64.nogcs` disables the hardware-protected copy of the return addresses, so a stack overflow can redirect control flow again.")
+    .with_fix("Remove `arm64.nogcs` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_222",
+        "Ensure that kernel flag `slab_common.usercopy_fallback` is not present",
+        Severity::Medium,
+        vec!["kernel", "server", "workstation", "KSPP"],
+        || kernel::check_kernel_params_absent("slab_common.usercopy_fallback"),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Do not let an oversized usercopy succeed. The parameter is the runtime counterpart of `CONFIG_HARDENED_USERCOPY_FALLBACK`: with it a `copy_to_user`/`copy_from_user` that should have been rejected is logged and performed anyway, so the checks stop preventing anything.")
+    .with_fix("Remove `slab_common.usercopy_fallback` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_223",
+        "Ensure that kernel flags `proc_mem.force_override=on` or `proc_mem.force_override=always` are not present",
+        Severity::Medium,
+        vec!["kernel", "server", "workstation", "KSPP"],
+        || kernel::check_kernel_params_value_absent("proc_mem.force_override", &["on", "always"]),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Do not restore the forced writes to another process's memory through `/proc/pid/mem`. `proc_mem.force_override=on` or `always` overrides `CONFIG_PROC_MEM_NO_FORCE`, which lets root and anything able to ptrace write into a running process even when it is otherwise protected. `never` and an absent parameter are the hardened settings.")
+    .with_fix("Remove `proc_mem.force_override=on`, `proc_mem.force_override=always` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_224",
+        "Ensure that kernel flags `rodata=off` or `rodata=0` are not present",
+        Severity::High,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_value_absent("rodata", &["off", "0"]),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Do not make the kernel's read-only data writable. `rodata=off` leaves the text and rodata sections mapped writable, which turns any write-what-where primitive into a patch of the running kernel and undoes `CONFIG_STRICT_KERNEL_RWX` (`KNC_202`); `rodata=on` and `rodata=full` are the safe values.")
+    .with_fix("Remove `rodata=off`, `rodata=0` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_225",
+        "Ensure that kernel flag `tsa=off` is not present",
+        Severity::High,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_value_absent("tsa", &["off"]),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Do not disable the Transient Scheduler Attacks mitigation at boot. `tsa=off` stops the CPU buffer flushes on privilege transitions, so data from another context can be read through the transient execution window whatever `CONFIG_MITIGATION_TSA` was built with.")
+    .with_fix("Remove `tsa=off` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_226",
+        "Ensure that kernel flag `vmscape=off` is not present",
+        Severity::High,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_value_absent("vmscape", &["off"]),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Do not disable the VMSCAPE mitigation at boot. `vmscape=off` removes the protection of the VMM entry paths, so guest state can leak through the predicted control flow of the hypervisor whatever `CONFIG_MITIGATION_VMSCAPE` was built with.")
+    .with_fix("Remove `vmscape=off` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_227",
+        "Ensure that kernel flag `indirect_target_selection=off` is not present",
+        Severity::Medium,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_value_absent("indirect_target_selection", &["off"]),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Do not disable the indirect target selection mitigation at boot. `indirect_target_selection=off` lets a poisoned predictor steer the target of an indirect branch again, which is the class of attack the retpoline and IBT mitigations exist for.")
+    .with_fix("Remove `indirect_target_selection=off` from bootloader kernel params and reboot.")
+    .register();
+
+    check::Check::new(
+        "KNP_228",
+        "Ensure that kernel flag `bdev_allow_write_mounted=1` is not present",
+        Severity::Medium,
+        vec!["kernel", "server", "workstation"],
+        || kernel::check_kernel_params_value_absent("bdev_allow_write_mounted", &["1"]),
+        vec![kernel::init_kernel_params],
+    )
+    .with_description("Do not allow opening a block device for writing while a filesystem on it is mounted. `bdev_allow_write_mounted=1` restores the old behaviour, which lets root write directly under a mounted filesystem and corrupt or forge its contents past every permission and integrity check; `0` and an absent parameter are the safe settings.")
+    .with_fix("Remove `bdev_allow_write_mounted=1` from bootloader kernel params and reboot.")
     .register();
 }

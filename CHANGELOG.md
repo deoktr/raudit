@@ -10,16 +10,29 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+## [0.38.0] - 2026-10-28
+
 ### Added
 
 - Add tag intersection to `--tags` and `--tags-exclude`, `+` joins the tags of a group
 - Add an extended guide to `raudit --help`
 - Add sudo checks `SUD_012`, `SUD_204`, and `SUD_205`
+- Add kconfig checks `KNC_206` and `KNC_364`
+- Add kernel checks `KNP_200` and `KNP_228`
+- Add cron checks `CRN_027` and `CRN_028`
+- Add anacron checks `CRN_200` and `CRN_201`
 
 ### Changed
 
 - Update IDs for some sudo file-system checks
 - Update the human readable output to highlight commands and files
+- Add helper function to kconfig for fixes
+- Update all kconfig checks descriptions
+- Update all kconfig checks IDs
+
+### Fixed
+
+- Ignore some kconfig checks based on arch or kernel version instead of a warning or fail
 
 ## [0.37.0] - 2026-10-24
 
@@ -166,6 +179,8 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 - Add `--no-skip` CLI flag to disable automatic check skipping
 
+[0.38.0]: https://github.com/deoktr/raudit/releases/tag/v0.38.0
+[0.37.0]: https://github.com/deoktr/raudit/releases/tag/v0.37.0
 [0.36.1]: https://github.com/deoktr/raudit/releases/tag/v0.36.1
 [0.36.0]: https://github.com/deoktr/raudit/releases/tag/v0.36.0
 [0.35.3]: https://github.com/deoktr/raudit/releases/tag/v0.35.3

@@ -151,17 +151,16 @@ pub fn get_systemd_file(service: &str) -> Option<String> {
 
     let mut cmd = Command::new("systemctl");
     cmd.stdin(Stdio::null());
-    cmd.args(&["show", "-p", "FragmentPath", &service]);
-    if let Ok(output) = cmd.output() {
-        if let Some(p) = String::from_utf8_lossy(&output.stdout)
+    cmd.args(["show", "-p", "FragmentPath", service]);
+    if let Ok(output) = cmd.output()
+        && let Some(p) = String::from_utf8_lossy(&output.stdout)
             .to_string()
             .replace("\n", "")
             .strip_prefix("FragmentPath=")
             && p.is_empty()
         {
             return Some(p.to_string());
-        }
-    };
+        };
 
     let usr_lib_path = format!("/usr/lib/systemd/system/{}", service);
     if Path::new(&usr_lib_path).exists() {

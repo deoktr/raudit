@@ -1,18 +1,12 @@
 use crate::check;
 use crate::check::Severity;
-use crate::modules::{base, systemd};
-use crate::utils;
+use crate::modules::{base, cron, systemd};
 
 const CRON_DESCRIPTION: &str = "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation.";
 
-/// Skip when no cron daemon is installed (no cron or crond binary).
-fn skip_no_cron() -> bool {
-    utils::which("cron").is_none() && utils::which("crond").is_none()
-}
+const ANACRON_DESCRIPTION: &str = "The anacron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation.";
 
 pub fn add_checks() {
-    // TODO: add security rule to use systemd timers instead of cron jobs
-
     check::Check::new(
         "CRN_001",
         "Ensure cron service file is owned by root",
@@ -27,7 +21,7 @@ pub fn add_checks() {
         },
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chown root:root /etc/systemd/system/cron.service`")
     .register();
@@ -46,7 +40,7 @@ pub fn add_checks() {
         },
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chmod 644 /etc/systemd/system/cron.service`")
     .register();
@@ -59,7 +53,7 @@ pub fn add_checks() {
         || base::check_dir_owner_id("/etc/cron.d", 0, 0),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chown root:root /etc/cron.d/`")
     .register();
@@ -72,7 +66,7 @@ pub fn add_checks() {
         || base::check_dir_permission("/etc/cron.d", 0o755),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chmod 755 /etc/cron.d`")
     .register();
@@ -85,7 +79,7 @@ pub fn add_checks() {
         || base::check_dir_files_permission("/etc/cron.d", 0o644),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chmod 644 /etc/cron.d/*`")
     .register();
@@ -98,7 +92,7 @@ pub fn add_checks() {
         || base::check_dir_files_owner_id("/etc/cron.d/", 0, 0),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chown -R root:root /etc/cron.d/*`")
     .register();
@@ -111,7 +105,7 @@ pub fn add_checks() {
         || base::check_dir_owner_id("/etc/cron.hourly", 0, 0),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chown root:root /etc/cron.d/`")
     .register();
@@ -124,7 +118,7 @@ pub fn add_checks() {
         || base::check_dir_permission("/etc/cron.hourly", 0o755),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chmod 755 /etc/cron.hourly`")
     .register();
@@ -137,7 +131,7 @@ pub fn add_checks() {
         || base::check_dir_files_permission("/etc/cron.hourly/", 0o644),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chmod 644 /etc/cron.hourly/*`")
     .register();
@@ -150,7 +144,7 @@ pub fn add_checks() {
         || base::check_dir_files_owner_id("/etc/cron.hourly/", 0, 0),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chown -R root:root /etc/cron.hourly/*`")
     .register();
@@ -163,7 +157,7 @@ pub fn add_checks() {
         || base::check_dir_owner_id("/etc/cron.daily", 0, 0),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chown root:root /etc/cron.daily/`")
     .register();
@@ -176,7 +170,7 @@ pub fn add_checks() {
         || base::check_dir_permission("/etc/cron.daily", 0o755),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chmod 755 /etc/cron.daily`")
     .register();
@@ -189,7 +183,7 @@ pub fn add_checks() {
         || base::check_dir_files_permission("/etc/cron.daily/", 0o644),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chmod 644 /etc/cron.daily/*`")
     .register();
@@ -202,7 +196,7 @@ pub fn add_checks() {
         || base::check_dir_files_owner_id("/etc/cron.daily/", 0, 0),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chown -R root:root /etc/cron.daily/*`")
     .register();
@@ -215,7 +209,7 @@ pub fn add_checks() {
         || base::check_dir_owner_id("/etc/cron.weekly", 0, 0),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chown root:root /etc/cron.weekly/`")
     .register();
@@ -228,7 +222,7 @@ pub fn add_checks() {
         || base::check_dir_permission("/etc/cron.weekly", 0o755),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chmod 755 /etc/cron.weekly`")
     .register();
@@ -241,7 +235,7 @@ pub fn add_checks() {
         || base::check_dir_files_permission("/etc/cron.weekly/", 0o644),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chmod 644 /etc/cron.weekly/*`")
     .register();
@@ -254,7 +248,7 @@ pub fn add_checks() {
         || base::check_dir_files_owner_id("/etc/cron.weekly/", 0, 0),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chown -R root:root /etc/cron.monthly/*`")
     .register();
@@ -267,7 +261,7 @@ pub fn add_checks() {
         || base::check_dir_owner_id("/etc/cron.monthly", 0, 0),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chown root:root /etc/cron.monthly`")
     .register();
@@ -280,7 +274,7 @@ pub fn add_checks() {
         || base::check_dir_permission("/etc/cron.monthly", 0o755),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chmod 755 /etc/cron.monthly`")
     .register();
@@ -293,7 +287,7 @@ pub fn add_checks() {
         || base::check_dir_files_permission("/etc/cron.monthly/", 0o644),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chmod 644 /etc/cron.monthly/*`")
     .register();
@@ -306,7 +300,7 @@ pub fn add_checks() {
         || base::check_dir_files_owner_id("/etc/cron.monthly/", 0, 0),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chown -R root:root /etc/cron.monthly/*`")
     .register();
@@ -319,7 +313,7 @@ pub fn add_checks() {
         || base::check_dir_owner_id("/etc/cron.yearly", 0, 0),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chown root:root /etc/cron.yearly`")
     .register();
@@ -332,7 +326,7 @@ pub fn add_checks() {
         || base::check_dir_permission("/etc/cron.yearly", 0o755),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chmod 755 /etc/cron.yearly`")
     .register();
@@ -345,7 +339,7 @@ pub fn add_checks() {
         || base::check_dir_files_permission("/etc/cron.yearly/", 0o644),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chmod 644 /etc/cron.yearly/*`")
     .register();
@@ -358,8 +352,60 @@ pub fn add_checks() {
         || base::check_dir_files_owner_id("/etc/cron.yearly/", 0, 0),
         vec![],
     )
-    .skip_when(skip_no_cron)
+    .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chown -R root:root /etc/cron.yearly/*`")
+    .register();
+
+    check::Check::new(
+        "CRN_027",
+        "Ensure `/etc/crontab` is owned by root",
+        Severity::Medium,
+        vec!["cron", "server", "workstation"],
+        || base::check_file_owner_id_ignore_missing("/etc/crontab", 0, 0),
+        vec![],
+    )
+    .skip_when(cron::skip_no_cron)
+    .with_description(CRON_DESCRIPTION)
+    .with_fix("`chown root:root /etc/crontab`")
+    .register();
+
+    check::Check::new(
+        "CRN_028",
+        "Ensure `/etc/crontab` has permissions 644 or stricter",
+        Severity::High,
+        vec!["cron", "server", "workstation"],
+        || base::check_file_permission_or_stricter_ignore_missing("/etc/crontab", 0o644),
+        vec![],
+    )
+    .skip_when(cron::skip_no_cron)
+    .with_description(CRON_DESCRIPTION)
+    .with_fix("`chmod 644 /etc/crontab`")
+    .register();
+
+    check::Check::new(
+        "CRN_200",
+        "Ensure /etc/anacrontab is owned by root",
+        Severity::Medium,
+        vec!["cron", "server", "workstation"],
+        || base::check_file_owner_id_ignore_missing("/etc/anacrontab", 0, 0),
+        vec![],
+    )
+    .skip_when(cron::skip_no_anacron)
+    .with_description(ANACRON_DESCRIPTION)
+    .with_fix("`chown root:root /etc/anacrontab`")
+    .register();
+
+    check::Check::new(
+        "CRN_201",
+        "Ensure /etc/anacrontab has permissions 644 or stricter",
+        Severity::High,
+        vec!["cron", "server", "workstation"],
+        || base::check_file_permission_or_stricter_ignore_missing("/etc/anacrontab", 0o644),
+        vec![],
+    )
+    .skip_when(cron::skip_no_anacron)
+    .with_description(ANACRON_DESCRIPTION)
+    .with_fix("`chmod 644 /etc/anacrontab`")
     .register();
 }
