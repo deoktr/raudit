@@ -81,14 +81,14 @@ pub fn add_checks() {
 
     check::Check::new(
         "USR_007",
-        "Ensure no accounts are locked, delete them",
+        "Ensure no user account is expired, delete them",
         Severity::Low,
         vec!["user", "shadow", "server", "workstation"],
-        users::no_locked_account,
-        vec![users::init_shadow],
+        users::no_expired_account,
+        vec![users::init_passwd, users::init_shadow],
     )
-    .with_description("Locked accounts that are kept around clutter the user database and risk being unlocked accidentally. If an account is no longer needed, deletion is cleaner than indefinite locking.")
-    .with_fix("After confirming the account is not needed: `userdel -r <name>`. Investigate any locked account whose home dir still contains active data before deleting.")
+    .with_description("User accounts (UID >= 1000) past their expiration date are disabled but still clutter the user database and risk being re-enabled accidentally. If an account is no longer needed, deletion is cleaner than indefinite expiration. System accounts are ignored, expiration is a common way to park them.")
+    .with_fix("After confirming the account is not needed: `userdel -r <name>`. Investigate any expired account whose home dir still contains active data before deleting.")
     .register();
 
     check::Check::new(
@@ -121,7 +121,7 @@ pub fn add_checks() {
         Severity::Critical,
         vec!["user", "passwd", "server", "workstation"],
         users::no_empty_passwd_password,
-        vec![users::init_shadow],
+        vec![users::init_passwd],
     )
     .with_description("An empty password field, instead of `x` in `/etc/passwd`, means the system reads the password directly from passwd and treats absence as no password required.")
     .with_fix("Run `pwconv` to migrate password fields to `/etc/shadow`, investigate any user with an empty field.")
@@ -143,7 +143,7 @@ pub fn add_checks() {
         "USR_106",
         "Ensure `/etc/passwd` file permissions are `644`",
         Severity::High,
-        vec!["group", "CIS", "server", "workstation"],
+        vec!["user", "CIS", "server", "workstation"],
         || base::check_file_permission("/etc/passwd", 0o644),
         vec![],
     )
@@ -155,7 +155,7 @@ pub fn add_checks() {
         "USR_107",
         "Ensure `/etc/passwd` file owner is `root:root` or file is missing",
         Severity::High,
-        vec!["group", "CIS", "server", "workstation"],
+        vec!["user", "CIS", "server", "workstation"],
         || base::check_file_owner_id_ignore_missing("/etc/passwd", 0, 0),
         vec![],
     )
@@ -167,7 +167,7 @@ pub fn add_checks() {
         "USR_100",
         "Ensure `/etc/shadow` file owner is correct",
         Severity::High,
-        vec!["group", "CIS", "server", "workstation"],
+        vec!["user", "CIS", "server", "workstation"],
         || {
             base::check_file_owner_id(
                 "/etc/shadow",
@@ -189,7 +189,7 @@ pub fn add_checks() {
         "USR_101",
         "Ensure `/etc/shadow` file permissions are correct",
         Severity::High,
-        vec!["group", "CIS", "server", "workstation"],
+        vec!["user", "CIS", "server", "workstation"],
         || base::check_file_permission("/etc/shadow", if os::is_debian() { 0o640 } else { 0o600 }),
         vec![os::init_os_release],
     )
@@ -201,7 +201,7 @@ pub fn add_checks() {
         "USR_102",
         "Ensure `/etc/shadow-` file owner is correct or file is missing",
         Severity::Medium,
-        vec!["group", "CIS", "server", "workstation"],
+        vec!["user", "CIS", "server", "workstation"],
         || {
             base::check_file_owner_id_ignore_missing(
                 "/etc/shadow-",
@@ -223,7 +223,7 @@ pub fn add_checks() {
         "USR_103",
         "Ensure `/etc/shadow-` file permissions are correct or file is missing",
         Severity::Medium,
-        vec!["group", "CIS", "server", "workstation"],
+        vec!["user", "CIS", "server", "workstation"],
         || {
             base::check_file_permission_ignore_missing(
                 "/etc/shadow-",
@@ -245,7 +245,7 @@ pub fn add_checks() {
         "USR_104",
         "Ensure `/etc/security/opasswd` file owner is `root:root` or file is missing",
         Severity::Medium,
-        vec!["group", "server", "workstation"],
+        vec!["user", "server", "workstation"],
         || base::check_file_owner_id_ignore_missing("/etc/security/opasswd", 0, 0),
         vec![],
     )
@@ -257,7 +257,7 @@ pub fn add_checks() {
         "USR_105",
         "Ensure `/etc/security/opasswd` file permissions are `600` or file is missing",
         Severity::Medium,
-        vec!["group", "server", "workstation"],
+        vec!["user", "server", "workstation"],
         || base::check_file_permission_ignore_missing("/etc/security/opasswd", 0o600),
         vec![],
     )
@@ -331,9 +331,9 @@ pub fn add_checks() {
         Severity::High,
         vec!["user", "useradd", "server"],
         users::inactivity_is_set,
-        vec![users::init_shadow],
+        vec![users::init_passwd, users::init_shadow],
     )
-    .with_description("Set the number of days after a password expires until the account is permanently disabled to instantly. Password expiry could mean that the account should rotate it's password, or that the password was compromised, in either case the account should be locked to prevent it from being used until the password is changed. Especially useful when doing mandatory password rotation, but be careful to always keep a valid access to the host.")
+    .with_description("Set the number of days after a password expires until the account is permanently disabled to instantly. Password expiry could mean that the account should rotate it's password, or that the password was compromised, in either case the account should be locked to prevent it from being used until the password is changed. Only user accounts (UID >= 1000) are checked, system accounts don't login with a password. Especially useful when doing mandatory password rotation, but be careful to always keep a valid access to the host.")
     .with_fix("Set a user inactivity_period to 0: `chage -I 0 <username>`.")
     .register();
 

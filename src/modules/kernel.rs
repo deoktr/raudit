@@ -26,10 +26,12 @@ const CMDLINE_PATH: &str = "/proc/cmdline";
 const OSRELEASE_PATH: &str = "/proc/sys/kernel/osrelease";
 
 static KERNEL_PARAMS: State<KernelParams> = State::new("kernel params");
-static KERNEL_VERSION: State<(u32, u32, u32)> = State::new("kernel version");
+static KERNEL_VERSION: State<KernelVersion> = State::new("kernel version");
 
 /// Kernel params from `/proc/cmdline`.
 type KernelParams = Vec<String>;
+
+type KernelVersion = (u32, u32, u32);
 
 /// Parse content of `/proc/cmdline`.
 ///
@@ -154,7 +156,7 @@ pub fn check_kernel_params_value_absent(variable: &str, forbidden: &[&str]) -> c
 
 /// Parse a kernel version string like "6.8.0-45-generic" into (major, minor,
 /// patch).
-fn parse_kernel_version(version: &str) -> Option<(u32, u32, u32)> {
+fn parse_kernel_version(version: &str) -> Option<KernelVersion> {
     let numeric_part: String = version
         .chars()
         .take_while(|c| c.is_ascii_digit() || *c == '.')
@@ -167,7 +169,7 @@ fn parse_kernel_version(version: &str) -> Option<(u32, u32, u32)> {
 }
 
 /// Init kernel version by reading `/proc/sys/kernel/osrelease`.
-fn get_kernel_version() -> Result<(u32, u32, u32), String> {
+fn get_kernel_version() -> Result<KernelVersion, String> {
     let content = fs::read_to_string(OSRELEASE_PATH)
         .map_err(|err| format!("failed to read `{}`: {}", OSRELEASE_PATH, err))?;
     match parse_kernel_version(content.trim()) {
@@ -193,13 +195,13 @@ pub fn init_kernel_version() {
 /// Collected on first use, so other modules can compare the running kernel with
 /// the release that introduced or removed a feature without declaring a
 /// dependency on [init_kernel_version].
-pub fn kernel_version() -> Result<(u32, u32, u32), String> {
+pub fn kernel_version() -> Result<KernelVersion, String> {
     init_kernel_version();
     KERNEL_VERSION.try_get().copied()
 }
 
 /// Apply `skip` to the version of the running kernel.
-fn skip_on_kernel_version(skip: impl FnOnce((u32, u32, u32)) -> bool) -> bool {
+fn skip_on_kernel_version(skip: impl FnOnce(KernelVersion) -> bool) -> bool {
     match kernel_version() {
         Ok(version) => skip(version),
         Err(err) => {
@@ -210,7 +212,7 @@ fn skip_on_kernel_version(skip: impl FnOnce((u32, u32, u32)) -> bool) -> bool {
 }
 
 /// Skip a check when the running kernel is older than `version`.
-pub fn skip_kernel_before(version: (u32, u32, u32)) -> bool {
+pub fn skip_kernel_before(version: KernelVersion) -> bool {
     skip_on_kernel_version(|running| running < version)
 }
 

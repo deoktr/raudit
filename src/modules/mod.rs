@@ -1,5 +1,6 @@
 pub mod apparmor;
 pub mod apt;
+pub mod arch;
 pub mod audit;
 pub mod base;
 pub mod bin;

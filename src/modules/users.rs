@@ -269,32 +269,45 @@ pub fn yescrypt_hashes() -> check::CheckReturn {
     })
 }
 
-/// Ensure no accounts are locked, delete them.
-pub fn no_locked_account() -> check::CheckReturn {
-    SHADOW_CONFIG.with(|shadow| {
-        let now = match SystemTime::now().duration_since(UNIX_EPOCH) {
-            Ok(c) => c,
-            Err(err) => return (check::CheckState::Warning, Some(format!("{}", err))),
-        };
+/// Whether `username` is a human account (UID >= 1000, `nobody` excluded).
+///
+/// Accounts unknown in `/etc/passwd` are not human accounts either.
+fn is_human_account(passwd: &PasswdConfig, username: &str) -> bool {
+    passwd
+        .iter()
+        .any(|user| user.username == username && user.uid >= UID_MIN && user.uid != 65534)
+}
 
-        let days_since_epoch = now.as_secs() / 86400;
+/// Ensure no user account is expired, delete them.
+///
+/// Reports user accounts (UID >= 1000) whose shadow expiration date has
+/// passed, system accounts are ignored.
+pub fn no_expired_account() -> check::CheckReturn {
+    PASSWD_CONFIG.with(|passwd| {
+        SHADOW_CONFIG.with(|shadow| {
+            let now = match SystemTime::now().duration_since(UNIX_EPOCH) {
+                Ok(c) => c,
+                Err(err) => return (check::CheckState::Warning, Some(format!("{}", err))),
+            };
 
-        // TODO: allow locked system accounts (UID < 1000)
-        // this is the default on ArchLinux
-        let usernames: Vec<String> = shadow
-            .iter()
-            .filter(|entry| match entry.expiration_date {
-                Some(expiration_date) => u64::from(expiration_date) <= days_since_epoch,
-                None => false,
-            })
-            .map(|entry| entry.username.clone())
-            .collect();
+            let days_since_epoch = now.as_secs() / 86400;
 
-        if !usernames.is_empty() {
-            (check::CheckState::Fail, Some(usernames.join(", ")))
-        } else {
-            (check::CheckState::Pass, None)
-        }
+            let usernames: Vec<String> = shadow
+                .iter()
+                .filter(|entry| is_human_account(passwd, &entry.username))
+                .filter(|entry| match entry.expiration_date {
+                    Some(expiration_date) => u64::from(expiration_date) <= days_since_epoch,
+                    None => false,
+                })
+                .map(|entry| entry.username.clone())
+                .collect();
+
+            if !usernames.is_empty() {
+                (check::CheckState::Fail, Some(usernames.join(", ")))
+            } else {
+                (check::CheckState::Pass, None)
+            }
+        })
     })
 }
 
@@ -372,7 +385,9 @@ pub fn no_dup_username() -> check::CheckReturn {
 /// Ensure no login is available on system accounts
 ///
 /// Ensure that all system users (UID < 1000) can't login with a shell, either
-/// have `nologin`, or `false` as shell.
+/// have `nologin`, or `false` as shell. The administrative shells that
+/// immediately act and exit (`/sbin/shutdown`, `/sbin/halt`, ...) shipped by
+/// the distros for the matching accounts are not login shells either.
 pub fn no_login_sys_users() -> check::CheckReturn {
     PASSWD_CONFIG.with(|passwd| {
         let usernames: Vec<String> = passwd
@@ -382,7 +397,13 @@ pub fn no_login_sys_users() -> check::CheckReturn {
                     && !(user.shell.ends_with("/nologin")
                 || user.shell.ends_with("/false")
                 // on some distro user `sync` as `/bin/sync` shell
-                || user.shell.ends_with("/sync"))
+                || user.shell.ends_with("/sync")
+                // stock Alpine ships the `shutdown` and `halt` accounts with
+                // those shells, they power the machine off, not a login
+                || user.shell.ends_with("/shutdown")
+                || user.shell.ends_with("/halt")
+                || user.shell.ends_with("/poweroff")
+                || user.shell.ends_with("/reboot"))
             })
             .map(|entry| entry.username.clone())
             .collect();
@@ -629,28 +650,42 @@ pub fn useradd_inactive() -> check::CheckReturn {
         }
     };
 
-    if !useradd.starts_with("INACTIVE=0") && !useradd.contains("\nINACTIVE=0") {
-        (check::CheckState::Fail, None)
-    } else {
+    let current = useradd
+        .lines()
+        .find_map(|line| line.strip_prefix("INACTIVE="))
+        .unwrap_or("<unset>");
+
+    if current == "0" {
         (check::CheckState::Pass, None)
+    } else {
+        (
+            check::CheckState::Fail,
+            Some(format!("INACTIVE={}", current)),
+        )
     }
 }
 
-/// Verify that all users have inactivity_period set to 0, meaning their
-/// account is instantly locked when their password expires.
+/// Verify that all human user accounts have inactivity_period set to 0, meaning
+/// their account is instantly locked when their password expires.
+///
+/// System accounts (UID < 1000) are ignored, they don't login with a password,
+/// an inactivity period is meaningless for them.
 pub fn inactivity_is_set() -> check::CheckReturn {
-    SHADOW_CONFIG.with(|shadow| {
-        let g: Vec<String> = shadow
-            .iter()
-            .filter(|entry| entry.inactivity_period.is_none_or(|i| i != 0))
-            .map(|entry| entry.username.clone())
-            .collect();
+    PASSWD_CONFIG.with(|passwd| {
+        SHADOW_CONFIG.with(|shadow| {
+            let g: Vec<String> = shadow
+                .iter()
+                .filter(|entry| is_human_account(passwd, &entry.username))
+                .filter(|entry| entry.inactivity_period.is_none_or(|i| i != 0))
+                .map(|entry| entry.username.clone())
+                .collect();
 
-        if !g.is_empty() {
-            (check::CheckState::Fail, Some(g.join(", ")))
-        } else {
-            (check::CheckState::Pass, None)
-        }
+            if !g.is_empty() {
+                (check::CheckState::Fail, Some(g.join(", ")))
+            } else {
+                (check::CheckState::Pass, None)
+            }
+        })
     })
 }
 

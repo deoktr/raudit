@@ -104,17 +104,3 @@ pub fn skip_not_debian() -> bool {
     init_os_release();
     !is_debian()
 }
-
-/// Helper to check if current distro is ArchLinux.
-#[allow(dead_code)]
-pub fn is_arch() -> bool {
-    let os_release = match OS_RELEASE.try_get() {
-        Ok(c) => c,
-        Err(err) => {
-            log_error!("{}", err);
-            return false;
-        }
-    };
-
-    os_release.get("ID").is_some_and(|v| v == "arch")
-}

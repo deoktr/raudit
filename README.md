@@ -67,13 +67,13 @@ your specific needs, and for cleaner outputs do not print checks that passed:
 Workstation:
 
 ```bash
-raudit --tags workstation --tags-exclude paranoid,bin,clamav,modprobe,kernel_build_conf,mount_option,sysctl,audit,kernel
+raudit --tags workstation --tags-exclude paranoid,bin,clamav,modprobe,kconfig,mount_option,sysctl,audit,kernel
 ```
 
 Server:
 
 ```bash
-raudit --tags server --tags-exclude paranoid,bin,clamav,modprobe,kernel_build_conf,mount_option,sysctl,audit,kernel
+raudit --tags server --tags-exclude paranoid,bin,clamav,modprobe,kconfig,mount_option,sysctl,audit,kernel
 ```
 
 Comma-separated tags are a union, `+` intersects the tags of a group:
@@ -360,6 +360,7 @@ cargo audit
 
 Rules:
 
+- Add OpenRC checks
 - Run `systemd-analyze security ...` on all systemd services and raise errors
   based on results
 - Ensure DNS supports DNSSEC and is secured with DoT DoH or DNSCRYPT
@@ -372,7 +373,7 @@ Rules:
 - Ensure firejail is used for some processes
 - Ensure `/tmp` is managed by systemd `tmp.mount` unit, and is cleaned on shutdown
 - Ensure systemd services are hardened (with sandboxing options) `systemctl cat`
-- Ensure cron is disabled if not needed
+- Ensure USBguard is installed and configured
 
 ## License
 

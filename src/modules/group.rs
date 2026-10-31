@@ -20,7 +20,6 @@ use std::fs;
 
 use crate::check;
 use crate::check::State;
-use crate::modules::base;
 
 const GROUP_PATH: &str = "/etc/group";
 const SHADOW_PATH: &str = "/etc/gshadow";
@@ -89,19 +88,64 @@ pub fn init_group() {
     GROUPS.init(get_group);
 }
 
-/// Ensure group shadow empty or missing.
+/// Ensure no usable group password in `/etc/gshadow`.
 ///
-/// File `/etc/gshadow` must either be empty or missing.
-pub fn empty_gshadow() -> check::CheckReturn {
-    base::empty_or_missing_file(SHADOW_PATH)
+/// The file may be missing, or hold entries whose password field is locked
+/// (`!`/`*` prefix, what `gpasswd -r` and the distro tooling produce) or
+/// empty (no password). Only a real password hash is an attack vector, it
+/// lets anyone holding it switch into the group via `newgrp`.
+pub fn no_usable_gshadow_passwords() -> check::CheckReturn {
+    let content = match fs::read_to_string(SHADOW_PATH) {
+        Ok(content) => content,
+        Err(err) => {
+            return match err.kind() {
+                std::io::ErrorKind::NotFound => {
+                    (check::CheckState::Pass, Some("file missing".to_string()))
+                }
+                _ => (check::CheckState::Warning, Some(err.to_string())),
+            };
+        }
+    };
+
+    let groups: Vec<String> = content
+        .lines()
+        .filter_map(|line| {
+            // gshadow format: `group_name:encrypted_password:admins:members`
+            let mut fields = line.splitn(4, ':');
+            let name = fields.next()?;
+            let password = fields.next().unwrap_or_default();
+            if password.is_empty() || password.starts_with('!') || password.starts_with('*') {
+                None
+            } else {
+                Some(name.to_string())
+            }
+        })
+        .collect();
+
+    if groups.is_empty() {
+        (check::CheckState::Pass, None)
+    } else {
+        (check::CheckState::Fail, Some(groups.join(", ")))
+    }
 }
 
-/// Ensure no group has a password set (not set to `x`).
+/// Ensure no group has a usable password set in `/etc/group`.
+///
+/// The password field should be `x` (delegated to `/etc/gshadow`), empty (no
+/// password) or locked (`!`/`*`). Only a real hash is reported, it is a
+/// world-readable shared credential: anyone with it assumes the group's
+/// privileges via `newgrp`, bypassing the membership list.
 pub fn no_password_in_group() -> check::CheckReturn {
     GROUPS.with(|groups| {
         let g: Vec<String> = groups
             .iter()
-            .filter(|group| group.password != "x")
+            .filter(|group| {
+                let password = group.password.as_str();
+                !(password == "x"
+                    || password.is_empty()
+                    || password.starts_with('!')
+                    || password.starts_with('*'))
+            })
             .map(|group| group.name.clone())
             .collect();
 

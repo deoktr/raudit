@@ -6,14 +6,14 @@ use crate::utils;
 pub fn add_checks() {
     check::Check::new(
         "GRP_001",
-        "Ensure group shadow file is empty or missing",
+        "Ensure `/etc/gshadow` has no usable group password",
         Severity::High,
         vec!["group", "server", "workstation"],
-        group::empty_gshadow,
+        group::no_usable_gshadow_passwords,
         vec![],
     )
-    .with_description("Group passwords stored in /etc/gshadow let any holder switch into the group via `newgrp`, expanding lateral movement. Modern systems do not need group passwords and the file should be empty or absent so this attack vector does not exist.")
-    .with_fix("Remove or empty `/etc/gshadow`, ensure no group has a password by clearing the second field of each line via `gpasswd -r <group>`.")
+    .with_description("A group password stored in /etc/gshadow lets any holder switch into the group via `newgrp`, expanding lateral movement. Every entry must have its password field locked (`!`/`*`, what `gpasswd -r` produces) or empty, the file may also be absent, so this attack vector does not exist.")
+    .with_fix("Lock every group password via `gpasswd -r <group>`, or remove `/etc/gshadow`.")
     .register();
 
     check::Check::new(

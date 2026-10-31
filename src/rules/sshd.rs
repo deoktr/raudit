@@ -645,6 +645,7 @@ pub fn add_checks() {
         vec![],
     )
     .skip_when(sshd::skip_no_sshd)
+    .skip_when(systemd::skip_no_systemd)
     .with_description("If a non-root user owns the sshd systemd unit file, they can edit it and have that wrapper run as root the next time sshd is started, would allow for full local privilege escalation.")
     .with_fix("chown root:root /etc/systemd/system/sshd.service")
     .register();
@@ -664,6 +665,7 @@ pub fn add_checks() {
         vec![],
     )
     .skip_when(sshd::skip_no_sshd)
+    .skip_when(systemd::skip_no_systemd)
     .with_description("If a non-root user as permissions on the sshd systemd unit file, they can edit it and have that wrapper run as root the next time sshd is started, would allow for full local privilege escalation.")
     .with_fix("chmod 644 /etc/systemd/system/sshd.service")
     .register();

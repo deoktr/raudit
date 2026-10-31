@@ -204,20 +204,20 @@ pub fn add_checks() {
         vec![sudo::init_sudo],
     )
     .skip_when(sudo::skip_no_sudo)
-    .with_description("`!authenticate` disables the password prompt entirely for matching rules, the same effect as `NOPASSWD` via the negated tag form, often missed by NOPASSWD-only audits. Removes the auth gate that protects every sudo invocation.")
+    .with_description("`Defaults !authenticate` (globally or scoped like `Defaults:user !authenticate`) disables the password prompt entirely for matching rules, the same effect as `NOPASSWD`, often missed by NOPASSWD-only audits. Classic sudo only accepts it as a `Defaults` flag, not as a rule tag. Removes the auth gate that protects every sudo invocation.")
     .with_fix("In `/etc/sudoers` and `/etc/sudoers.d/*` remove all instances with `!authenticate`")
     .register();
 
     check::Check::new(
         "SUD_200",
-        "Ensure sudoers config file permissions is 440",
+        "Ensure sudoers config file permissions are 440 or stricter",
         Severity::High,
         vec!["sudo", "fs", "server", "workstation"],
-        || base::check_file_permission("/etc/sudoers", 0o440),
+        || base::check_file_permission_or_stricter("/etc/sudoers", 0o440),
         vec![],
     )
     .skip_when(sudo::skip_no_sudo)
-    .with_description("Sudo will intentionally not use configurations that are world-writable or -readable, otherwise this could lead to privilege escalation.")
+    .with_description("Sudo will intentionally not use configurations that are world-writable or -readable, otherwise this could lead to privilege escalation. A stricter mode (0400 for example) is accepted, sudo reads the file as root.")
     .with_fix("chmod 440 /etc/sudoers")
     .register();
 
@@ -236,14 +236,14 @@ pub fn add_checks() {
 
     check::Check::new(
         "SUD_202",
-        "Ensure /etc/sudoers.d/ files permissions are 440",
+        "Ensure /etc/sudoers.d/ files permissions are 440 or stricter",
         Severity::High,
         vec!["sudo", "fs", "server", "workstation"],
-        || base::check_dir_files_permission("/etc/sudoers.d/", 0o440),
+        sudo::check_sudoers_d_files_permission,
         vec![],
     )
     .skip_when(sudo::skip_no_sudo)
-    .with_description("Sudo will intentionally not use configurations that are world-writable or -readable, otherwise this could lead to privilege escalation.")
+    .with_description("Sudo will intentionally not use configurations that are world-writable or -readable, otherwise this could lead to privilege escalation. Only the files sudo reads are audited, the same filter as sudo applies: dot files, `~` backups and the distro `README` are ignored.")
     .with_fix("chmod -R 440 /etc/sudoers.d/*")
     .register();
 
@@ -252,11 +252,11 @@ pub fn add_checks() {
         "Ensure /etc/sudoers.d/ files are owned by root",
         Severity::High,
         vec!["sudo", "fs", "server", "workstation"],
-        || base::check_dir_files_owner_id("/etc/sudoers.d/", 0, 0),
+        sudo::check_sudoers_d_files_owner,
         vec![],
     )
     .skip_when(sudo::skip_no_sudo)
-    .with_description("Sudo will intentionally not use configurations that are world-writable or -readable, otherwise this could lead to privilege escalation.")
+    .with_description("Sudo will intentionally not use configurations that are world-writable or -readable, otherwise this could lead to privilege escalation. Only the files sudo reads are audited, the same filter as sudo applies: dot files, `~` backups and the distro `README` are ignored.")
     .with_fix("chown -R root:root /etc/sudoers.d/*")
     .register();
 
@@ -278,7 +278,7 @@ pub fn add_checks() {
         "Ensure /etc/sudoers.d directory permissions are 750 or stricter",
         Severity::Critical,
         vec!["sudo", "fs", "server", "workstation"],
-        || base::check_dir_permission("/etc/sudoers.d", 0o750),
+        || base::check_dir_permission_or_stricter("/etc/sudoers.d", 0o750),
         vec![],
     )
     .skip_when(sudo::skip_no_sudo)

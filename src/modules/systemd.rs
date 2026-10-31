@@ -157,10 +157,10 @@ pub fn get_systemd_file(service: &str) -> Option<String> {
             .to_string()
             .replace("\n", "")
             .strip_prefix("FragmentPath=")
-            && p.is_empty()
-        {
-            return Some(p.to_string());
-        };
+        && p.is_empty()
+    {
+        return Some(p.to_string());
+    };
 
     let usr_lib_path = format!("/usr/lib/systemd/system/{}", service);
     if Path::new(&usr_lib_path).exists() {

@@ -2,6 +2,7 @@ use crate::check;
 use crate::check::Severity;
 use crate::modules::{apt, base, os};
 
+// TODO: add checks on /etc/apt/keyrings directory allowing for missing
 // TODO: add checks about 'Check-Date', 'Max-FutureTime', 'Check-Valid-Until',
 // 'AllowTLS' and others?
 

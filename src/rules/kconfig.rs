@@ -1,6 +1,6 @@
 use crate::check;
 use crate::check::Severity;
-use crate::modules::{base, kconfig, kernel};
+use crate::modules::{arch, kconfig, kernel};
 
 fn fix_disabled(config: &str) -> String {
     format!(
@@ -48,7 +48,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Remove AMD-specific CPU support code. Only safe on a kernel image that runs exclusively on non-AMD x86 CPUs: without vendor detection the kernel skips AMD errata workarounds, microcode loading and the AMD-specific speculative execution mitigations, and `amd-pstate`, `k10temp` and similar drivers stop working. Do not disable it on a shared or generic kernel build.")
     .with_fix(&fix_disabled("CONFIG_CPU_SUP_AMD"))
     .register();
@@ -62,7 +62,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Remove Intel-specific CPU support code. Only safe on a kernel image that runs exclusively on non-Intel x86 CPUs: without vendor detection the kernel skips Intel errata workarounds, microcode loading, the Intel-specific speculative execution mitigations, `intel_pstate`, `coretemp` and RAPL, and Intel-only options such as `CONFIG_X86_INTEL_TSX_MODE_OFF` become unavailable. Do not disable it on a shared or generic kernel build.")
     .with_fix(&fix_disabled("CONFIG_CPU_SUP_INTEL"))
     .register();
@@ -154,7 +154,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Randomize the base of the kernel memory sections on every boot: the direct physical mapping (`page_offset_base`), the vmalloc region and the vmemmap region. Image KASLR (`CONFIG_RANDOMIZE_BASE`) alone leaves those at fixed offsets, so a single leaked kernel pointer is enough to derive physical addresses, which is what page spraying, use-after-free reclaim and direct map gadgets rely on. `nokaslr` on the kernel command line disables it whatever the build is. Costs a little boot time.")
     .with_fix(&fix_is_set("CONFIG_RANDOMIZE_MEMORY"))
     .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#kernel-address-space-layout-randomization-kaslr")
@@ -240,7 +240,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 17, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "arm64", "riscv64", "riscv32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "arm64", "riscv64", "riscv32"]))
     .with_description("Compile in the page table checking framework, which validates the refcount and mapping state of every page as it is added to or removed from a page table, catching double mappings of the same page, use-after-free and double-free of pages. It is off at runtime unless `CONFIG_PAGE_TABLE_CHECK_ENFORCED` is set or `page_table_check=on` is passed on the kernel command line. Costs measurable overhead and extra memory per page on mapping changes, so it is mainly an assurance or debugging feature.")
     .register();
 
@@ -254,7 +254,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 17, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "arm64", "riscv64", "riscv32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "arm64", "riscv64", "riscv32"]))
     .with_description("Turn page table checking on at boot without needing `page_table_check=on` on the kernel command line, so it cannot be disabled by whoever edits the bootloader entry. Requires `CONFIG_PAGE_TABLE_CHECK`. Same cost as the framework itself: extra memory and overhead on every page map and unmap, and once enforced it cannot be turned off at runtime. Only worth it where a corrupted mapping must be caught immediately rather than after the fact.")
     .with_fix(&fix_is_set("CONFIG_PAGE_TABLE_CHECK_ENFORCED"))
     .register();
@@ -362,7 +362,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 14, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32", "arm64", "arm32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32", "arm64", "arm32"]))
     .with_description("Enable core scheduling, which guarantees that only tasks sharing a scheduling cookie run simultaneously on the SMT siblings of one physical core, mitigating cross-hyperthread side channels without disabling SMT entirely. Useful only when untrusted code shares a core (co-located VMs or containers). Enabling the option protects nothing by itself: userspace must assign cookies through the cgroup v2 `cpu.core_sched` interface or `prctl(PR_SCHED_CORE)`. Costs scheduler overhead and throughput when untrusted tasks are forced apart; disabling SMT (`nosmt`) is the simpler alternative.")
     .with_fix(&fix_is_set("CONFIG_SCHED_CORE"))
     .register();
@@ -581,7 +581,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 4, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Boot with Intel TSX (Transactional Synchronization Extensions) disabled, the default-deny setting for a feature implicated in TAA, RTM-abort and other speculative execution side channels that leak data across security boundaries. Requires `CONFIG_CPU_SUP_INTEL`, so it is unavailable when Intel CPU support is compiled out, and it is Intel x86 only. Costs the performance TSX gives lock-elision-heavy workloads (databases, JVM and GCC built with `-mrtm`), which silently fall back. It is still overridable with `tsx=on` on the kernel command line, so check that too.")
     .with_fix(&fix_is_set("CONFIG_X86_INTEL_TSX_MODE_OFF"))
     .register();
@@ -728,7 +728,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_arch(&["x86_64", "x86_32"]))
     .with_description("Remove the 32-bit compatibility syscall layer on a 64-bit kernel, shrinking the reachable syscall table because compat syscalls carry their own argument-marshalling code and have had a steady stream of bugs. Breaks every 32-bit binary: 32-bit containers, Steam and Wine, multiarch chroots and legacy vendor software.")
     .with_fix(&fix_disabled("CONFIG_COMPAT"))
     .with_link("https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst#reduced-access-to-syscalls")
@@ -743,7 +743,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Remove the x86_64 32-bit syscall entry points and the associated compat signal, vDSO and ptrace handling. That body of code is rarely exercised and has had many CVEs, so removing it eliminates a whole syscall entry path. Note it does not stop 32-bit instructions from running in user mode, only 32-bit syscalls. Breaks all i386 binaries and 32-bit containers, and prevents a 32-bit userspace from booting.")
     .with_fix(&fix_disabled("CONFIG_IA32_EMULATION"))
     .register();
@@ -758,7 +758,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_since((5, 18, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Remove the x32 ABI (32-bit pointers with the 64-bit syscall table), which adds another syscall entry path with its own compat argument handling. This is the old name of the option: v5.18 renamed it to `CONFIG_X86_X32_ABI`, so the check is skipped on newer kernels.")
     .with_fix(&fix_disabled("CONFIG_X86_X32"))
     .register();
@@ -773,7 +773,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 18, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Remove the x32 ABI (32-bit pointers with the 64-bit syscall table), a separate syscall entry path with its own compat argument-marshalling code that has produced vulnerabilities. Breaks x32 binaries; no mainstream distribution ships an x32 userland, so the practical impact is nil.")
     .with_fix(&fix_disabled("CONFIG_X86_X32_ABI"))
     .register();
@@ -787,7 +787,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Remove the `modify_ldt()` syscall, which lets a process install arbitrary local descriptor table entries. Custom segments have been the basis of several local privilege escalations and information leaks (bypassing SMAP/SMEP-style protections, leaking kernel data). Breaks Wine and DOSEMU-style software that needs custom LDT entries for 16-bit or win32 TLS emulation, and any legacy 16-bit support.")
     .with_fix(&fix_disabled("CONFIG_MODIFY_LDT_SYSCALL"))
     .register();
@@ -801,7 +801,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["arm32"]))
+    .skip_when(|| arch::skip_not_arch(&["arm32"]))
     .with_description("Remove the ARM old-ABI (OABI) compatibility syscalls (`arm_ftruncate64`, OABI `sendfile`, `semop`, `mmap2` and friends), which add untested syscall paths to a kernel that only needs to run EABI binaries.")
     .with_fix(&fix_disabled("CONFIG_OABI_COMPAT"))
     .register();
@@ -815,7 +815,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Remove the `msr` device (`/dev/cpu/*/msr`), which lets root read and write arbitrary model-specific registers. Through it an attacker can flip security-relevant CPU feature bits, re-enable disabled mitigations such as TSX, or read platform secrets exposed in MSRs, defeating kernel-side hardening. Breaks `rdmsr`/`wrmsr` (msr-tools), `turbostat`, `mcelog` in some modes, microcode helpers and vendor CPU diagnostics; `/proc/cpuinfo` and perf counters cover most of the same ground. x86 only.")
     .with_fix(&fix_disabled("CONFIG_X86_MSR"))
     .register();
@@ -1426,7 +1426,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Remove support for 16-bit code segments on x86_64 (16-bit tasks created through `modify_ldt` and the associated segment handling). That emulation path is small, rarely tested and has been involved in privilege-escalation bugs. Breaks 16-bit userspace binaries (DOSEMU and similar); it does not affect the kernel's own real-mode boot code. Goes together with `CONFIG_MODIFY_LDT_SYSCALL`.")
     .with_fix(&fix_disabled("CONFIG_X86_16BIT"))
     .register();
@@ -1629,7 +1629,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_since((5, 6, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Remove the x86 page-table dump support that backs the debugfs page-table interface (`CONFIG_PTDUMP_DEBUGFS`), leaking kernel virtual and physical layout with permissions. Note that `CONFIG_DEBUG_WX` and `CONFIG_EFI_PGT_DUMP` depend on it, so disabling it also removes the boot-time warning about writable and executable mappings - a trade-off worth making on a hardened build. x86 only.")
     .with_fix(&fix_disabled("CONFIG_X86_PTDUMP"))
     .register();
@@ -1722,7 +1722,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Remove the `cpuid` device (`/dev/cpu/*/cpuid`), which lets userspace execute the `cpuid` instruction with arbitrary leaves through the kernel. It leaks platform details useful for fingerprinting and for choosing microarchitecture-specific attacks, and its ioctl surface has had bugs. Breaks `cpuid`(1), some licensing and DRM schemes, vendor CPU tools and feature-detection utilities; most of the same information is available in `/proc/cpuinfo`. x86 only.")
     .with_fix(&fix_disabled("CONFIG_X86_CPUID"))
     .register();
@@ -1737,7 +1737,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 5, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Remove the `iopl()` and `ioperm()` syscalls, which grant direct I/O port access and, at IOPL 3, the ability to execute privileged instructions from userspace, bypassing kernel drivers and protections - a long-standing local root vector. Also covers `CONFIG_DEVPORT`. Breaks legacy X.org video drivers (vesa, vga) on old hardware, BIOS flashing utilities, DOS emulators such as DOSEMU and `iopl`-using diagnostics; modern DRM-based graphics do not need it. x86 only.")
     .with_fix(&fix_disabled("CONFIG_X86_IOPL_IOPERM"))
     .register();
@@ -1950,7 +1950,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["arm32", "arm64"]))
+    .skip_when(|| arch::skip_not_arch(&["arm32", "arm64"]))
     .with_description("Remove ARM CoreSight, the on-chip debug and trace infrastructure (ETM, ETB, STM, TPIU) exposed through sysfs and perf. It can trace the execution of other processes and of the kernel, and is reachable by perf users in some configurations. ARM and arm64 only; the option is absent on x86, where this check reports a warning. Breaks hardware-assisted profiling and SoC bring-up debugging.")
     .with_fix(&fix_disabled("CONFIG_CORESIGHT"))
     .register();
@@ -2116,7 +2116,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 11, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Decide on Clang CFI explicitly instead of letting the build turn it on based on the toolchain. With the option enabled, whether a kernel gets forward-edge CFI depends on the compiler that built it, so two images from the same `.config` can differ in their protections, and a rebuild with a different compiler silently loses the mitigation. Only exists on kernels offering `CONFIG_CFI_CLANG`, so the check is skipped elsewhere. No cost when disabled.")
     .with_fix(&fix_disabled("CONFIG_CFI_AUTO_DEFAULT"))
     .register();
@@ -2429,7 +2429,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 8, 0)))
-    .skip_when(|| base::skip_not_arch(&["arm64", "riscv64", "riscv32"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64", "riscv64", "riscv32"]))
     .with_description("Keep return addresses in a separate shadow stack that neither userspace nor a linear overflow of the kernel stack can reach, so overwriting the return address of the running function stops working as an exploit primitive. arm64 and riscv with compiler support; costs a reserved register (x18 on arm64) and a little memory per task. The x86 equivalent is `CONFIG_X86_KERNEL_IBT` for the forward edge and Intel CET shadow stacks for the backward edge.")
     .with_fix(&fix_is_set("CONFIG_SHADOW_CALL_STACK"))
     .register();
@@ -2701,7 +2701,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Turn the Intel IOMMU on by default instead of waiting for `intel_iommu=on` on the kernel command line, so DMA isolation and the mitigations built on it are active even when the bootloader entry is edited. Requires `CONFIG_IOMMU_SUPPORT` and VT-d hardware; costs DMA throughput in strict mode, and devices needing unrestricted DMA may require passthrough.")
     .with_fix(&fix_is_set("CONFIG_INTEL_IOMMU_DEFAULT_ON"))
     .register();
@@ -2715,7 +2715,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Enable shared virtual memory on the Intel IOMMU, letting a device DMA through a process page table under IOMMU protection instead of needing a pinned identity-mapped region. Needed by accelerators and some compute drivers; x86 with VT-d only.")
     .with_fix(&fix_is_set("CONFIG_INTEL_IOMMU_SVM"))
     .register();
@@ -2730,7 +2730,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_since((6, 7, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("The AMD IOMMUv2 page table support used for shared virtual memory with AMD devices. Dropped from the kernel in v6.7, where the functionality moved into the main AMD IOMMU driver, so the check is skipped on newer kernels.")
     .with_fix(&fix_is_set("CONFIG_AMD_IOMMU_V2"))
     .register();
@@ -2772,7 +2772,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 9, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Enable the Straight-Line-Speculation mitigation, which stops the CPU from speculatively executing past an unconditional branch or return, the behaviour behind CVE-2021-26341 on some AMD parts. Costs a little performance, and the option is absent on CPUs and kernels that do not implement it. Was named `CONFIG_SLS` in the first releases.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_SLS"))
     .register();
@@ -2787,7 +2787,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 6, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Enable Intel CET shadow stacks for userspace, giving each process a hardware-protected copy of its return addresses so a stack overflow cannot redirect control flow. Requires CET-capable hardware and libc support; the kernel-side forward-edge counterpart is `CONFIG_X86_KERNEL_IBT`. x86_64 only.")
     .with_fix(&fix_is_set("CONFIG_X86_USER_SHADOW_STACK"))
     .register();
@@ -2801,7 +2801,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["arm64"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64"]))
     .with_description("Emulate Privileged Access Never in software by keeping a disabled translation table base in `TTBR0` while the kernel runs, so a kernel bug cannot dereference a userspace address by accident. Used on arm64 parts without hardware PAN, which `CONFIG_ARM64_PAN` covers; costs a register write on each user to kernel transition.")
     .with_fix(&fix_is_set("CONFIG_ARM64_SW_TTBR0_PAN"))
     .register();
@@ -2816,7 +2816,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 11, 0)))
-    .skip_when(|| base::skip_not_arch(&["arm64"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64"]))
     .with_description("Use the arm64 Memory Tagging Extension for KASAN, tagging allocations and pointers in hardware to catch use-after-free and out-of-bounds with far less overhead than software KASAN, which makes it usable on production images. Needs MTE-capable hardware; `CONFIG_ARM64_MTE` is the userspace side of the same feature.")
     .with_fix(&fix_is_set("CONFIG_KASAN_HW_TAGS"))
     .register();
@@ -2858,7 +2858,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 9, 0)))
-    .skip_when(|| base::skip_not_arch(&["arm32"]))
+    .skip_when(|| arch::skip_not_arch(&["arm32"]))
     .with_description("The arm name of `CONFIG_DEBUG_WX` since v6.9: report writable and executable kernel mappings at boot. Present on 32-bit arm kernels and absent elsewhere, where `CONFIG_DEBUG_WX` is the option to check.")
     .with_fix(&fix_is_set("CONFIG_ARM_DEBUG_WX"))
     .register();
@@ -2885,7 +2885,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Remove the vsyscall page entirely instead of emulating it or leaving it executable. The page sits at a fixed address in every process and contains `gettimeofday`, `time` and `getcpu` stubs, which makes it a reliable source of gadgets for return-oriented programming; `CONFIG_LEGACY_VSYSCALL_NONE` is the only setting that removes it. Breaks binaries linked against glibc older than 2.14, which call the vsyscall entry points directly.")
     .with_fix(&fix_is_set("CONFIG_LEGACY_VSYSCALL_NONE"))
     .register();
@@ -2899,7 +2899,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Stop emulating the vsyscall page in the kernel, so `vsyscall=emulate` on the kernel command line cannot bring back a fixed-address executable page in every process. Requires `CONFIG_LEGACY_VSYSCALL_NONE` to be the build choice; the option is x86_64 only. Emulation is what keeps pre-2.14 glibc binaries working, so disabling it drops that compatibility.")
     .with_fix(&fix_disabled("CONFIG_X86_VSYSCALL_EMULATION"))
     .register();
@@ -2913,7 +2913,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Do not fall back to the compat vDSO for 32-bit processes, which is mapped at a fixed address and therefore a predictable source of gadgets, the same problem as the vsyscall page. Only exists on kernels with 32-bit emulation support; a real compat vDSO is what should be used instead.")
     .with_fix(&fix_disabled("CONFIG_COMPAT_VDSO"))
     .register();
@@ -2994,7 +2994,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 7, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Keep the x86_64 32-bit syscall entry points compiled in but disabled at boot, so the compat entry code, which has had several privilege escalation bugs, is unreachable unless `ia32_emulation=on` is passed. Only relevant when `CONFIG_IA32_EMULATION` is kept, though removing it is stronger: this option then disappears and the check is skipped. Breaks 32-bit binaries by default.")
     .with_fix(&fix_is_set("CONFIG_IA32_EMULATION_DEFAULT_DISABLED"))
     .register();
@@ -3129,7 +3129,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((4, 16, 0)))
-    .skip_when(|| base::skip_not_arch(&["arm32"]))
+    .skip_when(|| arch::skip_not_arch(&["arm32"]))
     .with_description("Remove the arm32 debugfs page table dumper, the counterpart of `CONFIG_PTDUMP_DEBUGFS` on the architectures that select `ARCH_HAS_PTDUMP`, which walks the kernel page tables and prints every mapping with its physical address, defeating KASLR and handing an attacker a map of the kernel. Named `CONFIG_ARM_PTDUMP` before v4.16. Breaks the `page_tables` debugfs interface used to audit mappings.")
     .with_fix(&fix_disabled("CONFIG_ARM_PTDUMP_DEBUGFS"))
     .register();
@@ -3143,7 +3143,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["arm64", "arm32"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64", "arm32"]))
     .with_description("Remove the debugfs interface of the arm page table dumper (`CONFIG_ARM_PTDUMP`), which is what makes the kernel page table readable from userspace by root, and through a mounted debugfs by anything that reaches it. Breaks the `page_tables` debugfs files.")
     .with_fix(&fix_disabled("CONFIG_ARM_PTDUMP_DEBUGFS"))
     .register();
@@ -3283,7 +3283,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32", "arm64", "riscv64", "riscv32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32", "arm64", "riscv64", "riscv32"]))
     .with_description("Keep the minimum address a process may map at 64 KiB, so a NULL pointer dereference in the kernel cannot be turned into control flow by mapping page zero in userspace, which is what the classic NULL dereference exploits do. It is the build-time default of the `vm.mmap_min_addr` sysctl, which can still be lowered at runtime. 32-bit arm kernels legitimately use 32768, and a larger value breaks programs that expect to map very low addresses.")
     .with_fix(&fix_value("CONFIG_DEFAULT_MMAP_MIN_ADDR", "65536"))
     .register();
@@ -3324,7 +3324,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 9, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("The x86 switch for the speculative execution mitigations. With it off, Spectre, MDS, L1TF and the rest cannot be enabled at boot whatever the kernel command line says.")
     .with_fix(&fix_is_set("CONFIG_CPU_MITIGATIONS"))
     .register();
@@ -3340,7 +3340,7 @@ pub fn add_checks() {
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 19, 0)))
     .skip_when(|| kernel::skip_kernel_since((6, 9, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("The x86 switch for the speculative execution mitigations, the older name of what `CONFIG_CPU_MITIGATIONS` covers on other architectures. With it off, Spectre, MDS, L1TF and the rest cannot be enabled at boot whatever the kernel command line says.")
     .with_fix(&fix_is_set("CONFIG_SPECULATION_MITIGATIONS"))
     .register();
@@ -3355,7 +3355,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 9, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Compile the kernel with retpolines, replacing indirect branches with a return trampoline that cannot be steered by a poisoned branch predictor, which is the Spectre v2 (CVE-2017-5715) mitigation for the kernel's own indirect calls. Costs a few percent on indirect-call heavy paths; `spectre_v2=off` on the kernel command line disables it at runtime, and `CONFIG_MITIGATION_RETHUNK` replaces it on newer AMD and Intel parts.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_RETPOLINE"))
     .register();
@@ -3370,7 +3370,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_since((6, 9, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("The name `CONFIG_MITIGATION_RETPOLINE` had before the v6.9 rename, so kernels up to 6.8 carry this symbol instead. Same mitigation: indirect branches become return trampolines that a poisoned branch predictor cannot steer, which is the Spectre v2 defence for kernel code.")
     .with_fix(&fix_is_set("CONFIG_RETPOLINE"))
     .register();
@@ -3385,7 +3385,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 9, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Redirect every kernel function return through a single thunk, which is what makes the AMD retbleed (CVE-2022-29900/29901) and the Intel BTC-RET return-instruction predictions safe, and what `CONFIG_ZERO_CALL_USED_REGS` complements. Costs a little on the return path.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_RETHUNK"))
     .register();
@@ -3400,7 +3400,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 9, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Flush the branch predictor on kernel entry, so predictions trained by one context cannot steer speculation in another, which is the mitigation for retbleed and for cross-context Spectre v2 on the parts that need it. Costs an indirect branch prediction miss on every entry, which is the most expensive of the entry mitigations.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_IBPB_ENTRY"))
     .register();
@@ -3415,7 +3415,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 9, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Enable Indirect Branch Restricted Speculation on kernel entry, the Intel side of the retbleed and Spectre v2 entry mitigations, which stops userspace-trained predictions from being used while the kernel runs. Costs several percent of syscall and interrupt throughput on the affected parts.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_IBRS_ENTRY"))
     .register();
@@ -3430,7 +3430,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 9, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Deny the CPU the use of stale return predictions on kernel entry (AMD UNRET), which is the cheaper retbleed mitigation on the parts supporting it, and what `retbleed=unret` selects. Costs less than IBPB where it applies.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_UNRET_ENTRY"))
     .register();
@@ -3445,7 +3445,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 12, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Compile in the retbleed mitigation (CVE-2022-29900 on AMD, CVE-2022-29901 on Intel), which protects kernel returns against a return prediction trained by a lower privilege level. The technique is chosen at boot by `retbleed=` among unret, IBPB and call depth tracking, and `CONFIG_MITIGATION_RETHUNK`, `CONFIG_MITIGATION_UNRET_ENTRY` and `CONFIG_MITIGATION_CALL_DEPTH_TRACKING` decide which ones exist. Costs a few percent on the return path on the affected parts.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_RETBLEED"))
     .register();
@@ -3460,7 +3460,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 9, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Track the call depth in software and emit a stuffing sequence before the CPU's return stack buffer underflows, which is the Intel Skylake-era retbleed/SRSO-class mitigation for the RSB underflow case. Costs a few percent on call heavy code; only offered on the affected Intel parts.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_CALL_DEPTH_TRACKING"))
     .register();
@@ -3475,7 +3475,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 12, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Compile in the bounds-check masking and `nospec` helpers that stop an out-of-bounds index from being used speculatively, the Spectre v1 (CVE-2017-5753) mitigation. Cheap, and without it the syscall and ioctl entry paths leak whatever an attacker trains them to read.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_SPECTRE_V1"))
     .register();
@@ -3490,7 +3490,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 12, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Compile in the Spectre v2 (CVE-2017-5715) mitigations, the retpoline or eIBRS based protection of indirect branches against a poisoned predictor. `spectre_v2=off` on the kernel command line disables it at runtime, and the individual `CONFIG_MITIGATION_RETPOLINE`, `CONFIG_MITIGATION_IBRS_ENTRY` and `CONFIG_MITIGATION_RETHUNK` decide which technique is available.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_SPECTRE_V2"))
     .register();
@@ -3505,7 +3505,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 9, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Compile in the Branch History Injection mitigation (CVE-2022-0001/0002), which stops an attacker from steering kernel indirect branches through the branch history buffer even when eIBRS is active. `spectre_bhi=off` disables it at runtime; costs a few percent on the entry path.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_SPECTRE_BHI"))
     .register();
@@ -3520,7 +3520,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 17, 0)))
-    .skip_when(|| base::skip_not_arch(&["arm64"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64"]))
     .with_description("The arm64 branch history buffer mitigation for Spectre-BHB, which clears or limits the branch history on exception entry so a userspace-trained history cannot steer kernel indirect branches. Costs a loop of branch instructions on each entry from a lower exception level.")
     .with_fix(&fix_is_set("CONFIG_MITIGATE_SPECTRE_BRANCH_HISTORY"))
     .register();
@@ -3535,7 +3535,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 12, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Compile in the Speculative Store Bypass mitigation (CVE-2018-3639, Spectre v4), which uses the SSBD control to stop a speculative load from bypassing a recent store and reading stale data. `spec_store_bypass_disable=off` disables it at runtime; costs a little on store-to-load forwarding.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_SSB"))
     .register();
@@ -3550,7 +3550,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 12, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Compile in the Special Register Buffer Data Sampling mitigation (CVE-2020-0543), which serializes `RDRAND`/`RDSEED`/`EGETKEY` so a core cannot sample the random number generator results of another. Costs a lot on random-number heavy workloads, which is why `srbds=off` exists.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_SRBDS"))
     .register();
@@ -3565,7 +3565,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 12, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Compile in the L1 Terminal Fault mitigation (CVE-2018-3615/3620/3646), which inverts the page frame numbers in unused page table entries so an L1 fault cannot read a page the entry does not really point at. Needed on Intel parts before Cascade Lake; costs a little address translation work and, with SMT and untrusted guests, may need `l1tf=full,force` plus SMT off.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_L1TF"))
     .register();
@@ -3580,7 +3580,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 12, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Compile in the Microarchitectural Data Sampling mitigation (CVE-2018-12126/12127/12130, Fallout, RIDL, ZombieLoad), which flushes the affected CPU buffers on kernel entry and before returning to userspace. Costs a few percent and, with SMT and untrusted code, may need SMT disabled to be complete.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_MDS"))
     .register();
@@ -3595,7 +3595,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 12, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Compile in the TSX Asynchronous Abort mitigation (CVE-2019-11135), the MDS-class leak reachable through a transactional abort, which flushes the same buffers as MDS. Also worth pairing with `CONFIG_X86_INTEL_TSX_MODE_OFF` to disable TSX entirely.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_TAA"))
     .register();
@@ -3610,7 +3610,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 12, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Compile in the MMIO Stale Data mitigation (CVE-2022-21123/21125/21127/21166), which flushes the fill buffers before MMIO accesses leak stale data across virtualization boundaries. Mainly matters for hosts running untrusted guests.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_MMIO_STALE_DATA"))
     .register();
@@ -3625,7 +3625,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 12, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Compile in the Gather Data Sampling mitigation (CVE-2022-40982, Downfall), which serializes or microcode-patches the AVX gather instructions whose results could leak data from other contexts. Costs a lot on gather-heavy workloads, which is what `gather_data_sampling=force` accepts and `gather_data_sampling=off` refuses.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_GDS"))
     .register();
@@ -3640,7 +3640,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 9, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Compile in the Register File Data Sampling mitigation (CVE-2023-28746), which clears the register file state that an Atom-class core could otherwise leak across privilege boundaries. Only offered on the affected Intel Atom parts.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_RFDS"))
     .register();
@@ -3655,7 +3655,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 15, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Compile in the Indirect Target Selection mitigation (CVE-2024-26598 and the AMD variant), which stops a poisoned predictor from steering the target of an indirect branch in the kernel even with retpolines in place. Costs a little on the affected parts.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_ITS"))
     .register();
@@ -3670,7 +3670,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 16, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Compile in the Transient Scheduler Attacks mitigation (CVE-2024-26950 and related), which flushes the affected CPU buffers on transitions so a transient execution window cannot read data from another context. `tsa=off` disables it at runtime; costs a few percent on the entry path.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_TSA"))
     .register();
@@ -3685,7 +3685,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 17, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Compile in the VMSCAPE mitigation, which protects the hypervisor and guest boundary against leaking guest state through the predicted control flow of the VMM entry paths. `vmscape=off` disables it at runtime; only offered where the hardware is affected.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_VMSCAPE"))
     .register();
@@ -3700,7 +3700,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 9, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Compile in the Speculative Return Stack Overflow mitigation (CVE-2023-20569) for AMD Zen parts, which stops return instructions from speculating onto a stale return stack entry trained by another privilege level. The `retbleed=` and `spec_rstackoverflow=` boot parameters choose between the available techniques; costs a few percent on the return path.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_SRSO"))
     .register();
@@ -3716,7 +3716,7 @@ pub fn add_checks() {
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 5, 0)))
     .skip_when(|| kernel::skip_kernel_since((6, 9, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("The name `CONFIG_MITIGATION_SRSO` had before the v6.9 rename, so kernels up to 6.8 carry this symbol instead. Same AMD Speculative Return Stack Overflow mitigation (CVE-2023-20569).")
     .with_fix(&fix_is_set("CONFIG_CPU_SRSO"))
     .register();
@@ -3731,7 +3731,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 9, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Compile in Kernel Page Table Isolation (Meltdown, CVE-2017-5754), which unmaps kernel memory while userspace runs so a speculative read of a kernel address faults instead of leaking data through a cache side channel. `nopti` or `pti=off` on the kernel command line disables it at runtime; costs a few percent on syscall and interrupt heavy workloads.")
     .with_fix(&fix_is_set("CONFIG_MITIGATION_PAGE_TABLE_ISOLATION"))
     .register();
@@ -3746,7 +3746,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_since((6, 9, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("The name `CONFIG_MITIGATION_PAGE_TABLE_ISOLATION` had before the v6.9 rename, so kernels up to 6.8 carry this symbol instead. Same Meltdown mitigation: kernel memory is unmapped while userspace runs.")
     .with_fix(&fix_is_set("CONFIG_PAGE_TABLE_ISOLATION"))
     .register();
@@ -3761,7 +3761,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_since((5, 19, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Use Supervisor Mode Access Prevention, which makes the CPU fault when kernel code dereferences a userspace address unless the access is explicitly allowed, so a missing `access_ok()` or a confused deputy in a syscall handler cannot read or write user memory by accident. Enabled by default since v5.19; `nosmap` on the kernel command line disables it at runtime. Costs a flag flip on each user access.")
     .with_fix(&fix_is_set("CONFIG_X86_SMAP"))
     .register();
@@ -3776,7 +3776,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 5, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Use User Mode Instruction Prevention, which faults when userspace executes `SGDT`, `SIDT`, `SLDT`, `SMSW` and `STR`, the instructions that leak the addresses of the GDT, IDT and other kernel structures and defeat KASLR. Emulated in software on parts without it, which is what `CONFIG_X86_INTEL_UMIP` was named before the rename.")
     .with_fix(&fix_is_set("CONFIG_X86_UMIP"))
     .register();
@@ -3791,7 +3791,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_since((5, 5, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("The earlier name of `CONFIG_X86_UMIP`, so older kernels carry this symbol instead. Same protection: userspace execution of `SGDT`, `SIDT`, `SLDT`, `SMSW` and `STR` faults instead of leaking kernel structure addresses.")
     .with_fix(&fix_is_set("CONFIG_X86_INTEL_UMIP"))
     .register();
@@ -3806,7 +3806,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 18, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Enable Intel's Indirect Branch Tracking for the kernel, the backward-compatible half of CET, which makes every indirect jump and call land on an `ENDBR64` and turns a hijacked function pointer into a fault instead of arbitrary code execution. Requires CET-capable hardware and costs a little code size for the landing pads.")
     .with_fix(&fix_is_set("CONFIG_X86_KERNEL_IBT"))
     .register();
@@ -3820,7 +3820,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Compile in the AMD-Vi IOMMU driver, without which `amd_iommu=on` does nothing and no device DMA can be restricted to the memory granted to it. Needs AMD-Vi hardware and firmware enabling; costs DMA throughput in strict mode.")
     .with_fix(&fix_is_set("CONFIG_AMD_IOMMU"))
     .register();
@@ -3834,7 +3834,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Compile in the Intel VT-d IOMMU driver, without which `intel_iommu=on` does nothing and device DMA cannot be restricted. Needs VT-d hardware and firmware enabling; pair with `CONFIG_INTEL_IOMMU_DEFAULT_ON` so it is active without a boot parameter.")
     .with_fix(&fix_is_set("CONFIG_INTEL_IOMMU"))
     .register();
@@ -3848,7 +3848,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Load CPU microcode updates at boot, which is how the hardware side of most speculative execution, MDS and errata mitigations is delivered: without it the kernel reports the vulnerabilities as unmitigable and `MITIGATION_*` options cannot do their job. The updates are built into the kernel image or loaded from the filesystem by the initramfs; `dis_ucode_ldr` on the kernel command line disables the loading.")
     .with_fix(&fix_is_set("CONFIG_MICROCODE"))
     .register();
@@ -3863,7 +3863,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_since((6, 6, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Load Intel CPU microcode updates at boot, the part of `CONFIG_MICROCODE` covering Intel parts. Merged into `CONFIG_MICROCODE` in v6.6, so newer kernels do not have the separate symbol and the check is skipped there.")
     .with_fix(&fix_is_set("CONFIG_MICROCODE_INTEL"))
     .register();
@@ -3878,7 +3878,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_since((6, 6, 0)))
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Load AMD CPU microcode updates at boot, the part of `CONFIG_MICROCODE` covering AMD parts and the delivery mechanism for the Zen errata and SRSO mitigations. Merged into `CONFIG_MICROCODE` in v6.6, so newer kernels do not have the separate symbol and the check is skipped there.")
     .with_fix(&fix_is_set("CONFIG_MICROCODE_AMD"))
     .register();
@@ -3892,7 +3892,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Compile in Machine Check Exception handling, which is how the CPU reports corrected and uncorrected hardware errors, including the memory corruption that would otherwise be consumed silently by the kernel or by userspace. Without it a hardware fault becomes data corruption; with it the machine can kill the affected process, offline the page or panic deliberately.")
     .with_fix(&fix_is_set("CONFIG_X86_MCE"))
     .register();
@@ -3906,7 +3906,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("The Intel part of Machine Check Exception handling, covering CMCI thresholding, the Intel-specific machine check banks and memory failure recovery on Intel parts. Needs `CONFIG_X86_MCE`.")
     .with_fix(&fix_is_set("CONFIG_X86_MCE_INTEL"))
     .register();
@@ -3920,7 +3920,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("The AMD part of Machine Check Exception handling, covering the AMD thresholding banks and the SMCA error decoding needed to report which unit failed. Needs `CONFIG_X86_MCE`.")
     .with_fix(&fix_is_set("CONFIG_X86_MCE_AMD"))
     .register();
@@ -3935,7 +3935,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 8, 0)))
-    .skip_when(|| base::skip_not_arch(&["arm64"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64"]))
     .with_description("Enable the armv8.5 Branch Target Identification hardware support for userspace, which marks valid indirect branch targets so a hijacked pointer cannot jump into the middle of a function (jump-oriented programming). Needs BTI-capable hardware and binaries built with landing pads; `arm64.nobti` on the kernel command line disables it.")
     .with_fix(&fix_is_set("CONFIG_ARM64_BTI"))
     .register();
@@ -3950,7 +3950,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 8, 0)))
-    .skip_when(|| base::skip_not_arch(&["arm64"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64"]))
     .with_description("Apply Branch Target Identification to the kernel itself, not just userspace, so an indirect call inside the kernel that does not land on a `BTI` instruction faults. Requires `CONFIG_ARM64_BTI` and BTI-capable hardware, and costs a little code size for the landing pads.")
     .with_fix(&fix_is_set("CONFIG_ARM64_BTI_KERNEL"))
     .register();
@@ -3965,7 +3965,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_since((7, 0, 0)))
-    .skip_when(|| base::skip_not_arch(&["arm64"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64"]))
     .with_description("Use Privileged Access Never, which makes the CPU fault when kernel code touches a userspace address outside an explicit `uaccess` window, so a missing bounds check cannot read or write user memory by accident. Hardware PAN on armv8.1 and later; `CONFIG_ARM64_SW_TTBR0_PAN` is the software fallback for older parts.")
     .with_fix(&fix_is_set("CONFIG_ARM64_PAN"))
     .register();
@@ -3980,7 +3980,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 13, 0)))
-    .skip_when(|| base::skip_not_arch(&["arm64"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64"]))
     .with_description("Use the Enhanced PAN of armv8.7, which extends Privileged Access Never to execution as well as data access, so the kernel cannot be made to execute userspace code even through an explicit access window. Needs EPAN-capable hardware.")
     .with_fix(&fix_is_set("CONFIG_ARM64_EPAN"))
     .register();
@@ -3995,7 +3995,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 6, 0)))
-    .skip_when(|| base::skip_not_arch(&["arm64"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64"]))
     .with_description("Enable Enhanced Unprivileged Access Disable, which makes userspace accesses to the kernel half of the address space fault deterministically instead of depending on the translation table state, closing a Meltdown-class timing channel on arm64 and giving userspace a constant fault cost. The arm64 counterpart of `CONFIG_MITIGATION_PAGE_TABLE_ISOLATION`.")
     .with_fix(&fix_is_set("CONFIG_ARM64_E0PD"))
     .register();
@@ -4010,7 +4010,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 0, 0)))
-    .skip_when(|| base::skip_not_arch(&["arm64"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64"]))
     .with_description("Enable the armv8.3 pointer authentication hardware support for userspace, which signs return addresses and other pointers with a keyed MAC so a hijacked pointer is detected instead of followed. Needs hardware support and userspace built for it; `arm64.nopauth` on the kernel command line disables it.")
     .with_fix(&fix_is_set("CONFIG_ARM64_PTR_AUTH"))
     .register();
@@ -4025,7 +4025,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 14, 0)))
-    .skip_when(|| base::skip_not_arch(&["arm64"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64"]))
     .with_description("Sign the kernel's own return addresses and pointers with pointer authentication, so a stack overflow or a corrupted function pointer inside the kernel is detected rather than exploited. Requires `CONFIG_ARM64_PTR_AUTH`, hardware support, and costs a little on function entry and exit. The kernel counterpart of `CONFIG_SHADOW_CALL_STACK`.")
     .with_fix(&fix_is_set("CONFIG_ARM64_PTR_AUTH_KERNEL"))
     .register();
@@ -4040,7 +4040,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 10, 0)))
-    .skip_when(|| base::skip_not_arch(&["arm64"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64"]))
     .with_description("Enable the armv8.5 Memory Tagging Extension, which tags every allocation and pointer so a use-after-free or an out-of-bounds access is caught by the hardware, in the kernel (`CONFIG_KASAN_HW_TAGS`) and in userspace processes that opt in. Needs MTE-capable hardware and costs memory for the tags plus some throughput; `arm64.nomte` disables it.")
     .with_fix(&fix_is_set("CONFIG_ARM64_MTE"))
     .register();
@@ -4055,7 +4055,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 13, 0)))
-    .skip_when(|| base::skip_not_arch(&["arm64"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64"]))
     .with_description("Enable the armv9 Guarded Control Stack, a hardware-protected copy of the return addresses for each thread, so a stack overflow cannot redirect control flow. The arm64 counterpart of `CONFIG_X86_USER_SHADOW_STACK`; needs GCS-capable hardware and libc support, and `arm64.nogcs` disables it.")
     .with_fix(&fix_is_set("CONFIG_ARM64_GCS"))
     .register();
@@ -4070,7 +4070,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 10, 0)))
-    .skip_when(|| base::skip_not_arch(&["arm32"]))
+    .skip_when(|| arch::skip_not_arch(&["arm32"]))
     .with_description("The 32-bit arm Privileged Access Never support, which faults when kernel code touches a userspace address outside an explicit access window. On parts without the hardware, `CONFIG_CPU_SW_DOMAIN_PAN` provides the software equivalent.")
     .with_fix(&fix_is_set("CONFIG_ARM_PAN"))
     .register();
@@ -4084,7 +4084,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["arm32"]))
+    .skip_when(|| arch::skip_not_arch(&["arm32"]))
     .with_description("Emulate Privileged Access Never in software on 32-bit arm by switching the domain permissions around user accesses, so a stray kernel dereference of a userspace address faults. Costs a domain register write per user access; the hardware version is `CONFIG_ARM_PAN`.")
     .with_fix(&fix_is_set("CONFIG_CPU_SW_DOMAIN_PAN"))
     .register();
@@ -4098,7 +4098,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["arm64"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64"]))
     .with_description("The arm64 Kernel Page Table Isolation, which unmaps kernel memory while userspace runs so a speculative read cannot leak it through a cache side channel (Meltdown on the Cortex-A parts that are affected). Costs a translation table switch on each exception entry and exit.")
     .with_fix(&fix_is_set("CONFIG_UNMAP_KERNEL_AT_EL0"))
     .register();
@@ -4112,7 +4112,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["arm64", "arm32"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64", "arm32"]))
     .with_description("Invalidate or limit the branch predictor on exceptions taken from userspace, which is the arm Spectre v2 mitigation stopping a userspace-trained predictor from steering kernel indirect branches. Enabled by default since v5.10; costs a little on the entry path.")
     .with_fix(&fix_is_set("CONFIG_HARDEN_BRANCH_PREDICTOR"))
     .register();
@@ -4127,7 +4127,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 17, 0)))
-    .skip_when(|| base::skip_not_arch(&["arm32", "arm64"]))
+    .skip_when(|| arch::skip_not_arch(&["arm32", "arm64"]))
     .with_description("Clear or limit the branch history on exceptions from userspace, the arm mitigation for Spectre-BHB, which reaches kernel indirect branches through the history buffer even when the predictor itself is hardened. Costs a sequence of instructions on each entry.")
     .with_fix(&fix_is_set("CONFIG_HARDEN_BRANCH_HISTORY"))
     .register();
@@ -4142,7 +4142,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_since((5, 9, 0)))
-    .skip_when(|| base::skip_not_arch(&["arm64"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64"]))
     .with_description("Use separate hardened exception vectors at EL2 so a guest cannot exploit the shared vectors to reach the hypervisor, which matters on parts where the EL2 vectors are otherwise mapped into the guest's view. Merged into `CONFIG_RANDOMIZE_BASE` handling in v5.9, so newer kernels do not expose the symbol.")
     .with_fix(&fix_is_set("CONFIG_HARDEN_EL2_VECTORS"))
     .register();
@@ -4156,7 +4156,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["arm64"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64"]))
     .with_description("Randomize the placement of the whole module region instead of keeping modules within a fixed range of the kernel image, so a leaked module address does not give the position of the kernel and module branches have to go through veneers that are harder to steer. Costs a little module load time and indirect branch overhead.")
     .with_fix(&fix_is_set("CONFIG_RANDOMIZE_MODULE_REGION_FULL"))
     .register();
@@ -4172,7 +4172,7 @@ pub fn add_checks() {
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 0, 0)))
     .skip_when(|| kernel::skip_kernel_since((6, 18, 0)))
-    .skip_when(|| base::skip_not_arch(&["arm64"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64"]))
     .with_description("Map the kernel read-only data at full granularity by default instead of the larger block mappings, so the text and rodata boundaries are exact and a write gadget cannot cover a neighbouring page. `rodata=off` on the kernel command line can still relax it, which is what `CONFIG_RODATA_FULL_DEFAULT_ENABLED` prevents by default. Costs more page table entries.")
     .with_fix(&fix_is_set("CONFIG_RODATA_FULL_DEFAULT_ENABLED"))
     .register();
@@ -4186,7 +4186,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["arm64", "arm32"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64", "arm32"]))
     .with_description("Compile in the ARM System MMU driver, without which no device DMA can be restricted to the memory granted to it on arm and arm64 boards. Needs SMMU hardware and firmware describing it; costs DMA throughput in strict mode.")
     .with_fix(&fix_is_set("CONFIG_ARM_SMMU"))
     .register();
@@ -4200,7 +4200,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["arm64"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64"]))
     .with_description("Compile in the ARM SMMUv3 driver, the current generation of the System MMU found on arm64 server parts, without which those devices run with unrestricted DMA.")
     .with_fix(&fix_is_set("CONFIG_ARM_SMMU_V3"))
     .register();
@@ -4215,7 +4215,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 2, 0)))
-    .skip_when(|| base::skip_not_arch(&["arm64", "arm32"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64", "arm32"]))
     .with_description("Refuse DMA from devices the SMMU has no stream mapping for, instead of letting them bypass translation entirely, which is the difference between an IOMMU that is present and one that actually constrains every device. Breaks devices whose firmware does not describe them to the SMMU, so they have to be mapped explicitly or the board support fixed.")
     .with_fix(&fix_is_set("CONFIG_ARM_SMMU_DISABLE_BYPASS_BY_DEFAULT"))
     .register();
@@ -4229,7 +4229,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["arm32", "riscv64", "riscv32"]))
+    .skip_when(|| arch::skip_not_arch(&["arm32", "riscv64", "riscv32"]))
     .with_description("Align the kernel read-only data to a strict boundary so the mapping between writable and read-only sections cannot overlap a page, which is what lets `CONFIG_STRICT_KERNEL_RWX` be effective on riscv. Costs a little memory for the padding.")
     .with_fix(&fix_is_set("CONFIG_DEBUG_ALIGN_RODATA"))
     .register();
@@ -4244,7 +4244,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((6, 14, 0)))
-    .skip_when(|| base::skip_not_arch(&["riscv64", "riscv32"]))
+    .skip_when(|| arch::skip_not_arch(&["riscv64", "riscv32"]))
     .with_description("Do not enable the T-Head vendor vector extension, which carries the GhostWrite vulnerability (a vector unit that ignores privilege checks and can read or write arbitrary physical memory from userspace). Either keep the extension off, or enable `CONFIG_ERRATA_THEAD_GHOSTWRITE` so the kernel works around it; a riscv kernel without the T-Head vector hardware does not have the option at all.")
     .with_fix(&fix_disabled("CONFIG_RISCV_ISA_XTHEADVECTOR"))
     .register();
@@ -4259,7 +4259,7 @@ pub fn add_checks() {
     )
     .skip_when(kconfig::skip_no_kbuild_config)
     .skip_when(|| kernel::skip_kernel_before((5, 0, 0)))
-    .skip_when(|| base::skip_not_arch(&["arm64", "arm32", "riscv64", "riscv32"]))
+    .skip_when(|| arch::skip_not_arch(&["arm64", "arm32", "riscv64", "riscv32"]))
     .with_description("Use a distinct stack canary per task instead of one per CPU, so leaking the canary of one task does not let an attacker overflow the stack of another. Requires the architecture's TLS register support; costs a canary reload per context switch.")
     .with_fix(&fix_is_set("CONFIG_STACKPROTECTOR_PER_TASK"))
     .register();
@@ -4326,7 +4326,7 @@ pub fn add_checks() {
         vec![kconfig::init_kernel_build_config],
     )
     .skip_when(kconfig::skip_no_kbuild_config)
-    .skip_when(|| base::skip_not_arch(&["arm32"]))
+    .skip_when(|| arch::skip_not_arch(&["arm32"]))
     .with_description("Keep the minimum address a process may map at 32 KiB, so a NULL pointer dereference in the kernel cannot be turned into control flow by mapping page zero in userspace. 32-bit arm cannot use the 64 KiB expected on the other architectures, and this is the value the kernel defaults to there through `CONFIG_LSM_MMAP_MIN_ADDR`. It is the build-time default of the `vm.mmap_min_addr` sysctl, which can still be lowered at runtime.")
     .with_fix(&fix_value("CONFIG_DEFAULT_MMAP_MIN_ADDR", "32768"))
     .register();

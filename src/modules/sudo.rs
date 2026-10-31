@@ -20,6 +20,7 @@ use std::path::PathBuf;
 use std::{fs, io};
 
 use crate::check::{self, State};
+use crate::modules::base;
 use crate::utils;
 
 const SUDOERS_PATH: &str = "/etc/sudoers";
@@ -45,14 +46,60 @@ pub fn skip_sudo_rs() -> bool {
     utils::which("sudo-rs").is_some()
 }
 
+/// Strip a trailing comment, `#` opens a comment unless inside double quotes.
+fn strip_comment(line: &str) -> &str {
+    let mut in_quotes = false;
+    for (i, c) in line.char_indices() {
+        match c {
+            '"' => in_quotes = !in_quotes,
+            '#' if !in_quotes => return &line[..i],
+            _ => {}
+        }
+    }
+    line
+}
+
 /// Parse a sudo configuration file content.
+///
+/// Joins the line continuations (`\` at the end of a line), strips the comments
+/// and drops the empty lines.
 fn parse_sudoer(content: String) -> SudoConfig {
     content
+        .replace("\\\n", "")
         .lines()
-        .filter(|line| !line.starts_with("#"))
+        .map(strip_comment)
+        .map(str::trim)
         .filter(|line| !line.is_empty())
         .map(|line| line.to_string())
         .collect()
+}
+
+/// Files of `/etc/sudoers.d` that sudo actually reads.
+///
+/// Files ending with `~` or containing `.` are ignored, as per the sudo
+/// documentation, the `README` file shipped in the directory is not a
+/// configuration file either.
+fn sudoers_d_files() -> Result<Vec<PathBuf>, String> {
+    match fs::read_dir(SUDOERS_DIR_PATH) {
+        Ok(path) => Ok(path
+            .filter_map(|dentry| dentry.ok())
+            .map(|dentry| dentry.path())
+            .filter(|path| !path.is_dir())
+            .filter(|path| {
+                !path.file_name().is_some_and(|name| {
+                    name.to_string_lossy().ends_with("~")
+                        || name.to_string_lossy().contains(".")
+                        || name.to_string_lossy() == "README"
+                })
+            })
+            .collect::<Vec<PathBuf>>()),
+        // if the directory doesn't exist this is not an error, but if we don't
+        // have the permissions it is
+        Err(e) => match e.kind() {
+            io::ErrorKind::NotFound => Ok(Vec::new()),
+            _ => Err(format!("failed to open {}: {}", SUDOERS_DIR_PATH, e)),
+        },
+    }
 }
 
 /// Initialize the sudoers configuration by reading it's config files.
@@ -60,41 +107,7 @@ pub fn get_sudoer() -> Result<SudoConfig, String> {
     let mut paths: Vec<PathBuf> = vec![PathBuf::from(SUDOERS_PATH)];
 
     // get all sudoers configuration file paths
-    match fs::read_dir(SUDOERS_DIR_PATH) {
-        Ok(path) => paths.extend(
-            path.filter_map(|dentry| dentry.ok())
-                .map(|dentry| dentry.path())
-                .filter(|path| !path.is_dir())
-                // files ending with `~` or containing `.` are ignored, as per
-                // the sudo documentation
-                .filter(|path| {
-                    !path
-                        .file_name()
-                        .is_some_and(|name| name.to_string_lossy().ends_with("~"))
-                })
-                .filter(|path| {
-                    !path
-                        .file_name()
-                        .is_some_and(|name| name.to_string_lossy().contains("."))
-                })
-                // the `README` file shipped in the directory is not a
-                // configuration file
-                .filter(|path| {
-                    !path
-                        .file_name()
-                        .is_some_and(|name| name.to_string_lossy() == "README")
-                })
-                .collect::<Vec<PathBuf>>(),
-        ),
-        // if the directory doesn't exist this is not an error, but if we don't
-        // have the permissions it is
-        Err(e) => match e.kind() {
-            io::ErrorKind::NotFound => (),
-            _ => {
-                return Err(format!("failed to open {}: {}", SUDOERS_DIR_PATH, e));
-            }
-        },
-    };
+    paths.extend(sudoers_d_files()?);
 
     let mut contents: Vec<String> = Vec::new();
 
@@ -125,6 +138,32 @@ pub fn init_sudoer() {
     SUDO_CONFIG.init(get_sudoer);
 }
 
+/// Normalize a sudoers `Defaults` line into individual options.
+///
+/// Each option of the line becomes its own entry: the whitespaces are
+/// collapsed, the spaces around `=` are removed (`umask = 0027` becomes
+/// `umask=0027`) and the comma separated lists are split (`Defaults
+/// noexec,use_pty` yields two entries). Scoped defaults (`Defaults:%sudo
+/// !noexec`, `Defaults>root use_pty`, ...) keep their scope prefix, they only
+/// apply to a subset of the invocations and must not satisfy a check looking
+/// for the global option.
+fn parse_defaults_line(config: &str) -> Vec<String> {
+    config
+        .replacen("Defaults", "", 1)
+        .split(',')
+        .map(|option| {
+            option
+                .split_whitespace()
+                .collect::<Vec<&str>>()
+                .join(" ")
+                .replace(" = ", "=")
+                .replace(" =", "=")
+                .replace("= ", "=")
+        })
+        .filter(|option| !option.is_empty())
+        .collect()
+}
+
 /// Initialize the sudoers `Defaults` configuration.
 pub fn get_sudoer_defaults() -> Result<SudoConfigDefaults, String> {
     let sudo_config = match SUDO_CONFIG.try_get() {
@@ -137,23 +176,7 @@ pub fn get_sudoer_defaults() -> Result<SudoConfigDefaults, String> {
     Ok(sudo_config
         .iter()
         .filter(|config| config.starts_with("Defaults"))
-        .map(|config| {
-            config
-                // NOTE: we need to remove `Defaults` because some config
-                // can be `Defaults:%sudo !noexec` for example, in that case
-                // we would only consider `:%sudo !noexec` and store it as
-                // `:%sudo!noexec`
-                .replacen("Defaults", "", 1)
-                // this is an effort to make the result consistent, by
-                // removing whitespaces
-                // TODO: this may be annoying to work with, maybe match with
-                // regex instead, the current rules should be slightly
-                // updated but nothing to serious
-                .split_whitespace()
-                .collect::<Vec<&str>>()
-                .join(" ")
-        })
-        .map(|config| config.to_string())
+        .flat_map(|config| parse_defaults_line(config))
         .collect())
 }
 
@@ -232,4 +255,116 @@ pub fn check_secure_path_set() -> check::CheckReturn {
             )
         }
     })
+}
+
+fn check_sudoers_d_files<F>(check: F) -> check::CheckReturn
+where
+    F: Fn(&str) -> check::CheckReturn,
+{
+    let files = match sudoers_d_files() {
+        Ok(files) => files,
+        Err(err) => return (check::CheckState::Warning, Some(err)),
+    };
+
+    for file in files {
+        let path = file.to_string_lossy();
+        let (state, message) = check(path.as_ref());
+        if state != check::CheckState::Pass {
+            return match message {
+                Some(message) => (state, Some(format!("file `{}`: {}", path, message))),
+                None => (state, None),
+            };
+        }
+    }
+
+    (check::CheckState::Pass, None)
+}
+
+/// Check the permissions of the sudoers drop-in files sudo reads.
+///
+/// Applies the same file filter as the parser: the files sudo ignores (distro
+/// `README`, dot files, `~` backups) cannot influence sudo, auditing their
+/// permissions produces false positives.
+pub fn check_sudoers_d_files_permission() -> check::CheckReturn {
+    check_sudoers_d_files(|path| base::check_file_permission_or_stricter(path, 0o440))
+}
+
+/// Check the owner of the sudoers drop-in files sudo reads.
+pub fn check_sudoers_d_files_owner() -> check::CheckReturn {
+    check_sudoers_d_files(|path| base::check_file_owner_id(path, 0, 0))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_strip_comment() {
+        assert_eq!(
+            strip_comment("Defaults noexec # policy"),
+            "Defaults noexec "
+        );
+        assert_eq!(strip_comment("# full comment"), "");
+        assert_eq!(strip_comment("Defaults noexec"), "Defaults noexec");
+        // a `#` inside double quotes is not a comment
+        assert_eq!(
+            strip_comment("Defaults lecture_file=\"/etc/sudo#lecture\""),
+            "Defaults lecture_file=\"/etc/sudo#lecture\""
+        );
+    }
+
+    #[test]
+    fn test_parse_sudoer() {
+        let config = parse_sudoer(
+            "# a comment
+root ALL=(ALL) ALL  # trailing comment
+
+Defaults noexec
+Defaults secure_path=\"/usr/bin:\\
+/usr/sbin\"
+"
+            .to_string(),
+        );
+
+        assert_eq!(
+            config,
+            vec![
+                "root ALL=(ALL) ALL".to_string(),
+                "Defaults noexec".to_string(),
+                "Defaults secure_path=\"/usr/bin:/usr/sbin\"".to_string(),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_parse_defaults_line() {
+        assert_eq!(parse_defaults_line("Defaults noexec"), vec!["noexec"]);
+        assert_eq!(
+            parse_defaults_line("Defaults requiretty,ignore_dot"),
+            vec!["requiretty", "ignore_dot"]
+        );
+        assert_eq!(
+            parse_defaults_line("Defaults umask = 0027"),
+            vec!["umask=0027"]
+        );
+        assert_eq!(
+            parse_defaults_line("Defaults umask =0027"),
+            vec!["umask=0027"]
+        );
+        assert_eq!(
+            parse_defaults_line("Defaults logfile=\"/var/log/sudo.log\""),
+            vec!["logfile=\"/var/log/sudo.log\""]
+        );
+        // scoped defaults keep their scope, they must not match a global
+        // expectation
+        assert_eq!(
+            parse_defaults_line("Defaults:%sudo !noexec"),
+            vec![":%sudo !noexec"]
+        );
+        assert_eq!(
+            parse_defaults_line("Defaults>root use_pty"),
+            vec![">root use_pty"]
+        );
+        assert_eq!(parse_defaults_line("Defaults"), Vec::<String>::new());
+    }
 }

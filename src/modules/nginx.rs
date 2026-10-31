@@ -245,38 +245,233 @@ pub fn check_directive_not_contains(name: &str, forbidden: &str) -> check::Check
     })
 }
 
-/// Check that a specific add_header exists.
-pub fn check_header_present(header_name: &str) -> check::CheckReturn {
+/// Check that every instance of a directive has the expected value.
+///
+/// Unlike [`check_directive`] which returns the first match, a per-server
+/// override is reported, for example `server_tokens off` in http and
+/// `server_tokens on` in one server leaks the version for that vhost.
+pub fn check_all_directives(name: &str, expected: &str) -> check::CheckReturn {
     NGINX_CONFIG.with(|config| {
-        let mut results = Vec::new();
-        collect_directives_from_config(config, "add_header", &mut results);
+        let mut values = Vec::new();
+        collect_directives_from_config(config, name, &mut values);
 
-        if results.iter().any(|v| v.starts_with(header_name)) {
+        if values.is_empty() {
+            return (
+                check::CheckState::Fail,
+                Some(format!("directive `{}` not found", name)),
+            );
+        }
+
+        let unexpected: Vec<&str> = values
+            .iter()
+            .map(|value| value.as_str())
+            .filter(|value| *value != expected)
+            .collect();
+
+        if unexpected.is_empty() {
             (check::CheckState::Pass, None)
         } else {
             (
                 check::CheckState::Fail,
-                Some(format!("header `{}` not found", header_name)),
+                Some(format!(
+                    "`{}` found with value `{}`",
+                    name,
+                    unexpected.join("`, `")
+                )),
             )
         }
     })
 }
 
-/// Check that an HTTPS redirect exists (return 301 https).
+/// Whether an `add_header` value carries the `always` flag, without it the
+/// header is not sent on error responses.
+fn header_value_has_always(value: &str) -> bool {
+    value.split_whitespace().any(|token| token == "always")
+}
+
+/// Check that a header is effectively applied by every server and location.
+///
+/// nginx only inherits the parent `add_header` directives into a block that
+/// defines none of its own, a location with a single unrelated `add_header`
+/// silently drops the http-level security headers. Walking the tree with the
+/// inheritance rules catches it, and the `always` flag is required so the
+/// header is also sent on 4xx/5xx responses.
+pub fn check_header_present(header_name: &str) -> check::CheckReturn {
+    NGINX_CONFIG.with(|config| match config_missing_header(config, header_name) {
+        Some(message) => (check::CheckState::Fail, Some(message)),
+        None => (check::CheckState::Pass, None),
+    })
+}
+
+/// First context missing `header_name`, `None` when the header is effective
+/// everywhere.
+///
+/// `nginx -T` dumps the included files flattened: the http-level `add_header`
+/// of a conf.d drop-in lands at the root of the output, out of the `http`
+/// block. Root-level `add_header` directives are not valid nginx outside of a
+/// dump, they are the http-level ones, seed the inheritance with them.
+fn config_missing_header(config: &NginxConfig, header_name: &str) -> Option<String> {
+    let root_headers: Vec<String> = config
+        .directives
+        .iter()
+        .filter(|directive| directive.name == "add_header")
+        .map(|directive| directive.value.clone())
+        .collect();
+
+    for block in &config.blocks {
+        if let Some(message) = check_block_headers(block, &root_headers, header_name) {
+            return Some(message);
+        }
+    }
+    None
+}
+
+/// Walk `block` and its children, `inherited` holds the `add_header` values
+/// in effect from the parents, returns the first context missing the
+/// `header_name` header.
+fn check_block_headers(
+    block: &NginxBlock,
+    inherited: &[String],
+    header_name: &str,
+) -> Option<String> {
+    let own: Vec<String> = block
+        .directives
+        .iter()
+        .filter(|directive| directive.name == "add_header")
+        .map(|directive| directive.value.clone())
+        .collect();
+    // a block defining any add_header of its own drops the inherited ones
+    let effective: &[String] = if own.is_empty() { inherited } else { &own };
+
+    let context = if block.args.is_empty() {
+        block.name.clone()
+    } else {
+        format!("{} {}", block.name, block.args)
+    };
+
+    if matches!(block.name.as_str(), "server" | "location") {
+        let matching: Vec<&String> = effective
+            .iter()
+            .filter(|value| value.starts_with(header_name))
+            .collect();
+
+        if matching.is_empty() {
+            return Some(format!(
+                "header `{}` not applied in `{}`",
+                header_name, context
+            ));
+        }
+        if !matching.iter().any(|value| header_value_has_always(value)) {
+            return Some(format!(
+                "header `{}` without the `always` flag in `{}`",
+                header_name, context
+            ));
+        }
+    }
+
+    for child in &block.blocks {
+        if let Some(message) = check_block_headers(child, effective, header_name) {
+            return Some(message);
+        }
+    }
+
+    None
+}
+
+/// Whether a `listen` directive value listens on the port 80.
+fn listen_is_http(value: &str) -> bool {
+    let Some(address) = value.split_whitespace().next() else {
+        return false;
+    };
+    let port = match address.rsplit_once(':') {
+        Some((_, port)) => port,
+        None => address,
+    };
+    port == "80"
+}
+
+/// Collect every `server` block of the tree.
+fn collect_server_blocks<'a>(block: &'a NginxBlock, servers: &mut Vec<&'a NginxBlock>) {
+    if block.name == "server" {
+        servers.push(block);
+    }
+    for child in &block.blocks {
+        collect_server_blocks(child, servers);
+    }
+}
+
+/// Whether a server listens on the port 80, a server without any `listen`
+/// directive listens on the port 80 by default.
+fn server_listens_on_http(server: &NginxBlock) -> bool {
+    let listens: Vec<&str> = server
+        .directives
+        .iter()
+        .filter(|directive| directive.name == "listen")
+        .map(|directive| directive.value.as_str())
+        .collect();
+
+    listens.is_empty() || listens.iter().any(|value| listen_is_http(value))
+}
+
+/// Whether a block or one of its children redirects to HTTPS.
+fn block_redirects_to_https(block: &NginxBlock) -> bool {
+    block
+        .directives
+        .iter()
+        .any(|directive| match directive.name.as_str() {
+            "return" => {
+                let code = directive
+                    .value
+                    .split_whitespace()
+                    .next()
+                    .unwrap_or_default();
+                matches!(code, "301" | "302" | "307" | "308") && directive.value.contains("https")
+            }
+            "rewrite" => directive.value.contains("https"),
+            _ => false,
+        })
+        || block.blocks.iter().any(block_redirects_to_https)
+}
+
+/// The `server_name` of a server block, for messages.
+fn server_name(server: &NginxBlock) -> String {
+    server
+        .directives
+        .iter()
+        .find(|directive| directive.name == "server_name")
+        .map(|directive| directive.value.clone())
+        .unwrap_or_else(|| "default".to_string())
+}
+
+/// Check that the HTTP traffic is redirected to HTTPS.
+///
+/// Every server listening on the port 80 must hold the redirect, a `return`
+/// in an unrelated vhost does not protect the others. A configuration
+/// without any port 80 listener serves no plaintext HTTP and passes.
 pub fn check_https_redirect() -> check::CheckReturn {
     NGINX_CONFIG.with(|config| {
-        let mut results = Vec::new();
-        collect_directives_from_config(config, "return", &mut results);
+        let mut servers: Vec<&NginxBlock> = Vec::new();
+        for block in &config.blocks {
+            collect_server_blocks(block, &mut servers);
+        }
 
-        if results
+        let offenders: Vec<String> = servers
             .iter()
-            .any(|v| v.contains("301") && v.contains("https"))
-        {
+            .filter(|server| server_listens_on_http(server))
+            .filter(|server| !block_redirects_to_https(server))
+            .map(|server| server_name(server))
+            .collect();
+
+        if offenders.is_empty() {
             (check::CheckState::Pass, None)
         } else {
             (
                 check::CheckState::Fail,
-                Some("no HTTP to HTTPS redirect found".to_string()),
+                Some(format!(
+                    "server{} listening on port 80 without an HTTPS redirect: `{}`",
+                    if offenders.len() > 1 { "s" } else { "" },
+                    offenders.join("`, `")
+                )),
             )
         }
     })
@@ -461,5 +656,99 @@ http {
             "nginx: the configuration file /etc/nginx/nginx.conf syntax is ok\nnginx: configuration file /etc/nginx/nginx.conf test is successful\npid /run/nginx.pid;\n",
         );
         assert_eq!(config.directives.len(), 1);
+    }
+
+    const INHERITANCE_CONFIG: &str = r##"
+http {
+    server_tokens off;
+    add_header X-Frame-Options "DENY" always;
+    server {
+        listen 80 default_server;
+        server_name _;
+        return 301 https://$host$request_uri;
+    }
+    server {
+        listen 443 ssl;
+        server_name example.com;
+        server_tokens on;
+        location / {
+            add_header X-Custom "1" always;
+            return 200 "ok";
+        }
+        location /safe {
+            root /var/www;
+        }
+    }
+}
+"##;
+
+    #[test]
+    fn test_header_inheritance_dropped_by_own_add_header() {
+        let config = parse_nginx_config(INHERITANCE_CONFIG);
+        // the location defining its own add_header drops the inherited
+        // http-level X-Frame-Options
+        let message = config_missing_header(&config, "X-Frame-Options")
+            .expect("the leaky location must be reported");
+        assert!(message.contains("location /"), "{}", message);
+        // a header only set in one location is missing everywhere else
+        let message =
+            config_missing_header(&config, "X-Custom").expect("X-Custom is not applied everywhere");
+        assert!(message.contains("server"), "{}", message);
+    }
+
+    #[test]
+    fn test_header_requires_always() {
+        let config = parse_nginx_config(
+            "http {\n    add_header X-Frame-Options \"DENY\";\n    server {\n        listen 80;\n    }\n}\n",
+        );
+        let message =
+            config_missing_header(&config, "X-Frame-Options").expect("the always flag is missing");
+        assert!(message.contains("always"), "{}", message);
+    }
+
+    #[test]
+    fn test_header_from_flattened_conf_d_include() {
+        // `nginx -T` flattens the included files, the http-level add_header
+        // and the server block of a conf.d drop-in land at the root of the
+        // dump, out of the http block
+        let config = parse_nginx_config(
+            "http {\n    include /etc/nginx/conf.d/*.conf;\n}\nadd_header X-Frame-Options \"DENY\" always;\nserver {\n    listen 80 default_server;\n    server_name _;\n    return 301 https://$host$request_uri;\n}\n",
+        );
+        assert!(config_missing_header(&config, "X-Frame-Options").is_none());
+    }
+
+    #[test]
+    fn test_listen_is_http() {
+        assert!(listen_is_http("80"));
+        assert!(listen_is_http("80 default_server"));
+        assert!(listen_is_http("0.0.0.0:80"));
+        assert!(listen_is_http("[::]:80 ipv6only=on"));
+        assert!(!listen_is_http("443 ssl"));
+        assert!(!listen_is_http("8080"));
+        assert!(!listen_is_http("[::]:443 ssl"));
+        assert!(!listen_is_http("unix:/run/nginx.sock"));
+    }
+
+    #[test]
+    fn test_https_redirect_anchored_to_port_80_servers() {
+        let config = parse_nginx_config(INHERITANCE_CONFIG);
+        let mut servers = Vec::new();
+        for block in &config.blocks {
+            collect_server_blocks(block, &mut servers);
+        }
+        assert_eq!(servers.len(), 2);
+        assert!(server_listens_on_http(servers[0]));
+        assert!(block_redirects_to_https(servers[0]));
+        assert!(!server_listens_on_http(servers[1]));
+
+        // a server without any listen directive listens on the port 80 by
+        // default and must hold the redirect
+        let config = parse_nginx_config("http {\n    server {\n        server_name x;\n    }\n}\n");
+        let mut servers = Vec::new();
+        for block in &config.blocks {
+            collect_server_blocks(block, &mut servers);
+        }
+        assert!(server_listens_on_http(servers[0]));
+        assert!(!block_redirects_to_https(servers[0]));
     }
 }

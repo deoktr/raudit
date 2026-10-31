@@ -22,59 +22,7 @@ use std::os::unix::fs::FileTypeExt;
 use std::os::unix::fs::MetadataExt;
 use std::path::Path;
 
-use crate::{check, log_debug, log_trace, utils};
-
-/// Architecture of the running kernel, from the `machine` name of `uname`.
-fn kernel_arch(machine: &str) -> Option<&'static str> {
-    match machine {
-        "x86_64" => Some("x86_64"),
-        "i386" | "i486" | "i586" | "i686" => Some("x86_32"),
-        "aarch64" => Some("arm64"),
-        machine if machine.starts_with("armv") => Some("arm32"),
-        "riscv64" => Some("riscv64"),
-        "riscv32" => Some("riscv32"),
-        "ppc64le" => Some("ppc64le"),
-        "ppc64" => Some("ppc64"),
-        "s390x" => Some("s390x"),
-        "loongarch64" => Some("loongarch64"),
-        "mips" | "mips64" => Some("mips"),
-        _ => None,
-    }
-}
-
-/// Architecture of the running kernel, None when it is not one of
-/// [kernel_arch].
-fn get_kernel_arch() -> Option<&'static str> {
-    match utils::get_arch() {
-        Ok(machine) => kernel_arch(&machine),
-        Err(err) => {
-            log_debug!("machine name not available: {err}");
-            None
-        }
-    }
-}
-
-/// Skip a check when the running kernel is not one of `arches`.
-pub fn skip_not_arch(arches: &[&str]) -> bool {
-    match get_kernel_arch() {
-        Some(arch) => !arches.contains(&arch),
-        None => {
-            log_debug!("unknown kernel architecture, keeping the check");
-            false
-        }
-    }
-}
-
-/// Skip a check when the running kernel is one of `arches`.
-pub fn skip_arch(arches: &[&str]) -> bool {
-    match get_kernel_arch() {
-        Some(arch) => arches.contains(&arch),
-        None => {
-            log_debug!("unknown kernel architecture, keeping the check");
-            false
-        }
-    }
-}
+use crate::{check, log_trace};
 
 /// Check if file is either empty or not present.
 pub fn empty_or_missing_file(path: &str) -> check::CheckReturn {
@@ -295,13 +243,23 @@ fn check_owner_id(
 
 /// Run `check` on every regular file of the directory `path`, stopping at the
 /// first entry that does not pass.
-fn check_dir_files<F>(path: &str, mut check: F) -> check::CheckReturn
+///
+/// A missing directory is a warning, unless `ignore_missing` is set, for
+/// checks about directories a distro or an admin may legitimately not have,
+/// a missing directory has nothing to protect and passes.
+fn check_dir_files_with<F>(path: &str, ignore_missing: bool, mut check: F) -> check::CheckReturn
 where
     F: FnMut(&Path, &fs::Metadata) -> check::CheckReturn,
 {
     let entries = match fs::read_dir(path) {
         Ok(entries) => entries,
         Err(err) => {
+            if ignore_missing && err.kind() == std::io::ErrorKind::NotFound {
+                return (
+                    check::CheckState::Pass,
+                    Some("directory missing".to_string()),
+                );
+            }
             return (
                 check::CheckState::Warning,
                 Some(format!("failed to open directory {}: {}", path, err)),
@@ -334,6 +292,15 @@ where
     }
 
     (check::CheckState::Pass, None)
+}
+
+/// Run `check` on every regular file of the directory `path`, stopping at the
+/// first entry that does not pass.
+fn check_dir_files<F>(path: &str, check: F) -> check::CheckReturn
+where
+    F: FnMut(&Path, &fs::Metadata) -> check::CheckReturn,
+{
+    check_dir_files_with(path, false, check)
 }
 
 fn check_dir_files_permission_common(
@@ -400,6 +367,17 @@ pub fn check_dir_permission_or_stricter(path: &str, perms: u32) -> check::CheckR
     check_permission(path, EntryKind::Dir, ModeMatch::OrStricter, false, perms)
 }
 
+/// Check a directory permissions are equal or stricter than the target mode,
+/// a missing directory passes.
+///
+/// Permissions should be defined like: 0o644.
+pub fn check_dir_permission_or_stricter_ignore_missing(
+    path: &str,
+    perms: u32,
+) -> check::CheckReturn {
+    check_permission(path, EntryKind::Dir, ModeMatch::OrStricter, true, perms)
+}
+
 /// Check a socket file permissions.
 ///
 /// Permissions should be defined like: 0o644.
@@ -430,6 +408,26 @@ pub fn check_dir_files_permission_or_stricter(path: &str, perms: u32) -> check::
     check_dir_files_permission_common(path, perms, ModeMatch::OrStricter)
 }
 
+/// Check permissions of all the files inside a directory are equal or stricter
+/// than the target mode, a missing directory passes.
+///
+/// Permissions should be defined like: 0o644.
+pub fn check_dir_files_permission_or_stricter_ignore_missing(
+    path: &str,
+    perms: u32,
+) -> check::CheckReturn {
+    check_dir_files_with(path, true, |file, metadata| {
+        let (state, message) = entry_mode(metadata, file, perms, ModeMatch::OrStricter);
+        match message {
+            Some(message) => (
+                state,
+                Some(format!("file `{}` permission: {}", file.display(), message)),
+            ),
+            None => (state, None),
+        }
+    })
+}
+
 /// Check a file owner uid and gid.
 pub fn check_file_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
     check_owner_id(path, EntryKind::File, false, uid, gid)
@@ -445,6 +443,12 @@ pub fn check_dir_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn 
     check_owner_id(path, EntryKind::Dir, false, uid, gid)
 }
 
+/// Check a directory owner uid and gid, and ignore error if directory is
+/// missing.
+pub fn check_dir_owner_id_ignore_missing(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
+    check_owner_id(path, EntryKind::Dir, true, uid, gid)
+}
+
 /// Check a socket file owner uid and gid.
 pub fn check_socket_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
     check_owner_id(path, EntryKind::Socket, false, uid, gid)
@@ -452,7 +456,25 @@ pub fn check_socket_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckRetu
 
 /// Check all directory files owner uid and gid.
 pub fn check_dir_files_owner_id(path: &str, uid: u32, gid: u32) -> check::CheckReturn {
-    check_dir_files(path, |file, metadata| {
+    check_dir_files_owner_id_common(path, false, uid, gid)
+}
+
+/// Check all directory files owner uid and gid, a missing directory passes.
+pub fn check_dir_files_owner_id_ignore_missing(
+    path: &str,
+    uid: u32,
+    gid: u32,
+) -> check::CheckReturn {
+    check_dir_files_owner_id_common(path, true, uid, gid)
+}
+
+fn check_dir_files_owner_id_common(
+    path: &str,
+    ignore_missing: bool,
+    uid: u32,
+    gid: u32,
+) -> check::CheckReturn {
+    check_dir_files_with(path, ignore_missing, |file, metadata| {
         let (state, message) = entry_owner(metadata, file, uid, gid);
         match message {
             Some(message) => (

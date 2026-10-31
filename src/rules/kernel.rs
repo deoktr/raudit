@@ -1,6 +1,6 @@
 use crate::check;
 use crate::check::Severity;
-use crate::modules::{base, kernel};
+use crate::modules::{arch, kernel};
 
 pub fn add_checks() {
     check::Check::new(
@@ -113,7 +113,7 @@ pub fn add_checks() {
         || kernel::check_kernel_params("vsyscall=none"),
         vec![kernel::init_kernel_params],
     )
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Disable vsyscalls to reduce attack surface as they have been replaced by vDSO vulnerable to ROP attacks as vsyscalls are located at fixed addresses in memory. Specific to x86_64 arch. Breaks very old binaries (pre-glibc 2.22) and some legacy applications that rely on vsyscalls.")
     .with_fix("Add `vsyscall=none` to bootloader kernel params.")
     .register();
@@ -156,6 +156,7 @@ pub fn add_checks() {
     .with_link("https://docs.kernel.org/admin-guide/module-signing.html")
     .register();
 
+    // TODO: check in /sys/kernel/security/lockdown instead ?
     check::Check::new(
         "KNP_013",
         "Ensure that kernel flag `lockdown=integrity` or `lockdown=confidentiality` is present",
@@ -204,7 +205,7 @@ pub fn add_checks() {
         || kernel::check_kernel_params("vdso32=0"),
         vec![kernel::init_kernel_params],
     )
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Disables the 32-bit vDSO, removing a small fixed-address ROP-friendly mapping from 64-bit processes that don't need it. Reduces predictable kernel-exposed addresses available to exploits. Breaks 32-bit applications that rely on vDSO for fast time-related syscalls (e.g. gettimeofday).")
     .with_fix("Add `vdso32=0` to bootloader kernel params.")
     .register();
@@ -349,7 +350,7 @@ pub fn add_checks() {
         || kernel::check_kernel_params("cfi=kcfi"),
         vec![kernel::init_kernel_params],
     )
-    .skip_when(|| base::skip_not_arch(&["x86_64"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64"]))
     .with_description("Disable FineIBT since it is weaker than pure KCFI.")
     .with_fix("Add `cfi=kcfi` to bootloader kernel params.")
     .register();
@@ -387,7 +388,7 @@ pub fn add_checks() {
         || kernel::check_kernel_params("mitigations=auto"),
         vec![kernel::init_kernel_params],
     )
-    .skip_when(|| base::skip_not_arch(&["x86_64", "x86_32"]))
+    .skip_when(|| arch::skip_not_arch(&["x86_64", "x86_32"]))
     .with_description("Enable all CPU vulnerability mitigations automatically. Protects against Spectre, Meltdown, MDS, TSX Async Abort, and other speculative-execution side-channel attacks. Performance overhead from all active mitigations; impact varies by CPU and workload (typically 5-30%).")
     .with_fix("Add `mitigations=auto` to bootloader kernel params.")
     .register();

@@ -22,6 +22,7 @@ pub fn add_checks() {
         vec![],
     )
     .skip_when(cron::skip_no_cron)
+    .skip_when(systemd::skip_no_systemd)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chown root:root /etc/systemd/system/cron.service`")
     .register();
@@ -41,6 +42,7 @@ pub fn add_checks() {
         vec![],
     )
     .skip_when(cron::skip_no_cron)
+    .skip_when(systemd::skip_no_systemd)
     .with_description(CRON_DESCRIPTION)
     .with_fix("`chmod 644 /etc/systemd/system/cron.service`")
     .register();
@@ -50,7 +52,7 @@ pub fn add_checks() {
         "Ensure `/etc/cron.d` directory is owned by root",
         Severity::Medium,
         vec!["cron", "server", "workstation"],
-        || base::check_dir_owner_id("/etc/cron.d", 0, 0),
+        || base::check_dir_owner_id_ignore_missing("/etc/cron.d", 0, 0),
         vec![],
     )
     .skip_when(cron::skip_no_cron)
@@ -60,10 +62,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "CRN_004",
-        "Ensure `/etc/cron.d` directory permissions is 755",
+        "Ensure `/etc/cron.d` directory permissions is 755 or stricter",
         Severity::High,
         vec!["cron", "server", "workstation"],
-        || base::check_dir_permission("/etc/cron.d", 0o755),
+        || base::check_dir_permission_or_stricter_ignore_missing("/etc/cron.d", 0o755),
         vec![],
     )
     .skip_when(cron::skip_no_cron)
@@ -73,10 +75,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "CRN_005",
-        "Ensure all `/etc/cron.d/` files have 644 permissions",
+        "Ensure all `/etc/cron.d/` files have 644 permissions or stricter",
         Severity::High,
         vec!["cron", "server", "workstation"],
-        || base::check_dir_files_permission("/etc/cron.d", 0o644),
+        || base::check_dir_files_permission_or_stricter_ignore_missing("/etc/cron.d", 0o644),
         vec![],
     )
     .skip_when(cron::skip_no_cron)
@@ -89,7 +91,7 @@ pub fn add_checks() {
         "Ensure all `/etc/cron.d/` files are owned by root",
         Severity::Medium,
         vec!["cron", "server", "workstation"],
-        || base::check_dir_files_owner_id("/etc/cron.d/", 0, 0),
+        || base::check_dir_files_owner_id_ignore_missing("/etc/cron.d/", 0, 0),
         vec![],
     )
     .skip_when(cron::skip_no_cron)
@@ -102,20 +104,20 @@ pub fn add_checks() {
         "Ensure `/etc/cron.hourly` directory is owned by root",
         Severity::Medium,
         vec!["cron", "server", "workstation"],
-        || base::check_dir_owner_id("/etc/cron.hourly", 0, 0),
+        || base::check_dir_owner_id_ignore_missing("/etc/cron.hourly", 0, 0),
         vec![],
     )
     .skip_when(cron::skip_no_cron)
     .with_description(CRON_DESCRIPTION)
-    .with_fix("`chown root:root /etc/cron.d/`")
+    .with_fix("`chown root:root /etc/cron.hourly/`")
     .register();
 
     check::Check::new(
         "CRN_008",
-        "Ensure `/etc/cron.hourly` directory permissions is 755",
+        "Ensure `/etc/cron.hourly` directory permissions is 755 or stricter",
         Severity::High,
         vec!["cron", "server", "workstation"],
-        || base::check_dir_permission("/etc/cron.hourly", 0o755),
+        || base::check_dir_permission_or_stricter_ignore_missing("/etc/cron.hourly", 0o755),
         vec![],
     )
     .skip_when(cron::skip_no_cron)
@@ -141,7 +143,7 @@ pub fn add_checks() {
         "Ensure all `/etc/cron.hourly/` files are owned by root",
         Severity::Medium,
         vec!["cron", "server", "workstation"],
-        || base::check_dir_files_owner_id("/etc/cron.hourly/", 0, 0),
+        || base::check_dir_files_owner_id_ignore_missing("/etc/cron.hourly/", 0, 0),
         vec![],
     )
     .skip_when(cron::skip_no_cron)
@@ -154,7 +156,7 @@ pub fn add_checks() {
         "Ensure `/etc/cron.daily` directory is owned by root",
         Severity::Medium,
         vec!["cron", "server", "workstation"],
-        || base::check_dir_owner_id("/etc/cron.daily", 0, 0),
+        || base::check_dir_owner_id_ignore_missing("/etc/cron.daily", 0, 0),
         vec![],
     )
     .skip_when(cron::skip_no_cron)
@@ -164,10 +166,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "CRN_012",
-        "Ensure `/etc/cron.daily` directory permissions is 755",
+        "Ensure `/etc/cron.daily` directory permissions is 755 or stricter",
         Severity::High,
         vec!["cron", "server", "workstation"],
-        || base::check_dir_permission("/etc/cron.daily", 0o755),
+        || base::check_dir_permission_or_stricter_ignore_missing("/etc/cron.daily", 0o755),
         vec![],
     )
     .skip_when(cron::skip_no_cron)
@@ -193,7 +195,7 @@ pub fn add_checks() {
         "Ensure all `/etc/cron.daily/` files are owned by root",
         Severity::Medium,
         vec!["cron", "server", "workstation"],
-        || base::check_dir_files_owner_id("/etc/cron.daily/", 0, 0),
+        || base::check_dir_files_owner_id_ignore_missing("/etc/cron.daily/", 0, 0),
         vec![],
     )
     .skip_when(cron::skip_no_cron)
@@ -206,7 +208,7 @@ pub fn add_checks() {
         "Ensure `/etc/cron.weekly` directory is owned by root",
         Severity::Medium,
         vec!["cron", "server", "workstation"],
-        || base::check_dir_owner_id("/etc/cron.weekly", 0, 0),
+        || base::check_dir_owner_id_ignore_missing("/etc/cron.weekly", 0, 0),
         vec![],
     )
     .skip_when(cron::skip_no_cron)
@@ -216,10 +218,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "CRN_016",
-        "Ensure `/etc/cron.weekly` directory permissions is 755",
+        "Ensure `/etc/cron.weekly` directory permissions is 755 or stricter",
         Severity::High,
         vec!["cron", "server", "workstation"],
-        || base::check_dir_permission("/etc/cron.weekly", 0o755),
+        || base::check_dir_permission_or_stricter_ignore_missing("/etc/cron.weekly", 0o755),
         vec![],
     )
     .skip_when(cron::skip_no_cron)
@@ -245,7 +247,7 @@ pub fn add_checks() {
         "Ensure all `/etc/cron.weekly/` files are owned by root",
         Severity::Medium,
         vec!["cron", "server", "workstation"],
-        || base::check_dir_files_owner_id("/etc/cron.weekly/", 0, 0),
+        || base::check_dir_files_owner_id_ignore_missing("/etc/cron.weekly/", 0, 0),
         vec![],
     )
     .skip_when(cron::skip_no_cron)
@@ -258,7 +260,7 @@ pub fn add_checks() {
         "Ensure `/etc/cron.monthly` directory is owned by root",
         Severity::Medium,
         vec!["cron", "server", "workstation"],
-        || base::check_dir_owner_id("/etc/cron.monthly", 0, 0),
+        || base::check_dir_owner_id_ignore_missing("/etc/cron.monthly", 0, 0),
         vec![],
     )
     .skip_when(cron::skip_no_cron)
@@ -268,10 +270,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "CRN_020",
-        "Ensure `/etc/cron.monthly` directory permissions is 755",
+        "Ensure `/etc/cron.monthly` directory permissions is 755 or stricter",
         Severity::High,
         vec!["cron", "server", "workstation"],
-        || base::check_dir_permission("/etc/cron.monthly", 0o755),
+        || base::check_dir_permission_or_stricter_ignore_missing("/etc/cron.monthly", 0o755),
         vec![],
     )
     .skip_when(cron::skip_no_cron)
@@ -297,7 +299,7 @@ pub fn add_checks() {
         "Ensure all `/etc/cron.monthly/` files are owned by root",
         Severity::Medium,
         vec!["cron", "server", "workstation"],
-        || base::check_dir_files_owner_id("/etc/cron.monthly/", 0, 0),
+        || base::check_dir_files_owner_id_ignore_missing("/etc/cron.monthly/", 0, 0),
         vec![],
     )
     .skip_when(cron::skip_no_cron)
@@ -310,7 +312,7 @@ pub fn add_checks() {
         "Ensure `/etc/cron.yearly` directory is owned by root",
         Severity::Medium,
         vec!["cron", "server", "workstation"],
-        || base::check_dir_owner_id("/etc/cron.yearly", 0, 0),
+        || base::check_dir_owner_id_ignore_missing("/etc/cron.yearly", 0, 0),
         vec![],
     )
     .skip_when(cron::skip_no_cron)
@@ -320,10 +322,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "CRN_024",
-        "Ensure `/etc/cron.yearly` directory permissions is 755",
+        "Ensure `/etc/cron.yearly` directory permissions is 755 or stricter",
         Severity::High,
         vec!["cron", "server", "workstation"],
-        || base::check_dir_permission("/etc/cron.yearly", 0o755),
+        || base::check_dir_permission_or_stricter_ignore_missing("/etc/cron.yearly", 0o755),
         vec![],
     )
     .skip_when(cron::skip_no_cron)
@@ -349,7 +351,7 @@ pub fn add_checks() {
         "Ensure all `/etc/cron.yearly/` files are owned by root",
         Severity::Medium,
         vec!["cron", "server", "workstation"],
-        || base::check_dir_files_owner_id("/etc/cron.yearly/", 0, 0),
+        || base::check_dir_files_owner_id_ignore_missing("/etc/cron.yearly/", 0, 0),
         vec![],
     )
     .skip_when(cron::skip_no_cron)
@@ -385,6 +387,46 @@ pub fn add_checks() {
 
     check::Check::new(
         "CRN_200",
+        "Ensure anacron service file is owned by root",
+        Severity::Medium,
+        vec!["cron", "systemd", "server", "workstation"],
+        || match systemd::get_service_file("anacron") {
+            Some(path) => base::check_file_owner_id(&path, 0, 0),
+            None => (
+                check::CheckState::Warning,
+                Some("systemd anacron service file not found".to_string()),
+            ),
+        },
+        vec![],
+    )
+    .skip_when(cron::skip_no_anacron)
+    .skip_when(systemd::skip_no_systemd)
+    .with_description(CRON_DESCRIPTION)
+    .with_fix("`chown root:root /etc/systemd/system/anacron.service`")
+    .register();
+
+    check::Check::new(
+        "CRN_201",
+        "Ensure anacron service file permissions 644 are set",
+        Severity::Medium,
+        vec!["cron", "systemd", "server", "workstation"],
+        || match systemd::get_service_file("anacron") {
+            Some(path) => base::check_file_permission(&path, 0o644),
+            None => (
+                check::CheckState::Warning,
+                Some("systemd anacron service file not found".to_string()),
+            ),
+        },
+        vec![],
+    )
+    .skip_when(cron::skip_no_anacron)
+    .skip_when(systemd::skip_no_systemd)
+    .with_description(CRON_DESCRIPTION)
+    .with_fix("`chmod 644 /etc/systemd/system/anacron.service`")
+    .register();
+
+    check::Check::new(
+        "CRN_202",
         "Ensure /etc/anacrontab is owned by root",
         Severity::Medium,
         vec!["cron", "server", "workstation"],
@@ -397,7 +439,7 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
-        "CRN_201",
+        "CRN_203",
         "Ensure /etc/anacrontab has permissions 644 or stricter",
         Severity::High,
         vec!["cron", "server", "workstation"],
