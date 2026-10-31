@@ -1,0 +1,9 @@
+#%PAM-1.0
+# rAudit e2e weak login service: faillock is in the stack but never records a
+# failure, and the pause before the next attempt is a quarter of the bar
+# (PAM_024, PAM_030)
+auth required pam_faillock.so preauth silent
+auth optional pam_unix.so nullok
+auth optional pam_faildelay.so delay=1000000
+account optional pam_unix.so
+session optional pam_unix.so

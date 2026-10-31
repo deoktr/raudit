@@ -1,0 +1,2 @@
+# drop-in job of the rAudit e2e cron container
+0 * * * * root /usr/local/bin/raudit-e2e-job

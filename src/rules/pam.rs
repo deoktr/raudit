@@ -3,10 +3,6 @@ use crate::check::Severity;
 use crate::modules::pam;
 
 pub fn add_checks() {
-    // TODO: ensure yescrypt is used
-    // TODO: ensure pam_unix has no flag `nullok`, would mitigate dirtyflag LPE?
-    // TODO: ensure pam_unix has flag `remember=5` or some higher number
-
     check::Check::new(
         "PAM_001",
         "Ensure PAM service `passwd` has rule `account required pam_unix`",
@@ -30,6 +26,82 @@ pub fn add_checks() {
     )
     .with_description("Enforce password policy.")
     .with_fix("Add `password required pam_pwquality.so` to `/etc/pam.d/passwd`.")
+    .register();
+
+    check::Check::new(
+        "PAM_003",
+        "Ensure PAM service `passwd` hashes new passwords with yescrypt",
+        Severity::High,
+        vec!["pam", "server", "workstation"],
+        || pam::check_yescrypt("passwd", "password", "required", "pam_unix"),
+        vec![pam::init_pam],
+    )
+    .with_description("yescrypt is memory-hard, cracking a leaked `/etc/shadow` costs orders of magnitude more than against the MD5 or SHA-crypt hashes an explicit `pam_unix` algorithm flag selects. A rule setting no algorithm flag is accepted, `pam_unix` then takes the default from `ENCRYPT_METHOD` in `/etc/login.defs`. Hashing a password is slower than with SHA-crypt, only noticeable on password changes.")
+    .with_fix("Add `yescrypt` to the `pam_unix` rule of the password stack, `password required pam_unix.so yescrypt` in `/etc/pam.d/passwd` (or `common-password`), and remove any weaker algorithm flag (`sha512`, `sha256`, `md5`...).")
+    .register();
+
+    check::Check::new(
+        "PAM_004",
+        "Ensure no PAM `auth` rule of `pam_unix` has flag `nullok`",
+        Severity::High,
+        vec!["pam", "server", "workstation"],
+        || pam::check_no_rule_flag("auth", "pam_unix", "nullok"),
+        vec![pam::init_pam],
+    )
+    .with_description("By default `pam_unix` refuses an account whose password is blank, `nullok` lifts that and lets anyone authenticate as an account with an empty password field in `/etc/shadow`. Those accounts come from a `useradd` without a password, a broken migration, or an attacker able to clear a hash, and they skip the password factor of every module the stack runs after `pam_unix` succeeded, lockout and second factor included.")
+    .with_fix("Remove `nullok` from the `pam_unix` rules of `/etc/pam.d/`, listed by `grep -rl nullok /etc/pam.d/`, usually `common-auth` or `system-auth`, then set a password or lock every account with a blank one.")
+    .register();
+
+    check::Check::new(
+        "PAM_005",
+        "Ensure PAM service `passwd` remembers at least 5 previous passwords",
+        Severity::Medium,
+        vec!["pam", "server", "workstation"],
+        || {
+            const VAL: i32 = 5;
+
+            match pam::get_rule_flag("passwd", "password", "required", "pam_pwhistory", "remember")
+            {
+                Ok(Some(value)) => match value.parse::<i32>() {
+                    Ok(val) => {
+                        if val < VAL {
+                            return (
+                                check::CheckState::Fail,
+                                Some(format!("`remember={}` < {}", val, VAL)),
+                            );
+                        }
+                        // the history is only enforced while `pam_pwhistory`
+                        // runs before `pam_unix` writes the new hash
+                        match pam::check_rule_before(
+                            "passwd",
+                            "password",
+                            "required",
+                            "pam_pwhistory",
+                            "required",
+                            "pam_unix",
+                        ) {
+                            (check::CheckState::Pass, _) => (check::CheckState::Pass, Some(value)),
+                            order => order,
+                        }
+                    }
+                    Err(err) => (
+                        check::CheckState::Warning,
+                        Some(format!("`remember={}`: {}", value, err)),
+                    ),
+                },
+                Ok(None) => (
+                    check::CheckState::Fail,
+                    Some(
+                        "no `password required pam_pwhistory` rule with flag `remember`".to_string(),
+                    ),
+                ),
+                Err(err) => (check::CheckState::Warning, Some(err)),
+            }
+        },
+        vec![pam::init_pam],
+    )
+    .with_description("Without password history a user rotates between two passwords and comes back to the original, defeating the rotation and keeping valid a hash an attacker may already have cracked. Only `pam_pwhistory` is accepted, the `remember` flag of `pam_unix` is deprecated and stores the previous passwords as MD5 hashes. The rule must also run before `pam_unix`, the module changing the password: placed after it, a reused password is already written to `/etc/shadow` when `pam_pwhistory` reports the reuse, `passwd` prints its rejection but the change stands. History is kept in `/etc/security/opasswd`, which must stay readable by root only.")
+    .with_fix("Add `password required pam_pwhistory.so remember=5 use_authtok` to `/etc/pam.d/passwd` (or `common-password`), before the `pam_unix` rule that writes the new password.")
     .register();
 
     check::Check::new(

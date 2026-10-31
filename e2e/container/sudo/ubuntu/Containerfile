@@ -1,0 +1,29 @@
+# Ubuntu image with a sudo configuration for one of two profiles, selected at
+# runtime by the entrypoint argument: `hardened` or `weak`.
+#
+# sudo has no daemon to wait for, the entrypoint installs the profile sudoers
+# files, validates them with `visudo -c` and keeps the container alive.
+#
+# The hardened profile keeps a 0644 README and a dot-file drop-in in
+# /etc/sudoers.d, both are ignored by sudo and by raudit's sudoers parser:
+# they are the regression guard for the SUD_202/SUD_203 file filter and the
+# SUD_015 parser, see e2e/findings.md. Ubuntu ships that README too, at the
+# same 0644 permissions.
+#
+# The profile sudoers use `@includedir`, the form Ubuntu's own sudoers ships
+# with sudo 1.9.x.
+#
+# The Ubuntu release is pinned to the LTS the QEMU e2e VMs run (noble), so the
+# sudo version stays stable for baselines.
+FROM docker.io/ubuntu:24.04
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends sudo \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY hardened /profiles/hardened
+COPY weak /profiles/weak
+COPY entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["hardened"]

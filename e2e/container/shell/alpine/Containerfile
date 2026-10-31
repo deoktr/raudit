@@ -1,0 +1,14 @@
+# Alpine image with a shell idle-timeout configuration for one of two
+# profiles, selected at runtime by the entrypoint argument: `hardened` or
+# `weak`.
+#
+# SHL_001 checks the content of /etc/profile.d/timeout.sh, there is no daemon,
+# the entrypoint installs the profile file and keeps the container alive.
+FROM docker.io/alpine:3.22
+
+COPY hardened /profiles/hardened
+COPY weak /profiles/weak
+COPY entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["hardened"]

@@ -1,0 +1,198 @@
+{
+  "findings": [
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "NGX_001",
+        "title": "Ensure nginx server_tokens is set to off",
+        "desc": "The server_tokens directive controls whether nginx sends its version number in error pages and the Server response header. This is not directly a security measure as it offer no protection against attacks, but prevent information leakage about update management that could reflect a company security and operational posture. Every instance of the directive is checked, a per-server `server_tokens on` under an http-level `off` re-enables the leak for that vhost."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Add `server_tokens off;` in the http block, and remove any `server_tokens on;` override in the server/location blocks."
+      },
+      "severity_id": 2,
+      "severity": "Low",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "NGX_002",
+        "title": "Ensure nginx X-Frame-Options header is set",
+        "desc": "The X-Frame-Options header prevents clickjacking attacks by controlling whether the page can be embedded in frames. The header must be effective in every server and location block, nginx drops the inherited `add_header` directives in a block defining its own, and it must carry the `always` flag to also be sent on error responses."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Add `add_header X-Frame-Options \"DENY\" always;` in the http or server block."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "NGX_003",
+        "title": "Ensure nginx X-Content-Type-Options header is set",
+        "desc": "The X-Content-Type-Options header prevents MIME type sniffing, which can lead to XSS attacks. The header must be effective in every server and location block, nginx drops the inherited `add_header` directives in a block defining its own, and it must carry the `always` flag to also be sent on error responses."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Add `add_header X-Content-Type-Options \"nosniff\" always;` in the http or server block."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "NGX_005",
+        "title": "Ensure nginx Strict-Transport-Security (HSTS) header is set",
+        "desc": "HSTS tells browsers to only connect over HTTPS, preventing protocol downgrade attacks and cookie hijacking. The header must be effective in every server and location block, nginx drops the inherited `add_header` directives in a block defining its own, and it must carry the `always` flag to also be sent on error responses."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Add `add_header Strict-Transport-Security \"max-age=63072000; includeSubDomains; preload\" always;` in the http or server block."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "NGX_006",
+        "title": "Ensure nginx HTTP to HTTPS redirect is configured",
+        "desc": "An HTTP to HTTPS redirect ensures all traffic is encrypted. Without it, users may inadvertently send data over unencrypted connections. Every server listening on the port 80 must hold the redirect, one in an unrelated vhost protects nobody."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Add a server block listening on port 80 with 'return 301 https://$host$request_uri;'."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    }
+  ],
+  "stats": {
+    "total": 5,
+    "pass": 5,
+    "fail": 0,
+    "warning": 0,
+    "unknown": 0,
+    "fail_critical": 0,
+    "fail_high": 0,
+    "fail_medium": 0,
+    "fail_low": 0,
+    "fail_informational": 0
+  },
+  "metadata": {
+    "version": "1.7.0",
+    "product": {
+      "name": "raudit",
+      "version": ""
+    }
+  }
+}

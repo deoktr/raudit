@@ -1,0 +1,1003 @@
+{
+  "findings": [
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "APT_103",
+        "title": "Ensure all /etc/apt/sources.list.d/ files are owned by root",
+        "desc": "Prevents unauthorized modification of package repositories. Could be exploited to download packages from attacker controlled servers."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "chown -R root:root /etc/apt/sources.list.d/*"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "APT_107",
+        "title": "Ensure all /etc/apt/apt.conf.d/ files are owned by root",
+        "desc": "Could be exploited to modify package installation behavior, and could lead to a wide range of impacts."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "chown -R root:root /etc/apt/apt.conf.d/*"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_003",
+        "title": "Ensure `/etc/cron.d` directory is owned by root",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chown root:root /etc/cron.d/`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_004",
+        "title": "Ensure `/etc/cron.d` directory permissions is 755 or stricter",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chmod 755 /etc/cron.d`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_005",
+        "title": "Ensure all `/etc/cron.d/` files have 644 permissions or stricter",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chmod 644 /etc/cron.d/*`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_006",
+        "title": "Ensure all `/etc/cron.d/` files are owned by root",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chown -R root:root /etc/cron.d/*`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_007",
+        "title": "Ensure `/etc/cron.hourly` directory is owned by root",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chown root:root /etc/cron.hourly/`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_008",
+        "title": "Ensure `/etc/cron.hourly` directory permissions is 755 or stricter",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chmod 755 /etc/cron.hourly`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_009",
+        "title": "Ensure all `/etc/cron.hourly/` files are not group or world writable",
+        "desc": "The periodic scripts are executed by `run-parts` with root privileges, the execute bit is required, the security requirement is that only root can write them, a group or world writable script is a privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chmod g-w,o-w /etc/cron.hourly/*`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_010",
+        "title": "Ensure all `/etc/cron.hourly/` files are owned by root",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chown -R root:root /etc/cron.hourly/*`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_011",
+        "title": "Ensure `/etc/cron.daily` directory is owned by root",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chown root:root /etc/cron.daily/`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_012",
+        "title": "Ensure `/etc/cron.daily` directory permissions is 755 or stricter",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chmod 755 /etc/cron.daily`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_013",
+        "title": "Ensure all `/etc/cron.daily/` files are not group or world writable",
+        "desc": "The periodic scripts are executed by `run-parts` with root privileges, the execute bit is required, the security requirement is that only root can write them, a group or world writable script is a privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chmod g-w,o-w /etc/cron.daily/*`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_014",
+        "title": "Ensure all `/etc/cron.daily/` files are owned by root",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chown -R root:root /etc/cron.daily/*`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_015",
+        "title": "Ensure `/etc/cron.weekly` directory is owned by root",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chown root:root /etc/cron.weekly/`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_016",
+        "title": "Ensure `/etc/cron.weekly` directory permissions is 755 or stricter",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chmod 755 /etc/cron.weekly`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_017",
+        "title": "Ensure all `/etc/cron.weekly/` files are not group or world writable",
+        "desc": "The periodic scripts are executed by `run-parts` with root privileges, the execute bit is required, the security requirement is that only root can write them, a group or world writable script is a privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chmod g-w,o-w /etc/cron.weekly/*`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_018",
+        "title": "Ensure all `/etc/cron.weekly/` files are owned by root",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chown -R root:root /etc/cron.monthly/*`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_019",
+        "title": "Ensure `/etc/cron.monthly` directory is owned by root",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chown root:root /etc/cron.monthly`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_020",
+        "title": "Ensure `/etc/cron.monthly` directory permissions is 755 or stricter",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chmod 755 /etc/cron.monthly`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_021",
+        "title": "Ensure all `/etc/cron.monthly/` files are not group or world writable",
+        "desc": "The periodic scripts are executed by `run-parts` with root privileges, the execute bit is required, the security requirement is that only root can write them, a group or world writable script is a privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chmod g-w,o-w /etc/cron.monthly/*`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_022",
+        "title": "Ensure all `/etc/cron.monthly/` files are owned by root",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chown -R root:root /etc/cron.monthly/*`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_023",
+        "title": "Ensure `/etc/cron.yearly` directory is owned by root",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chown root:root /etc/cron.yearly`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_024",
+        "title": "Ensure `/etc/cron.yearly` directory permissions is 755 or stricter",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chmod 755 /etc/cron.yearly`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_025",
+        "title": "Ensure all `/etc/cron.yearly/` files are not group or world writable",
+        "desc": "The periodic scripts are executed by `run-parts` with root privileges, the execute bit is required, the security requirement is that only root can write them, a group or world writable script is a privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chmod g-w,o-w /etc/cron.yearly/*`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_026",
+        "title": "Ensure all `/etc/cron.yearly/` files are owned by root",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chown -R root:root /etc/cron.yearly/*`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_027",
+        "title": "Ensure `/etc/crontab` is owned by root",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chown root:root /etc/crontab`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CRN_028",
+        "title": "Ensure `/etc/crontab` has permissions 644 or stricter",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chmod 644 /etc/crontab`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    }
+  ],
+  "stats": {
+    "total": 28,
+    "pass": 28,
+    "fail": 0,
+    "warning": 0,
+    "unknown": 0,
+    "fail_critical": 0,
+    "fail_high": 0,
+    "fail_medium": 0,
+    "fail_low": 0,
+    "fail_informational": 0
+  },
+  "metadata": {
+    "version": "1.7.0",
+    "product": {
+      "name": "raudit",
+      "version": ""
+    }
+  }
+}

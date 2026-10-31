@@ -1,0 +1,17 @@
+# Alpine image running dcron with one of two profiles, selected at runtime by
+# the entrypoint argument: `hardened` or `weak`.
+#
+# raudit cron checks inspect the Debian-style cron directories (/etc/cron.d,
+# /etc/cron.{hourly,daily,weekly,monthly,yearly}) and /etc/crontab ownership
+# and permissions, the entrypoint populates them around dcron. The Alpine
+# release is pinned so baselines stay stable.
+FROM docker.io/alpine:3.22
+
+RUN apk add --no-cache dcron
+
+COPY hardened /profiles/hardened
+COPY weak /profiles/weak
+COPY entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["hardened"]

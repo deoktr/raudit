@@ -1,0 +1,12 @@
+#%PAM-1.0
+# rAudit e2e hardened login service, stock Debian/Ubuntu layout: the service
+# files @include the common-* stacks, the hardening lives in those stacks
+# (PAM_024 via common-auth, PAM_030 directly)
+auth [success=ok new_authtok_reqd=ok ignore=ignore user_unknown=bad default=die] pam_securetty.so
+auth requisite pam_nologin.so
+auth optional pam_faildelay.so delay=4000000
+@include common-auth
+@include common-account
+@include common-session
+session [success=ok ignore=ignore module_unknown=ignore default=bad] pam_loginuid.so
+session required pam_env.so readenv=1

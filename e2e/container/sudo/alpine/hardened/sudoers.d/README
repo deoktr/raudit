@@ -1,0 +1,7 @@
+#
+# Distro-shipped README, kept at its stock 0644 permissions on purpose.
+# sudo never parses this file, and raudit's sudoers parser and its
+# SUD_202/SUD_203 drop-in file checks now skip it too (regression guard for
+# the file filter, see e2e/findings.md).
+#
+# Files with a '.' in the name or ending in '~' are skipped by sudo.

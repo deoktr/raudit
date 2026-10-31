@@ -1,0 +1,10 @@
+#%PAM-1.0
+# rAudit e2e hardened su service, stock Debian/Ubuntu layout with the
+# pam_wheel restriction the stock file ships commented out (PAM_015)
+auth sufficient pam_rootok.so
+auth required pam_wheel.so use_uid
+@include common-auth
+@include common-account
+@include common-session
+session [success=ok ignore=ignore module_unknown=ignore default=bad] pam_loginuid.so
+session required pam_env.so readenv=1

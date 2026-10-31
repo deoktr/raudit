@@ -1,0 +1,2 @@
+This host is audited. Every privileged command is logged and attributable.
+Use the least privilege required, and never share credentials.

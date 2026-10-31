@@ -1,0 +1,23 @@
+# Ubuntu image with a user database for one of two profiles, selected at
+# runtime by the entrypoint argument: `hardened` or `weak`.
+#
+# /etc/passwd, /etc/shadow and /etc/default/useradd are static files shipped
+# per profile so results never depend on runtime state. They reproduce the
+# stock Ubuntu account set (/usr/sbin/nologin, `sync` with /bin/sync, a locked
+# root `*` keeping its /bin/bash shell for USR_016), the yescrypt hash was
+# generated on a glibc/libxcrypt host, see e2e/findings.md.
+#
+# /etc/shadow is root:shadow 0640 here (USR_100/USR_101 take the Debian family
+# permissions), while the Alpine profile covers the root:root 0600 branch.
+#
+# The `user` tag selects USR_001..USR_018 and USR_100..USR_107 (the
+# passwd/shadow/shadow-/opasswd file permission checks), the weak profile
+# sabotages their ownership and permissions too, see e2e/findings.md.
+FROM docker.io/ubuntu:24.04
+
+COPY hardened /profiles/hardened
+COPY weak /profiles/weak
+COPY entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["hardened"]

@@ -1,0 +1,959 @@
+{
+  "findings": [
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_001",
+        "title": "Ensure that root is the only user with UID 0",
+        "desc": "Multiple accounts with UID 0 are root-equivalent for filesystem and process semantics. An attacker who creates one bypasses every name-based audit and detection that watches the literal `root` user."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "toor",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Identify the offending account in `/etc/passwd` and either delete it or assign it a fresh non-zero UID. Investigate how it was created."
+      },
+      "severity_id": 5,
+      "severity": "Critical",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_002",
+        "title": "Ensure no duplicate user names exist",
+        "desc": "Duplicate user names indicate hand-edited passwd or merged user databases. Tools may resolve only the first match, masking permissions and audit attribution on the shadowed entry."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "dupuser, dupuser",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Edit `/etc/passwd` to remove or rename the duplicate. Investigate the source."
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_003",
+        "title": "Ensure no duplicate UIDs exist",
+        "desc": "Two user names sharing one UID makes ownership and audit logs ambiguous: a file owned by UID X cannot be reliably attributed to one principal, undermining accountability and forensics."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "root, toor",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Renumber duplicates via `usermod -u <new-uid> <name>` and `chown -R` their files. Investigate the duplicate's origin."
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_004",
+        "title": "Ensure that `/etc/securetty` is empty",
+        "desc": "An empty (or missing) `/etc/securetty` disables direct root login on every console, physical and virtual, forcing administrators to log in as themselves and sudo to root, which preserves audit attribution."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "file not empty",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Truncate the file or remove it."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_005",
+        "title": "Ensure no login is available on system accounts",
+        "desc": "System accounts (UID < 1000) own daemons, not humans, granting them an interactive shell turns each one into a possible login target."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "bin",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "For each offending system account: `usermod -s /usr/sbin/nologin <name>`."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_006",
+        "title": "Ensure all passwords are hashed with yescrypt",
+        "desc": "Hashes from older algorithms (DES, MD5, SHA-256/512 crypt) are far cheaper to crack on modern GPUs than yescrypt (which also requires RAM to crack/calculate)."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "root, nopass",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Edit PAM passwd to use yescrypt when changing password, and force users to change passwords `passwd --expire <user>`."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_007",
+        "title": "Ensure no user account is expired, delete them",
+        "desc": "User accounts (UID >= 1000) past their expiration date are disabled but still clutter the user database and risk being re-enabled accidentally. If an account is no longer needed, deletion is cleaner than indefinite expiration. System accounts are ignored, expiration is a common way to park them."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "expired",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "After confirming the account is not needed: `userdel -r <name>`. Investigate any expired account whose home dir still contains active data before deleting."
+      },
+      "severity_id": 2,
+      "severity": "Low",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_008",
+        "title": "Ensure that all home directories exist",
+        "desc": "A missing home directory referenced from `/etc/passwd` could be created by an attacker, and could include configurations that could lead to privilege escalation or persistence."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "ghost",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Either re-create the missing directory with the right ownership and 0700 permissions, or remove the user with `userdel`."
+      },
+      "severity_id": 2,
+      "severity": "Low",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_009",
+        "title": "Ensure `/etc/shadow` password fields are not empty",
+        "desc": "An empty password field in `/etc/shadow` lets that account log in with no password at all, on any service that consults shadow (login, ssh PasswordAuthentication, etc.)."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "nopass",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Lock the account immediately: `passwd -l <name>`; then either set a real password `passwd <name>` or delete the account."
+      },
+      "severity_id": 5,
+      "severity": "Critical",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_010",
+        "title": "Ensure `/etc/passwd` password fields are not empty",
+        "desc": "An empty password field, instead of `x` in `/etc/passwd`, means the system reads the password directly from passwd and treats absence as no password required."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "nopass",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Run `pwconv` to migrate password fields to `/etc/shadow`, investigate any user with an empty field."
+      },
+      "severity_id": 5,
+      "severity": "Critical",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_011",
+        "title": "Ensure accounts in `/etc/passwd` use shadowed passwords",
+        "desc": "Password hashes in `/etc/passwd` are world-readable, exposing every account's hash to any local user for cracking."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "nopass",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Run `pwconv` to migrate hashes to `/etc/shadow`, verify all password fields in `/etc/passwd` are `x`."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_106",
+        "title": "Ensure `/etc/passwd` file permissions are `644`",
+        "desc": "Looser permissions on `/etc/passwd` let unprivileged users edit account metadata (UID, shell, home dir) and grant themselves access, tighter than 0644 breaks userland tools that need to resolve user names."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "wanted `644` got `666`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chmod 644 /etc/passwd`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_107",
+        "title": "Ensure `/etc/passwd` file owner is `root:root` or file is missing",
+        "desc": "If `/etc/passwd` is owned by a non-root user, that user can edit account UIDs and shells, granting themselves UID 0 or pointing root's shell at malicious code."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "wanted `0:0` got `65534:65534`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chown root:root /etc/passwd`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_100",
+        "title": "Ensure `/etc/shadow` file owner is correct",
+        "desc": "Wrong ownership on `/etc/shadow` lets a non-root principal read every account's password hash for offline cracking, or rewrite hashes to take over arbitrary accounts."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "wanted `0:42` got `0:65534`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "On Debian: `chown root:shadow /etc/shadow`\nOn other distros: `chown root:root /etc/shadow`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_101",
+        "title": "Ensure `/etc/shadow` file permissions are correct",
+        "desc": "Loose permissions on `/etc/shadow` expose every account's password hash to non-root users, who can then crack them."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "wanted `640` got `644`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "On Debian: `chmod 640 /etc/shadow`\nOn other distros: `chmod 600 /etc/shadow`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_102",
+        "title": "Ensure `/etc/shadow-` file owner is correct or file is missing",
+        "desc": "`/etc/shadow-` is the previous-generation backup of shadow, if its ownership is wrong, an attacker can recover password hashes from the backup that the live file's tighter ownership would have blocked."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "wanted `0:42` got `65534:65534`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "On Debian: `chown root:shadow /etc/shadow-`\nOn other distros: `chown root:root /etc/shadow-`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_103",
+        "title": "Ensure `/etc/shadow-` file permissions are correct or file is missing",
+        "desc": "Loose permissions on the shadow backup file leak the same password hashes as the live file."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "wanted `640` got `666`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "On Debian: `chmod 640 /etc/shadow-`\nOn other distros: `chmod 600 /etc/shadow-`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_104",
+        "title": "Ensure `/etc/security/opasswd` file owner is `root:root` or file is missing",
+        "desc": "`/etc/security/opasswd` stores previously-used password hashes for `pam_pwhistory` reuse prevention. Wrong ownership exposes those historical hashes to non-root users for cracking, leaking old password that could indicate patterns or be reused elsewhere."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "wanted `0:0` got `65534:65534`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chown root:root /etc/security/opasswd`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_105",
+        "title": "Ensure `/etc/security/opasswd` file permissions are `600` or file is missing",
+        "desc": "`/etc/security/opasswd` stores previously-used password hashes for `pam_pwhistory` reuse prevention. Wrong permissions exposes those historical hashes to non-root users for cracking, leaking old password that could indicate patterns or be reused elsewhere."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "wanted `600` got `666`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chmod 600 /etc/security/opasswd`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_012",
+        "title": "Ensure no users have `.rhosts` or `.shosts` files",
+        "desc": "Legacy .rhosts files enable trust-based authentication without passwords, a major security risk. If an attacker compromises any trusted host, they can log in as any user on this system without credentials."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "audit:/home/audit/.rhosts",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Remove all .rhosts, .shosts files from user home directories: `find /home -name '.rhosts' -delete`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_013",
+        "title": "Ensure all users' home directories are owned by their respective user",
+        "desc": "Home directories owned by other users could allow unauthorized access to files. An attacker could read private keys, configuration files, or plant malicious files."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "`audit`: uid 0",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chown <username>:<username> /home/<username>`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_014",
+        "title": "Ensure all users' home directories have permissions 750 or stricter",
+        "desc": "World-writable or world-readable home directories expose private user data to other users on the system. Permissions should be 750 or stricter to prevent unauthorized access."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "audit: 777",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chmod 750 /home/<username>`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_015",
+        "title": "Ensure no users have world-writable files in their home directory",
+        "desc": "World-writable files in user home directories can be modified by any user on the system, enabling data tampering and potential privilege escalation via .bashrc, .profile, or crontab modification."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "/home/audit/notes.txt",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Find and fix: `find /home -type f -perm -0002 -exec chmod o-w {} \\;`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_016",
+        "title": "Ensure root account is disabled",
+        "desc": "An enabled root account with a valid password and an interactive shell is the single highest-value target for brute-force and credential-theft attacks. Disabling it forces administrators to log in as themselves and use `sudo`, which preserves non-repudiable audit trails. Ensure you have valid admin accounts."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "root account is enabled",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Lock the password: `passwd -l root` and set the shell to nologin: `usermod -s /usr/sbin/nologin root`."
+      },
+      "severity_id": 5,
+      "severity": "Critical",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_017",
+        "title": "Ensure account is disabled when password is expired",
+        "desc": "Set the number of days after a password expires until the account is permanently disabled to instantly. Password expiry could mean that the account should rotate it's password, or that the password was compromised, in either case the account should be locked to prevent it from being used until the password is changed. Only user accounts (UID >= 1000) are checked, system accounts don't login with a password. Especially useful when doing mandatory password rotation, but be careful to always keep a valid access to the host."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "audit, dupuser, dupuser, ghost, nopass, expired",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Set a user inactivity_period to 0: `chage -I 0 <username>`."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "USR_018",
+        "title": "Ensure account is disabled when password is expired by default",
+        "desc": "Set the number of days after a password expires until the account is permanently disabled to instantly. Password expiry could mean that the account should rotate it's password, or that the password was compromised, in either case the account should be locked to prevent it from being used until the password is changed. Especially useful when doing mandatory password rotation, but be careful to always keep a valid access to the host."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "INACTIVE=-1",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Edit useradd configuration in: `/etc/default/useradd` and set: `INACTIVE=0`."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    }
+  ],
+  "stats": {
+    "total": 26,
+    "pass": 0,
+    "fail": 26,
+    "warning": 0,
+    "unknown": 0,
+    "fail_critical": 4,
+    "fail_high": 11,
+    "fail_medium": 9,
+    "fail_low": 2,
+    "fail_informational": 0
+  },
+  "metadata": {
+    "version": "1.7.0",
+    "product": {
+      "name": "raudit",
+      "version": ""
+    }
+  }
+}

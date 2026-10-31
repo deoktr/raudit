@@ -1,0 +1,15 @@
+# rAudit e2e weak login.defs (excerpt): SHA512 hashes and a yescrypt cost
+# factor below the accepted range
+MAIL_DIR		/var/spool/mail
+FAILLOG_ENAB		no
+LOG_UNKFAIL_ENAB	no
+LOGIN_RETRIES		5
+LOGIN_TIMEOUT		120
+ENCRYPT_METHOD		SHA512
+YESCRYPT_COST_FACTOR	3
+UMASK			022
+PASS_MAX_DAYS		99999
+PASS_MIN_DAYS		0
+PASS_WARN_AGE		7
+UID_MIN			1000
+GID_MIN			1000

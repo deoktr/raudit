@@ -1,0 +1,794 @@
+{
+  "findings": [
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_001",
+        "title": "Ensure that sudo default config `noexec` is set",
+        "desc": "Prevent commands run via sudo from spawning further processes (blocks shell escapes from editors/pagers that link against the preloaded dummy exec(3) wrappers). Breaks legitimate commands that need to spawn subprocesses (e.g. running a shell, executing scripts that fork, some CI/CD tooling)."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults noexec`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_002",
+        "title": "Ensure that sudo default config `requiretty` is set",
+        "desc": "Refuse to run unless sudo is invoked from a real tty, blocking exploitation paths via cron jobs or web shells. This slows down attacks but does not completely prevent them, just makes it a bit harder. May break remote management tools, can be ignored for a remote management user with: `Defaults:user !noexec`."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults requiretty`"
+      },
+      "severity_id": 2,
+      "severity": "Low",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_003",
+        "title": "Ensure that sudo default config `use_pty` is set",
+        "desc": "Run the target command in a new pseudo-terminal so a compromised child cannot inject input into the parent tty."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults use_pty`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_004",
+        "title": "Ensure that sudo default config `umask=0027` is set",
+        "desc": "Force a restrictive umask on files created by sudo'd commands. Files created with sudo will have restrictive permissions (no access for others); may break scripts or workflows that expect world-readable files."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults umask=0027`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_005",
+        "title": "Ensure that sudo default config `ignore_dot` is set",
+        "desc": "Skip `.` when searching PATH for the target binary. Without it, an attacker who drops a malicious binary into a sudo'd user's CWD can have it executed as root simply because PATH started with `.`."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults ignore_dot`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_006",
+        "title": "Ensure that sudo default config `passwd_timeout=1` is set",
+        "desc": "Abort the password prompt after 1 minute idle."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults passwd_timeout=1`"
+      },
+      "severity_id": 1,
+      "severity": "Info",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_007",
+        "title": "Ensure that sudo default config `env_reset` is set",
+        "desc": "Start the command with a minimal, sanitized environment (only variables on env_keep survive), blocks LD_PRELOAD-style attacks. Breaks scripts and applications that depend on user environment variables (e.g. PATH customizations, application-specific env vars) unless explicitly added to env_keep."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults env_reset`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_008",
+        "title": "Ensure that sudo default config `timestamp_timeout=0` is set",
+        "desc": "Never cache credentials, every sudo invocation re-prompts for the password."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults timestamp_timeout=0`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_010",
+        "title": "Ensure that sudo default config `mail_badpass` is set",
+        "desc": "Send mail to the sudo mailto address whenever a user enters an incorrect password at the sudo prompt."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults mail_badpass`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_011",
+        "title": "Ensure that sudo default config `logfile=\"/var/log/sudo.log\"` is set",
+        "desc": "Append a record of every sudo command (success and failure) to this file in addition to syslog."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults logfile=\"/var/log/sudo.log\"`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_012",
+        "title": "Ensure that sudo default config `secure_path` is set",
+        "desc": "Without `secure_path` sudo inherits the caller's PATH, a user-writable directory earlier in it substitutes the command the rule meant to grant. `ignore_dot` only neutralises the `.` entry, not a planted `/home/foo/bin/systemctl`."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults secure_path=\\\"/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin\\\"`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_013",
+        "title": "Ensure that sudo default config `lecture=\"always\"` is set",
+        "desc": "The sudo lecture warns users about the responsibilities and risks of elevated privileges before every invocation. Always-on mode ensures the warning is never silently skipped."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults lecture=\"always\"`"
+      },
+      "severity_id": 1,
+      "severity": "Info",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_014",
+        "title": "Ensure that sudo default config `lecture_file=\"/usr/share/doc/sudo_lecture.txt\"` is set",
+        "desc": "Point the sudo lecture at an organization-specific text so every sudo invocation reminds users of local policy instead of the default generic warning."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults lecture_file=\"/usr/share/doc/sudo_lecture.txt\"` and provide that file with the org's warning text."
+      },
+      "severity_id": 1,
+      "severity": "Info",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_015",
+        "title": "Ensure that sudoers config does not contain `NOPASSWD`",
+        "desc": "`NOPASSWD` lets a sudo-able account escalate to root with no password prompt at all. An attacker who steals only the user's session token (no password) immediately becomes root. Defeats the whole point of sudo's auth gate."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/sudoers` and `/etc/sudoers.d/*` remove all instances with `NOPASSWD`"
+      },
+      "severity_id": 5,
+      "severity": "Critical",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_016",
+        "title": "Ensure that sudoers re authentication is not disabled",
+        "desc": "`Defaults !authenticate` (globally or scoped like `Defaults:user !authenticate`) disables the password prompt entirely for matching rules, the same effect as `NOPASSWD`, often missed by NOPASSWD-only audits. Classic sudo only accepts it as a `Defaults` flag, not as a rule tag. Removes the auth gate that protects every sudo invocation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/sudoers` and `/etc/sudoers.d/*` remove all instances with `!authenticate`"
+      },
+      "severity_id": 5,
+      "severity": "Critical",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_200",
+        "title": "Ensure sudoers config file permissions are 440 or stricter",
+        "desc": "Sudo will intentionally not use configurations that are world-writable or -readable, otherwise this could lead to privilege escalation. A stricter mode (0400 for example) is accepted, sudo reads the file as root."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "chmod 440 /etc/sudoers"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_201",
+        "title": "Ensure /etc/sudoers config file is owned by root",
+        "desc": "Sudo will intentionally not use configurations that are world-writable or -readable, otherwise this could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "chown root:root /etc/sudoers"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_202",
+        "title": "Ensure /etc/sudoers.d/ files permissions are 440 or stricter",
+        "desc": "Sudo will intentionally not use configurations that are world-writable or -readable, otherwise this could lead to privilege escalation. Only the files sudo reads are audited, the same filter as sudo applies: dot files, `~` backups and the distro `README` are ignored."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "chmod -R 440 /etc/sudoers.d/*"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_203",
+        "title": "Ensure /etc/sudoers.d/ files are owned by root",
+        "desc": "Sudo will intentionally not use configurations that are world-writable or -readable, otherwise this could lead to privilege escalation. Only the files sudo reads are audited, the same filter as sudo applies: dot files, `~` backups and the distro `README` are ignored."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "chown -R root:root /etc/sudoers.d/*"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_204",
+        "title": "Ensure /etc/sudoers.d directory is owned by root",
+        "desc": "Sudo will intentionally not use configurations that are world-writable or -readable, otherwise this could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "chown root:root /etc/sudoers.d"
+      },
+      "severity_id": 5,
+      "severity": "Critical",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_205",
+        "title": "Ensure /etc/sudoers.d directory permissions are 750 or stricter",
+        "desc": "Sudo will intentionally not use configurations that are world-writable or -readable, otherwise this could lead to privilege escalation."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "chmod 0750 /etc/sudoers.d"
+      },
+      "severity_id": 5,
+      "severity": "Critical",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SUD_900",
+        "title": "Ensure audit rule for sudo log file is present",
+        "desc": "Monitoring the sudo log file for writes and attribute changes detects attempts to tamper with privilege escalation records."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 2,
+        "status": "Warning"
+      },
+      "message": "audit rules: failed to run `auditctl -l`: No such file or directory (os error 2)",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Add `-w /var/log/sudo.log -p wa -k log_file` to a file under `/etc/audit/rules.d/` and `augenrules --load`."
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 0,
+      "status": "Unknown"
+    }
+  ],
+  "stats": {
+    "total": 22,
+    "pass": 21,
+    "fail": 0,
+    "warning": 1,
+    "unknown": 0,
+    "fail_critical": 0,
+    "fail_high": 0,
+    "fail_medium": 0,
+    "fail_low": 0,
+    "fail_informational": 0
+  },
+  "metadata": {
+    "version": "1.7.0",
+    "product": {
+      "name": "raudit",
+      "version": ""
+    }
+  }
+}

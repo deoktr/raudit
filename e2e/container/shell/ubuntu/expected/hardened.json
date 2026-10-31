@@ -1,0 +1,55 @@
+{
+  "findings": [
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SHL_001",
+        "title": "Ensure automatic logout from shells is configured",
+        "desc": "Avoid leaving opened shells, potentially with elevated permissions. Set a readonly `TMOUT` shell variable in `/etc/profile` or any file under `/etc/profile.d/`: `\nTMOUT=900\nreadonly TMOUT\nexport TMOUT`"
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    }
+  ],
+  "stats": {
+    "total": 1,
+    "pass": 1,
+    "fail": 0,
+    "warning": 0,
+    "unknown": 0,
+    "fail_critical": 0,
+    "fail_high": 0,
+    "fail_medium": 0,
+    "fail_low": 0,
+    "fail_informational": 0
+  },
+  "metadata": {
+    "version": "1.7.0",
+    "product": {
+      "name": "raudit",
+      "version": ""
+    }
+  }
+}

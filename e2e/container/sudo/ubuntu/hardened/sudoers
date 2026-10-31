@@ -1,0 +1,8 @@
+# rAudit e2e hardened sudo profile, base sudoers
+Defaults env_reset
+Defaults secure_path="/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin"
+
+root ALL=(ALL) ALL
+%wheel ALL=(ALL) ALL
+
+@includedir /etc/sudoers.d

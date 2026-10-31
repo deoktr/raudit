@@ -10,6 +10,14 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+### Added
+
+- Add pam checks `PAM_003` to `PAM_005`
+
+### Fixed
+
+- Fix pam module bugs
+
 ## [0.38.0] - 2026-10-28
 
 ### Added

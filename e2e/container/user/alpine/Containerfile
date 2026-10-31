@@ -1,0 +1,25 @@
+# Alpine image with a user database for one of two profiles, selected at
+# runtime by the entrypoint argument: `hardened` or `weak`.
+#
+# /etc/passwd, /etc/shadow and /etc/default/useradd are static files shipped
+# per profile so results never depend on runtime state. The yescrypt hash was
+# generated on a glibc/libxcrypt host because musl's crypt(3) has no yescrypt
+# support and Alpine tooling silently falls back to MD5, see e2e/findings.md.
+#
+# The hardened profile keeps the stock Alpine `shutdown` and `halt` accounts
+# with their /sbin/shutdown and /sbin/halt administrative shells, they are
+# whitelisted by USR_005 (regression guard, see e2e/findings.md).
+#
+# The `user` tag selects USR_001..USR_018 and USR_100..USR_107 (the
+# passwd/shadow/shadow-/opasswd file permission checks), the weak profile
+# sabotages their ownership and permissions too, see e2e/findings.md. USR_100
+# and USR_101 take their non-Debian branch here (root:root 0600), the ubuntu
+# context covers the Debian one (root:shadow 0640).
+FROM docker.io/alpine:3.22
+
+COPY hardened /profiles/hardened
+COPY weak /profiles/weak
+COPY entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["hardened"]

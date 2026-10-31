@@ -1,0 +1,22 @@
+# Ubuntu image running ClamAV with one of two profiles, selected at runtime by
+# the entrypoint argument: `hardened` (installed, clamd running) or `weak` (not
+# installed at all, CAV_001 only probes `clamscan` in PATH).
+#
+# Debian splits the engine (`clamav-daemon`, which owns clamd and its
+# /etc/clamav/clamd.conf) from the CLI tools (`clamav`, which owns clamscan),
+# Alpine ships both in one `clamav` package.
+#
+# The Ubuntu release is pinned to the LTS the QEMU e2e VMs run (noble), so the
+# ClamAV version stays stable for baselines.
+FROM docker.io/ubuntu:24.04
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        clamav \
+        clamav-daemon \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["hardened"]

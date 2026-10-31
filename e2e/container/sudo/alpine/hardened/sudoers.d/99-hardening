@@ -1,0 +1,13 @@
+# rAudit e2e hardened sudo Defaults, covers SUD_001..SUD_014
+Defaults noexec
+Defaults requiretty
+Defaults use_pty
+Defaults umask=0027
+Defaults ignore_dot
+Defaults passwd_timeout=1
+Defaults env_reset
+Defaults timestamp_timeout=0
+Defaults mail_badpass
+Defaults logfile="/var/log/sudo.log"
+Defaults lecture="always"
+Defaults lecture_file="/usr/share/doc/sudo_lecture.txt"

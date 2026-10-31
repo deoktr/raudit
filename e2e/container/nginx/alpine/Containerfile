@@ -1,0 +1,22 @@
+# Alpine image running nginx with one of two profiles, selected at runtime by
+# the entrypoint argument: `hardened` or `weak`.
+#
+# The Alpine release is pinned so the nginx version stays stable for baselines.
+# A self-signed certificate is generated at build time so the hardened profile
+# can serve HTTPS behind the HTTP to HTTPS redirect checked by NGX_006.
+FROM docker.io/alpine:3.22
+
+RUN apk add --no-cache nginx openssl \
+    && mkdir -p /etc/nginx/ssl \
+    && openssl req -x509 -nodes -newkey rsa:2048 -days 3650 \
+        -subj "/CN=localhost" \
+        -keyout /etc/nginx/ssl/e2e.key \
+        -out /etc/nginx/ssl/e2e.crt \
+    && chmod 600 /etc/nginx/ssl/e2e.key
+
+COPY hardened /profiles/hardened
+COPY weak /profiles/weak
+COPY entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["hardened"]

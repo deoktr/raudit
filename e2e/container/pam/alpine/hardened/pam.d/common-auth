@@ -1,0 +1,7 @@
+#%PAM-1.0
+# account lockout wrapped around the unix authentication, `pam_unix` is
+# `sufficient` so a success skips the `authfail` record below it
+auth required pam_faillock.so preauth silent deny=5 unlock_time=900
+auth sufficient pam_unix.so try_first_pass
+auth [default=die] pam_faillock.so authfail deny=5 unlock_time=900
+auth requisite pam_deny.so

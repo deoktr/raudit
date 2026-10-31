@@ -1,0 +1,17 @@
+# Ubuntu image with a shell idle-timeout configuration for one of two
+# profiles, selected at runtime by the entrypoint argument: `hardened` or
+# `weak`.
+#
+# SHL_001 checks the content of /etc/profile.d/timeout.sh, there is no daemon,
+# the entrypoint installs the profile file and keeps the container alive.
+#
+# The Ubuntu release is pinned to the LTS the QEMU e2e VMs run (noble), so
+# baselines stay stable.
+FROM docker.io/ubuntu:24.04
+
+COPY hardened /profiles/hardened
+COPY weak /profiles/weak
+COPY entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["hardened"]

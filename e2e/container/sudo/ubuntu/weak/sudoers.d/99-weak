@@ -1,0 +1,4 @@
+# rAudit e2e weak sudo drop-in: the remaining Defaults hardening disabled
+Defaults !use_pty
+Defaults !mail_badpass
+Defaults !requiretty

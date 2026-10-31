@@ -1,0 +1,4 @@
+# system crontab of the rAudit e2e cron container
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+*/30 * * * * root /usr/local/bin/raudit-e2e-job

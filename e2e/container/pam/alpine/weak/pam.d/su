@@ -1,0 +1,9 @@
+#%PAM-1.0
+# rAudit e2e weak su service: the pam_wheel rule tests the group of the account
+# `su` targets instead of the caller, so anyone can attempt to su to root
+# (PAM_015)
+auth sufficient pam_rootok.so
+auth required pam_wheel.so
+auth optional pam_unix.so
+account optional pam_unix.so
+session optional pam_unix.so

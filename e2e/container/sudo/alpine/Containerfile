@@ -1,0 +1,22 @@
+# Alpine image with a sudo configuration for one of two profiles, selected at
+# runtime by the entrypoint argument: `hardened` or `weak`.
+#
+# sudo has no daemon to wait for, the entrypoint installs the profile sudoers
+# files, validates them with `visudo -c` and keeps the container alive.
+#
+# The hardened profile keeps a 0644 README and a dot-file drop-in in
+# /etc/sudoers.d, both are ignored by sudo and by raudit's sudoers parser:
+# they are the regression guard for the SUD_202/SUD_203 file filter and the
+# SUD_015 parser, see e2e/findings.md.
+#
+# The Alpine release is pinned so the sudo version stays stable for baselines.
+FROM docker.io/alpine:3.22
+
+RUN apk add --no-cache sudo
+
+COPY hardened /profiles/hardened
+COPY weak /profiles/weak
+COPY entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["hardened"]

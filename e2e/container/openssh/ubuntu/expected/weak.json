@@ -1,0 +1,1787 @@
+{
+  "findings": [
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_001",
+        "title": "Ensure that sshd is configured with `fingerprinthash SHA256`",
+        "desc": "SHA-256 host-key fingerprints are collision-resistant and fit on one terminal line, unlike MD5. Using a weak hash risks accepting a forged fingerprint during first-connect trust-on-first-use."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "MD5",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `FingerprintHash SHA256`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_002",
+        "title": "Ensure that sshd is configured with `syslogfacility AUTH`",
+        "desc": "Routing sshd logs to the AUTH facility keeps authentication events alongside PAM, sudo, and su in the same log stream, simplifying correlation in SIEM rules and incident-response queries. Only useful if you are collecting logs via syslog."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "LOCAL0",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `SyslogFacility AUTH`"
+      },
+      "severity_id": 2,
+      "severity": "Low",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_003",
+        "title": "Ensure that sshd is configured with `loglevel VERBOSE`",
+        "desc": "VERBOSE logging records the fingerprint of every key used to authenticate, turning silent key compromises into detectable events and providing forensic evidence for incident response."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "SILENT",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `LogLevel VERBOSE`"
+      },
+      "severity_id": 2,
+      "severity": "Low",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_004",
+        "title": "Ensure that sshd is configured with `logingracetime` <= 60",
+        "desc": "A long LoginGraceTime lets an attacker hold open many half-finished auth attempts that consume sshd connection slots, enabling slow-DoS or password-spray campaigns. 60s is enough for legitimate logins. Increase on very slow connection if you timeout."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "600 > 60",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `LoginGraceTime 60`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_005",
+        "title": "Ensure that sshd is configured with `permitrootlogin no`",
+        "desc": "Direct SSH login as root collapses two security barriers into one: an attacker who phishes or cracks the root password gets immediate full control with no intermediate user account, and audit logs cannot attribute the action to a specific user. Requires an alternative out-of-band access method (e.g. console, serial) for emergency root access."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "yes",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `PermitRootLogin no`"
+      },
+      "severity_id": 5,
+      "severity": "Critical",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_006",
+        "title": "Ensure that sshd is configured with `strictmodes yes`",
+        "desc": "StrictModes makes sshd refuse to read authorized_keys/.ssh files that are world- or group-writable. Without it, an attacker who gains any write access to a user's home dir can append a key to authorized_keys and gain persistent SSH login."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "no",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `StrictModes yes`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_007",
+        "title": "Ensure that sshd is configured with `maxauthtries` <= 4",
+        "desc": "Capping authentication attempts per TCP connection, increasing the protection against brute-force attacks."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "20 > 4",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `MaxAuthTries 4`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_008",
+        "title": "Ensure that sshd is configured with `maxsessions` <= 5",
+        "desc": "Limiting multiplexed sessions per connection caps the damage from a single stolen socket: an attacker who hijacks one authenticated channel cannot fan out to dozens of shells, exec channels, or port forwards. Users relying on SSH multiplexing (e.g. ControlMaster) to run many parallel sessions (CI/CD pipelines, mass deployments) may hit the limit."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "50 > 5",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `MaxSessions 5`"
+      },
+      "severity_id": 2,
+      "severity": "Low",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_009",
+        "title": "Ensure that sshd is configured with `hostbasedauthentication no`",
+        "desc": "HostbasedAuthentication trusts the client host's identity rather than a user credential, an attacker who compromises any trusted client can hop into the server as any user without further authentication."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "yes",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `HostbasedAuthentication no`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_011",
+        "title": "Ensure that sshd is configured with `ignoreuserknownhosts yes`",
+        "desc": "IgnoreUserKnownHosts forces sshd to trust only the system-wide known_hosts during host-based authentication, preventing a user from whitelisting a rogue host and bypassing the admin's trust anchors. Even if host-based authentication is disable this is a better default in case it ever is."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "no",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `IgnoreUserKnownHosts yes`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_012",
+        "title": "Ensure that sshd is configured with `pubkeyauthentication yes`",
+        "desc": "Requiring public-key authentication eliminates password-based logins, blocking online brute-force and credential-stuffing attacks that exploit weak or reused passwords."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `AuthenticationMethods publickey`"
+      },
+      "severity_id": 5,
+      "severity": "Critical",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_013",
+        "title": "Ensure that sshd is configured with `passwordauthentication no`",
+        "desc": "Use key authentication instead of password based."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "yes",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `PasswordAuthentication no`"
+      },
+      "severity_id": 5,
+      "severity": "Critical",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_014",
+        "title": "Ensure that sshd is configured with `kbdinteractiveauthentication no`",
+        "desc": "Keyboard-interactive authentication can fall back to PAM password prompts, re-opening the exact brute-force path that public-key-only mode is meant to close. Disable it unless a specific PAM two-factor module requires it."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "yes",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `KbdInteractiveAuthentication no`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_015",
+        "title": "Ensure that sshd is configured with `permitemptypasswords no`",
+        "desc": "PermitEmptyPasswords yes lets accounts with empty password fields log in over SSH with no password. Use as security in depth if password authentication must be enabled."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark",
+          "DISA STIG"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "yes",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` remove: `PermitEmptyPasswords yes`"
+      },
+      "severity_id": 5,
+      "severity": "Critical",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_016",
+        "title": "Ensure that sshd is configured with `kerberosauthentication no`",
+        "desc": "Unless the host is on a Kerberos realm, KerberosAuthentication just adds attack surface and a parser exposed to network input. Disabling it removes that surface entirely."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "yes",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` remove: `KerberosAuthentication yes`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_017",
+        "title": "Ensure that sshd is configured with `kerberosorlocalpasswd no`",
+        "desc": "KerberosOrLocalPasswd yes lets sshd silently fall back to `/etc/passwd-style` authentication when Kerberos fails, defeating the intent to require Kerberos and re-exposing local password attacks. Defence-in-depth in case Kerberos is used."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "yes",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `KerberosOrLocalPasswd no`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_018",
+        "title": "Ensure that sshd is configured with `kerberosticketcleanup yes`",
+        "desc": "Without ticket cleanup, Kerberos credentials linger after the SSH session ends, a later attacker who reaches the host can reuse them to access other Kerberized services as the ticket's principal. Defence-in-depth in case Kerberos is used."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "no",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `KerberosTicketCleanup yes`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_019",
+        "title": "Ensure that sshd is configured with `gssapiauthentication no`",
+        "desc": "GSSAPI exposes additional code and parsers to remote attackers before authentication completes, on hosts not on a GSSAPI/Kerberos realm it is pure attack surface."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "yes",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` remove: `GSSAPIAuthentication yes`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_020",
+        "title": "Ensure that sshd is configured with `gssapicleanupcredentials yes`",
+        "desc": "Leftover GSSAPI credentials after a session ends are reusable by anyone who later reaches the host as that user. Security in depth in case Kerberos is used."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "no",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` remove: `GSSAPICleanupCredentials no`"
+      },
+      "severity_id": 2,
+      "severity": "Low",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_044",
+        "title": "Ensure that sshd is configured with `usepam yes`",
+        "desc": "`UsePAM yes` routes sshd through PAM, picking up account-lockout, faillock, lecturing, and other PAM-stack hardening. Without it, those controls are bypassed entirely on the SSH path."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark",
+          "DISA STIG"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "no",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `UsePAM yes`"
+      },
+      "severity_id": 5,
+      "severity": "Critical",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_025",
+        "title": "Ensure that sshd is configured with `disableforwarding yes`",
+        "desc": "DisableForwarding blocks all forwarding types (tunnel, agent, X11) in one switch. An attacker with a shell cannot pivot through the SSH session to reach internal services or expose the agent socket."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "no",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `DisableForwarding yes`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_021",
+        "title": "Ensure that sshd is configured with `x11forwarding no`",
+        "desc": "X11 forwarding exposes the X server to the remote host, which can inject keystrokes, capture screenshots, or exploit X11 vulnerabilities. Disable it unless graphical applications are required."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "yes",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `X11Forwarding no`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_026",
+        "title": "Ensure that sshd is configured with `gatewayports no`",
+        "desc": "GatewayPorts allows remote hosts to connect to ports forwarded for the user, turning the SSH server into an open relay. Attackers can expose internal services to the network."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "yes",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` remove: `GatewayPorts yes`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_027",
+        "title": "Ensure that sshd is configured with `x11uselocalhost yes`",
+        "desc": "Binding forwarded X11 displays to localhost-only prevents remote hosts from connecting to the X socket. Without it, any host that can reach the server can grab the X session."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "no",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` remove: `X11UseLocalhost no`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_028",
+        "title": "Ensure that sshd is configured with `printmotd no`",
+        "desc": "The message-of-the-day can reveal OS version, hostname, or infrastructure details useful for targeting. Disable it if PAM already prints a vetted banner, to avoid leaking information."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "yes",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `PrintMotd no`"
+      },
+      "severity_id": 2,
+      "severity": "Low",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_029",
+        "title": "Ensure that sshd is configured with `permituserenvironment no`",
+        "desc": "PermitUserEnvironment lets users set arbitrary environment variables via ~/.ssh/environment, including LD_PRELOAD to hijack libraries loaded by sshd child processes. This bypasses env_reset and other sshd security controls."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "yes",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` remove: `PermitUserEnvironment yes`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_030",
+        "title": "Ensure that sshd is configured with `clientaliveinterval` <= 15",
+        "desc": "ClientAliveInterval sends encrypted keep-alives at this interval. Setting it to 15s or less ensures dead or hijacked sessions are reaped quickly, reducing the window for session hijacking."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "30 > 15",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `ClientAliveInterval 15`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_031",
+        "title": "Ensure that sshd is configured with `clientalivecountmax 3`",
+        "desc": "Together with ClientAliveInterval, this caps how many missed keepalives a session can survive before sshd terminates it, closing dead sessions denies attackers a parked authenticated channel to reuse."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "9",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` set: `ClientAliveCountMax 3`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_032",
+        "title": "Ensure that sshd is configured with `tcpkeepalive no`",
+        "desc": "TCPKeepAlive sends unencrypted keep-alives that can be spoofed, making sshd believe a dead connection is still alive. Disable it and rely on ClientAliveInterval for encrypted keep-alives instead."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "yes",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `TCPKeepAlive no`"
+      },
+      "severity_id": 2,
+      "severity": "Low",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_033",
+        "title": "Ensure that sshd is configured with `usedns no`",
+        "desc": "UseDNS triggers reverse-DNS lookups on every connection, leaking client IPs to the configured resolver and adding latency. Disable it unless hostnames are required in logs."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "yes",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` remove: `UseDNS yes`"
+      },
+      "severity_id": 2,
+      "severity": "Low",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_034",
+        "title": "Ensure that sshd is configured with `permittunnel no`",
+        "desc": "Prevent SSH session from creating a tun/tap device, making it a bit harder for an attacker to bridge networks. Breaks SSH VPN tunneling (ssh -w) for users who rely on it for secure remote network access."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "yes",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` remove: `PermitTunnel yes`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_035",
+        "title": "Ensure that sshd is configured with `maxstartups 10:30:60`",
+        "desc": "MaxStartups rate-limits unauthenticated connections: after 10 pending, new connections are dropped with 30% probability, rising to 100% at 60 pending. This thwarts connection-slurping DoS and slows password-spray campaigns. Legitimate bulk SSH connections (CI/CD, mass deployments) may be dropped during peak auth times; increase the threshold on busy bastion hosts."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "100:30:200",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `MaxStartups 10:30:60`"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_036",
+        "title": "Ensure that sshd is configured with `printlastlog yes`",
+        "desc": "Could help detect an unauthorized connection if the last login is not recognized."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "no",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `PrintLastLog yes`"
+      },
+      "severity_id": 2,
+      "severity": "Low",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_037",
+        "title": "Ensure that sshd is configured with `allowgroups sshusers`",
+        "desc": "SSH access should be restricted to a group of users. Users not in the specified group will be denied SSH access, including system administrators not added to the group."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "`allowgroups` not set, not reported by `sshd -T`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `AllowGroups sshusers`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_038",
+        "title": "Ensure that sshd is configured with `kexalgorithms mlkem768x25519-sha256,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521`",
+        "desc": "Pinning key-exchange algorithms to a vetted modern set blocks downgrade to weak/legacy KEX (e.g. SHA-1-based DH groups) and includes post-quantum hybrids (mlkem, sntrup) so today's recorded sessions cannot be decrypted by future quantum-capable adversaries. Older SSH clients that only support legacy algorithms will be unable to connect."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `KexAlgorithms mlkem768x25519-sha256,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_039",
+        "title": "Ensure that sshd is configured with `ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr`",
+        "desc": "Pinning ciphers to authenticated-encryption (AEAD) and CTR-with-MAC modes blocks downgrade to CBC, RC4, and 3DES, historically broken to recover plaintext from captured SSH traffic. Older SSH clients that only support legacy ciphers will be unable to connect."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "chacha20-poly1305@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_040",
+        "title": "Ensure that sshd is configured with `macs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com`",
+        "desc": "Pinning MACs to encrypt-then-MAC (ETM) SHA-2 family blocks the historically-broken MD5/SHA-1 MACs and the encrypt-and-MAC ordering that has produced timing oracles in OpenSSH. Older SSH clients that only support legacy MACs will be unable to connect."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "umac-64-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_041",
+        "title": "Ensure that sshd is configured with `authenticationmethods publickey`",
+        "desc": "Enforces the use of publickey for authentication, eliminating fall-back paths to credential auth."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "any",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `AuthenticationMethods publickey`"
+      },
+      "severity_id": 5,
+      "severity": "Critical",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_042",
+        "title": "Ensure that sshd is configured with `subsystem sftp /usr/lib/openssh/sftp-server -f AUTHPRIV -l INFO`",
+        "desc": "Configure SFTP to log to AUTHPRIV at INFO, every file transfer over SFTP appears in the auth log, turning otherwise-silent file exfil over SSH into something that can be detected and audited."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "sftp /usr/lib/openssh/sftp-server ",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/ssh/sshd_config` add: `Subsystem sftp /usr/lib/openssh/sftp-server -f AUTHPRIV -l INFO`"
+      },
+      "severity_id": 2,
+      "severity": "Low",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_047",
+        "title": "Ensure `/etc/ssh` directory is owned by root",
+        "desc": "/etc/ssh holds host private keys and sshd_config, non-root ownership lets that user steal host keys or rewrite sshd_config to weaken the security policy."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "wanted `0:0` got `0:65534`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "chown root:root /etc/ssh"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_048",
+        "title": "Ensure `/etc/ssh` directory permissions is 755",
+        "desc": "/etc/ssh holds host private keys and sshd_config, open permissions lets users steal host keys or rewrite sshd_config to weaken the security policy."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "wanted `755` got `777`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "chmod 755 /etc/ssh"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_049",
+        "title": "Ensure `/etc/ssh/sshd_config` file is owned by root",
+        "desc": "Could allow an attacker to reconfigure sshd."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "wanted `0:0` got `0:65534`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "chown root:root /etc/ssh/sshd_config"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_050",
+        "title": "Ensure `/etc/ssh/sshd_config` file permissions is 644 or stricter",
+        "desc": "Could allow an attacker to reconfigure sshd."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "wanted `644` or stricter got `666`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "chmod 644 /etc/ssh/sshd_config"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_051",
+        "title": "Ensure `/etc/ssh/sshd_config.d/` directory is owned by root",
+        "desc": "Could allow an attacker to reconfigure sshd."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "wanted `0:0` got `0:65534`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "chown root:root /etc/ssh/sshd_config.d"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_052",
+        "title": "Ensure `/etc/ssh/sshd_config.d/` files are owned by root",
+        "desc": "Could allow an attacker to reconfigure sshd."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "file: `/etc/ssh/sshd_config.d/00-weak.conf`: wanted `0:0` got `0:65534`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "chown -R root:root /etc/ssh/sshd_config.d/*"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_053",
+        "title": "Ensure `/etc/ssh/sshd_config.d/` files permissions are 644 or stricter",
+        "desc": "Could allow an attacker to reconfigure sshd."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "file `/etc/ssh/sshd_config.d/00-weak.conf` permission: wanted `644` or stricter got `666`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "chmod -R 644 /etc/ssh/sshd_config.d/*"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_054",
+        "title": "Ensure SSH private host key files have permissions 600",
+        "desc": "SSH private host keys must have restrictive permissions. If they are world-readable, an attacker can steal them and impersonate the server, enabling man-in-the-middle attacks."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "chmod 600 /etc/ssh/ssh_host_*_key"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_055",
+        "title": "Ensure SSH public host key files have permissions 644",
+        "desc": "SSH public host keys should have correct permissions. Overly permissive public keys could be tampered with, leading to trust-on-first-use poisoning."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "wanted `644` got `666`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "chmod 644 /etc/ssh/ssh_host_*_key.pub"
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "SSH_056",
+        "title": "Ensure SSH host key files are owned by root",
+        "desc": "SSH host key files must be owned by root to prevent unauthorized users from modifying them. Non-root ownership could allow an attacker to replace host keys and impersonate the server."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "wanted `0:0` got `0:65534`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "chown root:root /etc/ssh/ssh_host_*_key /etc/ssh/ssh_host_*_key.pub"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    }
+  ],
+  "stats": {
+    "total": 49,
+    "pass": 2,
+    "fail": 47,
+    "warning": 0,
+    "unknown": 0,
+    "fail_critical": 5,
+    "fail_high": 16,
+    "fail_medium": 17,
+    "fail_low": 9,
+    "fail_informational": 0
+  },
+  "metadata": {
+    "version": "1.7.0",
+    "product": {
+      "name": "raudit",
+      "version": ""
+    }
+  }
+}

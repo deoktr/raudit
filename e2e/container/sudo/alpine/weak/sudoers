@@ -1,0 +1,18 @@
+# rAudit e2e weak sudo profile: Defaults hardening removed or negated,
+# passwordless and re-authentication-free root access.
+# NOTE: `!authenticate` only exists as a Defaults flag, classic sudo rejects
+# it as a rule tag (`%wheel ALL=(ALL) !authenticate: ALL` fails visudo), see
+# e2e/findings.md
+Defaults !env_reset
+Defaults env_keep += "LD_PRELOAD LD_LIBRARY_PATH PATH"
+Defaults !ignore_dot
+Defaults !noexec
+Defaults !authenticate
+Defaults timestamp_timeout=-1
+Defaults passwd_timeout=0
+Defaults umask=0002
+
+root ALL=(ALL) NOPASSWD: ALL
+%wheel ALL=(ALL) ALL
+
+@includedir /etc/sudoers.d

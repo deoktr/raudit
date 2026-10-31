@@ -1,0 +1,28 @@
+# Ubuntu image running cron with one of two profiles, selected at runtime by
+# the entrypoint argument: `hardened` or `weak`.
+#
+# raudit cron checks inspect the Debian-style cron directories (/etc/cron.d,
+# /etc/cron.{hourly,daily,weekly,monthly,yearly}) and /etc/crontab ownership
+# and permissions, the entrypoint populates them around the Vixie cron shipped
+# by Ubuntu (the Alpine image runs dcron instead, and its binary is `crond`).
+#
+# The distro periodic scripts (/etc/cron.daily/dpkg, /etc/cron.daily/apt-compat,
+# ...) are kept at their stock 0755 in the hardened profile: `run-parts` skips
+# non-executable files, and CRN_009/013/017/021/025 only require them not to be
+# group or world writable, see e2e/findings.md. The weak profile sabotages them
+# along with the rest.
+#
+# The Ubuntu release is pinned to the LTS the QEMU e2e VMs run (noble), so
+# baselines stay stable.
+FROM docker.io/ubuntu:24.04
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends cron \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY hardened /profiles/hardened
+COPY weak /profiles/weak
+COPY entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["hardened"]

@@ -1,0 +1,347 @@
+{
+  "findings": [
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "LDF_002",
+        "title": "Ensure that login.defs `YESCRYPT_COST_FACTOR` >= 5",
+        "desc": "A higher cost factor multiplies the work an attacker must spend per guess in offline cracking. With yescrypt now consumed by PAM, this directly raises the bar for password cracking from any leaked /etc/shadow. Higher cost factors increase CPU time for password hashing during login and password changes, which may cause noticeable delays on systems with many concurrent logins."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "3 not in [5..11]",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Set `YESCRYPT_COST_FACTOR 5` or higher (up to 11) in `/etc/login.defs`."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "PAM_001",
+        "title": "Ensure PAM service `passwd` has rule `account required pam_unix`",
+        "desc": "The account stack validates the account, the auth stack only validates the password: `pam_unix` reads the shadow entry (expiry date, last change, maximum and minimum age) and refuses an account that is administratively expired or out of its validity window. Without it `passwd` renews the credentials of accounts that were taken out of service, an expired account keeps rotating its password instead of being forced through an administrator, and an account locked by invalidating its hash is one reset away from being usable again through `login`, `sshd` or `su`. This is the stock state of Debian and Ubuntu, their `/etc/pam.d/passwd` includes `common-password` only and has no account stack at all."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "rule not found",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Add an account stack to `/etc/pam.d/passwd`, `@include common-account` on Debian and Ubuntu (before `@include common-password`), `account required pam_unix.so` followed by `account requisite pam_deny.so` elsewhere. The bracketed control the `common-account` files ship, `account [success=1 new_authtok_reqd=done default=ignore] pam_unix.so`, is accepted as well and lets an expired password go through the change instead of refusing it."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "PAM_002",
+        "title": "Ensure PAM service `passwd` enforces password quality with `pam_pwquality`",
+        "desc": "`pam_pwquality` prompts for the new password, checks it against a dictionary and a set of rules (length, character classes, similarity with the old password, palindromes, the user's own name) and only then hands it to `pam_unix`. Without it every password is accepted and a short or dictionary one falls to an offline attack on `/etc/shadow` in minutes, no matter how strong the hash of `PAM_003` is. It replaced `pam_cracklib` and is backward compatible with its options. The thresholds live on the rule or in `/etc/security/pwquality.conf`, the rule winning, and raudit only reads the rule: an unset `minlen` is a warning, the module default of 8 being below the bar. Impact: users are rejected at change time, and automation setting passwords without a human (`chpasswd`, provisioning scripts) has to provide passwords that pass, unless `enforce_for_root` is left off, which is the default and lets root set a weak password with only a printed warning."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "`minlen=6` < 14",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Add `password requisite pam_pwquality.so retry=3 minlen=14 difok=3` to the password stack of `/etc/pam.d/passwd`, or `@include common-password` on Debian and Ubuntu and set the thresholds in `/etc/security/pwquality.conf` instead: `minlen = 14`, `retry = 3`, `difok = 3`, and `dcredit = -1`, `ucredit = -1`, `lcredit = -1`, `ocredit = -1` to require one character of each class. Add `enforce_for_root` to refuse weak passwords set by root too."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "PAM_003",
+        "title": "Ensure PAM service `passwd` hashes new passwords with yescrypt",
+        "desc": "yescrypt is memory-hard, cracking a leaked `/etc/shadow` costs orders of magnitude more than against the MD5 or SHA-crypt hashes an explicit `pam_unix` algorithm flag selects, and the GPUs an attacker rents buy far less than against `sha512crypt`. A rule setting no algorithm flag is accepted, `pam_unix` then takes the algorithm from `ENCRYPT_METHOD` and the work factor from `YESCRYPT_COST_FACTOR` in `/etc/login.defs`, which `LDF_001` and `LDF_002` check. Only the passwords changed after the switch are hashed with it, the existing ones keep their algorithm until their owner changes them. Impact: the cost is paid on every authentication as well as on every change, a slower login that also lets an attacker burn CPU by failing logins on purpose."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "`sha512` is used instead of `yescrypt`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Add `yescrypt` to the `pam_unix` rule of the password stack, `password required pam_unix.so yescrypt` in `/etc/pam.d/passwd` (or `common-password`), remove any weaker algorithm flag (`sha512`, `sha256`, `md5`...), and set `ENCRYPT_METHOD YESCRYPT` in `/etc/login.defs` for the tools that do not go through PAM. Existing hashes are not migrated, force a change to rehash them."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "PAM_004",
+        "title": "Ensure no PAM `auth` rule of `pam_unix` has flag `nullok`",
+        "desc": "By default `pam_unix` refuses an account whose password is blank, `nullok` lifts that and lets anyone authenticate as an account with an empty password field in `/etc/shadow`. Those accounts come from a `useradd` without a password, a migration that dropped the hashes, or an attacker able to clear one, and they skip the password factor of the whole stack: the lockout and the second factor stacked around `pam_unix` see a successful authentication and let the session through. Debian and Ubuntu ship `nullok` in `/etc/pam.d/common-auth`, so every service including that file (`login`, `sshd`, `su`, `sudo`, the screensaver) accepts blank passwords at once. The whole of `/etc/pam.d/` is scanned, a flag in an included file weakens every service that includes it. `nullresetok` is the narrower flag for the forced reset flow, it only allows a blank password while a reset is required."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "`nullok` set in /etc/pam.d/login",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Remove `nullok` from the `pam_unix` rules of `/etc/pam.d/`, listed by `grep -rl nullok /etc/pam.d/`, usually `common-auth` or `system-auth`, then give a password to or lock every account with a blank one: `awk -F: '($2 == \"\") { print $1 }' /etc/shadow` lists them and `passwd -l <user>` locks them."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "PAM_005",
+        "title": "Ensure PAM service `passwd` remembers at least 5 previous passwords",
+        "desc": "Without password history a user rotates between two passwords and comes back to the original, defeating the rotation and keeping valid a hash an attacker may already have cracked. `remember` is the depth of the history, the module keeps the last 10 by default and `remember=0` stops checking while leaving the history file untouched. Only `pam_pwhistory` is accepted, the `remember` flag of `pam_unix` is deprecated and stores the previous passwords as MD5 hashes. The rule must also run before `pam_unix`, the module changing the password: placed after it, a reused password is already written to `/etc/shadow` when `pam_pwhistory` reports the reuse, `passwd` prints its rejection but the change stands. `enforce_for_root` is off by default, without it root sets any password it wants, and the history is kept in `/etc/security/opasswd`, which must stay readable by root only. The module is local, it cannot check the history of NIS, LDAP or Kerberos passwords."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "`remember=2` < 5",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Add `password required pam_pwhistory.so remember=5 use_authtok enforce_for_root` to the password stack of `/etc/pam.d/passwd` (or `common-password`), before the `pam_unix` rule that writes the new password, and keep `/etc/security/opasswd` owned by root with mode 0600."
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "PAM_015",
+        "title": "Ensure PAM service `su` has rule `auth required pam_wheel use_uid`",
+        "desc": "`su` asks for the password of the account it targets, so without a restriction any local account can sit at a console and try root's password for as long as it wants, a compromised low-privilege account inheriting that ability. `pam_wheel` refuses the escalation before the password is asked to every account outside the group, narrowing the path to root to a named set of administrators and turning an `su` attempt by anyone else into a hard failure worth alerting on. `use_uid` is what makes the rule mean that: without it the membership is tested on the target account, `root`, which belongs to the group it is tested against, so the rule lets everyone through. `deny` reverses it and refuses the members of the group instead, and `trust` stacked as `sufficient` would let them in without a password at all. Impact: the administrators must be in the group before the rule goes in, an empty group locks everybody out of `su`, root included for the target accounts (`pam_rootok` still lets root become any user without a password). Debian and Ubuntu ship no `wheel` group and the rule commented out."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "no `use_uid` flag on `pam_wheel`, the membership is checked on the account `su` targets instead of the caller, and `root` is in the group it is checked against",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Add `auth required pam_wheel.so use_uid` to `/etc/pam.d/su`, after the `pam_rootok` rule, create the group if the distro does not ship it with `groupadd wheel` and put the administrators in it with `gpasswd -a <user> wheel`. Where the administrators live in another group, use `auth required pam_wheel.so use_uid group=sudo` instead. Verify that `su -` from an account outside the group is refused without a password prompt."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "PAM_024",
+        "title": "Ensure PAM service `login` locks accounts after repeated failures with `pam_faillock`",
+        "desc": "`pam_faillock` counts the consecutive authentication failures of each account in `/run/faillock` and refuses it once `deny` is reached, which is what turns an unlimited password guessing game into a handful of tries. Without it an attacker with console, serial or terminal access brute-forces a password at the speed of the prompt. Three records make it work and the two that matter are checked: `authfail` writes the failure down, without it nothing is counted and no account is ever locked, and `preauth` refuses an already locked account before asking for a password while `authsucc` clears the counter on success, without one of them a locked account is still prompted and unrelated failures accumulate. The thresholds (`deny`, `unlock_time`, `fail_interval`, `even_deny_root`) belong in `/etc/security/faillock.conf`, the module defaults being `deny=3`, `unlock_time=600` and `fail_interval=900`, and an `account required pam_faillock.so` rule is what keeps a locked account out of the services that do not authenticate it. `pam_tally2` is gone from linux-pam since 1.4, a stack still using it locks nobody. Impact: lockouts are a denial of service an attacker can trigger on purpose against an account he knows, `silent` and a short `unlock_time` limit it."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "no `authfail` flag on `pam_faillock`, the failures are never recorded, the counter never reaches `deny` and no account is ever locked",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Wrap the auth stack of `/etc/pam.d/login` (or `common-auth`) with the two records, `auth required pam_faillock.so preauth silent deny=5 unlock_time=900` before the `pam_unix` rule and `auth [default=die] pam_faillock.so authfail deny=5 unlock_time=900` after it, add `account required pam_faillock.so` to the account stack, and keep the thresholds in `/etc/security/faillock.conf` rather than on the rules. `faillock` shows the counters, `faillock --user <name> --reset` unlocks an account."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "PAM_030",
+        "title": "Ensure PAM service `login` has rule `auth optional pam_faildelay` with `delay` >= 4000000",
+        "desc": "`pam_faildelay` holds a failed authentication for a while before the failure reaches the caller, which buys two things: guessing a password at the console costs seconds per attempt instead of milliseconds, and the pause covers the timing difference between an unknown account and a wrong password, an enumeration oracle `pam_unix` offers for free. The value on the rule is in microseconds, `delay=4000000` being 4 seconds, and without it the module takes `FAIL_DELAY` from `/etc/login.defs`, in seconds, which raudit does not read here, hence the warning. The rule is `optional` because the module only returns `PAM_IGNORE`, it never decides the outcome of the stack. The delay and the lockout of `PAM_024` are complementary, one slows every attempt down and the other caps their number. Impact: a user who mistypes waits, and automation authenticating in a loop with a wrong credential slows down by the same amount."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "`delay=1000000` < 4000000",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Set `auth optional pam_faildelay.so delay=4000000` in `/etc/pam.d/login`, Debian and Ubuntu ship the rule with `delay=3000000`, or `FAIL_DELAY 4` in `/etc/login.defs` for the services that do not use the module."
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    }
+  ],
+  "stats": {
+    "total": 9,
+    "pass": 0,
+    "fail": 9,
+    "warning": 0,
+    "unknown": 0,
+    "fail_critical": 0,
+    "fail_high": 7,
+    "fail_medium": 2,
+    "fail_low": 0,
+    "fail_informational": 0
+  },
+  "metadata": {
+    "version": "1.7.0",
+    "product": {
+      "name": "raudit",
+      "version": ""
+    }
+  }
+}

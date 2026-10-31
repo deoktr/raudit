@@ -1,0 +1,26 @@
+# Alpine image running OpenSSH with one of two profiles, selected at runtime
+# by the entrypoint argument: `hardened` or `weak`.
+#
+# The Alpine release is pinned to limit OpenSSH version drift, but package
+# revisions still float inside the 3.22 repository and the checks compare
+# against `sshd -T` output, see e2e/findings.md (baseline stability). This
+# build reports neither the Kerberos/GSSAPI options nor `usepam`/`printlastlog`
+# (SSH_016..SSH_020, SSH_036, SSH_044 warn, finding 1) and rejects
+# `FingerprintHash md5` (SSH_001 cannot fail in the weak profile); the ubuntu
+# context covers all of them.
+FROM docker.io/alpine:3.22
+
+# The sftp-server symlink lets the hardened profile use the exact path
+# expected by SSH_042 (/usr/lib/openssh/sftp-server) on Alpine.
+RUN apk add --no-cache openssh-server openssh-sftp-server \
+    && ssh-keygen -A \
+    && mkdir -p /usr/lib/openssh /var/empty \
+    && ln -s /usr/lib/ssh/sftp-server /usr/lib/openssh/sftp-server \
+    && chmod 755 /var/empty
+
+COPY hardened /etc/ssh/profiles/hardened
+COPY weak /etc/ssh/profiles/weak
+COPY entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["hardened"]

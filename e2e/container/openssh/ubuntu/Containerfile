@@ -1,0 +1,33 @@
+# Ubuntu image running OpenSSH with one of two profiles, selected at runtime
+# by the entrypoint argument: `hardened` or `weak`.
+#
+# Unlike the Alpine image, Ubuntu's openssh-server is built with PAM, Kerberos
+# and GSSAPI support and glibc has wtmp/lastlog, so `sshd -T` reports the seven
+# build-dependent options (SSH_016..SSH_020, SSH_036, SSH_044) and the profiles
+# configure them: the hardened one can pass them, the weak one fails them. The
+# sftp-server path SSH_042 expects is also the native Ubuntu one, no symlink is
+# needed.
+#
+# SSH_038 cannot pass here: it pins an exact KexAlgorithms list including
+# `mlkem768x25519-sha256`, which noble's openssh 9.6p1 does not implement, see
+# e2e/findings_ubuntu.md (U3).
+#
+# The Ubuntu release is pinned to the LTS the QEMU e2e VMs run (noble). Package
+# revisions still float inside it and the checks compare against `sshd -T`
+# output, see e2e/findings.md (baseline stability).
+FROM docker.io/ubuntu:24.04
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        openssh-server \
+    && rm -rf /var/lib/apt/lists/* \
+    && ssh-keygen -A \
+    && mkdir -p /run/sshd \
+    && chmod 755 /run/sshd
+
+COPY hardened /etc/ssh/profiles/hardened
+COPY weak /etc/ssh/profiles/weak
+COPY entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["hardened"]

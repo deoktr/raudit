@@ -1,0 +1,22 @@
+# Alpine image with a group database for one of two profiles, selected at
+# runtime by the entrypoint argument: `hardened` or `weak`.
+#
+# /etc/group and /etc/gshadow are static files shipped per profile so results
+# never depend on runtime state. The weak profile sabotages the group database
+# content (a group password, duplicate GIDs and names) and the ownership and
+# permissions of /etc/group, /etc/gshadow and /etc/gshadow-.
+#
+# GRP_006 (the `shadow` group) is skipped because Alpine is not Debian, the
+# ubuntu context covers it, and /etc/gshadow does not exist here at all, so
+# GRP_001/GRP_102..GRP_105 take their missing-file and `root:root 0600`
+# branches instead of the Debian ones. The `/etc/passwd` and `/etc/shadow`
+# file checks (USR_100..USR_107) live in the user container, they used to be
+# mistagged `group`, see e2e/findings.md.
+FROM docker.io/alpine:3.22
+
+COPY hardened /profiles/hardened
+COPY weak /profiles/weak
+COPY entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["hardened"]

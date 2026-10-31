@@ -1,0 +1,26 @@
+# Ubuntu image with a Linux-PAM configuration for one of two profiles,
+# selected at runtime by the entrypoint argument: `hardened` or `weak`.
+#
+# PAM has no daemon, raudit parses the files under /etc/pam.d/, the entrypoint
+# installs the profile service files and keeps the container alive.
+#
+# The hardened profile is the stock Ubuntu layout: the service files `@include`
+# hardened common-* stacks with the distro control flags (`requisite`,
+# `[success=1 ...]`), it is the regression test for raudit's include resolution
+# and control matching, see e2e/findings.md. The weak profile is a minimal stack
+# missing every hardening rule. Both are byte-for-byte the Alpine ones, the
+# layout they reproduce is Debian/Ubuntu's.
+#
+# No package is installed: `libpam-runtime` (which owns /etc/pam.d) is already
+# part of the Ubuntu base image, and raudit only reads the files.
+#
+# The Ubuntu release is pinned to the LTS the QEMU e2e VMs run (noble), so
+# baselines stay stable.
+FROM docker.io/ubuntu:24.04
+
+COPY hardened /profiles/hardened
+COPY weak /profiles/weak
+COPY entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["hardened"]

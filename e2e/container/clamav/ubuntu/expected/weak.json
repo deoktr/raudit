@@ -1,0 +1,59 @@
+{
+  "findings": [
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "CAV_001",
+        "title": "Ensure ClamAV is installed",
+        "desc": "ClamAV provides open-source antivirus scanning to detect malware, trojans, and other threats on the system. Only needed in as a regulatory requirement."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "clamscan bin was not found",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Install via the distro package manager (e.g. `apt install clamav clamav-daemon`) and enable signature updates with `freshclam`."
+      },
+      "severity_id": 2,
+      "severity": "Low",
+      "status_id": 1,
+      "status": "New"
+    }
+  ],
+  "stats": {
+    "total": 1,
+    "pass": 0,
+    "fail": 1,
+    "warning": 0,
+    "unknown": 0,
+    "fail_critical": 0,
+    "fail_high": 0,
+    "fail_medium": 0,
+    "fail_low": 1,
+    "fail_informational": 0
+  },
+  "metadata": {
+    "version": "1.7.0",
+    "product": {
+      "name": "raudit",
+      "version": ""
+    }
+  }
+}

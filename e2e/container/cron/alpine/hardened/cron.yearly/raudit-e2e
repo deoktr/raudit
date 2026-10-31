@@ -1,0 +1,3 @@
+#!/bin/sh
+# periodic job of the rAudit e2e cron container
+/usr/local/bin/raudit-e2e-job

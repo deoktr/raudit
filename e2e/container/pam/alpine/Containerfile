@@ -1,0 +1,23 @@
+# Alpine image with a Linux-PAM configuration for one of two profiles,
+# selected at runtime by the entrypoint argument: `hardened` or `weak`.
+#
+# PAM has no daemon, raudit parses the files under /etc/pam.d/, the entrypoint
+# installs the profile service files and keeps the container alive.
+#
+# The hardened profile reproduces the stock Debian/Ubuntu layout, the service
+# files `@include` hardened common-* stacks with the distro control flags
+# (`requisite`, `[success=1 ...]`), it is the regression test for raudit's
+# include resolution and control matching, see e2e/findings.md. The weak
+# profile is a minimal stack missing every hardening rule.
+#
+# The Alpine release is pinned so baselines stay stable.
+FROM docker.io/alpine:3.22
+
+RUN apk add --no-cache linux-pam
+
+COPY hardened /profiles/hardened
+COPY weak /profiles/weak
+COPY entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["hardened"]

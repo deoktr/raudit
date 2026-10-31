@@ -1,0 +1,456 @@
+{
+  "findings": [
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "GRP_001",
+        "title": "Ensure `/etc/gshadow` has no usable group password",
+        "desc": "A group password stored in /etc/gshadow lets any holder switch into the group via `newgrp`, expanding lateral movement. Every entry must have its password field locked (`!`/`*`, what `gpasswd -r` produces) or empty, the file may also be absent, so this attack vector does not exist."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "admins",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Lock every group password via `gpasswd -r <group>`, or remove `/etc/gshadow`."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "GRP_002",
+        "title": "Ensure no group has a password set",
+        "desc": "A password in /etc/group lets any user with that password assume the group's privileges via `newgrp`, bypassing the membership list, turning the group hash into a shared lateral-movement credential as soon as it leaks."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "admins",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Remove passwords from groups via `gpasswd -r <group>`."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "GRP_003",
+        "title": "Ensure that only root has GID 0",
+        "desc": "A second group with GID 0 is privilege-equivalent to `root` for filesystem and IPC ACLs. An attacker who creates one or who pivots into membership gains root-level group access without ever being root."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "toor",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Remove or renumber any non-`root` group with GID 0 via `groupmod -g <new-gid> <name>`, investigate how it was created."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "GRP_004",
+        "title": "Ensure no duplicate GIDs exist",
+        "desc": "Two group names sharing one GID makes audit logs and ACL decisions ambiguous: a file owned by GID X cannot be reliably attributed to one group, hiding privilege relationships and complicating forensics."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "root, toor, audit, devs",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Renumber duplicates via `groupmod -g <new-gid> <name>`."
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "GRP_005",
+        "title": "Ensure no duplicate group names exist",
+        "desc": "Duplicate group names indicate manual editing of `/etc/group` or a corrupt name service."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "audit, audit",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Edit `/etc/group` (with `vigr`) to remove or rename the duplicate."
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "GRP_006",
+        "title": "Ensure `shadow` group is empty",
+        "desc": "Members of the `shadow` group can read `/etc/shadow` and crack account's password hash. Membership should be empty so no non-root account holds that capability."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark",
+          "DISA STIG"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "audit",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "Remove all members from the `shadow` group via `gpasswd -d <user> shadow`."
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "GRP_100",
+        "title": "Ensure `/etc/group` file owner is `root:root`",
+        "desc": "If `/etc/group` is owned by a non-root user, that user can edit group membership and silently grant themselves any group's privileges, including `wheel`, `sudo`, or `docker`, each of which leads to root."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "wanted `0:0` got `0:65534`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chown root:root /etc/group`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "GRP_101",
+        "title": "Ensure `/etc/group` file permissions are `644`",
+        "desc": "Permissions wider than 0644 let unprivileged users modify group membership. Tighter than 0644 breaks userland tools that expect to read group names. 0644 is the only safe value."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "wanted `644` got `664`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "`chmod 644 /etc/group`"
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "GRP_102",
+        "title": "Ensure `/etc/gshadow` file owner is `root:root` or file is missing",
+        "desc": "Wrong ownershoip of `/etc/gshadow` leaks group password hashes (when present) for offline cracking and exposes sensitive group elevation policy."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "wanted `0:42` got `0:0`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "On Debian: `chown root:shadow /etc/gshadow`\nOn other distros: `chown root:root /etc/gshadow`."
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "GRP_103",
+        "title": "Ensure `/etc/gshadow` file permissions are set or file is missing",
+        "desc": "World- or group-readable `/etc/gshadow` leaks group password hashes (when present) for offline cracking and exposes sensitive group elevation policy."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "wanted `640` got `644`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "On Debian: `chmod 640 /etc/gshadow`\nOn other distros: `chmod 600 /etc/gshadow`."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "GRP_104",
+        "title": "Ensure `/etc/gshadow-` file owner is `root:root` or file is missing",
+        "desc": "`/etc/gshadow-` is the previous-generation backup of gshadow, if its ownership is wrong, an attacker can recover group hashes and policy from the backup that the live file no longer reveals."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "wanted `0:42` got `65534:65534`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "On Debian: `chown root:shadow /etc/gshadow-`. Elsewhere: `chown root:root /etc/gshadow-`."
+      },
+      "severity_id": 3,
+      "severity": "Medium",
+      "status_id": 1,
+      "status": "New"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
+        "uid": "GRP_105",
+        "title": "Ensure `/etc/gshadow-` file permissions are set or file is missing",
+        "desc": "`/etc/gshadow-` is the previous-generation backup of gshadow, if its permissions are wrong, an attacker can recover group hashes and policy from the backup that the live file no longer reveals."
+      },
+      "compliance": {
+        "standards": [
+          "CIS Benchmark"
+        ],
+        "status_id": 3,
+        "status": "Fail"
+      },
+      "message": "wanted `640` got `666`",
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "On Debian: `chmod 640 /etc/gshadow-`. Elsewhere: `chmod 600 /etc/gshadow-`."
+      },
+      "severity_id": 4,
+      "severity": "High",
+      "status_id": 1,
+      "status": "New"
+    }
+  ],
+  "stats": {
+    "total": 12,
+    "pass": 0,
+    "fail": 12,
+    "warning": 0,
+    "unknown": 0,
+    "fail_critical": 0,
+    "fail_high": 7,
+    "fail_medium": 5,
+    "fail_low": 0,
+    "fail_informational": 0
+  },
+  "metadata": {
+    "version": "1.7.0",
+    "product": {
+      "name": "raudit",
+      "version": ""
+    }
+  }
+}

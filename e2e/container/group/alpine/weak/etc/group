@@ -1,0 +1,11 @@
+root:x:0:root
+toor:x:0:
+bin:x:1:root,bin,daemon
+daemon:x:2:root,bin,daemon
+wheel:x:10:root
+admins:$y$j9T$.VwPRUGs1B9aXQhbrse9C0$3/PP2oO.A6ertJ0o1FBUwWz7KpFKkvMcPQXG1qbMOk8:1001:audit
+audit:x:1000:
+audit:x:1002:
+devs:x:1002:
+nogroup:x:65533:
+nobody:x:65534:
