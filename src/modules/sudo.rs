@@ -46,6 +46,11 @@ pub fn skip_sudo_rs() -> bool {
     utils::which("sudo-rs").is_some()
 }
 
+/// Skip when sudo-rs is not installed
+pub fn skip_no_sudo_rs() -> bool {
+    utils::which("sudo-rs").is_none()
+}
+
 /// Strip a trailing comment, `#` opens a comment unless inside double quotes.
 fn strip_comment(line: &str) -> &str {
     let mut in_quotes = false;
@@ -198,6 +203,20 @@ pub fn check_sudo_defaults(defaults: &str) -> check::CheckReturn {
             (
                 check::CheckState::Fail,
                 Some(format!("`Defaults {}` is not present", defaults)),
+            )
+        }
+    })
+}
+
+/// Check if sudoers default is not present
+pub fn check_sudo_no_defaults(defaults: &str) -> check::CheckReturn {
+    SUDO_CONFIG_DEFAULTS.with(|sudo_defaults| {
+        if !sudo_defaults.contains(&defaults.to_string()) {
+            (check::CheckState::Pass, None)
+        } else {
+            (
+                check::CheckState::Fail,
+                Some(format!("`Defaults {}` is present", defaults)),
             )
         }
     })

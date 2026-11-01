@@ -360,6 +360,9 @@ cargo audit
 
 Rules:
 
+- Add OpenSSH clients checks
+- Add git checks
+- Add runas checks
 - Add OpenRC checks
 - Run `systemd-analyze security ...` on all systemd services and raise errors
   based on results

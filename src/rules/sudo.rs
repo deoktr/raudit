@@ -209,6 +209,34 @@ pub fn add_checks() {
     .register();
 
     check::Check::new(
+        "SUD_017",
+        "Ensure that sudo default config `!pwfeedback` is not set",
+        Severity::Low,
+        vec!["sudo", "server", "workstation"],
+        || sudo::check_sudo_no_defaults("!pwfeedback"),
+        vec![sudo::init_sudo],
+    )
+    .skip_when(sudo::skip_no_sudo)
+    .skip_when(sudo::skip_sudo_rs)
+    .with_description("Prevent sudo from giving visual feedback when typing the password when the user presses a key, the default for sudo. Prevent an onlooker from being able to determine the length of the password being used. The pwfeedback was a requirements for a buffer overflow CVE-2019-18634.")
+    .with_fix("In `/etc/sudoers` or `/etc/sudoers.d/*` remove: `Defaults !pwfeedback`")
+    .register();
+
+    check::Check::new(
+        "SUD_018",
+        "Ensure that sudo default config `pwfeedback` is set",
+        Severity::Low,
+        vec!["sudo", "server", "workstation"],
+        || sudo::check_sudo_defaults("pwfeedback"),
+        vec![sudo::init_sudo],
+    )
+    .skip_when(sudo::skip_no_sudo)
+    .skip_when(sudo::skip_no_sudo_rs)
+    .with_description("Prevent sudo from giving visual feedback when typing the password when the user presses a key, the default for sudo but not for sudo-rs. Prevent an onlooker from being able to determine the length of the password being used.")
+    .with_fix("In `/etc/sudoers` or `/etc/sudoers.d/*` add: `Defaults pwfeedback`")
+    .register();
+
+    check::Check::new(
         "SUD_200",
         "Ensure sudoers config file permissions are 440 or stricter",
         Severity::High,

@@ -13,6 +13,7 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 ### Added
 
 - Add pam checks `PAM_003` to `PAM_005`
+- Add sudo checks `SUD_017` and `SUD_018`
 
 ### Fixed
 
