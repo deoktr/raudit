@@ -11,7 +11,7 @@
       "finding_info": {
         "uid": "SHL_001",
         "title": "Ensure automatic logout from shells is configured",
-        "desc": "Avoid leaving opened shells, potentially with elevated permissions. Set a readonly `TMOUT` shell variable in `/etc/profile` or any file under `/etc/profile.d/`, the file name does not matter: `\nTMOUT=900\nreadonly TMOUT\nexport TMOUT`"
+        "desc": "Avoid leaving opened shells, potentially with elevated permissions. Set a readonly `TMOUT` shell variable in `/etc/profile` or any file under `/etc/profile.d/`: `\nTMOUT=900\nreadonly TMOUT\nexport TMOUT`"
       },
       "compliance": {
         "standards": [

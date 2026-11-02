@@ -549,6 +549,41 @@
       "class_name": "Compliance Finding",
       "type_uid": 200301,
       "finding_info": {
+        "uid": "SUD_017",
+        "title": "Ensure that sudo default config `!pwfeedback` is not set",
+        "desc": "Prevent sudo from giving visual feedback when typing the password when the user presses a key, the default for sudo. Prevent an onlooker from being able to determine the length of the password being used. The pwfeedback was a requirements for a buffer overflow CVE-2019-18634."
+      },
+      "compliance": {
+        "standards": [
+          "raudit"
+        ],
+        "status_id": 1,
+        "status": "Pass"
+      },
+      "metadata": {
+        "version": "1.7.0",
+        "product": {
+          "name": "raudit",
+          "version": ""
+        }
+      },
+      "remediation": {
+        "desc": "In `/etc/sudoers` or `/etc/sudoers.d/*` remove: `Defaults !pwfeedback`"
+      },
+      "severity_id": 2,
+      "severity": "Low",
+      "status_id": 4,
+      "status": "Resolved"
+    },
+    {
+      "activity_id": 1,
+      "activity_name": "Create",
+      "category_uid": 2,
+      "category_name": "Findings",
+      "class_uid": 2003,
+      "class_name": "Compliance Finding",
+      "type_uid": 200301,
+      "finding_info": {
         "uid": "SUD_200",
         "title": "Ensure sudoers config file permissions are 440 or stricter",
         "desc": "Sudo will intentionally not use configurations that are world-writable or -readable, otherwise this could lead to privilege escalation. A stricter mode (0400 for example) is accepted, sudo reads the file as root."
@@ -794,8 +829,8 @@
     }
   ],
   "stats": {
-    "total": 22,
-    "pass": 0,
+    "total": 23,
+    "pass": 1,
     "fail": 21,
     "warning": 1,
     "unknown": 0,

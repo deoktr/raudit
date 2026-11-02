@@ -612,6 +612,8 @@ pub fn add_checks() {
     .with_fix("In `/etc/ssh/sshd_config` add: `AuthenticationMethods publickey`")
     .register();
 
+    // FIXME: the sftp path is distro dependent, a static path completely breaks
+    // NixOS, the only thing we are interested in here is the options
     check::Check::new(
         "SSH_042",
         "Ensure that sshd is configured with `subsystem sftp /usr/lib/openssh/sftp-server -f AUTHPRIV -l INFO`",

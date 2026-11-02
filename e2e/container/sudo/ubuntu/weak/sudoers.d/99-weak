@@ -2,3 +2,4 @@
 Defaults !use_pty
 Defaults !mail_badpass
 Defaults !requiretty
+Defaults !pwfeedback

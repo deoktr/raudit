@@ -55,7 +55,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "LOCAL0",
+      "message": "`LOCAL0` != `AUTH`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -91,7 +91,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "QUIET",
+      "message": "`QUIET` != `VERBOSE`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -163,7 +163,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "yes",
+      "message": "`yes` != `no`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -199,7 +199,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "no",
+      "message": "`no` != `yes`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -307,7 +307,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "yes",
+      "message": "`yes` != `no`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -343,7 +343,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "no",
+      "message": "`no` != `yes`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -414,7 +414,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "yes",
+      "message": "`yes` != `no`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -450,7 +450,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "yes",
+      "message": "`yes` != `no`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -487,7 +487,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "yes",
+      "message": "`yes` != `no`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -740,7 +740,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "no",
+      "message": "`no` != `yes`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -776,7 +776,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "yes",
+      "message": "`yes` != `no`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -812,7 +812,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "yes",
+      "message": "`yes` != `no`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -848,7 +848,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "no",
+      "message": "`no` != `yes`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -884,7 +884,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "yes",
+      "message": "`yes` != `no`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -920,7 +920,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "yes",
+      "message": "`yes` != `no`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -992,7 +992,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "9",
+      "message": "`9` != `3`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -1028,7 +1028,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "yes",
+      "message": "`yes` != `no`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -1064,7 +1064,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "yes",
+      "message": "`yes` != `no`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -1100,7 +1100,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "yes",
+      "message": "`yes` != `no`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -1136,7 +1136,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "100:30:200",
+      "message": "`100:30:200` != `10:30:60`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -1279,7 +1279,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "chacha20-poly1305@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr",
+      "message": "`chacha20-poly1305@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr` != `chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -1315,7 +1315,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "umac-64-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com",
+      "message": "`umac-64-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com` != `hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -1351,7 +1351,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "any",
+      "message": "`any` != `publickey`",
       "metadata": {
         "version": "1.7.0",
         "product": {
@@ -1387,7 +1387,7 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "sftp /usr/lib/ssh/sftp-server",
+      "message": "`sftp /usr/lib/ssh/sftp-server` != `sftp /usr/lib/openssh/sftp-server -f AUTHPRIV -l INFO`",
       "metadata": {
         "version": "1.7.0",
         "product": {

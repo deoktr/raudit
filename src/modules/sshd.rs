@@ -97,13 +97,19 @@ pub fn get_sshd_config_value(key: &str) -> Result<String, String> {
 }
 
 /// Get sshd configuration value from a collected configuration.
-pub fn check_sshd_config(key: &str, value: &str) -> check::CheckReturn {
+pub fn check_sshd_config(key_upper: &str, value: &str) -> check::CheckReturn {
+    // command `sshd -T` outputs configuration to lowercase
+    let kl = key_upper.to_lowercase();
+    let key = kl.as_str();
     SSHD_CONFIG.with(|sshd_config| match sshd_config.get(key) {
         Some(val) => {
             if val == value {
                 (check::CheckState::Pass, None)
             } else {
-                (check::CheckState::Fail, Some(val.to_string()))
+                (
+                    check::CheckState::Fail,
+                    Some(format!("`{}` != `{}`", val, value)),
+                )
             }
         }
         None => (check::CheckState::Fail, None),

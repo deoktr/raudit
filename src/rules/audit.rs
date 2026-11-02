@@ -17,7 +17,7 @@ pub fn add_checks() {
 
     check::Check::new(
         "AUD_010",
-        "Ensure that audit is configured with `disk_full_action` = `HALT`",
+        "Ensure that audit is configured with `disk_full_action = HALT`",
         Severity::Medium,
         vec!["audit", "paranoid"],
         || audit::check_audit_config("disk_full_action", "HALT"),
@@ -27,6 +27,7 @@ pub fn add_checks() {
     .with_fix("Set `disk_full_action = HALT` in `/etc/audit/auditd.conf` and `systemctl restart auditd`.")
     .register();
 
+    // FIXME: see audit module FIXME
     check::Check::new(
         "AUD_100",
         "Ensure audit rules are immutable",

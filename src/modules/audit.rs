@@ -127,7 +127,7 @@ pub fn check_audit_config(key: &str, value: &str) -> check::CheckReturn {
             } else {
                 (
                     check::CheckState::Fail,
-                    Some(format!("found: {}", conf_value)),
+                    Some(format!("`{} != {}`", conf_value, value)),
                 )
             }
         }
