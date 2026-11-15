@@ -1,0 +1,25 @@
+[package]
+name = "raudit-cli"
+description = "Linux security audit tool"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+readme = "../README.md"
+homepage.workspace = true
+repository.workspace = true
+keywords = ["security", "audit", "linux", "cli"]
+categories = ["command-line-utilities"]
+
+[[bin]]
+name = "raudit"
+path = "src/main.rs"
+
+[dependencies]
+raudit-core.workspace = true
+raudit-rules.workspace = true
+
+clap.workspace = true
+
+[lints]
+workspace = true

@@ -235,15 +235,41 @@ dependencies = [
 ]
 
 [[package]]
-name = "raudit"
+name = "raudit-cli"
 version = "0.38.0"
 dependencies = [
  "clap",
- "flate2",
+ "raudit-core",
+ "raudit-rules",
+]
+
+[[package]]
+name = "raudit-core"
+version = "0.38.0"
+dependencies = [
+ "clap",
  "once_cell",
  "rayon",
- "regex",
  "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "raudit-modules"
+version = "0.38.0"
+dependencies = [
+ "flate2",
+ "raudit-core",
+ "regex",
+ "serde_json",
+]
+
+[[package]]
+name = "raudit-rules"
+version = "0.38.0"
+dependencies = [
+ "raudit-core",
+ "raudit-modules",
  "serde_json",
 ]
 

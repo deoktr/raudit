@@ -1,0 +1,114 @@
+/*
+ * rAudit, a Linux security auditing toolkit
+ * Copyright (C) 2024 - 2025  deoktr
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+use std::collections::HashMap;
+use std::fs;
+
+use raudit_core::check::{self, State};
+
+const LOGIN_DEFS_PATH: &str = "/etc/login.defs";
+
+static LOGIN_DEFS_CONFIG: State<LoginDefsConfig> = State::new("login.defs config");
+
+/// Login.defs configuration.
+type LoginDefsConfig = HashMap<String, String>;
+
+/// Parse content of `/etc/login.defs`.
+fn parse_login_defs(login_defs: String) -> LoginDefsConfig {
+    login_defs
+        .lines()
+        .filter(|line| !line.is_empty())
+        .filter(|line| !line.starts_with("#"))
+        .filter_map(|line| {
+            line.split_once(char::is_whitespace)
+                .map(|(key, value)| (key.to_string(), value.trim_start().to_string()))
+        })
+        .collect()
+}
+
+/// Get login.defs configuration by reading `/etc/login.defs`.
+fn get_login_defs() -> Result<LoginDefsConfig, String> {
+    let content = fs::read_to_string(LOGIN_DEFS_PATH)
+        .map_err(|err| format!("failed to read `{}`: {}", LOGIN_DEFS_PATH, err))?;
+    Ok(parse_login_defs(content))
+}
+
+/// Init login.defs configuration by reading `/etc/login.defs`.
+pub fn init_login_defs() {
+    LOGIN_DEFS_CONFIG.init(get_login_defs);
+}
+
+/// Check login.defs value from a collected configuration.
+pub fn get_login_defs_value(key: &str) -> Result<Option<String>, String> {
+    Ok(LOGIN_DEFS_CONFIG.try_get()?.get(key).cloned())
+}
+
+/// Check login.defs value from a collected configuration.
+pub fn check_login_defs(key: &str, value: &str) -> check::CheckReturn {
+    match get_login_defs_value(key) {
+        Ok(v) => match v {
+            Some(conf_value) => {
+                if conf_value == value {
+                    (check::CheckState::Pass, None)
+                } else {
+                    (
+                        check::CheckState::Fail,
+                        Some(format!("{} != {}", value, conf_value)),
+                    )
+                }
+            }
+            None => (check::CheckState::Fail, Some("key not present".to_string())),
+        },
+        Err(err) => (check::CheckState::Warning, Some(err.to_string())),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_login_defs() {
+        let lines = parse_login_defs(
+            "# HOME_MODE is used by useradd(8) and newusers(8) to set the mode for new
+# home directories.
+# If HOME_MODE is not set, the value of UMASK is used to create the mode.
+HOME_MODE       0750
+
+#
+# Password aging controls:
+#
+#       PASS_MAX_DAYS   Maximum number of days a password may be used.
+#       PASS_MIN_DAYS   Minimum number of days allowed between password changes.
+#       PASS_WARN_AGE   Number of days warning given before a password expires.
+#
+PASS_MAX_DAYS   99999
+PASS_MIN_DAYS   0
+PASS_WARN_AGE   7
+"
+            .to_string(),
+        );
+        assert_eq!(lines.len(), 4);
+        assert!(lines.get("HOME_MODE").is_some());
+        assert_eq!(lines.get("HOME_MODE").unwrap(), &"0750".to_string());
+        assert!(lines.get("PASS_MAX_DAYS").is_some());
+        assert_eq!(lines.get("PASS_MAX_DAYS").unwrap(), &"99999".to_string());
+        assert!(lines.get("PASS_WARN_AGE").is_some());
+        assert_eq!(lines.get("PASS_WARN_AGE").unwrap(), &"7".to_string());
+    }
+}

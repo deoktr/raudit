@@ -10,12 +10,18 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+## [0.39.0] - 2026-11-15
+
 ### Added
 
 - Add AppArmor profile
 - Add OpenSSH version detection and version based `skip_when` helpers for sshd checks
 - Add pam checks `PAM_003` to `PAM_005`
 - Add sudo checks `SUD_017` and `SUD_018`
+
+### Changed
+
+- Update source to split into crates
 
 ### Fixed
 

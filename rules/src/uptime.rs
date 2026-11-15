@@ -1,0 +1,17 @@
+use raudit_core::check;
+use raudit_core::check::Severity;
+use raudit_modules::uptime;
+
+pub fn add_checks() {
+    check::Check::new(
+        "UPT_001",
+        "Ensure uptime is no more than 3 months",
+        Severity::Informational,
+        vec!["uptime", "server", "workstation"],
+        || uptime::uptime_bellow(7776000),
+        vec![uptime::init_uptime],
+    )
+    .with_description("Long-running systems may be missing critical kernel and security patches that require a reboot to take effect.")
+    .with_fix("Reboot host.")
+    .register();
+}

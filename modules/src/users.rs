@@ -1,0 +1,837 @@
+/*
+ * rAudit, a Linux security auditing toolkit
+ * Copyright (C) 2024 - 2025  deoktr
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+use std::fs;
+use std::path::Path;
+use std::time::{SystemTime, UNIX_EPOCH};
+
+use crate::base;
+use raudit_core::check::{self, State};
+
+const PASSWD_PATH: &str = "/etc/passwd";
+const SHADOW_PATH: &str = "/etc/shadow";
+const SECURETTY_PATH: &str = "/etc/securetty";
+const USERADD_PATH: &str = "/etc/default/useradd";
+
+// TODO: get dynamically
+/// UID_MIN as defined in `/etc/login.defs`.
+const UID_MIN: u32 = 1000;
+
+static PASSWD_CONFIG: State<PasswdConfig> = State::new("passwd");
+static SHADOW_CONFIG: State<ShadowConfig> = State::new("shadow");
+
+/// Passwd configuration from `/etc/passwd`.
+type PasswdConfig = Vec<Passwd>;
+
+/// Shadow configuration from `/etc/shadow`.
+type ShadowConfig = Vec<Shadow>;
+
+/// Passwd entry.
+#[allow(dead_code)]
+struct Passwd {
+    /// login name
+    username: String,
+    /// optional encrypted password
+    password: String,
+    /// numerical user ID
+    uid: u32,
+    /// numerical group ID
+    gid: u32,
+    /// user name or comment field
+    gecos: String,
+    /// user home directory
+    home: String,
+    /// optional user command interpreter
+    shell: String,
+}
+
+/// Shadow entry.
+struct Shadow {
+    /// login name
+    username: String,
+    /// encrypted password
+    password: String,
+    /// date of last password change
+    #[allow(dead_code)]
+    last_change: u64,
+    /// minimum password age
+    #[allow(dead_code)]
+    min_age: u32,
+    /// maximum password age
+    #[allow(dead_code)]
+    max_age: u32,
+    /// password warning period
+    #[allow(dead_code)]
+    warn_period: u32,
+    /// password inactivity period
+    inactivity_period: Option<u32>,
+    /// account expiration date
+    expiration_date: Option<u32>,
+    /// reserved field
+    #[allow(dead_code)]
+    reserved: String,
+}
+
+/// Parse the content of passwd.
+fn parse_passwd(content: String) -> PasswdConfig {
+    content
+        .lines()
+        .map(|line| {
+            let mut kvs = line.splitn(7, ":");
+            let username = kvs.next().unwrap_or_default().to_string();
+            let password = kvs.next().unwrap_or_default().to_string();
+            let uid = kvs
+                .next()
+                .unwrap_or_default()
+                .parse::<u32>()
+                .unwrap_or_default();
+            let gid = kvs
+                .next()
+                .unwrap_or_default()
+                .parse::<u32>()
+                .unwrap_or_default();
+            let gecos = kvs.next().unwrap_or_default().to_string();
+            let home = kvs.next().unwrap_or_default().to_string();
+            let shell = kvs.next().unwrap_or_default().to_string();
+            Passwd {
+                username,
+                password,
+                uid,
+                gid,
+                gecos,
+                home,
+                shell,
+            }
+        })
+        .collect()
+}
+
+/// Get the system's users from `/etc/passwd`.
+fn get_passwd() -> Result<PasswdConfig, String> {
+    let content = fs::read_to_string(PASSWD_PATH)
+        .map_err(|err| format!("failed to read `{}`: {}", PASSWD_PATH, err))?;
+    Ok(parse_passwd(content))
+}
+
+/// Init the system's users from `/etc/passwd`.
+pub fn init_passwd() {
+    PASSWD_CONFIG.init(get_passwd);
+}
+
+/// Parse the content of `/etc/passwd`.
+fn parse_shadow(content: String) -> ShadowConfig {
+    content
+        .lines()
+        .map(|line| {
+            let mut kvs = line.splitn(9, ":");
+            // TODO: log errors
+            let username = kvs.next().unwrap_or_default().to_string();
+            let password = kvs.next().unwrap_or_default().to_string();
+            let last_change = kvs
+                .next()
+                .unwrap_or_default()
+                .parse::<u64>()
+                .unwrap_or_default();
+            let min_age = kvs
+                .next()
+                .unwrap_or_default()
+                .parse::<u32>()
+                .unwrap_or_default();
+            let max_age = kvs
+                .next()
+                .unwrap_or_default()
+                .parse::<u32>()
+                .unwrap_or_default();
+            let warn_period = kvs
+                .next()
+                .unwrap_or_default()
+                .parse::<u32>()
+                .unwrap_or_default();
+            let inactivity_period = match kvs.next() {
+                Some(v) => {
+                    if v.is_empty() {
+                        None
+                    } else {
+                        v.parse::<u32>().ok()
+                    }
+                }
+                None => None,
+            };
+            let expiration_date = match kvs.next() {
+                Some(v) => {
+                    if v.is_empty() {
+                        None
+                    } else {
+                        v.parse::<u32>().ok()
+                    }
+                }
+                None => None,
+            };
+            let reserved = kvs.next().unwrap_or_default().to_string();
+            Shadow {
+                username,
+                password,
+                last_change,
+                min_age,
+                max_age,
+                warn_period,
+                inactivity_period,
+                expiration_date,
+                reserved,
+            }
+        })
+        .collect()
+}
+
+/// Get the system's users from `/etc/shadow`.
+fn get_shadow() -> Result<ShadowConfig, String> {
+    let content = fs::read_to_string(SHADOW_PATH)
+        .map_err(|err| format!("failed to read `{}`: {}", SHADOW_PATH, err))?;
+    Ok(parse_shadow(content))
+}
+
+/// Init the system's users from `/etc/shadow`.
+pub fn init_shadow() {
+    SHADOW_CONFIG.init(get_shadow);
+}
+
+/// Verify if any user has a password in passwd, not equal to `x`.
+pub fn no_password_in_passwd() -> check::CheckReturn {
+    PASSWD_CONFIG.with(|passwd| {
+        let g: Vec<String> = passwd
+            .iter()
+            .filter(|entry| entry.password != "x")
+            .map(|entry| entry.username.clone())
+            .collect();
+
+        if !g.is_empty() {
+            (check::CheckState::Fail, Some(g.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
+        }
+    })
+}
+
+/// Verify that only root has UID 0.
+pub fn no_uid_zero() -> check::CheckReturn {
+    PASSWD_CONFIG.with(|passwd| {
+        let g: Vec<String> = passwd
+            .iter()
+            .filter(|entry| entry.uid == 0 && entry.username != "root")
+            .map(|entry| entry.username.clone())
+            .collect();
+
+        if !g.is_empty() {
+            (check::CheckState::Fail, Some(g.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
+        }
+    })
+}
+
+/// Ensure all passwords are hashed with yescrypt.
+pub fn yescrypt_hashes() -> check::CheckReturn {
+    SHADOW_CONFIG.with(|shadow| {
+        // the full yescrypt format is:
+        // \$y\$[./A-Za-z0-9]+\$[./A-Za-z0-9]{,86}\$[./A-Za-z0-9]{43}
+        let usernames: Vec<String> = shadow
+            .iter()
+            .filter(|entry| {
+                !entry.password.starts_with("$y$")
+                // all indicating the account is locked or disabled
+                && entry.password != "*"
+                // could be `!`, `!!`, or `!*`
+                && !entry.password.starts_with('!')
+            })
+            .map(|entry| entry.username.clone())
+            .collect();
+
+        if !usernames.is_empty() {
+            (check::CheckState::Fail, Some(usernames.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
+        }
+    })
+}
+
+/// Whether `username` is a human account (UID >= 1000, `nobody` excluded).
+///
+/// Accounts unknown in `/etc/passwd` are not human accounts either.
+fn is_human_account(passwd: &PasswdConfig, username: &str) -> bool {
+    passwd
+        .iter()
+        .any(|user| user.username == username && user.uid >= UID_MIN && user.uid != 65534)
+}
+
+/// Ensure no user account is expired, delete them.
+///
+/// Reports user accounts (UID >= 1000) whose shadow expiration date has
+/// passed, system accounts are ignored.
+pub fn no_expired_account() -> check::CheckReturn {
+    PASSWD_CONFIG.with(|passwd| {
+        SHADOW_CONFIG.with(|shadow| {
+            let now = match SystemTime::now().duration_since(UNIX_EPOCH) {
+                Ok(c) => c,
+                Err(err) => return (check::CheckState::Warning, Some(format!("{}", err))),
+            };
+
+            let days_since_epoch = now.as_secs() / 86400;
+
+            let usernames: Vec<String> = shadow
+                .iter()
+                .filter(|entry| is_human_account(passwd, &entry.username))
+                .filter(|entry| match entry.expiration_date {
+                    Some(expiration_date) => u64::from(expiration_date) <= days_since_epoch,
+                    None => false,
+                })
+                .map(|entry| entry.username.clone())
+                .collect();
+
+            if !usernames.is_empty() {
+                (check::CheckState::Fail, Some(usernames.join(", ")))
+            } else {
+                (check::CheckState::Pass, None)
+            }
+        })
+    })
+}
+
+/// Ensure that all home directories exist.
+pub fn no_missing_home() -> check::CheckReturn {
+    PASSWD_CONFIG.with(|passwd| {
+        let mut usernames: Vec<String> = vec![];
+        for user in passwd.iter() {
+            if (user.uid > 0 && user.uid < UID_MIN)
+                || user.shell.ends_with("/nologin")
+                || user.shell.ends_with("/false")
+            {
+                continue;
+            }
+
+            let p = Path::new(&user.home);
+            if !p.exists() || !p.is_dir() {
+                usernames.push(user.username.clone());
+            }
+        }
+
+        if !usernames.is_empty() {
+            (check::CheckState::Fail, Some(usernames.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
+        }
+    })
+}
+
+// TODO: Ensure all groups in /etc/passwd exist in /etc/group
+// pub fn no_missing_passwd_groups(passwd: &PasswdConfig, group: &GroupConfig) -> bool { }
+
+// TODO: Ensure that root account is locked
+
+/// Ensure no duplicate UIDs exist.
+pub fn no_dup_uid() -> check::CheckReturn {
+    PASSWD_CONFIG.with(|passwd| {
+        let usernames: Vec<String> = passwd
+            .iter()
+            .filter(|entry| passwd.iter().filter(|u| u.uid == entry.uid).count() > 1)
+            .map(|entry| entry.username.clone())
+            .collect();
+
+        if !usernames.is_empty() {
+            (check::CheckState::Fail, Some(usernames.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
+        }
+    })
+}
+
+/// Ensure no duplicate user names exist.
+pub fn no_dup_username() -> check::CheckReturn {
+    PASSWD_CONFIG.with(|passwd| {
+        let usernames: Vec<String> = passwd
+            .iter()
+            .filter(|entry| {
+                passwd
+                    .iter()
+                    .filter(|u| u.username == entry.username)
+                    .count()
+                    > 1
+            })
+            .map(|entry| entry.username.clone())
+            .collect();
+
+        if !usernames.is_empty() {
+            (check::CheckState::Fail, Some(usernames.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
+        }
+    })
+}
+
+/// Ensure no login is available on system accounts
+///
+/// Ensure that all system users (UID < 1000) can't login with a shell, either
+/// have `nologin`, or `false` as shell. The administrative shells that
+/// immediately act and exit (`/sbin/shutdown`, `/sbin/halt`, ...) shipped by
+/// the distros for the matching accounts are not login shells either.
+pub fn no_login_sys_users() -> check::CheckReturn {
+    PASSWD_CONFIG.with(|passwd| {
+        let usernames: Vec<String> = passwd
+            .iter()
+            .filter(|user| {
+                (user.uid > 0 && user.uid < UID_MIN)
+                    && !(user.shell.ends_with("/nologin")
+                || user.shell.ends_with("/false")
+                // on some distro user `sync` as `/bin/sync` shell
+                || user.shell.ends_with("/sync")
+                // stock Alpine ships the `shutdown` and `halt` accounts with
+                // those shells, they power the machine off, not a login
+                || user.shell.ends_with("/shutdown")
+                || user.shell.ends_with("/halt")
+                || user.shell.ends_with("/poweroff")
+                || user.shell.ends_with("/reboot"))
+            })
+            .map(|entry| entry.username.clone())
+            .collect();
+
+        if !usernames.is_empty() {
+            (check::CheckState::Fail, Some(usernames.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
+        }
+    })
+}
+
+/// Ensure /etc/shadow password fields are not empty.
+///
+/// An account with an empty password field means that anybody may log in as
+/// that user without providing a password.
+pub fn no_empty_shadow_password() -> check::CheckReturn {
+    SHADOW_CONFIG.with(|shadow| {
+        let usernames: Vec<String> = shadow
+            .iter()
+            .filter(|user| user.password.is_empty())
+            .map(|entry| entry.username.clone())
+            .collect();
+
+        if !usernames.is_empty() {
+            (check::CheckState::Fail, Some(usernames.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
+        }
+    })
+}
+
+/// Ensure /etc/passwd password fields are not empty.
+///
+/// An account with an empty password field means that anybody may log in as
+/// that user without providing a password.
+pub fn no_empty_passwd_password() -> check::CheckReturn {
+    PASSWD_CONFIG.with(|passwd| {
+        let usernames: Vec<String> = passwd
+            .iter()
+            .filter(|user| user.password.is_empty())
+            .map(|entry| entry.username.clone())
+            .collect();
+
+        if !usernames.is_empty() {
+            (check::CheckState::Fail, Some(usernames.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
+        }
+    })
+}
+
+/// Ensure `/etc/securetty` is empty or missing.
+///
+/// The file, `/etc/securetty` specifies where you are allowed to login as root
+/// from. This file should be kept empty so that nobody can do so from a
+/// terminal.
+pub fn empty_securetty() -> check::CheckReturn {
+    base::empty_or_missing_file(SECURETTY_PATH)
+}
+
+/// Ensure root account is disabled.
+pub fn root_account_disabled() -> check::CheckReturn {
+    SHADOW_CONFIG.with(|shadow| {
+        PASSWD_CONFIG.with(|passwd| {
+            let root_shadow = shadow.iter().find(|entry| entry.username == "root");
+            let root_passwd = passwd.iter().find(|entry| entry.username == "root");
+
+            let password_locked = match root_shadow {
+                Some(entry) => entry.password.starts_with('!') || entry.password == "*",
+                None => true,
+            };
+
+            let shell_disabled = match root_passwd {
+                Some(entry) => {
+                    entry.shell == "/usr/sbin/nologin"
+                        || entry.shell == "/sbin/nologin"
+                        || entry.shell == "/bin/false"
+                        || entry.shell == "/usr/bin/false"
+                }
+                None => false,
+            };
+
+            if password_locked || shell_disabled {
+                (check::CheckState::Pass, None)
+            } else {
+                (
+                    check::CheckState::Fail,
+                    Some("root account is enabled".to_string()),
+                )
+            }
+        })
+    })
+}
+
+pub fn no_rhosts_files() -> check::CheckReturn {
+    PASSWD_CONFIG.with(|passwd| {
+        let mut found: Vec<String> = vec![];
+        for user in passwd.iter() {
+            if user.home.is_empty() || user.home == "/" {
+                continue;
+            }
+            let rhosts = Path::new(&user.home).join(".rhosts");
+            let shosts = Path::new(&user.home).join(".shosts");
+            if rhosts.exists() {
+                found.push(format!("{}:{}", user.username, rhosts.display()));
+            }
+            if shosts.exists() {
+                found.push(format!("{}:{}", user.username, shosts.display()));
+            }
+        }
+
+        if !found.is_empty() {
+            (check::CheckState::Fail, Some(found.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
+        }
+    })
+}
+
+pub fn home_dirs_correct_ownership() -> check::CheckReturn {
+    PASSWD_CONFIG.with(|passwd| {
+        let mut wrong: Vec<String> = vec![];
+        for user in passwd.iter() {
+            if user.uid < UID_MIN || user.home.is_empty() || user.home == "/" {
+                continue;
+            }
+            let home = Path::new(&user.home);
+            if !home.exists() {
+                continue;
+            }
+            if let Ok(meta) = fs::metadata(home) {
+                use std::os::unix::fs::MetadataExt;
+                if meta.uid() != user.uid {
+                    wrong.push(format!("`{}`: uid {}", user.username, meta.uid()));
+                }
+            }
+        }
+
+        if !wrong.is_empty() {
+            (check::CheckState::Fail, Some(wrong.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
+        }
+    })
+}
+
+/// Ensure all users' home directories have permissions 750 or stricter.
+pub fn home_dirs_permissions() -> check::CheckReturn {
+    PASSWD_CONFIG.with(|passwd| {
+        let mut wrong: Vec<String> = vec![];
+        for user in passwd.iter() {
+            if user.uid < UID_MIN || user.home.is_empty() || user.home == "/" {
+                continue;
+            }
+            let home = Path::new(&user.home);
+            if !home.exists() {
+                continue;
+            }
+            if let Ok(meta) = fs::metadata(home) {
+                use std::os::unix::fs::MetadataExt;
+                let mode = meta.mode() & 0o777;
+                if mode & 0o022 != 0 {
+                    wrong.push(format!("{}: {:o}", user.username, mode));
+                }
+            }
+        }
+
+        if !wrong.is_empty() {
+            (check::CheckState::Fail, Some(wrong.join(", ")))
+        } else {
+            (check::CheckState::Pass, None)
+        }
+    })
+}
+
+pub fn no_world_writable_in_homes() -> check::CheckReturn {
+    PASSWD_CONFIG.with(|passwd| {
+        let mut found: Vec<String> = vec![];
+        for user in passwd.iter() {
+            if user.uid < UID_MIN || user.home.is_empty() || user.home == "/" {
+                continue;
+            }
+            let home = Path::new(&user.home);
+            if !home.exists() {
+                continue;
+            }
+            walk_dir_world_writable(home, &mut found, 3);
+        }
+
+        if !found.is_empty() {
+            (
+                check::CheckState::Fail,
+                Some(
+                    found
+                        .iter()
+                        .take(10)
+                        .cloned()
+                        .collect::<Vec<_>>()
+                        .join(", "),
+                ),
+            )
+        } else {
+            (check::CheckState::Pass, None)
+        }
+    })
+}
+
+fn walk_dir_world_writable(dir: &Path, found: &mut Vec<String>, depth: u32) {
+    if depth == 0 {
+        return;
+    }
+    let entries = match fs::read_dir(dir) {
+        Ok(e) => e,
+        Err(_) => return,
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if let Ok(meta) = fs::metadata(&path) {
+            use std::os::unix::fs::MetadataExt;
+            let mode = meta.mode() & 0o777;
+            if meta.is_file() && mode & 0o002 != 0 {
+                found.push(path.display().to_string());
+            }
+            if meta.is_dir() {
+                walk_dir_world_writable(&path, found, depth - 1);
+            }
+        }
+    }
+}
+
+/// Get the useradd configuration from `/etc/default/useradd`.
+fn get_useradd() -> Result<String, String> {
+    fs::read_to_string(USERADD_PATH)
+        .map_err(|err| format!("failed to read `{}`: {}", USERADD_PATH, err))
+}
+
+/// Verify that useradd is configured with `INACTIVE=0`.
+pub fn useradd_inactive() -> check::CheckReturn {
+    let useradd = match get_useradd() {
+        Ok(c) => c,
+        Err(err) => {
+            return (check::CheckState::Warning, Some(err));
+        }
+    };
+
+    let current = useradd
+        .lines()
+        .find_map(|line| line.strip_prefix("INACTIVE="))
+        .unwrap_or("<unset>");
+
+    if current == "0" {
+        (check::CheckState::Pass, None)
+    } else {
+        (
+            check::CheckState::Fail,
+            Some(format!("INACTIVE={}", current)),
+        )
+    }
+}
+
+/// Verify that all human user accounts have inactivity_period set to 0, meaning
+/// their account is instantly locked when their password expires.
+///
+/// System accounts (UID < 1000) are ignored, they don't login with a password,
+/// an inactivity period is meaningless for them.
+pub fn inactivity_is_set() -> check::CheckReturn {
+    PASSWD_CONFIG.with(|passwd| {
+        SHADOW_CONFIG.with(|shadow| {
+            let g: Vec<String> = shadow
+                .iter()
+                .filter(|entry| is_human_account(passwd, &entry.username))
+                .filter(|entry| entry.inactivity_period.is_none_or(|i| i != 0))
+                .map(|entry| entry.username.clone())
+                .collect();
+
+            if !g.is_empty() {
+                (check::CheckState::Fail, Some(g.join(", ")))
+            } else {
+                (check::CheckState::Pass, None)
+            }
+        })
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_passwd() {
+        let lines = parse_passwd(
+            "systemd-timesync:x:996:996:systemd Time Synchronization:/:/usr/sbin/nologin"
+                .to_string(),
+        );
+        assert_eq!(lines.len(), 1);
+        assert!(lines.get(0).is_some());
+        let line = lines.get(0).unwrap();
+        assert_eq!(line.username, "systemd-timesync".to_string());
+        assert_eq!(line.password, "x".to_string());
+        assert_eq!(line.uid, 996);
+        assert_eq!(line.gid, 996);
+        assert_eq!(line.gecos, "systemd Time Synchronization".to_string());
+        assert_eq!(line.home, "/".to_string());
+        assert_eq!(line.shell, "/usr/sbin/nologin".to_string());
+
+        let lines = parse_passwd(
+            "root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/run/ircd:/usr/sbin/nologin
+_apt:x:42:65534::/nonexistent:/usr/sbin/nologin
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+systemd-network:x:998:998:systemd Network Management:/:/usr/sbin/nologin
+systemd-timesync:x:996:996:systemd Time Synchronization:/:/usr/sbin/nologin
+"
+            .to_string(),
+        );
+        assert_eq!(lines.len(), 20);
+        assert!(lines.get(0).is_some());
+        let line = lines.get(0).unwrap();
+        assert_eq!(line.username, "root".to_string());
+        assert_eq!(line.password, "x".to_string());
+        assert_eq!(line.uid, 0);
+        assert_eq!(line.gid, 0);
+        assert_eq!(line.gecos, "root".to_string());
+        assert_eq!(line.home, "/root".to_string());
+        assert_eq!(line.shell, "/bin/bash".to_string());
+
+        assert!(lines.get(12).is_some());
+        let line = lines.get(12).unwrap();
+        assert_eq!(line.username, "www-data".to_string());
+        assert_eq!(line.password, "x".to_string());
+        assert_eq!(line.uid, 33);
+        assert_eq!(line.gid, 33);
+        assert_eq!(line.gecos, "www-data".to_string());
+        assert_eq!(line.home, "/var/www".to_string());
+        assert_eq!(line.shell, "/usr/sbin/nologin".to_string());
+
+        assert!(lines.get(19).is_some());
+        let line = lines.get(19).unwrap();
+        assert_eq!(line.username, "systemd-timesync".to_string());
+        assert_eq!(line.password, "x".to_string());
+        assert_eq!(line.uid, 996);
+        assert_eq!(line.gid, 996);
+        assert_eq!(line.gecos, "systemd Time Synchronization".to_string());
+        assert_eq!(line.home, "/".to_string());
+        assert_eq!(line.shell, "/usr/sbin/nologin".to_string());
+    }
+
+    #[test]
+    fn test_parse_shadow() {
+        let lines = parse_shadow("foo:$6$zHvrJMa5Y690smbQ$z5zdL:18009:0:120:7:14::".to_string());
+        assert_eq!(lines.len(), 1);
+        assert!(lines.get(0).is_some());
+        let line = lines.get(0).unwrap();
+        assert_eq!(line.username, "foo".to_string());
+        assert_eq!(line.password, "$6$zHvrJMa5Y690smbQ$z5zdL".to_string());
+        assert_eq!(line.last_change, 18009);
+        assert_eq!(line.min_age, 0);
+        assert_eq!(line.max_age, 120);
+        assert_eq!(line.warn_period, 7);
+        assert_eq!(line.inactivity_period, Some(14));
+        assert_eq!(line.expiration_date, None);
+        assert_eq!(line.reserved, "".to_string());
+
+        let lines = parse_shadow(
+            "daemon:*:19837:0:99999:7:::
+bin:*:19837:0:99999:7:::
+sys:*:19837:0:99999:7:::
+sync:*:19837:0:99999:7:::
+games:*:19837:0:99999:7:::
+man:*:19837:0:99999:7:::
+lp:*:19837:0:99999:7:::
+mail:*:19837:0:99999:7:::
+news:*:19837:0:99999:7:::
+uucp:*:19837:0:99999:7:::
+proxy:*:19837:0:99999:7:::
+"
+            .to_string(),
+        );
+        assert_eq!(lines.len(), 11);
+        assert!(lines.get(0).is_some());
+        let line = lines.get(0).unwrap();
+        assert_eq!(line.username, "daemon".to_string());
+        assert_eq!(line.password, "*".to_string());
+        assert_eq!(line.last_change, 19837);
+        assert_eq!(line.min_age, 0);
+        assert_eq!(line.max_age, 99999);
+        assert_eq!(line.warn_period, 7);
+        assert_eq!(line.inactivity_period, None);
+        assert_eq!(line.expiration_date, None);
+        assert_eq!(line.reserved, "".to_string());
+
+        assert!(lines.get(1).is_some());
+        let line = lines.get(1).unwrap();
+        assert_eq!(line.username, "bin".to_string());
+        assert_eq!(line.password, "*".to_string());
+        assert_eq!(line.last_change, 19837);
+        assert_eq!(line.min_age, 0);
+        assert_eq!(line.max_age, 99999);
+        assert_eq!(line.warn_period, 7);
+        assert_eq!(line.inactivity_period, None);
+        assert_eq!(line.expiration_date, None);
+        assert_eq!(line.reserved, "".to_string());
+
+        assert!(lines.get(10).is_some());
+        let line = lines.get(10).unwrap();
+        assert_eq!(line.username, "proxy".to_string());
+        assert_eq!(line.password, "*".to_string());
+        assert_eq!(line.last_change, 19837);
+        assert_eq!(line.min_age, 0);
+        assert_eq!(line.max_age, 99999);
+        assert_eq!(line.warn_period, 7);
+        assert_eq!(line.inactivity_period, None);
+        assert_eq!(line.expiration_date, None);
+        assert_eq!(line.reserved, "".to_string());
+    }
+}

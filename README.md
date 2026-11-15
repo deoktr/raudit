@@ -310,6 +310,13 @@ Run locally:
 cargo run -- -h
 ```
 
+The project is a Cargo workspace:
+
+- `cli` (`raudit-cli`) command line entry point, builds the `raudit` binary.
+- `core` (`raudit-core`) check engine, reporting, configuration, logging.
+- `modules` (`raudit-modules`) host data collection, one module per subsystem.
+- `rules` (`raudit-rules`) the security checks, built on top of the modules.
+
 ## Security
 
 [cargo-audit](https://github.com/RustSec/rustsec/tree/main/cargo-audit) is used
@@ -379,6 +386,7 @@ sudo aa-exec -p raudit -- ./target/release/raudit
 - Add check to avoid check name or ID collision
 - Fix all TODO and FIXME in code
 - Add flag to force printing the description and the fix for all checks
+- Re-write the report (convert from OCSF to HTML) in Rust and make it a CLI option to convert but also to directly output in HTML, the report should also support multiple hosts combined in one report, the report must work offline (everything embeded)
 
 Rules:
 

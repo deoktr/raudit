@@ -1,17 +1,20 @@
-[package]
-name = "raudit"
+[workspace]
+members = ["cli", "core", "modules", "rules"]
+resolver = "3"
+
+[workspace.package]
 version = "0.38.0"
 edition = "2024"
 authors = ["deoktr"]
 license = "GPL-3.0-or-later"
-description = "Linux security audit tool"
-readme = "README.md"
 homepage = "https://github.com/deoktr/raudit"
 repository = "https://github.com/deoktr/raudit"
-keywords = ["security", "audit", "linux", "cli"]
-categories = ["command-line-utilities"]
 
-[dependencies]
+[workspace.dependencies]
+raudit-core = { path = "core", version = "0.38.0" }
+raudit-modules = { path = "modules", version = "0.38.0" }
+raudit-rules = { path = "rules", version = "0.38.0" }
+
 clap = { version = "4.5.29", features = ["derive", "env"] }
 flate2 = "1.1.10"
 once_cell = "1.21.3"
@@ -20,7 +23,7 @@ regex = "1.11.1"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.141"
 
-[lints.rust]
+[workspace.lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ["cfg(test)"] }
 
 [profile.release]

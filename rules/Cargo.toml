@@ -1,0 +1,18 @@
+[package]
+name = "raudit-rules"
+description = "Security checks of rAudit"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+
+[dependencies]
+raudit-core.workspace = true
+raudit-modules.workspace = true
+
+serde_json.workspace = true
+
+[lints]
+workspace = true

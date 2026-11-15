@@ -1,0 +1,18 @@
+use raudit_core::check;
+use raudit_core::check::Severity;
+use raudit_modules::gdm;
+
+pub fn add_checks() {
+    check::Check::new(
+        "GDM_001",
+        "Ensure no automatic logon to the system via a GUI is possible",
+        Severity::Medium,
+        vec!["gdm", "workstation"],
+        gdm::no_gdm_auto_logon,
+        vec![],
+    )
+    .skip_when(gdm::skip_no_gdm)
+    .with_description("Automatic GUI login bypasses authentication, allowing anyone with physical access to gain immediate access to the system.")
+    .with_fix("Set `AutomaticLoginEnable=false` (and remove `AutomaticLogin=`) in /etc/gdm3/custom.conf or /etc/gdm/custom.conf, then restart gdm.")
+    .register();
+}

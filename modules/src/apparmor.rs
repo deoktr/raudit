@@ -1,0 +1,42 @@
+/*
+ * rAudit, a Linux security auditing toolkit
+ * Copyright (C) 2024 - 2025  deoktr
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+// TODO: parse apparmor profiles
+use std::fs;
+use std::path::Path;
+
+use raudit_core::check;
+
+/// Skip when AppArmor LSM is not present in the running kernel.
+pub fn skip_no_apparmor() -> bool {
+    !Path::new("/sys/module/apparmor").exists()
+}
+
+/// Ensure AppArmor is enabled.
+pub fn apparmor_enabled() -> check::CheckReturn {
+    match fs::read_to_string("/sys/module/apparmor/parameters/enabled") {
+        Ok(content) => {
+            if content == "Y\n" {
+                (check::CheckState::Pass, None)
+            } else {
+                (check::CheckState::Fail, None)
+            }
+        }
+        Err(err) => (check::CheckState::Warning, Some(err.to_string())),
+    }
+}
