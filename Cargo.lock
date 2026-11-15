@@ -236,7 +236,7 @@ dependencies = [
 
 [[package]]
 name = "raudit-cli"
-version = "0.38.0"
+version = "0.40.1"
 dependencies = [
  "clap",
  "raudit-core",
@@ -245,7 +245,7 @@ dependencies = [
 
 [[package]]
 name = "raudit-core"
-version = "0.38.0"
+version = "0.40.1"
 dependencies = [
  "clap",
  "once_cell",
@@ -256,7 +256,7 @@ dependencies = [
 
 [[package]]
 name = "raudit-modules"
-version = "0.38.0"
+version = "0.40.1"
 dependencies = [
  "flate2",
  "raudit-core",
@@ -266,7 +266,7 @@ dependencies = [
 
 [[package]]
 name = "raudit-rules"
-version = "0.38.0"
+version = "0.40.1"
 dependencies = [
  "raudit-core",
  "raudit-modules",
