@@ -5,10 +5,10 @@ use crate::modules::{base, sshd, systemd};
 pub fn add_checks() {
     check::Check::new(
         "SSH_001",
-        "Ensure that sshd is configured with `fingerprinthash SHA256`",
+        "Ensure that sshd is configured with `FingerprintHash SHA256`",
         Severity::Medium,
         vec!["sshd", "server"],
-        || sshd::check_sshd_config("fingerprinthash", "SHA256"),
+        || sshd::check_sshd_config("FingerprintHash", "SHA256"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -18,10 +18,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_002",
-        "Ensure that sshd is configured with `syslogfacility AUTH`",
+        "Ensure that sshd is configured with `SyslogFacility AUTH`",
         Severity::Low,
         vec!["sshd", "server"],
-        || sshd::check_sshd_config("syslogfacility", "AUTH"),
+        || sshd::check_sshd_config("SyslogFacility", "AUTH"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -31,10 +31,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_003",
-        "Ensure that sshd is configured with `loglevel VERBOSE`",
+        "Ensure that sshd is configured with `LogLevel VERBOSE`",
         Severity::Low,
         vec!["sshd", "CIS", "mozilla", "server"],
-        || sshd::check_sshd_config("loglevel", "VERBOSE"),
+        || sshd::check_sshd_config("LogLevel", "VERBOSE"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -44,12 +44,12 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_004",
-        "Ensure that sshd is configured with `logingracetime` <= 60",
+        "Ensure that sshd is configured with `LoginGraceTime` <= 60",
         Severity::Medium,
         vec!["sshd", "CIS", "server"],
         || {
             const VAL: i32 = 60;
-            match sshd::get_sshd_config_value("logingracetime") {
+            match sshd::get_sshd_config_value("LoginGraceTime") {
                 Ok(str_value) => match str_value.parse::<i32>() {
                     Ok(value) => {
                         if value <= VAL {
@@ -75,10 +75,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_005",
-        "Ensure that sshd is configured with `permitrootlogin no`",
+        "Ensure that sshd is configured with `PermitRootLogin no`",
         Severity::Critical,
         vec!["sshd", "CIS", "mozilla", "server"],
-        || sshd::check_sshd_config("permitrootlogin", "no"),
+        || sshd::check_sshd_config("PermitRootLogin", "no"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -88,10 +88,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_006",
-        "Ensure that sshd is configured with `strictmodes yes`",
+        "Ensure that sshd is configured with `StrictModes yes`",
         Severity::Medium,
         vec!["sshd", "server"],
-        || sshd::check_sshd_config("strictmodes", "yes"),
+        || sshd::check_sshd_config("StrictModes", "yes"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -101,12 +101,12 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_007",
-        "Ensure that sshd is configured with `maxauthtries` <= 4",
+        "Ensure that sshd is configured with `MaxAuthTries` <= 4",
         Severity::Medium,
         vec!["sshd", "CIS", "server"],
         || {
             const VAL: i32 = 4;
-            match sshd::get_sshd_config_value("maxauthtries") {
+            match sshd::get_sshd_config_value("MaxAuthTries") {
                 Ok(str_value) => match str_value.parse::<i32>() {
                     Ok(value) => {
                         if value <= VAL {
@@ -132,12 +132,12 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_008",
-        "Ensure that sshd is configured with `maxsessions` <= 5",
+        "Ensure that sshd is configured with `MaxSessions` <= 5",
         Severity::Low,
         vec!["sshd", "CIS", "server"],
         || {
             const VAL: i32 = 5;
-            match sshd::get_sshd_config_value("maxsessions") {
+            match sshd::get_sshd_config_value("MaxSessions") {
                 Ok(str_value) => match str_value.parse::<i32>() {
                     Ok(value) => {
                         if value <= VAL {
@@ -163,10 +163,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_009",
-        "Ensure that sshd is configured with `hostbasedauthentication no`",
+        "Ensure that sshd is configured with `HostbasedAuthentication no`",
         Severity::High,
         vec!["sshd", "CIS", "server"],
-        || sshd::check_sshd_config("hostbasedauthentication", "no"),
+        || sshd::check_sshd_config("HostbasedAuthentication", "no"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -186,10 +186,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_011",
-        "Ensure that sshd is configured with `ignoreuserknownhosts yes`",
+        "Ensure that sshd is configured with `IgnoreUserKnownHosts yes`",
         Severity::Medium,
         vec!["sshd", "server"],
-        || sshd::check_sshd_config("ignoreuserknownhosts", "yes"),
+        || sshd::check_sshd_config("IgnoreUserKnownHosts", "yes"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -199,23 +199,23 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_012",
-        "Ensure that sshd is configured with `pubkeyauthentication yes`",
+        "Ensure that sshd is configured with `PubkeyAuthentication yes`",
         Severity::Critical,
         vec!["sshd", "server"],
-        || sshd::check_sshd_config("pubkeyauthentication", "yes"),
+        || sshd::check_sshd_config("PubkeyAuthentication", "yes"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("Requiring public-key authentication eliminates password-based logins, blocking online brute-force and credential-stuffing attacks that exploit weak or reused passwords.")
-    .with_fix("In `/etc/ssh/sshd_config` add: `AuthenticationMethods publickey`")
+    .with_fix("In `/etc/ssh/sshd_config` add: `PubkeyAuthentication yes`")
     .register();
 
     check::Check::new(
         "SSH_013",
-        "Ensure that sshd is configured with `passwordauthentication no`",
+        "Ensure that sshd is configured with `PasswordAuthentication no`",
         Severity::Critical,
         vec!["sshd", "server"],
-        || sshd::check_sshd_config("passwordauthentication", "no"),
+        || sshd::check_sshd_config("PasswordAuthentication", "no"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -225,10 +225,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_014",
-        "Ensure that sshd is configured with `kbdinteractiveauthentication no`",
+        "Ensure that sshd is configured with `KbdInteractiveAuthentication no`",
         Severity::High,
         vec!["sshd", "server"],
-        || sshd::check_sshd_config("kbdinteractiveauthentication", "no"),
+        || sshd::check_sshd_config("KbdInteractiveAuthentication", "no"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -238,10 +238,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_015",
-        "Ensure that sshd is configured with `permitemptypasswords no`",
+        "Ensure that sshd is configured with `PermitEmptyPasswords no`",
         Severity::Critical,
         vec!["sshd", "CIS", "STIG", "server"],
-        || sshd::check_sshd_config("permitemptypasswords", "no"),
+        || sshd::check_sshd_config("PermitEmptyPasswords", "no"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -251,10 +251,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_016",
-        "Ensure that sshd is configured with `kerberosauthentication no`",
+        "Ensure that sshd is configured with `KerberosAuthentication no`",
         Severity::Medium,
         vec!["sshd", "server"],
-        || sshd::check_sshd_config("kerberosauthentication", "no"),
+        || sshd::check_sshd_config("KerberosAuthentication", "no"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -264,10 +264,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_017",
-        "Ensure that sshd is configured with `kerberosorlocalpasswd no`",
+        "Ensure that sshd is configured with `KerberosOrLocalPasswd no`",
         Severity::High,
         vec!["sshd", "server"],
-        || sshd::check_sshd_config("kerberosorlocalpasswd", "no"),
+        || sshd::check_sshd_config("KerberosOrLocalPasswd", "no"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -277,10 +277,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_018",
-        "Ensure that sshd is configured with `kerberosticketcleanup yes`",
+        "Ensure that sshd is configured with `KerberosTicketCleanup yes`",
         Severity::Medium,
         vec!["sshd", "server"],
-        || sshd::check_sshd_config("kerberosticketcleanup", "yes"),
+        || sshd::check_sshd_config("KerberosTicketCleanup", "yes"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -290,10 +290,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_019",
-        "Ensure that sshd is configured with `gssapiauthentication no`",
+        "Ensure that sshd is configured with `GSSAPIAuthentication no`",
         Severity::Medium,
         vec!["sshd", "CIS", "server"],
-        || sshd::check_sshd_config("gssapiauthentication", "no"),
+        || sshd::check_sshd_config("GSSAPIAuthentication", "no"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -303,10 +303,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_020",
-        "Ensure that sshd is configured with `gssapicleanupcredentials yes`",
+        "Ensure that sshd is configured with `GSSAPICleanupCredentials yes`",
         Severity::Low,
         vec!["sshd", "server"],
-        || sshd::check_sshd_config("gssapicleanupcredentials", "yes"),
+        || sshd::check_sshd_config("GSSAPICleanupCredentials", "yes"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -316,10 +316,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_044",
-        "Ensure that sshd is configured with `usepam yes`",
+        "Ensure that sshd is configured with `UsePAM yes`",
         Severity::Critical,
         vec!["sshd", "CIS", "STIG", "server"],
-        || sshd::check_sshd_config("usepam", "yes"),
+        || sshd::check_sshd_config("UsePAM", "yes"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -329,10 +329,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_025",
-        "Ensure that sshd is configured with `disableforwarding yes`",
+        "Ensure that sshd is configured with `DisableForwarding yes`",
         Severity::Medium,
         vec!["sshd", "CIS", "server"],
-        || sshd::check_sshd_config("disableforwarding", "yes"),
+        || sshd::check_sshd_config("DisableForwarding", "yes"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -342,10 +342,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_021",
-        "Ensure that sshd is configured with `x11forwarding no`",
+        "Ensure that sshd is configured with `X11Forwarding no`",
         Severity::Medium,
         vec!["sshd", "server"],
-        || sshd::check_sshd_config("x11forwarding", "no"),
+        || sshd::check_sshd_config("X11Forwarding", "no"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -355,10 +355,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_026",
-        "Ensure that sshd is configured with `gatewayports no`",
+        "Ensure that sshd is configured with `GatewayPorts no`",
         Severity::Medium,
         vec!["sshd", "server"],
-        || sshd::check_sshd_config("gatewayports", "no"),
+        || sshd::check_sshd_config("GatewayPorts", "no"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -368,10 +368,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_027",
-        "Ensure that sshd is configured with `x11uselocalhost yes`",
+        "Ensure that sshd is configured with `X11UseLocalhost yes`",
         Severity::Medium,
         vec!["sshd", "server"],
-        || sshd::check_sshd_config("x11uselocalhost", "yes"),
+        || sshd::check_sshd_config("X11UseLocalhost", "yes"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -381,10 +381,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_028",
-        "Ensure that sshd is configured with `printmotd no`",
+        "Ensure that sshd is configured with `PrintMotd no`",
         Severity::Low,
         vec!["sshd", "server"],
-        || sshd::check_sshd_config("printmotd", "no"),
+        || sshd::check_sshd_config("PrintMotd", "no"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -394,10 +394,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_029",
-        "Ensure that sshd is configured with `permituserenvironment no`",
+        "Ensure that sshd is configured with `PermitUserEnvironment no`",
         Severity::High,
         vec!["sshd", "CIS", "server"],
-        || sshd::check_sshd_config("permituserenvironment", "no"),
+        || sshd::check_sshd_config("PermitUserEnvironment", "no"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -407,12 +407,12 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_030",
-        "Ensure that sshd is configured with `clientaliveinterval` <= 15",
+        "Ensure that sshd is configured with `ClientAliveInterval` <= 15",
         Severity::Medium,
         vec!["sshd", "CIS", "server"],
         || {
             const VAL: i32 = 15;
-            match sshd::get_sshd_config_value("clientaliveinterval") {
+            match sshd::get_sshd_config_value("ClientAliveInterval") {
                 Ok(str_value) => match str_value.parse::<i32>() {
                     Ok(value) => {
                         if value <= VAL {
@@ -438,10 +438,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_031",
-        "Ensure that sshd is configured with `clientalivecountmax 3`",
+        "Ensure that sshd is configured with `ClientAliveCountMax 3`",
         Severity::Medium,
         vec!["sshd", "server"],
-        || sshd::check_sshd_config("clientalivecountmax", "3"),
+        || sshd::check_sshd_config("ClientAliveCountMax", "3"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -451,10 +451,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_032",
-        "Ensure that sshd is configured with `tcpkeepalive no`",
+        "Ensure that sshd is configured with `TCPKeepAlive no`",
         Severity::Low,
         vec!["sshd", "server"],
-        || sshd::check_sshd_config("tcpkeepalive", "no"),
+        || sshd::check_sshd_config("TCPKeepAlive", "no"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -464,10 +464,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_033",
-        "Ensure that sshd is configured with `usedns no`",
+        "Ensure that sshd is configured with `UseDNS no`",
         Severity::Low,
         vec!["sshd", "server"],
-        || sshd::check_sshd_config("usedns", "no"),
+        || sshd::check_sshd_config("UseDNS", "no"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -477,10 +477,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_034",
-        "Ensure that sshd is configured with `permittunnel no`",
+        "Ensure that sshd is configured with `PermitTunnel no`",
         Severity::Medium,
         vec!["sshd", "server"],
-        || sshd::check_sshd_config("permittunnel", "no"),
+        || sshd::check_sshd_config("PermitTunnel", "no"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -490,10 +490,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_035",
-        "Ensure that sshd is configured with `maxstartups 10:30:60`",
+        "Ensure that sshd is configured with `MaxStartups 10:30:60`",
         Severity::Medium,
         vec!["sshd", "CIS", "server"],
-        || sshd::check_sshd_config("maxstartups", "10:30:60"),
+        || sshd::check_sshd_config("MaxStartups", "10:30:60"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -503,10 +503,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_036",
-        "Ensure that sshd is configured with `printlastlog yes`",
+        "Ensure that sshd is configured with `PrintLastLog yes`",
         Severity::Low,
         vec!["sshd", "server"],
-        || sshd::check_sshd_config("printlastlog", "yes"),
+        || sshd::check_sshd_config("PrintLastLog", "yes"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -518,12 +518,12 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_037",
-        "Ensure that sshd is configured with `allowgroups sshusers`",
+        "Ensure that sshd is configured with `AllowGroups sshusers`",
         Severity::High,
         vec!["sshd", "server"],
         // TODO: ensure the group also exist
         // TODO: ability to customize the group name, or maybe do not even check group name?
-        || sshd::check_sshd_config("allowgroups", "sshusers"),
+        || sshd::check_sshd_config("AllowGroups", "sshusers"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -531,46 +531,54 @@ pub fn add_checks() {
     .with_fix("In `/etc/ssh/sshd_config` add: `AllowGroups sshusers`")
     .register();
 
-    // TODO: make skip it depending based on version, OpenSSH 6.7+
+    // TODO: enable but with a different ID
     // check::Check::new(
     //     "SSH_038",
-    //     "Ensure that sshd is configured with `kexalgorithms` = `curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256`",
-    //     vec!["sshd", "mozilla", "server"],
+    //     "Ensure that sshd is configured with `KexAlgorithms curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256`",
+    //     Severity::High,
+    //     vec!["sshd", "mozilla", "server", "crypto"],
     //     || {
     //         sshd::check_sshd_config(
-    //             "kexalgorithms",
+    //             "KexAlgorithms",
     //             "curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256",
     //         )
     //     },
     //     vec![sshd::init_sshd_config],
-    // ).register();
-    // NOTE: for OpenSSH 10+:
+    // )
+    // .skip_when(sshd::skip_no_sshd)
+    // .skip_when(|| sshd::skip_sshd_before((6, 7, 0)))
+    // .skip_when(|| sshd::skip_sshd_since((10, 0, 0)))
+    // .with_description("Pinning key-exchange algorithms to a vetted modern set blocks downgrade to weak/legacy KEX (e.g. SHA-1-based DH groups). Older SSH clients that only support legacy algorithms will be unable to connect.")
+    // .with_fix("In `/etc/ssh/sshd_config` add: `KexAlgorithms curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256`")
+    // .register();
+
     check::Check::new(
         "SSH_038",
-        "Ensure that sshd is configured with `kexalgorithms mlkem768x25519-sha256,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521`",
+        "Ensure that sshd is configured with `KexAlgorithms mlkem768x25519-sha256,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521`",
         Severity::High,
-        vec!["sshd", "mozilla", "server"],
+        vec!["sshd", "mozilla", "server", "crypto"],
         || {
             sshd::check_sshd_config(
-                "kexalgorithms",
+                "KexAlgorithms",
                 "mlkem768x25519-sha256,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521",
             )
         },
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
+    .skip_when(|| sshd::skip_sshd_before((10, 0, 0)))
     .with_description("Pinning key-exchange algorithms to a vetted modern set blocks downgrade to weak/legacy KEX (e.g. SHA-1-based DH groups) and includes post-quantum hybrids (mlkem, sntrup) so today's recorded sessions cannot be decrypted by future quantum-capable adversaries. Older SSH clients that only support legacy algorithms will be unable to connect.")
     .with_fix("In `/etc/ssh/sshd_config` add: `KexAlgorithms mlkem768x25519-sha256,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521`")
     .register();
 
     check::Check::new(
         "SSH_039",
-        "Ensure that sshd is configured with `ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr`",
+        "Ensure that sshd is configured with `Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr`",
         Severity::High,
         vec!["sshd", "mozilla", "server"],
         || {
             sshd::check_sshd_config(
-                "ciphers",
+                "Ciphers",
                 "chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr",
             )
         },
@@ -583,12 +591,12 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_040",
-        "Ensure that sshd is configured with `macs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com`",
+        "Ensure that sshd is configured with `MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com`",
         Severity::High,
         vec!["sshd", "mozilla", "server"],
         || {
             sshd::check_sshd_config(
-                "macs",
+                "MACs",
                 "hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com",
             )
         },
@@ -601,10 +609,10 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_041",
-        "Ensure that sshd is configured with `authenticationmethods publickey`",
+        "Ensure that sshd is configured with `AuthenticationMethods publickey`",
         Severity::Critical,
         vec!["sshd", "mozilla", "server"],
-        || sshd::check_sshd_config("authenticationmethods", "publickey"),
+        || sshd::check_sshd_config("AuthenticationMethods", "publickey"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
@@ -612,24 +620,17 @@ pub fn add_checks() {
     .with_fix("In `/etc/ssh/sshd_config` add: `AuthenticationMethods publickey`")
     .register();
 
-    // FIXME: the sftp path is distro dependent, a static path completely breaks
-    // NixOS, the only thing we are interested in here is the options
     check::Check::new(
         "SSH_042",
-        "Ensure that sshd is configured with `subsystem sftp /usr/lib/openssh/sftp-server -f AUTHPRIV -l INFO`",
+        "Ensure that sshd is configured with `Subsystem sftp <ftp-server> -f AUTHPRIV -l INFO`",
         Severity::Low,
         vec!["sshd", "mozilla", "server"],
-        || {
-            sshd::check_sshd_config(
-                "subsystem",
-                "sftp /usr/lib/openssh/sftp-server -f AUTHPRIV -l INFO",
-            )
-        },
+        || sshd::check_sshd_sftp_subsystem("AUTHPRIV", "INFO"),
         vec![sshd::init_sshd_config],
     )
     .skip_when(sshd::skip_no_sshd)
     .with_description("Configure SFTP to log to AUTHPRIV at INFO, every file transfer over SFTP appears in the auth log, turning otherwise-silent file exfil over SSH into something that can be detected and audited.")
-    .with_fix("In `/etc/ssh/sshd_config` add: `Subsystem sftp /usr/lib/openssh/sftp-server -f AUTHPRIV -l INFO`")
+    .with_fix("In `/etc/ssh/sshd_config` add: `Subsystem sftp <path to sftp-server> -f AUTHPRIV -l INFO`")
     .register();
 
     check::Check::new(
@@ -654,11 +655,11 @@ pub fn add_checks() {
 
     check::Check::new(
         "SSH_046",
-        "Ensure sshd service file permissions 644 are set",
+        "Ensure sshd service file permissions 644 or stricter are set",
         Severity::High,
         vec!["sshd", "systemd", "server"],
         || match systemd::get_service_file("sshd") {
-            Some(path) => base::check_file_permission(&path, 0o644),
+            Some(path) => base::check_file_permission_or_stricter(&path, 0o644),
             None => (
                 check::CheckState::Warning,
                 Some("systemd sshd service file not found".to_string()),
@@ -766,7 +767,7 @@ pub fn add_checks() {
     // TODO: get the path of server's keys from the configuration
     check::Check::new(
         "SSH_054",
-        "Ensure SSH private host key files have permissions 600",
+        "Ensure SSH private host key files have permissions 600 or stricter",
         Severity::High,
         vec!["sshd", "server"],
         || {
@@ -777,7 +778,7 @@ pub fn add_checks() {
                 "/etc/ssh/ssh_host_dsa_key",
             ];
             for key in &keys {
-                let result = base::check_file_permission_ignore_missing(key, 0o600);
+                let result = base::check_file_permission_or_stricter_ignore_missing(key, 0o600);
                 if result.0 != check::CheckState::Pass {
                     return result;
                 }

@@ -12,12 +12,15 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ### Added
 
+- Add AppArmor profile
+- Add OpenSSH version detection and version based `skip_when` helpers for sshd checks
 - Add pam checks `PAM_003` to `PAM_005`
 - Add sudo checks `SUD_017` and `SUD_018`
 
 ### Fixed
 
 - Fix pam module bugs
+- Fix pam rules
 
 ## [0.38.0] - 2026-10-28
 

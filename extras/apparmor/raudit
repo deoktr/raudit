@@ -1,0 +1,287 @@
+# AppArmor profile for rAudit
+#
+# rAudit only needs to *read* the system: it never writes a file, opens a
+# network socket or loads anything. This profile enforces that, so a bug or a
+# malicious config parsed by rAudit cannot be turned into a write primitive
+# while it runs as root.
+#
+# Notes:
+# - stat(2) is not mediated by AppArmor, so permission/owner checks on files
+#   (ssh host keys, /etc/shadow, sockets...) only need the parent directory to
+#   be traversable, not a read rule on the file itself.
+# - External commands run in child profiles (`Cx`) that are as strict as each
+#   tool allows. The docker and podman CLIs talk to their daemons/storage
+#   which is root equivalent; drop those rules (and the `docker`/`podman` tags
+#   with --tags-exclude) if you do not need container checks.
+#
+# Install:
+#   sudo install -m 0644 apparmor/raudit /etc/apparmor.d/raudit
+#   sudo apparmor_parser -r /etc/apparmor.d/raudit
+#
+# The profile attaches to raudit installed in /usr/{local/,}{s,}bin. To run
+# a binary from elsewhere under it:
+#   sudo aa-exec -p raudit -- ./target/release/raudit
+
+abi <abi/4.0>,
+
+include <tunables/global>
+
+@{raudit_exec} = /{usr/,usr/local/,}{bin,sbin}/raudit
+
+profile raudit @{raudit_exec} flags=(attach_disconnected) {
+  include <abstractions/base>
+  include <abstractions/consoles>
+
+  # Read files regardless of their permissions (/etc/shadow, /etc/gshadow,
+  # 0700 home directories, /var/log/audit...). Nothing else: rAudit never
+  # needs to bypass write permissions, change ownership or use the network.
+  capability dac_read_search,
+  deny capability dac_override,
+
+  deny network,
+
+  # The binary itself
+  @{raudit_exec} mr,
+
+  # Rust std / rayon: thread count from cgroup limits and CPU topology
+  @{PROC}/@{pid}/cgroup r,
+  @{PROC}/@{pid}/mountinfo r,
+  @{PROC}/@{pid}/maps r,
+  @{sys}/fs/cgroup/** r,
+  @{sys}/devices/system/cpu/{online,possible,present} r,
+
+  # Locate commands in $PATH (`which`)
+  /{usr/,usr/local/,}{bin,sbin}/ r,
+
+  ## /proc
+  @{PROC}/ r,
+  @{PROC}/@{pids}/status r,
+  @{PROC}/@{pids}/cmdline r,
+  @{PROC}/cmdline r,
+  @{PROC}/config.gz r,
+  @{PROC}/modules r,
+  @{PROC}/@{pid}/mounts r,
+  @{PROC}/uptime r,
+  @{PROC}/sys/kernel/{osrelease,ostype} r,
+
+  ## /sys
+  @{sys}/module/apparmor/parameters/enabled r,
+  @{sys}/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c r,
+  @{sys}/block/ r,
+  @{sys}/devices/**/block/*/dm/uuid r,
+  @{sys}/devices/**/block/*/slaves/ r,
+
+  ## Kernel, boot and modules
+  /boot/config-* r,
+  /boot/{grub,grub2}/grub.cfg r,
+  /{usr/,}lib/modules/*/build/.config r,
+  /usr/src/{linux-headers-*,kernels/*,linux-*}/.config r,
+  /{usr/,}lib/modules/*/modules.{builtin,dep} r,
+  /{etc,run,usr/local/lib,usr/lib,lib}/modprobe.d/ r,
+  /{etc,run,usr/local/lib,usr/lib,lib}/modprobe.d/** r,
+
+  ## OS identification
+  /etc/os-release r,
+  /usr/lib/os-release r,
+  /etc/default/locale r,
+
+  ## Users, groups and login
+  /etc/passwd r,
+  /etc/group r,
+  /etc/shadow r,
+  /etc/gshadow r,
+  /etc/login.defs r,
+  /etc/securetty r,
+  /etc/default/useradd r,
+  /etc/pam.d/ r,
+  /etc/pam.d/* r,
+  /etc/profile r,
+  /etc/profile.d/ r,
+  /etc/profile.d/* r,
+  /etc/sudoers r,
+  /etc/sudoers.d/ r,
+  /etc/sudoers.d/* r,
+
+  # Home directories: permission checks and world-writable file search
+  # (directory listing only, file contents are never read)
+  @{HOMEDIRS} r,
+  @{HOME} r,
+  @{HOME}/**/ r,
+
+  ## System configuration
+  /etc/hosts r,
+  /etc/ld.so.preload r,
+  /etc/systemd/system.conf r,
+  /etc/systemd/system/ r,
+  /etc/audit/auditd.conf r,
+  /etc/gdm{,3}/custom.conf r,
+  /etc/ssh/ r,
+  /etc/ssh/sshd_config.d/ r,
+  /etc/cron.{d,hourly,daily,weekly,monthly,yearly}/ r,
+  /etc/apt/apt.conf.d/ r,
+  /etc/apt/sources.list.d/ r,
+  /var/log/audit/ r,
+
+  # SUID/SGID binary search
+  /usr/bin/ r,
+  /usr/bin/**/ r,
+
+  ## External commands
+  /{usr/,}{bin,sbin}/sysctl     Cx -> sysctl,
+  /{usr/,}{bin,sbin}/auditctl   Cx -> auditctl,
+  /{usr/,}{bin,sbin}/apt-config Cx -> apt_config,
+  /{usr/,}{bin,sbin}/systemctl  Cx -> systemctl,
+  /{usr/,}{bin,sbin}/sshd       Cx -> sshd,
+  /{usr/,}{bin,sbin}/nginx      Cx -> nginx,
+  /{usr/,usr/local/,}{bin,sbin}/docker Cx -> docker,
+  /{usr/,usr/local/,}{bin,sbin}/podman Cx -> podman,
+
+  profile sysctl {
+    include <abstractions/base>
+    /{usr/,}{bin,sbin}/sysctl mr,
+    # net.core.bpf_jit_{harden,kallsyms,limit} are only readable with
+    # CAP_SYS_ADMIN, writes to /proc/sys are still denied below
+    capability sys_admin,
+    @{PROC}/sys/ r,
+    @{PROC}/sys/** r,
+    deny @{PROC}/sys/** w,
+    # some apparmor/LSM keys need CAP_MAC_ADMIN, skip them silently
+    deny capability mac_admin,
+    deny network,
+  }
+
+  profile auditctl {
+    include <abstractions/base>
+    /{usr/,}{bin,sbin}/auditctl mr,
+    capability audit_control,
+    network netlink raw,
+  }
+
+  profile apt_config {
+    include <abstractions/base>
+    /{usr/,}{bin,sbin}/apt-config mr,
+    /etc/apt/** r,
+    /usr/share/dpkg/** r,
+    /var/lib/apt/lists/ r,
+    # `dpkg --print-foreign-architectures`
+    /usr/bin/dpkg mrix,
+    /etc/dpkg/** r,
+    /var/lib/dpkg/** r,
+    deny network,
+  }
+
+  profile systemctl {
+    include <abstractions/base>
+    /{usr/,}{bin,sbin}/systemctl mr,
+    # `systemctl show` talks to PID 1 over its private socket or D-Bus
+    /run/systemd/private rw,
+    /run/systemd/system/ r,
+    /run/dbus/system_bus_socket rw,
+    @{PROC}/1/{environ,cmdline,comm,stat} r,
+    @{PROC}/sys/kernel/{osrelease,random/boot_id} r,
+    @{sys}/fs/cgroup/ r,
+    network unix stream,
+    capability sys_ptrace,
+    ptrace read peer=unconfined,
+    dbus send bus=system path=/org/freedesktop/systemd1{,/**},
+    unix (connect, send, receive) type=stream,
+  }
+
+  profile sshd {
+    include <abstractions/base>
+    include <abstractions/nameservice>
+    include <abstractions/openssl>
+    /{usr/,}{bin,sbin}/sshd mr,
+    # privilege separation checks done by `sshd -T`
+    capability setgid,
+    capability setuid,
+    # sshd re-executes helpers to print the effective configuration
+    /usr/lib/openssh/sshd-{auth,session} mr,
+    /usr/libexec/openssh/sshd-{auth,session} mr,
+    /etc/ssh/ r,
+    /etc/ssh/** r,
+    /run/sshd/ r,
+    /etc/crypto-policies/** r,
+    deny network inet,
+    deny network inet6,
+  }
+
+  profile nginx {
+    include <abstractions/base>
+    include <abstractions/nameservice>
+    include <abstractions/openssl>
+    include <abstractions/ssl_certs>
+    /{usr/,}{bin,sbin}/nginx mr,
+    /etc/nginx/ r,
+    /etc/nginx/** r,
+    /usr/share/nginx/** r,
+    /usr/lib{,64}/nginx/modules/*.so mr,
+    # `nginx -T` opens the configured logs and temp dirs to validate them
+    /var/log/nginx/ r,
+    /var/log/nginx/*.log a,
+    /var/lib/nginx/ rw,
+    /var/lib/nginx/** rw,
+    /run/nginx{,/nginx}.pid r,
+    capability dac_override,
+    capability setuid,
+    capability setgid,
+    capability chown,
+    deny network inet,
+    deny network inet6,
+  }
+
+  # Container CLIs: rAudit only reads `info`, `ps` and `inspect`
+  profile docker {
+    include <abstractions/base>
+    include <abstractions/nameservice>
+    /{usr/,usr/local/,}{bin,sbin}/docker mr,
+    /root/.docker/ r,
+    /root/.docker/** r,
+    /etc/docker/** r,
+    /usr/{lib,libexec}/docker/cli-plugins/ r,
+    /{,var/}run/docker.sock rw,
+    @{PROC}/@{pid}/{cgroup,mountinfo} r,
+    @{sys}/fs/cgroup/** r,
+    @{sys}/kernel/mm/transparent_hugepage/hpage_pmd_size r,
+    network unix stream,
+  }
+
+  profile podman flags=(attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/nameservice>
+    /{usr/,usr/local/,}{bin,sbin}/podman mr,
+    # `podman info` runs each helper with --version
+    /usr/{bin,sbin,libexec/podman,lib/podman}/{conmon,crun,runc,crun-*,slirp4netns,pasta,passt,netavark,aardvark-dns,catatonit} mrix,
+    # crun re-executes itself from a sealed memfd
+    /memfd:* mrix,
+    /etc/containers/** r,
+    /usr/share/containers/** r,
+    /var/lib/containers/ r,
+    /var/lib/containers/** rwk,
+    /{,var/}run/containers/ rw,
+    /{,var/}run/containers/** rwk,
+    /{,var/}run/libpod/ rw,
+    /{,var/}run/libpod/** rwk,
+    /dev/shm/libpod_lock rwk,
+    /{,var/}run/lock/netavark.lock rwk,
+    /{,var/}run/netns/ r,
+    /dev/shm/ r,
+    # `podman info` reports host details (uptime, memory, CPUs, cgroups...)
+    @{PROC}/ r,
+    @{PROC}/* r,
+    @{PROC}/@{pids}/** r,
+    @{PROC}/sys/** r,
+    @{PROC}/pressure/* r,
+    @{sys}/** r,
+    /tmp/ r,
+    network unix stream,
+    capability sys_admin,
+    capability dac_override,
+    # podman makes its storage mount private before reading it
+    mount options=(rw, bind) /var/lib/containers/storage/** -> /var/lib/containers/storage/**,
+    mount options=(rw, make-private) -> /var/lib/containers/storage/**,
+    umount /var/lib/containers/storage/**,
+  }
+
+  include if exists <local/raudit>
+}

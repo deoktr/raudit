@@ -31,6 +31,23 @@ pub type DependencyFn = fn() -> ();
 /// Skip a check if returns true
 pub type SkipFn = fn() -> bool;
 
+/// First step of a check that is not a pass, the last one when they all do.
+///
+/// A check is often a sequence of requirements, ex: a rule must be present and
+/// set a given flag. The steps go from the requirement itself to its details, a
+/// missing rule making the steps reading its settings meaningless, and the last
+/// step is the most specific one, it carries the value the check settled on.
+pub fn require_all<const N: usize>(steps: [CheckReturn; N]) -> CheckReturn {
+    let mut last = (CheckState::Pass, None);
+    for step in steps {
+        if !matches!(step.0, CheckState::Pass) {
+            return step;
+        }
+        last = step;
+    }
+    last
+}
+
 pub static REPORT: Lazy<Mutex<Report>> = Lazy::new(|| Mutex::new(Report::default()));
 
 /// Security impact classification for a check.
@@ -263,5 +280,42 @@ impl Display for Severity {
             Severity::High => write!(f, "High"),
             Severity::Critical => write!(f, "Critical"),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_require_all() {
+        // the first step that is not a pass is the one reported, the steps
+        // after it cannot be evaluated once the rule they read is missing
+        assert_eq!(
+            require_all([
+                (CheckState::Pass, None),
+                (CheckState::Fail, Some("second".to_string())),
+                (CheckState::Fail, Some("third".to_string())),
+            ]),
+            (CheckState::Fail, Some("second".to_string()))
+        );
+        // a warning stops the steps like a failure does
+        assert_eq!(
+            require_all([
+                (CheckState::Warning, Some("undetermined".to_string())),
+                (CheckState::Fail, Some("second".to_string())),
+            ]),
+            (CheckState::Warning, Some("undetermined".to_string()))
+        );
+        // all the steps passing reports the last one, it carries the value
+        assert_eq!(
+            require_all([
+                (CheckState::Pass, None),
+                (CheckState::Pass, Some("5".to_string())),
+            ]),
+            (CheckState::Pass, Some("5".to_string()))
+        );
+        // an empty sequence has nothing to require
+        assert_eq!(require_all([]), (CheckState::Pass, None));
     }
 }

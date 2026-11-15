@@ -559,27 +559,6 @@ fn find_rule_flag_files(
     files
 }
 
-/// Get the value of a flag of a PAM rule from the collected configuration.
-///
-/// The selector is the one of [`check_rule`], `Ok(None)` means that no rule of
-/// the service sets `flag`, `Err` that the configuration is unavailable.
-pub fn get_rule_flag(
-    service: &str,
-    rule_type: &str,
-    control: &str,
-    module: &str,
-    flag: &str,
-) -> Result<Option<String>, String> {
-    Ok(get_pam_rule_flag(
-        PAM_RULES.try_get()?,
-        service,
-        rule_type,
-        control,
-        module,
-        flag,
-    ))
-}
-
 /// Ensure no rule of `rule_type` using `module` sets `flag`, in any service.
 ///
 /// The whole `/etc/pam.d/` is scanned, a flag in an included file weakens every
@@ -595,6 +574,94 @@ pub fn check_no_rule_flag(rule_type: &str, module: &str, flag: &str) -> check::C
                 check::CheckState::Fail,
                 Some(format!("`{}` set in {}", flag, files.join(", "))),
             )
+        }
+    })
+}
+
+/// Ensure one of `flags` is set on the matching rules of a service.
+///
+/// The selector is the one of [`check_rule`]. A module never fails to load over
+/// a missing flag, it falls back to a weaker behavior instead, so the flags are
+/// what tells a rule enforcing something from a rule doing nothing. Several of
+/// them are accepted because they lead to the same behavior, ex: the `preauth`
+/// and `authsucc` records of `pam_faillock`.
+///
+/// A service that is not configured sets no flag and fails here like a rule
+/// missing it, [`check_rule`] is what tells the two apart.
+pub fn check_rule_flag(
+    service: &str,
+    rule_type: &str,
+    control: &str,
+    module: &str,
+    flags: &[&str],
+) -> check::CheckReturn {
+    PAM_RULES.with(|config| {
+        for flag in flags {
+            if get_pam_rule_flag(config, service, rule_type, control, module, flag).is_some() {
+                return (check::CheckState::Pass, None);
+            }
+        }
+        (
+            check::CheckState::Fail,
+            Some(format!("no `{}` flag on `{module}`", flags.join("` or `"))),
+        )
+    })
+}
+
+/// Ensure none of the matching rules of a service sets `flag`.
+///
+/// The selector is the one of [`check_rule`], unlike [`check_no_rule_flag`] only
+/// the rules of one service are looked at. Some flags reverse the rule they are
+/// set on (`deny` on `pam_wheel`) or bypass the ones stacked after them
+/// (`trust` on a `sufficient` rule).
+pub fn check_rule_no_flag(
+    service: &str,
+    rule_type: &str,
+    control: &str,
+    module: &str,
+    flag: &str,
+) -> check::CheckReturn {
+    PAM_RULES.with(|config| {
+        match get_pam_rule_flag(config, service, rule_type, control, module, flag) {
+            None => (check::CheckState::Pass, None),
+            Some(_) => (
+                check::CheckState::Fail,
+                Some(format!("`{flag}` is set on `{module}`")),
+            ),
+        }
+    })
+}
+
+/// Ensure a numeric flag of the matching rules of a service is at least `min`.
+///
+/// The selector is the one of [`check_rule`]. `absent` is returned when no
+/// matching rule sets `flag`, the value comes from the configuration file of the
+/// module or from its built in default then and raudit reads neither, so the
+/// caller states what that fallback is worth. A value that is not a number is a
+/// warning, the module would reject the whole rule.
+pub fn check_rule_flag_min(
+    service: &str,
+    rule_type: &str,
+    control: &str,
+    module: &str,
+    flag: &str,
+    min: i32,
+    absent: check::CheckReturn,
+) -> check::CheckReturn {
+    PAM_RULES.with(|config| {
+        match get_pam_rule_flag(config, service, rule_type, control, module, flag) {
+            Some(value) => match value.parse::<i32>() {
+                Ok(val) if val >= min => (check::CheckState::Pass, Some(value)),
+                Ok(val) => (
+                    check::CheckState::Fail,
+                    Some(format!("`{flag}={val}` < {min}")),
+                ),
+                Err(err) => (
+                    check::CheckState::Warning,
+                    Some(format!("`{flag}={value}`: {err}")),
+                ),
+            },
+            None => absent,
         }
     })
 }
@@ -1220,6 +1287,14 @@ password required pam_pwhistory.so remember=5 use_authtok
 auth required pam_wheel.so use_uid
 ",
                 ),
+                (
+                    "login",
+                    "auth required pam_faillock.so preauth silent deny=5 unlock_time=900
+auth sufficient pam_unix.so try_first_pass
+auth [default=die] pam_faillock.so authfail deny=5
+auth optional pam_faildelay.so delay=4s
+",
+                ),
             ]))
         });
 
@@ -1237,23 +1312,6 @@ auth required pam_wheel.so use_uid
                 check::CheckState::Fail,
                 Some("services not configured with pam".to_string())
             )
-        );
-
-        assert_eq!(
-            get_rule_flag(
-                "passwd",
-                "password",
-                "required",
-                "pam_pwhistory",
-                "remember"
-            )
-            .unwrap(),
-            Some("5".to_string())
-        );
-        // a service that is not configured sets no flag
-        assert_eq!(
-            get_rule_flag("sshd", "auth", "required", "pam_unix", "nullok").unwrap(),
-            None
         );
 
         // `pam_pwhistory` runs before `pam_unix` in the `passwd` stack
@@ -1304,6 +1362,133 @@ auth required pam_wheel.so use_uid
         assert_eq!(
             check_no_rule_flag("auth", "pam_unix", "shadow"),
             (check::CheckState::Pass, None)
+        );
+
+        // the `login` stack records its failures with the `authfail` record and
+        // refuses an already locked account with the `preauth` one
+        assert_eq!(
+            check_rule_flag("login", "auth", "required", "pam_faillock", &["authfail"]),
+            (check::CheckState::Pass, None)
+        );
+        assert_eq!(
+            check_rule_flag(
+                "login",
+                "auth",
+                "required",
+                "pam_faillock",
+                &["preauth", "authsucc"]
+            ),
+            (check::CheckState::Pass, None)
+        );
+        // a flag none of the rules sets, every alternative is named
+        assert_eq!(
+            check_rule_flag(
+                "login",
+                "auth",
+                "required",
+                "pam_faillock",
+                &["audit", "no_log_info"]
+            ),
+            (
+                check::CheckState::Fail,
+                Some("no `audit` or `no_log_info` flag on `pam_faillock`".to_string())
+            )
+        );
+        // the selector is honored, `use_uid` is set on the `required` rule only
+        assert_eq!(
+            check_rule_flag("su", "auth", "required", "pam_wheel", &["use_uid"]),
+            (check::CheckState::Pass, None)
+        );
+        assert_eq!(
+            check_rule_flag("su", "auth", "sufficient", "pam_wheel", &["use_uid"]),
+            (
+                check::CheckState::Fail,
+                Some("no `use_uid` flag on `pam_wheel`".to_string())
+            )
+        );
+
+        assert_eq!(
+            check_rule_no_flag("su", "auth", "required", "pam_wheel", "deny"),
+            (check::CheckState::Pass, None)
+        );
+        assert_eq!(
+            check_rule_no_flag("su", "auth", "required", "pam_wheel", "use_uid"),
+            (
+                check::CheckState::Fail,
+                Some("`use_uid` is set on `pam_wheel`".to_string())
+            )
+        );
+
+        // `remember=5` is the depth of the `passwd` history
+        assert_eq!(
+            check_rule_flag_min(
+                "passwd",
+                "password",
+                "required",
+                "pam_pwhistory",
+                "remember",
+                5,
+                (check::CheckState::Pass, None)
+            ),
+            (check::CheckState::Pass, Some("5".to_string()))
+        );
+        assert_eq!(
+            check_rule_flag_min(
+                "passwd",
+                "password",
+                "required",
+                "pam_pwhistory",
+                "remember",
+                8,
+                (check::CheckState::Pass, None)
+            ),
+            (
+                check::CheckState::Fail,
+                Some("`remember=5` < 8".to_string())
+            )
+        );
+        // a rule not setting the flag returns what the caller passes for it, the
+        // configuration file of the module or its default decides the value
+        assert_eq!(
+            check_rule_flag_min(
+                "passwd",
+                "password",
+                "required",
+                "pam_unix",
+                "remember",
+                5,
+                (check::CheckState::Pass, Some("default (10)".to_string()))
+            ),
+            (check::CheckState::Pass, Some("default (10)".to_string()))
+        );
+        // a value that is not a number, the module would reject the whole rule
+        assert_eq!(
+            check_rule_flag_min(
+                "login",
+                "auth",
+                "optional",
+                "pam_faildelay",
+                "delay",
+                4000000,
+                (check::CheckState::Pass, None)
+            ),
+            (
+                check::CheckState::Warning,
+                Some("`delay=4s`: invalid digit found in string".to_string())
+            )
+        );
+        // a service that is not configured sets no flag
+        assert_eq!(
+            check_rule_flag_min(
+                "sshd",
+                "auth",
+                "required",
+                "pam_unix",
+                "nullok",
+                1,
+                (check::CheckState::Fail, Some("absent".to_string()))
+            ),
+            (check::CheckState::Fail, Some("absent".to_string()))
         );
     }
 

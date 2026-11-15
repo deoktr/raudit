@@ -323,6 +323,28 @@ cargo install cargo-audit --locked
 cargo audit
 ```
 
+### AppArmor
+
+rAudit runs as root but only needs to read the system. The AppArmor profile in
+`extras/apparmor/raudit` confines it to read-only access, with no network, and
+runs each external command (`sshd -T`, `sysctl`, `nginx -T`, `docker`...) in its
+own child profile.
+
+Install the profile with:
+
+```bash
+sudo install -m 0644 apparmor/raudit /etc/apparmor.d/raudit
+sudo apparmor_parser -r /etc/apparmor.d/raudit
+```
+
+The profile attaches to `raudit` installed in `/usr/bin`, `/usr/sbin`,
+`/usr/local/bin` or `/usr/local/sbin`. To run a binary from another location
+under it:
+
+```bash
+sudo aa-exec -p raudit -- ./target/release/raudit
+```
+
 ## Sources
 
 - [Linux self-protection.rst](https://github.com/torvalds/linux/blob/master/Documentation/security/self-protection.rst)
