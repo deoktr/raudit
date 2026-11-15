@@ -10,6 +10,10 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+### Added
+
+- Add per-host checks and failed-by-severity statistics to the HTML host list
+
 ## [0.40.0] - 2026-11-15
 
 ### Added
@@ -209,6 +213,8 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 - Add `--no-skip` CLI flag to disable automatic check skipping
 
+[0.40.0]: https://github.com/deoktr/raudit/releases/tag/v0.40.0
+[0.39.0]: https://github.com/deoktr/raudit/releases/tag/v0.39.0
 [0.38.0]: https://github.com/deoktr/raudit/releases/tag/v0.38.0
 [0.37.0]: https://github.com/deoktr/raudit/releases/tag/v0.37.0
 [0.36.1]: https://github.com/deoktr/raudit/releases/tag/v0.36.1

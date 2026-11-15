@@ -145,6 +145,9 @@ th {
 }
 tbody tr:last-child td { border-bottom: none; }
 tbody tr:hover { background: var(--surface-alt); }
+.num { text-align: right; }
+.percent { color: var(--muted); font-size: .86em; font-weight: 400; }
+.summary-total td { background: var(--surface-alt); font-weight: 600; }
 .host { margin-top: 30px; }
 .host-header {
   display: flex;
@@ -635,13 +638,21 @@ pub fn render(reports: &[HtmlReport], generated_at: i64) -> String {
 
     let show_source = reports.iter().any(|report| report.source.is_some());
     out.push_str("<h2>Hosts</h2>\n<div class=\"table-wrap\"><table class=\"summary\">\n");
-    out.push_str("<thead><tr><th>Host</th>");
+    out.push_str("<thead>\n<tr><th rowspan=\"2\">Host</th>");
     if show_source {
-        out.push_str("<th>Source</th>");
+        out.push_str("<th rowspan=\"2\">Source</th>");
     }
     out.push_str(
-        "<th>Audited</th><th>Pass</th><th>Fail</th><th>Warning</th>\
-         <th>Unknown</th><th>Total</th></tr></thead>\n<tbody>\n",
+        "<th rowspan=\"2\">Audited</th><th colspan=\"5\">Checks</th>\
+         <th colspan=\"5\">Failed by severity</th></tr>\n<tr>\
+         <th class=\"num\">Pass</th><th class=\"num\">Fail</th>\
+         <th class=\"num\">Warning</th><th class=\"num\">Unknown</th>\
+         <th class=\"num\">Total</th>\
+         <th class=\"num severity-critical\">Critical</th>\
+         <th class=\"num severity-high\">High</th>\
+         <th class=\"num severity-medium\">Medium</th>\
+         <th class=\"num severity-low\">Low</th>\
+         <th class=\"num severity-informational\">Informational</th></tr>\n</thead>\n<tbody>\n",
     );
 
     for (index, report) in reports.iter().enumerate() {
@@ -652,7 +663,7 @@ pub fn render(reports: &[HtmlReport], generated_at: i64) -> String {
             .map(format_timestamp)
             .unwrap_or_else(|| "&mdash;".to_string());
 
-        let _ = write!(
+        let _ = writeln!(
             out,
             "<tr><td><a href=\"#{}\">{}</a></td>",
             anchor,
@@ -660,27 +671,83 @@ pub fn render(reports: &[HtmlReport], generated_at: i64) -> String {
         );
         if show_source {
             let source = report.source.as_deref().unwrap_or("");
-            let _ = write!(
+            let _ = writeln!(
                 out,
                 "<td class=\"finding-source\">{}</td>",
                 escape_html(source)
             );
         }
-        let _ = writeln!(
-            out,
-            "<td>{}</td><td class=\"status-pass\">{}</td><td class=\"status-fail\">{}</td>\
-             <td class=\"status-warning\">{}</td><td>{}</td><td><strong>{}</strong></td></tr>",
-            audited,
+        let _ = writeln!(out, "<td>{}</td>", audited);
+        summary_stat_cell(
+            &mut out,
             report.stats.pass,
+            report.stats.total,
+            "status-pass",
+        );
+        summary_stat_cell(
+            &mut out,
             report.stats.fail,
+            report.stats.total,
+            "status-fail",
+        );
+        summary_stat_cell(
+            &mut out,
             report.stats.warning,
+            report.stats.total,
+            "status-warning",
+        );
+        summary_stat_cell(
+            &mut out,
             report.stats.unknown,
             report.stats.total,
+            "status-unknown",
         );
+        let _ = writeln!(
+            out,
+            "<td class=\"num\"><strong>{}</strong></td>",
+            report.stats.total
+        );
+        summary_severity_cell(&mut out, report.stats.fail_critical, "severity-critical");
+        summary_severity_cell(&mut out, report.stats.fail_high, "severity-high");
+        summary_severity_cell(&mut out, report.stats.fail_medium, "severity-medium");
+        summary_severity_cell(&mut out, report.stats.fail_low, "severity-low");
+        summary_severity_cell(
+            &mut out,
+            report.stats.fail_informational,
+            "severity-informational",
+        );
+        out.push_str("</tr>\n");
+    }
+
+    if reports.len() > 1 {
+        out.push_str("<tr class=\"summary-total\"><td>All hosts</td>");
+        if show_source {
+            out.push_str("<td></td>");
+        }
+        out.push_str("<td>&mdash;</td>");
+        summary_stat_cell(&mut out, totals.pass, totals.total, "status-pass");
+        summary_stat_cell(&mut out, totals.fail, totals.total, "status-fail");
+        summary_stat_cell(&mut out, totals.warning, totals.total, "status-warning");
+        summary_stat_cell(&mut out, totals.unknown, totals.total, "status-unknown");
+        let _ = writeln!(
+            out,
+            "<td class=\"num\"><strong>{}</strong></td>",
+            totals.total
+        );
+        summary_severity_cell(&mut out, totals.fail_critical, "severity-critical");
+        summary_severity_cell(&mut out, totals.fail_high, "severity-high");
+        summary_severity_cell(&mut out, totals.fail_medium, "severity-medium");
+        summary_severity_cell(&mut out, totals.fail_low, "severity-low");
+        summary_severity_cell(
+            &mut out,
+            totals.fail_informational,
+            "severity-informational",
+        );
+        out.push_str("</tr>\n");
     }
 
     if reports.is_empty() {
-        let columns = if show_source { 8 } else { 7 };
+        let columns = if show_source { 14 } else { 13 };
         let _ = writeln!(
             out,
             "<tr><td colspan=\"{}\" class=\"empty\">No host reports in this document.</td></tr>",
@@ -975,6 +1042,20 @@ fn stat_pill(out: &mut String, label: &str, value: i32, total: i32, class: &str)
     );
 }
 
+fn summary_stat_cell(out: &mut String, value: i32, total: i32, class: &str) {
+    let _ = writeln!(
+        out,
+        "<td class=\"num {}\">{} <span class=\"percent\">({})</span></td>",
+        class,
+        value,
+        percentage(value, total),
+    );
+}
+
+fn summary_severity_cell(out: &mut String, value: i32, class: &str) {
+    let _ = writeln!(out, "<td class=\"num {}\">{}</td>", class, value);
+}
+
 fn severity_pill(out: &mut String, label: &str, value: i32) {
     let _ = writeln!(
         out,
@@ -1256,6 +1337,11 @@ mod tests {
         assert!(html.contains("took 1.25 s"));
         assert!(html.contains("by tester"));
         assert!(html.contains("Failed by severity"));
+        assert!(html.contains("<th colspan=\"5\">Checks</th>"));
+        assert!(html.contains(
+            "<td class=\"num status-fail\">1 <span class=\"percent\">(100.00%)</span></td>"
+        ));
+        assert!(html.contains("<td class=\"num severity-high\">1</td>"));
         assert!(html.contains("Content-Security-Policy"));
         assert!(html.contains("<style>"));
         assert!(html.contains("<script>"));
@@ -1292,6 +1378,8 @@ mod tests {
         assert!(html.contains("TST_003"));
         assert!(html.contains("2 hosts"));
         assert!(html.contains("<option value=\"host-one\">host-one</option>"));
+        assert!(html.contains("<td>All hosts</td>"));
+        assert!(html.contains("<td class=\"num severity-high\">2</td>"));
     }
 
     #[test]
