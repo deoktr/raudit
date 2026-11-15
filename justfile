@@ -16,8 +16,8 @@ lint:
 audit:
     cargo audit
 
-e2e_build:
-    cargo build --release
+# static musl binary uploaded by the VM and container tests
+e2e_build: e2e_build_musl
 
 e2e_install_deps:
     sudo apt-get install -y qemu-system-x86 qemu-utils cloud-image-utils genisoimage sshpass
@@ -42,7 +42,9 @@ e2e_build_musl:
         aarch64) target="aarch64-unknown-linux-musl" ;;
         *) echo "unsupported architecture: $(uname -m)" >&2; exit 1 ;;
     esac
-    rustup target add "${target}"
+    if command -v rustup >/dev/null 2>&1; then
+        rustup target add "${target}"
+    fi
     cargo build --release --target "${target}"
 
 e2e_container_hardened: e2e_build_musl

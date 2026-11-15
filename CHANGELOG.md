@@ -10,9 +10,17 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+## [0.40.1] - 2026-11-15
+
 ### Added
 
 - Add per-host checks and failed-by-severity statistics to the HTML host list
+
+### Changed
+
+- Update source organization, place crates inside `crates/` dir
+- Update JSON output to OCSF schema 1.9.0, with finding `type_name` and affected `resources`
+- Move audit details out of the OCSF metadata object and use `metadata.reporter` for the hostname
 
 ## [0.40.0] - 2026-11-15
 

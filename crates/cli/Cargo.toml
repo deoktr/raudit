@@ -6,7 +6,6 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 readme = "../README.md"
-homepage.workspace = true
 repository.workspace = true
 keywords = ["security", "audit", "linux", "cli"]
 categories = ["command-line-utilities"]

@@ -31,9 +31,10 @@ python3 e2e/qemu_test.py all --distro ubuntu
 python3 e2e/qemu_test.py all --update-baselines
 ```
 
-Each distro has one directory under `e2e/qemu/<distro>/` (`ubuntu` for now,
-noble), with its setup scripts (`hardened-setup.sh`, `insecure-setup.sh`), its
-generated SSH keys (`keys/`) and its expected baselines (`expected/`).
+Each distro has one directory under `e2e/qemu/<distro>/` (`ubuntu_server_24`,
+noble, and `ubuntu_server_26`, resolute), with its setup scripts
+(`hardened-setup.sh`, `insecure-setup.sh`), its generated SSH keys (`keys/`) and
+its expected baselines (`expected/`).
 
 ### How it works
 
@@ -43,7 +44,8 @@ generated SSH keys (`keys/`) and its expected baselines (`expected/`).
 4. Boots QEMU VMs with KVM acceleration (if available)
 5. Waits for SSH
 6. Applies hardening or insecure configuration via SSH
-7. Uploads and runs raudit
+7. Uploads and runs raudit (built for the musl target, so it is fully static and
+   does not depend on the guest libc)
 8. Collects JSON output
 9. Shuts down VMs
 10. Compares JSON output against expected baselines in
@@ -56,6 +58,8 @@ generated SSH keys (`keys/`) and its expected baselines (`expected/`).
 - `cloud-image-utils` (cloud-init ISO creation)
 - `genisoimage` (ISO creation)
 - `sshpass` (non-interactive SSH password)
+- `rustup` (to add the musl target; raudit is built static for musl like in the
+  release CI, so the same binary runs in every guest)
 - KVM support (`/dev/kvm`) recommended for performance
 
 ### Baselines
@@ -64,10 +68,11 @@ Expected JSON outputs are stored in `e2e/qemu/<distro>/expected/`. Each profile
 has a baseline file (`hardened.json`, `insecure.json`). Tests fail if the output
 differs from the baseline.
 
-Timestamps and audit metadata (`time`, `start_time`, `end_time`, `elapsed`,
-`username`) are stripped and the raudit version (`metadata.product.version`) is
-blanked before saving, so baselines only change when check results actually
-change.
+Timestamps, the audit object (`start_time`, `end_time`, `duration`, `username`),
+the reporter host, the affected resources (their `name`/`hostname` is the
+per-run container id or the machine hostname), and the raudit version
+(`metadata.product.version`) are stripped before saving, so baselines only
+change when check results actually change.
 
 To generate or update baselines after intentional changes:
 

@@ -8,6 +8,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "LDF_002",
         "title": "Ensure that login.defs `YESCRYPT_COST_FACTOR` >= 5",
@@ -22,7 +23,7 @@
       },
       "message": "3 not in [5..11]",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -44,6 +45,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "PAM_001",
         "title": "Ensure PAM service `passwd` has rule `account required pam_unix`",
@@ -58,7 +60,7 @@
       },
       "message": "rule not found",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -80,6 +82,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "PAM_002",
         "title": "Ensure PAM service `passwd` enforces password quality with `pam_pwquality`",
@@ -94,7 +97,7 @@
       },
       "message": "`minlen=6` < 14",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -116,6 +119,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "PAM_003",
         "title": "Ensure PAM service `passwd` hashes new passwords with yescrypt",
@@ -130,7 +134,7 @@
       },
       "message": "`sha512` is used instead of `yescrypt`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -152,6 +156,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "PAM_004",
         "title": "Ensure no PAM `auth` rule of `pam_unix` has flag `nullok`",
@@ -166,7 +171,7 @@
       },
       "message": "`nullok` set in /etc/pam.d/login",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -188,6 +193,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "PAM_005",
         "title": "Ensure PAM service `passwd` remembers at least 5 previous passwords",
@@ -202,7 +208,7 @@
       },
       "message": "`remember=2` < 5",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -224,6 +230,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "PAM_015",
         "title": "Ensure PAM service `su` has rule `auth required pam_wheel use_uid`",
@@ -238,7 +245,7 @@
       },
       "message": "no `use_uid` flag on `pam_wheel`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -260,6 +267,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "PAM_024",
         "title": "Ensure PAM service `login` locks accounts after repeated failures with `pam_faillock`",
@@ -274,7 +282,7 @@
       },
       "message": "no `authfail` flag on `pam_faillock`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -296,6 +304,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "PAM_030",
         "title": "Ensure PAM service `login` has rule `auth optional pam_faildelay` with `delay` >= 4000000",
@@ -310,7 +319,7 @@
       },
       "message": "`delay=1000000` < 4000000",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -338,7 +347,7 @@
     "fail_informational": 0
   },
   "metadata": {
-    "version": "1.7.0",
+    "version": "1.9.0",
     "product": {
       "name": "raudit",
       "version": ""

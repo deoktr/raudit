@@ -8,6 +8,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_001",
         "title": "Ensure `/etc/gshadow` has no usable group password",
@@ -21,7 +22,7 @@
         "status": "Pass"
       },
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -43,6 +44,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_002",
         "title": "Ensure no group has a password set",
@@ -56,7 +58,7 @@
         "status": "Pass"
       },
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -78,6 +80,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_003",
         "title": "Ensure that only root has GID 0",
@@ -91,7 +94,7 @@
         "status": "Pass"
       },
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -113,6 +116,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_004",
         "title": "Ensure no duplicate GIDs exist",
@@ -126,7 +130,7 @@
         "status": "Pass"
       },
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -148,6 +152,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_005",
         "title": "Ensure no duplicate group names exist",
@@ -161,7 +166,7 @@
         "status": "Pass"
       },
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -183,6 +188,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_006",
         "title": "Ensure `shadow` group is empty",
@@ -197,7 +203,7 @@
         "status": "Pass"
       },
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -219,6 +225,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_100",
         "title": "Ensure `/etc/group` file owner is `root:root`",
@@ -232,7 +239,7 @@
         "status": "Pass"
       },
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -254,6 +261,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_101",
         "title": "Ensure `/etc/group` file permissions are `644`",
@@ -267,7 +275,7 @@
         "status": "Pass"
       },
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -289,6 +297,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_102",
         "title": "Ensure `/etc/gshadow` file owner is `root:root` or file is missing",
@@ -302,7 +311,7 @@
         "status": "Pass"
       },
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -324,6 +333,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_103",
         "title": "Ensure `/etc/gshadow` file permissions are set or file is missing",
@@ -337,7 +347,7 @@
         "status": "Pass"
       },
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -359,6 +369,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_104",
         "title": "Ensure `/etc/gshadow-` file owner is `root:root` or file is missing",
@@ -373,7 +384,7 @@
       },
       "message": "file missing",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -395,6 +406,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_105",
         "title": "Ensure `/etc/gshadow-` file permissions are set or file is missing",
@@ -409,7 +421,7 @@
       },
       "message": "file missing",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -437,7 +449,7 @@
     "fail_informational": 0
   },
   "metadata": {
-    "version": "1.7.0",
+    "version": "1.9.0",
     "product": {
       "name": "raudit",
       "version": ""

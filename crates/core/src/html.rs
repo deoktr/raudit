@@ -317,6 +317,17 @@ const SCRIPT: &str = r#"
 })();
 "#;
 
+/// Reporter of the event.
+#[derive(Debug, Clone, Default, Deserialize)]
+pub struct HtmlReporter {
+    /// Reporter name.
+    #[serde(default)]
+    pub name: String,
+    /// Reporter hostname.
+    #[serde(default)]
+    pub hostname: String,
+}
+
 /// Host metadata, extended with the hostname and audit details of raudit.
 #[derive(Debug, Clone, Default, Deserialize)]
 pub struct HtmlMetadata {
@@ -326,6 +337,9 @@ pub struct HtmlMetadata {
     /// Product that produced the findings.
     #[serde(default)]
     pub product: HtmlProduct,
+    /// Entity that reported the findings.
+    #[serde(default)]
+    pub reporter: HtmlReporter,
     /// Hostname extension, absent from older reports.
     #[serde(default)]
     pub host: Option<String>,
@@ -338,6 +352,23 @@ pub struct HtmlMetadata {
     /// Audit duration in milliseconds.
     #[serde(default)]
     pub elapsed: Option<i64>,
+    /// User that started the audit.
+    #[serde(default)]
+    pub username: Option<String>,
+}
+
+/// Audit execution details, stored outside the OCSF metadata object.
+#[derive(Debug, Clone, Default, Deserialize)]
+pub struct HtmlAudit {
+    /// Audit start time in epoch milliseconds.
+    #[serde(default)]
+    pub start_time: Option<i64>,
+    /// Audit end time in epoch milliseconds.
+    #[serde(default)]
+    pub end_time: Option<i64>,
+    /// Audit duration in milliseconds.
+    #[serde(default)]
+    pub duration: Option<i64>,
     /// User that started the audit.
     #[serde(default)]
     pub username: Option<String>,
@@ -469,6 +500,9 @@ pub struct HtmlReport {
     pub stats: HtmlStats,
     /// Report metadata.
     pub metadata: HtmlMetadata,
+    /// Audit execution details, absent from older reports.
+    #[serde(default)]
+    pub audit: Option<HtmlAudit>,
     /// File the report was read from, not part of the JSON.
     #[serde(skip)]
     pub source: Option<String>,
@@ -477,7 +511,40 @@ pub struct HtmlReport {
 impl HtmlReport {
     /// Parse an OCSF JSON report produced by `raudit --json`.
     pub fn from_json(input: &str) -> Result<Self, String> {
-        serde_json::from_str(input).map_err(|err| err.to_string())
+        let mut report: Self = serde_json::from_str(input).map_err(|err| err.to_string())?;
+        report.normalize_audit();
+        Ok(report)
+    }
+
+    /// Merge the audit object and reporter hostname into the metadata fields.
+    ///
+    /// Older reports store the audit details directly in the metadata object
+    /// and the hostname in a custom `metadata.host` attribute.
+    fn normalize_audit(&mut self) {
+        if self
+            .metadata
+            .host
+            .as_deref()
+            .is_none_or(|host| host.is_empty())
+        {
+            let hostname = self.metadata.reporter.hostname.trim().to_string();
+            if !hostname.is_empty() {
+                self.metadata.host = Some(hostname);
+            }
+        }
+
+        let Some(audit) = &self.audit else {
+            return;
+        };
+
+        self.metadata.start_time = self.metadata.start_time.or(audit.start_time);
+        self.metadata.end_time = self.metadata.end_time.or(audit.end_time);
+        self.metadata.elapsed = self.metadata.elapsed.or(audit.duration);
+        self.metadata.username = self
+            .metadata
+            .username
+            .clone()
+            .or_else(|| audit.username.clone());
     }
 
     /// Build a report from the checks currently registered and executed.
@@ -488,18 +555,27 @@ impl HtmlReport {
 
     /// Convert an in-memory OCSF report.
     pub fn from_ocsf(report: ocsf::OcsfReport) -> Self {
-        let base = report.metadata.base;
+        let reporter = report
+            .metadata
+            .reporter
+            .map(|reporter| HtmlReporter {
+                name: reporter.name,
+                hostname: reporter.hostname,
+            })
+            .unwrap_or_default();
+        let host = Some(reporter.hostname.clone()).filter(|host| !host.is_empty());
         let metadata = HtmlMetadata {
-            version: base.version.to_string(),
+            version: report.metadata.version.to_string(),
             product: HtmlProduct {
-                name: base.product.name.to_string(),
-                version: base.product.version,
+                name: report.metadata.product.name.to_string(),
+                version: report.metadata.product.version,
             },
-            host: Some(base.host).filter(|host| !host.is_empty()),
-            start_time: Some(report.metadata.start_time),
-            end_time: Some(report.metadata.end_time),
-            elapsed: Some(report.metadata.elapsed),
-            username: Some(report.metadata.username),
+            reporter,
+            host,
+            start_time: Some(report.audit.start_time),
+            end_time: Some(report.audit.end_time),
+            elapsed: Some(report.audit.duration),
+            username: Some(report.audit.username),
         };
         let host = metadata.host.clone();
         let findings = report.findings.into_iter().map(HtmlFinding::from).collect();
@@ -510,6 +586,7 @@ impl HtmlReport {
             findings,
             stats,
             metadata,
+            audit: None,
             source: None,
         }
     }
@@ -1256,17 +1333,19 @@ mod tests {
                 fail_informational: 0,
             },
             metadata: HtmlMetadata {
-                version: "1.7.0".to_string(),
+                version: "1.9.0".to_string(),
                 product: HtmlProduct {
                     name: "raudit".to_string(),
                     version: "0.39.0".to_string(),
                 },
+                reporter: HtmlReporter::default(),
                 host: Some(host.to_string()),
                 start_time: Some(1_700_000_000_000),
                 end_time: Some(1_700_000_001_250),
                 elapsed: Some(1_250),
                 username: Some("tester".to_string()),
             },
+            audit: None,
             source: None,
         }
     }
@@ -1299,7 +1378,7 @@ mod tests {
     fn test_parse_requires_core_fields() {
         assert!(HtmlReport::from_json(r#"{"findings":[]}"#).is_err());
         assert!(
-            HtmlReport::from_json(r#"{"findings":[],"stats":{},"metadata":{"version":"1.7.0"}}"#)
+            HtmlReport::from_json(r#"{"findings":[],"stats":{},"metadata":{"version":"1.9.0"}}"#)
                 .is_ok()
         );
     }
@@ -1309,12 +1388,61 @@ mod tests {
         let json = r#"{
             "findings": [],
             "stats": {"total": 0},
-            "metadata": {"version": "1.7.0", "product": {"name": "raudit", "version": "0.1.0"}}
+            "metadata": {"version": "1.9.0", "product": {"name": "raudit", "version": "0.1.0"}}
         }"#;
         let mut report = HtmlReport::from_json(json).unwrap();
         assert!(report.hostname().is_none());
         report.ensure_host("legacy-host");
         assert_eq!(report.hostname(), Some("legacy-host"));
+    }
+
+    #[test]
+    fn test_parse_reporter_and_audit() {
+        let json = r#"{
+            "findings": [],
+            "stats": {"total": 0},
+            "metadata": {
+                "version": "1.9.0",
+                "product": {"name": "raudit", "version": "0.1.0"},
+                "reporter": {"name": "host-one", "hostname": "host-one"}
+            },
+            "audit": {
+                "start_time": 1700000000000,
+                "end_time": 1700000001250,
+                "duration": 1250,
+                "username": "tester"
+            }
+        }"#;
+        let report = HtmlReport::from_json(json).unwrap();
+
+        assert_eq!(report.hostname(), Some("host-one"));
+        assert_eq!(report.metadata.start_time, Some(1_700_000_000_000));
+        assert_eq!(report.metadata.end_time, Some(1_700_000_001_250));
+        assert_eq!(report.metadata.elapsed, Some(1_250));
+        assert_eq!(report.metadata.username.as_deref(), Some("tester"));
+    }
+
+    #[test]
+    fn test_parse_legacy_metadata_fields() {
+        let json = r#"{
+            "findings": [],
+            "stats": {"total": 0},
+            "metadata": {
+                "version": "1.9.0",
+                "product": {"name": "raudit", "version": "0.1.0"},
+                "host": "host-one",
+                "start_time": 1700000000000,
+                "end_time": 1700000001250,
+                "elapsed": 1250,
+                "username": "tester"
+            }
+        }"#;
+        let report = HtmlReport::from_json(json).unwrap();
+
+        assert_eq!(report.hostname(), Some("host-one"));
+        assert_eq!(report.metadata.start_time, Some(1_700_000_000_000));
+        assert_eq!(report.metadata.elapsed, Some(1_250));
+        assert_eq!(report.metadata.username.as_deref(), Some("tester"));
     }
 
     #[test]

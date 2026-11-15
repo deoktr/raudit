@@ -8,6 +8,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CAV_001",
         "title": "Ensure ClamAV is installed",
@@ -22,7 +23,7 @@
       },
       "message": "clamscan bin was not found",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -50,7 +51,7 @@
     "fail_informational": 0
   },
   "metadata": {
-    "version": "1.7.0",
+    "version": "1.9.0",
     "product": {
       "name": "raudit",
       "version": ""

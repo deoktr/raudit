@@ -8,6 +8,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "APT_103",
         "title": "Ensure all /etc/apt/sources.list.d/ files are owned by root",
@@ -22,7 +23,7 @@
       },
       "message": "file: `/etc/apt/sources.list.d/ubuntu.sources`: wanted `0:0` got `65534:65534`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -44,6 +45,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "APT_107",
         "title": "Ensure all /etc/apt/apt.conf.d/ files are owned by root",
@@ -56,9 +58,9 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "file: `/etc/apt/apt.conf.d/docker-clean`: wanted `0:0` got `65534:65534`",
+      "message": "file: `/etc/apt/apt.conf.d/01-vendor-ubuntu`: wanted `0:0` got `65534:65534`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -80,6 +82,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_003",
         "title": "Ensure `/etc/cron.d` directory is owned by root",
@@ -94,7 +97,7 @@
       },
       "message": "wanted `0:0` got `0:65534`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -116,6 +119,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_004",
         "title": "Ensure `/etc/cron.d` directory permissions is 755 or stricter",
@@ -130,7 +134,7 @@
       },
       "message": "wanted `755` or stricter got `777`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -152,6 +156,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_005",
         "title": "Ensure all `/etc/cron.d/` files have 644 permissions or stricter",
@@ -166,7 +171,7 @@
       },
       "message": "file `/etc/cron.d/e2scrub_all` permission: wanted `644` or stricter got `666`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -188,6 +193,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_006",
         "title": "Ensure all `/etc/cron.d/` files are owned by root",
@@ -200,9 +206,9 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "file: `/etc/cron.d/e2scrub_all`: wanted `0:0` got `0:65534`",
+      "message": "file: `/etc/cron.d/.placeholder`: wanted `0:0` got `0:65534`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -224,6 +230,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_007",
         "title": "Ensure `/etc/cron.hourly` directory is owned by root",
@@ -238,7 +245,7 @@
       },
       "message": "wanted `0:0` got `0:65534`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -260,6 +267,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_008",
         "title": "Ensure `/etc/cron.hourly` directory permissions is 755 or stricter",
@@ -274,7 +282,7 @@
       },
       "message": "wanted `755` or stricter got `777`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -296,10 +304,11 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_009",
-        "title": "Ensure all `/etc/cron.hourly/` files are not group or world writable",
-        "desc": "The periodic scripts are executed by `run-parts` with root privileges, the execute bit is required, the security requirement is that only root can write them, a group or world writable script is a privilege escalation."
+        "title": "Ensure all `/etc/cron.hourly/` files have 644 permissions",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
       },
       "compliance": {
         "standards": [
@@ -308,16 +317,16 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "file `/etc/cron.hourly/raudit-e2e` is group or world writable: `666`",
+      "message": "file `/etc/cron.hourly/raudit-e2e` permission: wanted `644` got `666`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
         }
       },
       "remediation": {
-        "desc": "`chmod g-w,o-w /etc/cron.hourly/*`"
+        "desc": "`chmod 644 /etc/cron.hourly/*`"
       },
       "severity_id": 4,
       "severity": "High",
@@ -332,6 +341,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_010",
         "title": "Ensure all `/etc/cron.hourly/` files are owned by root",
@@ -346,7 +356,7 @@
       },
       "message": "file: `/etc/cron.hourly/.placeholder`: wanted `0:0` got `0:65534`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -368,6 +378,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_011",
         "title": "Ensure `/etc/cron.daily` directory is owned by root",
@@ -382,7 +393,7 @@
       },
       "message": "wanted `0:0` got `0:65534`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -404,6 +415,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_012",
         "title": "Ensure `/etc/cron.daily` directory permissions is 755 or stricter",
@@ -418,7 +430,7 @@
       },
       "message": "wanted `755` or stricter got `777`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -440,10 +452,11 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_013",
-        "title": "Ensure all `/etc/cron.daily/` files are not group or world writable",
-        "desc": "The periodic scripts are executed by `run-parts` with root privileges, the execute bit is required, the security requirement is that only root can write them, a group or world writable script is a privilege escalation."
+        "title": "Ensure all `/etc/cron.daily/` files have 644 permissions",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
       },
       "compliance": {
         "standards": [
@@ -452,16 +465,16 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "file `/etc/cron.daily/dpkg` is group or world writable: `666`",
+      "message": "file `/etc/cron.daily/apt-compat` permission: wanted `644` got `666`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
         }
       },
       "remediation": {
-        "desc": "`chmod g-w,o-w /etc/cron.daily/*`"
+        "desc": "`chmod 644 /etc/cron.daily/*`"
       },
       "severity_id": 4,
       "severity": "High",
@@ -476,6 +489,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_014",
         "title": "Ensure all `/etc/cron.daily/` files are owned by root",
@@ -488,9 +502,9 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "file: `/etc/cron.daily/dpkg`: wanted `0:0` got `0:65534`",
+      "message": "file: `/etc/cron.daily/.placeholder`: wanted `0:0` got `0:65534`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -512,6 +526,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_015",
         "title": "Ensure `/etc/cron.weekly` directory is owned by root",
@@ -526,7 +541,7 @@
       },
       "message": "wanted `0:0` got `0:65534`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -548,6 +563,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_016",
         "title": "Ensure `/etc/cron.weekly` directory permissions is 755 or stricter",
@@ -562,7 +578,7 @@
       },
       "message": "wanted `755` or stricter got `777`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -584,10 +600,11 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_017",
-        "title": "Ensure all `/etc/cron.weekly/` files are not group or world writable",
-        "desc": "The periodic scripts are executed by `run-parts` with root privileges, the execute bit is required, the security requirement is that only root can write them, a group or world writable script is a privilege escalation."
+        "title": "Ensure all `/etc/cron.weekly/` files have 644 permissions",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
       },
       "compliance": {
         "standards": [
@@ -596,16 +613,16 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "file `/etc/cron.weekly/raudit-e2e` is group or world writable: `666`",
+      "message": "file `/etc/cron.weekly/raudit-e2e` permission: wanted `644` got `666`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
         }
       },
       "remediation": {
-        "desc": "`chmod g-w,o-w /etc/cron.weekly/*`"
+        "desc": "`chmod 644 /etc/cron.weekly/*`"
       },
       "severity_id": 4,
       "severity": "High",
@@ -620,6 +637,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_018",
         "title": "Ensure all `/etc/cron.weekly/` files are owned by root",
@@ -634,7 +652,7 @@
       },
       "message": "file: `/etc/cron.weekly/.placeholder`: wanted `0:0` got `0:65534`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -656,6 +674,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_019",
         "title": "Ensure `/etc/cron.monthly` directory is owned by root",
@@ -670,7 +689,7 @@
       },
       "message": "wanted `0:0` got `0:65534`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -692,6 +711,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_020",
         "title": "Ensure `/etc/cron.monthly` directory permissions is 755 or stricter",
@@ -706,7 +726,7 @@
       },
       "message": "wanted `755` or stricter got `777`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -728,10 +748,11 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_021",
-        "title": "Ensure all `/etc/cron.monthly/` files are not group or world writable",
-        "desc": "The periodic scripts are executed by `run-parts` with root privileges, the execute bit is required, the security requirement is that only root can write them, a group or world writable script is a privilege escalation."
+        "title": "Ensure all `/etc/cron.monthly/` files have 644 permissions",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
       },
       "compliance": {
         "standards": [
@@ -740,16 +761,16 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "file `/etc/cron.monthly/raudit-e2e` is group or world writable: `666`",
+      "message": "file `/etc/cron.monthly/raudit-e2e` permission: wanted `644` got `666`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
         }
       },
       "remediation": {
-        "desc": "`chmod g-w,o-w /etc/cron.monthly/*`"
+        "desc": "`chmod 644 /etc/cron.monthly/*`"
       },
       "severity_id": 4,
       "severity": "High",
@@ -764,6 +785,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_022",
         "title": "Ensure all `/etc/cron.monthly/` files are owned by root",
@@ -778,7 +800,7 @@
       },
       "message": "file: `/etc/cron.monthly/.placeholder`: wanted `0:0` got `0:65534`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -800,6 +822,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_023",
         "title": "Ensure `/etc/cron.yearly` directory is owned by root",
@@ -814,7 +837,7 @@
       },
       "message": "wanted `0:0` got `0:65534`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -836,6 +859,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_024",
         "title": "Ensure `/etc/cron.yearly` directory permissions is 755 or stricter",
@@ -850,7 +874,7 @@
       },
       "message": "wanted `755` or stricter got `777`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -872,10 +896,11 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_025",
-        "title": "Ensure all `/etc/cron.yearly/` files are not group or world writable",
-        "desc": "The periodic scripts are executed by `run-parts` with root privileges, the execute bit is required, the security requirement is that only root can write them, a group or world writable script is a privilege escalation."
+        "title": "Ensure all `/etc/cron.yearly/` files have 644 permissions",
+        "desc": "The cron service file must be configured to prevent unauthorized users from modifying scheduled task execution, which could lead to privilege escalation."
       },
       "compliance": {
         "standards": [
@@ -884,16 +909,16 @@
         "status_id": 3,
         "status": "Fail"
       },
-      "message": "file `/etc/cron.yearly/raudit-e2e` is group or world writable: `666`",
+      "message": "file `/etc/cron.yearly/raudit-e2e` permission: wanted `644` got `666`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
         }
       },
       "remediation": {
-        "desc": "`chmod g-w,o-w /etc/cron.yearly/*`"
+        "desc": "`chmod 644 /etc/cron.yearly/*`"
       },
       "severity_id": 4,
       "severity": "High",
@@ -908,6 +933,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_026",
         "title": "Ensure all `/etc/cron.yearly/` files are owned by root",
@@ -922,7 +948,7 @@
       },
       "message": "file: `/etc/cron.yearly/.placeholder`: wanted `0:0` got `0:65534`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -944,6 +970,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_027",
         "title": "Ensure `/etc/crontab` is owned by root",
@@ -958,7 +985,7 @@
       },
       "message": "wanted `0:0` got `65534:65534`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -980,6 +1007,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "CRN_028",
         "title": "Ensure `/etc/crontab` has permissions 644 or stricter",
@@ -994,7 +1022,7 @@
       },
       "message": "wanted `644` or stricter got `666`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -1022,7 +1050,7 @@
     "fail_informational": 0
   },
   "metadata": {
-    "version": "1.7.0",
+    "version": "1.9.0",
     "product": {
       "name": "raudit",
       "version": ""

@@ -276,6 +276,11 @@ def boot_qemu(disk_img, cidata_iso, ssh_port, log_file):
         "-cpu",
         "max",
         "-nographic",
+        # no emulated VGA adapter: its DRM framebuffer triggers a benign kernel
+        # warning in the guest, and the hardened profile sets
+        # kernel.panic_on_warn=1, which turns that warning into a VM panic
+        "-vga",
+        "none",
         "-no-reboot",
     ] + kvm_flag
 
@@ -485,14 +490,42 @@ def run_setup_script(distro, ssh_port, profile, timeout=TIMEOUT_SETUP):
     return True
 
 
+def musl_target() -> str:
+    """Return the static musl target triple for the host arch."""
+
+    machine = os.uname().machine
+    targets = {
+        "x86_64": "x86_64-unknown-linux-musl",
+        "aarch64": "aarch64-unknown-linux-musl",
+    }
+    if machine not in targets:
+        raise RuntimeError(f"unsupported architecture for musl build: {machine}")
+    return targets[machine]
+
+
 def build_raudit():
-    raudit_bin = os.path.join(PROJECT_DIR, "target", "release", "raudit")
+    """Build (or locate) the static musl raudit binary for the VMs.
+
+    The host build depends on the libc and toolchain of the machine running the
+    tests: a glibc binary linked against a newer libc, or a dynamically linked
+    musl binary, fails inside the VM with ``cannot execute ...: No such file or
+    directory``. Build the musl target exactly like the release CI instead, so
+    one fully static binary runs unchanged in every guest.
+    """
+
+    target = musl_target()
+    raudit_bin = os.path.join(PROJECT_DIR, "target", target, "release", "raudit")
     if os.path.exists(raudit_bin):
-        log(f"raudit binary exists: {raudit_bin}")
+        log(f"raudit musl binary exists: {raudit_bin}")
         return raudit_bin
 
-    log("building raudit...")
-    subprocess.check_call(["cargo", "build", "--release"], cwd=PROJECT_DIR)
+    log(f"building raudit for {target}...")
+    if shutil.which("rustup"):
+        subprocess.check_call(["rustup", "target", "add", target], cwd=PROJECT_DIR)
+    subprocess.check_call(
+        ["cargo", "build", "--release", "--target", target],
+        cwd=PROJECT_DIR,
+    )
     return raudit_bin
 
 
@@ -533,6 +566,11 @@ def run_raudit(distro, ssh_port, output_path, timeout=TIMEOUT_RAUDIT):
     if not stdout:
         log_err("raudit produced no output")
         log_err(f"stderr: {result.stderr[-2000:]}")
+        if "cannot execute" in result.stderr:
+            log_err(
+                "the uploaded raudit binary could not run in the guest: "
+                "build it for the static musl target (just e2e_build)"
+            )
         return False
 
     json_start = stdout.find("{")

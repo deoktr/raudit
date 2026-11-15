@@ -8,6 +8,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_001",
         "title": "Ensure that root is the only user with UID 0",
@@ -22,7 +23,7 @@
       },
       "message": "toor",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -44,6 +45,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_002",
         "title": "Ensure no duplicate user names exist",
@@ -58,7 +60,7 @@
       },
       "message": "dupuser, dupuser",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -80,6 +82,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_003",
         "title": "Ensure no duplicate UIDs exist",
@@ -94,7 +97,7 @@
       },
       "message": "root, toor",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -116,6 +119,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_004",
         "title": "Ensure that `/etc/securetty` is empty",
@@ -130,7 +134,7 @@
       },
       "message": "file not empty",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -152,6 +156,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_005",
         "title": "Ensure no login is available on system accounts",
@@ -166,7 +171,7 @@
       },
       "message": "bin",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -188,6 +193,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_006",
         "title": "Ensure all passwords are hashed with yescrypt",
@@ -202,7 +208,7 @@
       },
       "message": "root, nopass",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -224,6 +230,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_007",
         "title": "Ensure no user account is expired, delete them",
@@ -238,7 +245,7 @@
       },
       "message": "expired",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -260,6 +267,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_008",
         "title": "Ensure that all home directories exist",
@@ -274,7 +282,7 @@
       },
       "message": "ghost",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -296,6 +304,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_009",
         "title": "Ensure `/etc/shadow` password fields are not empty",
@@ -310,7 +319,7 @@
       },
       "message": "nopass",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -332,6 +341,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_010",
         "title": "Ensure `/etc/passwd` password fields are not empty",
@@ -346,7 +356,7 @@
       },
       "message": "nopass",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -368,6 +378,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_011",
         "title": "Ensure accounts in `/etc/passwd` use shadowed passwords",
@@ -382,7 +393,7 @@
       },
       "message": "nopass",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -404,6 +415,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_106",
         "title": "Ensure `/etc/passwd` file permissions are `644`",
@@ -418,7 +430,7 @@
       },
       "message": "wanted `644` got `666`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -440,6 +452,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_107",
         "title": "Ensure `/etc/passwd` file owner is `root:root` or file is missing",
@@ -454,7 +467,7 @@
       },
       "message": "wanted `0:0` got `65534:65533`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -476,6 +489,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_100",
         "title": "Ensure `/etc/shadow` file owner is correct",
@@ -490,7 +504,7 @@
       },
       "message": "wanted `0:0` got `0:65533`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -512,6 +526,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_101",
         "title": "Ensure `/etc/shadow` file permissions are correct",
@@ -526,7 +541,7 @@
       },
       "message": "wanted `600` got `644`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -548,6 +563,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_102",
         "title": "Ensure `/etc/shadow-` file owner is correct or file is missing",
@@ -562,7 +578,7 @@
       },
       "message": "wanted `0:0` got `65534:65533`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -584,6 +600,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_103",
         "title": "Ensure `/etc/shadow-` file permissions are correct or file is missing",
@@ -598,7 +615,7 @@
       },
       "message": "wanted `600` got `666`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -620,6 +637,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_104",
         "title": "Ensure `/etc/security/opasswd` file owner is `root:root` or file is missing",
@@ -634,7 +652,7 @@
       },
       "message": "wanted `0:0` got `65534:65533`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -656,6 +674,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_105",
         "title": "Ensure `/etc/security/opasswd` file permissions are `600` or file is missing",
@@ -670,7 +689,7 @@
       },
       "message": "wanted `600` got `666`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -692,6 +711,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_012",
         "title": "Ensure no users have `.rhosts` or `.shosts` files",
@@ -706,7 +726,7 @@
       },
       "message": "audit:/home/audit/.rhosts",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -728,6 +748,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_013",
         "title": "Ensure all users' home directories are owned by their respective user",
@@ -742,7 +763,7 @@
       },
       "message": "`audit`: uid 0",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -764,6 +785,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_014",
         "title": "Ensure all users' home directories have permissions 750 or stricter",
@@ -778,7 +800,7 @@
       },
       "message": "audit: 777",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -800,6 +822,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_015",
         "title": "Ensure no users have world-writable files in their home directory",
@@ -814,7 +837,7 @@
       },
       "message": "/home/audit/notes.txt",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -836,6 +859,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_016",
         "title": "Ensure root account is disabled",
@@ -850,7 +874,7 @@
       },
       "message": "root account is enabled",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -872,6 +896,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_017",
         "title": "Ensure account is disabled when password is expired",
@@ -886,7 +911,7 @@
       },
       "message": "audit, dupuser, dupuser, ghost, nopass, expired",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -908,6 +933,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_018",
         "title": "Ensure account is disabled when password is expired by default",
@@ -922,7 +948,7 @@
       },
       "message": "INACTIVE=-1",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -950,7 +976,7 @@
     "fail_informational": 0
   },
   "metadata": {
-    "version": "1.7.0",
+    "version": "1.9.0",
     "product": {
       "name": "raudit",
       "version": ""

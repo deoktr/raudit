@@ -1,18 +1,17 @@
 [package]
-name = "raudit-modules"
-description = "Host data collection modules of rAudit"
+name = "raudit-core"
+description = "Core check engine of rAudit"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
-homepage.workspace = true
 repository.workspace = true
 
 [dependencies]
-raudit-core.workspace = true
-
-flate2.workspace = true
-regex.workspace = true
+clap.workspace = true
+once_cell.workspace = true
+rayon.workspace = true
+serde.workspace = true
 serde_json.workspace = true
 
 [lints]

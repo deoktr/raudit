@@ -8,6 +8,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_001",
         "title": "Ensure `/etc/gshadow` has no usable group password",
@@ -22,7 +23,7 @@
       },
       "message": "admins",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -44,6 +45,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_002",
         "title": "Ensure no group has a password set",
@@ -58,7 +60,7 @@
       },
       "message": "admins",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -80,6 +82,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_003",
         "title": "Ensure that only root has GID 0",
@@ -94,7 +97,7 @@
       },
       "message": "toor",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -116,6 +119,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_004",
         "title": "Ensure no duplicate GIDs exist",
@@ -130,7 +134,7 @@
       },
       "message": "root, toor, audit, devs",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -152,6 +156,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_005",
         "title": "Ensure no duplicate group names exist",
@@ -166,7 +171,7 @@
       },
       "message": "audit, audit",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -188,6 +193,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_006",
         "title": "Ensure `shadow` group is empty",
@@ -203,7 +209,7 @@
       },
       "message": "audit",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -225,6 +231,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_100",
         "title": "Ensure `/etc/group` file owner is `root:root`",
@@ -239,7 +246,7 @@
       },
       "message": "wanted `0:0` got `0:65534`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -261,6 +268,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_101",
         "title": "Ensure `/etc/group` file permissions are `644`",
@@ -275,7 +283,7 @@
       },
       "message": "wanted `644` got `664`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -297,6 +305,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_102",
         "title": "Ensure `/etc/gshadow` file owner is `root:root` or file is missing",
@@ -311,7 +320,7 @@
       },
       "message": "wanted `0:42` got `0:0`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -333,6 +342,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_103",
         "title": "Ensure `/etc/gshadow` file permissions are set or file is missing",
@@ -347,7 +357,7 @@
       },
       "message": "wanted `640` got `644`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -369,6 +379,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_104",
         "title": "Ensure `/etc/gshadow-` file owner is `root:root` or file is missing",
@@ -383,7 +394,7 @@
       },
       "message": "wanted `0:42` got `65534:65534`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -405,6 +416,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "GRP_105",
         "title": "Ensure `/etc/gshadow-` file permissions are set or file is missing",
@@ -419,7 +431,7 @@
       },
       "message": "wanted `640` got `666`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -447,7 +459,7 @@
     "fail_informational": 0
   },
   "metadata": {
-    "version": "1.7.0",
+    "version": "1.9.0",
     "product": {
       "name": "raudit",
       "version": ""

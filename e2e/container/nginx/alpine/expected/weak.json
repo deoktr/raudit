@@ -8,6 +8,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "NGX_001",
         "title": "Ensure nginx server_tokens is set to off",
@@ -22,7 +23,7 @@
       },
       "message": "`server_tokens` found with value `on`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -44,6 +45,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "NGX_002",
         "title": "Ensure nginx X-Frame-Options header is set",
@@ -58,7 +60,7 @@
       },
       "message": "header `X-Frame-Options` not applied in `server`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -80,6 +82,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "NGX_003",
         "title": "Ensure nginx X-Content-Type-Options header is set",
@@ -94,7 +97,7 @@
       },
       "message": "header `X-Content-Type-Options` not applied in `server`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -116,6 +119,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "NGX_005",
         "title": "Ensure nginx Strict-Transport-Security (HSTS) header is set",
@@ -130,7 +134,7 @@
       },
       "message": "header `Strict-Transport-Security` not applied in `server`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -152,6 +156,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "NGX_006",
         "title": "Ensure nginx HTTP to HTTPS redirect is configured",
@@ -166,7 +171,7 @@
       },
       "message": "server listening on port 80 without an HTTPS redirect: `_`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -194,7 +199,7 @@
     "fail_informational": 0
   },
   "metadata": {
-    "version": "1.7.0",
+    "version": "1.9.0",
     "product": {
       "name": "raudit",
       "version": ""

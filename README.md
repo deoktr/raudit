@@ -10,7 +10,7 @@ Goals:
 - Easy to maintain.
 - Work for both servers and workstations.
 - Human readable,
-  [OCSF Compliance Finding](https://schema.ocsf.io/1.7.0/classes/compliance_finding)
+  [OCSF Compliance Finding](https://schema.ocsf.io/1.9.0/classes/compliance_finding)
   JSON, or HTML output.
 
 ## Install
@@ -98,7 +98,7 @@ raudit --tags workstation --tags-exclude slow+server
 ```
 
 Generate JSON report following
-[OCSF Compliance Finding (class 2003, schema 1.7.0)](https://schema.ocsf.io/1.7.0/classes/compliance_finding):
+[OCSF Compliance Finding (class 2003, schema 1.9.0)](https://schema.ocsf.io/1.9.0/classes/compliance_finding):
 
 ```bash
 raudit --json > report.json
@@ -130,6 +130,7 @@ raudit --json --filters USR_001
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "USR_001",
         "title": "Ensure that root is the only user with UID 0",
@@ -143,13 +144,19 @@ raudit --json --filters USR_001
         "status": "Pass"
       },
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": "0.30.0"
-        },
-        "host": "workstation"
+        }
       },
+      "resources": [
+        {
+          "name": "workstation",
+          "hostname": "workstation",
+          "type": "host"
+        }
+      ],
       "severity_id": 5,
       "severity": "Critical",
       "status_id": 4,
@@ -170,22 +177,29 @@ raudit --json --filters USR_001
     "fail_informational": 0
   },
   "metadata": {
-    "version": "1.7.0",
+    "version": "1.9.0",
     "product": {
       "name": "raudit",
       "version": "0.30.0"
     },
-    "host": "workstation",
+    "reporter": {
+      "name": "workstation",
+      "hostname": "workstation"
+    }
+  },
+  "audit": {
     "start_time": 1773777067012,
     "end_time": 1773777068450,
-    "elapsed": 1438,
+    "duration": 1438,
     "username": "root"
   }
 }
 ```
 
-`start_time` and `end_time` are epoch milliseconds, `elapsed` is the audit
+`start_time` and `end_time` are epoch milliseconds, `duration` is the audit
 duration in milliseconds, and `username` is the user that started the audit.
+The audit details live outside the OCSF `metadata` object, which only contains
+valid OCSF metadata attributes.
 
 </details>
 
@@ -204,10 +218,11 @@ detailed section per host:
 raudit --convert host1.json host2.json -o report.html
 ```
 
-The hostname collected by the audit is stored in the OCSF metadata of each
-report, and is used to label the sections and filter the findings. The same
-metadata records the audit start and end time, its duration, and the user that
-started it, which the HTML report shows for each host.
+The hostname collected by the audit is stored in the OCSF `metadata.reporter`
+object and in the affected resources of each finding, and is used to label the
+sections and filter the findings. The report `audit` object records the audit
+start and end time, its duration, and the user that started it, which the HTML
+report shows for each host.
 
 Usage `raudit -h`:
 
@@ -403,7 +418,6 @@ sudo aa-exec -p raudit -- ./target/release/raudit
 ## TODO
 
 - Add version based skips for every checks that would require it
-- Update JSON OCSF format
 - Give much more detailed logs of the error
 - Create custom parsers for complex configurations (sudo, nginx, etc.)
 - Give the user's the ability to specify config paths, with globing

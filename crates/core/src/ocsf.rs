@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-//! OCSF Compliance Finding (class 2003, schema 1.7.0) output types.
+//! OCSF Compliance Finding (class 2003, schema 1.9.0) output types.
 //!
 //! Provides serialization structs and conversion logic to transform raudit
 //! check results into OCSF-compliant Compliance Finding events.
@@ -24,6 +24,9 @@
 use crate::check::{Check, CheckState, ReportStats, Severity};
 use crate::utils;
 use serde::Serialize;
+
+/// OCSF schema version emitted in event metadata.
+pub const OCSF_VERSION: &str = "1.9.0";
 
 /// Known compliance framework tags and their OCSF standard names.
 const FRAMEWORK_TAGS: &[(&str, &str)] = &[("CIS", "CIS Benchmark"), ("STIG", "DISA STIG")];
@@ -37,32 +40,51 @@ pub struct OcsfProduct {
     pub version: String,
 }
 
-/// OCSF metadata containing schema version and product info.
+/// OCSF entity that reported the event.
+#[derive(Serialize, Clone)]
+pub struct OcsfReporter {
+    /// Reporter name.
+    pub name: String,
+    /// Hostname of the reporter, omitted when unknown.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub hostname: String,
+}
+
+/// OCSF metadata containing schema version, product and reporter info.
 #[derive(Serialize, Clone)]
 pub struct OcsfMetadata {
     /// OCSF schema version.
     pub version: &'static str,
     /// Product identification.
     pub product: OcsfProduct,
-    /// Hostname that produced the findings, omitted when unknown.
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub host: String,
+    /// Entity that reported the event, omitted from individual findings.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reporter: Option<OcsfReporter>,
 }
 
-/// Report-level metadata, extending the event metadata with audit details.
+/// Audit execution details, kept outside the OCSF metadata object.
 #[derive(Serialize)]
-pub struct OcsfReportMetadata {
-    /// Shared OCSF metadata.
-    #[serde(flatten)]
-    pub base: OcsfMetadata,
+pub struct OcsfAudit {
     /// Audit start time in epoch milliseconds.
     pub start_time: i64,
     /// Audit end time in epoch milliseconds.
     pub end_time: i64,
     /// Audit duration in milliseconds.
-    pub elapsed: i64,
+    pub duration: i64,
     /// User that started the audit.
     pub username: String,
+}
+
+/// OCSF resource affected by a finding.
+#[derive(Serialize, Clone)]
+pub struct OcsfResource {
+    /// Resource name.
+    pub name: String,
+    /// Hostname of the audited resource.
+    pub hostname: String,
+    /// Source-specific resource type.
+    #[serde(rename = "type")]
+    pub resource_type: &'static str,
 }
 
 /// OCSF finding identification details.
@@ -109,6 +131,8 @@ pub struct OcsfComplianceFinding {
     pub class_name: &'static str,
     /// Type identifier (class_uid * 100 + activity_id).
     pub type_uid: u32,
+    /// Human-readable type name.
+    pub type_name: &'static str,
     /// Finding identification details.
     pub finding_info: OcsfFindingInfo,
     /// Provides context to compliance findings.
@@ -121,6 +145,9 @@ pub struct OcsfComplianceFinding {
     /// Remediation guidance.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub remediation: Option<OcsfRemediation>,
+    /// Resources affected by the finding.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub resources: Vec<OcsfResource>,
     /// Severity numeric ID (1-5).
     pub severity_id: u8,
     /// Human-readable severity label.
@@ -140,8 +167,10 @@ pub struct OcsfReport {
     pub findings: Vec<OcsfComplianceFinding>,
     /// Aggregate statistics.
     pub stats: ReportStats,
-    /// Report-level metadata.
-    pub metadata: OcsfReportMetadata,
+    /// Report-level OCSF metadata.
+    pub metadata: OcsfMetadata,
+    /// Audit execution details.
+    pub audit: OcsfAudit,
 }
 
 /// Map a CheckState to OCSF (status_id, status label).
@@ -174,28 +203,34 @@ pub fn severity(severity: &Severity) -> (u8, String) {
 
 /// Build OCSF metadata with schema version and product info.
 pub fn build_metadata() -> OcsfMetadata {
-    build_metadata_with_host(&utils::hostname())
-}
-
-/// Build OCSF metadata carrying an explicit hostname.
-pub fn build_metadata_with_host(host: &str) -> OcsfMetadata {
     OcsfMetadata {
-        version: "1.7.0",
+        version: OCSF_VERSION,
         product: OcsfProduct {
             name: "raudit",
             version: env!("CARGO_PKG_VERSION").to_string(),
         },
-        host: host.to_string(),
+        reporter: None,
     }
 }
 
-/// Build report metadata with the audit interval and the user that ran it.
-pub fn build_report_metadata(host: &str, start_time: i64, end_time: i64) -> OcsfReportMetadata {
-    OcsfReportMetadata {
-        base: build_metadata_with_host(host),
+/// Build report metadata identifying the host that produced the findings.
+pub fn build_report_metadata(host: &str) -> OcsfMetadata {
+    let mut metadata = build_metadata();
+    if !host.is_empty() {
+        metadata.reporter = Some(OcsfReporter {
+            name: host.to_string(),
+            hostname: host.to_string(),
+        });
+    }
+    metadata
+}
+
+/// Build audit execution details with the audit interval and user.
+pub fn build_audit(start_time: i64, end_time: i64) -> OcsfAudit {
+    OcsfAudit {
         start_time,
         end_time,
-        elapsed: end_time.saturating_sub(start_time).max(0),
+        duration: end_time.saturating_sub(start_time).max(0),
         username: utils::username(),
     }
 }
@@ -219,10 +254,20 @@ pub fn check_to_finding(
     check: &Check,
     timestamp: i64,
     metadata: &OcsfMetadata,
+    host: &str,
 ) -> OcsfComplianceFinding {
     let (severity_id, severity) = severity(&check.severity);
     let (status_id, status) = finding_status(&check.state);
     let (compliance_status_id, compliance_status) = compliance_status(&check.state);
+    let resources = if host.is_empty() {
+        Vec::new()
+    } else {
+        vec![OcsfResource {
+            name: host.to_string(),
+            hostname: host.to_string(),
+            resource_type: "host",
+        }]
+    };
 
     OcsfComplianceFinding {
         activity_id: 1,
@@ -232,6 +277,7 @@ pub fn check_to_finding(
         class_uid: 2003,
         class_name: "Compliance Finding",
         type_uid: 200301,
+        type_name: "Compliance Finding: Create",
         finding_info: OcsfFindingInfo {
             uid: check.id.clone(),
             title: check.title.clone(),
@@ -245,6 +291,7 @@ pub fn check_to_finding(
         message: check.message.clone(),
         metadata: metadata.clone(),
         remediation: check.fix.clone().map(|f| OcsfRemediation { desc: f }),
+        resources,
         severity_id,
         severity,
         status_id,
@@ -266,16 +313,18 @@ pub fn build_ocsf_report_with_host(
     host: &str,
 ) -> OcsfReport {
     let end_time = utils::now_millis();
-    let metadata = build_report_metadata(host, timestamp, end_time);
-    let finding_metadata = build_metadata_with_host(host);
+    let metadata = build_report_metadata(host);
+    let audit = build_audit(timestamp, end_time);
+    let finding_metadata = build_metadata();
     let findings = checks
         .iter()
-        .map(|c| check_to_finding(c, timestamp, &finding_metadata))
+        .map(|c| check_to_finding(c, timestamp, &finding_metadata, host))
         .collect();
     OcsfReport {
         findings,
         stats,
         metadata,
+        audit,
     }
 }
 
@@ -306,10 +355,14 @@ mod tests {
         .with_fix("Apply the fix");
         check.run();
 
-        let metadata = build_metadata_with_host("test-host");
-        let finding = check_to_finding(&check, 1700000000000, &metadata);
+        let metadata = build_metadata();
+        let finding = check_to_finding(&check, 1700000000000, &metadata, "test-host");
 
-        assert_eq!(finding.metadata.host, "test-host");
+        assert_eq!(finding.type_name, "Compliance Finding: Create");
+        assert_eq!(finding.resources.len(), 1);
+        assert_eq!(finding.resources[0].name, "test-host");
+        assert_eq!(finding.resources[0].hostname, "test-host");
+        assert_eq!(finding.resources[0].resource_type, "host");
         assert_eq!(finding.severity_id, 4);
         assert_eq!(finding.severity, "High");
         assert_eq!(finding.status_id, 1);
@@ -347,14 +400,34 @@ mod tests {
         );
         check.run();
 
-        let metadata = build_metadata_with_host("test-host");
-        let finding = check_to_finding(&check, 1700000000000, &metadata);
+        let metadata = build_metadata();
+        let finding = check_to_finding(&check, 1700000000000, &metadata, "test-host");
 
         assert_eq!(finding.status_id, 4);
         assert_eq!(finding.status, "Resolved");
         assert!(finding.finding_info.desc.is_none());
         assert!(finding.remediation.is_none());
         assert!(finding.message.is_none());
+    }
+
+    #[test]
+    fn test_check_to_finding_without_host_omits_resources() {
+        let mut check = Check::new(
+            "TST_004",
+            "No host check",
+            Severity::Low,
+            vec![],
+            dummy_pass_check,
+            vec![],
+        );
+        check.run();
+
+        let metadata = build_metadata();
+        let finding = check_to_finding(&check, 1700000000000, &metadata, "");
+        let json = serde_json::to_string(&finding).unwrap();
+
+        assert!(finding.resources.is_empty());
+        assert!(!json.contains("\"resources\""));
     }
 
     #[test]
@@ -373,31 +446,51 @@ mod tests {
         let report = build_ocsf_report(&[check], stats, 1700000000000);
         let json = serde_json::to_string(&report).unwrap();
 
+        assert_eq!(report.metadata.version, OCSF_VERSION);
+        assert_eq!(report.findings[0].metadata.version, OCSF_VERSION);
+        assert!(json.contains("\"version\":\"1.9.0\""));
+        assert!(json.contains("\"type_name\":\"Compliance Finding: Create\""));
         assert!(json.contains("\"findings\""));
         assert!(json.contains("\"stats\""));
         assert!(json.contains("\"metadata\""));
+        assert!(json.contains("\"audit\""));
         assert!(json.contains("\"class_uid\":2003"));
         assert!(json.contains("\"start_time\":1700000000000"));
         assert!(json.contains("\"end_time\""));
-        assert!(json.contains("\"elapsed\""));
+        assert!(json.contains("\"duration\""));
         assert!(json.contains("\"username\""));
     }
 
     #[test]
-    fn test_build_report_metadata_audit_interval() {
-        let metadata = build_report_metadata("test-host", 1_700_000_000_000, 1_700_000_001_250);
+    fn test_build_report_metadata_reporter() {
+        let metadata = build_report_metadata("test-host");
+        let reporter = metadata.reporter.expect("reporter should be set");
 
-        assert_eq!(metadata.base.host, "test-host");
-        assert_eq!(metadata.start_time, 1_700_000_000_000);
-        assert_eq!(metadata.end_time, 1_700_000_001_250);
-        assert_eq!(metadata.elapsed, 1_250);
-        assert!(!metadata.username.is_empty());
+        assert_eq!(reporter.name, "test-host");
+        assert_eq!(reporter.hostname, "test-host");
     }
 
     #[test]
-    fn test_build_report_metadata_never_negative_elapsed() {
-        let metadata = build_report_metadata("test-host", 1_700_000_002_000, 1_700_000_001_000);
+    fn test_build_report_metadata_without_host_omits_reporter() {
+        let metadata = build_report_metadata("");
 
-        assert_eq!(metadata.elapsed, 0);
+        assert!(metadata.reporter.is_none());
+    }
+
+    #[test]
+    fn test_build_audit_interval() {
+        let audit = build_audit(1_700_000_000_000, 1_700_000_001_250);
+
+        assert_eq!(audit.start_time, 1_700_000_000_000);
+        assert_eq!(audit.end_time, 1_700_000_001_250);
+        assert_eq!(audit.duration, 1_250);
+        assert!(!audit.username.is_empty());
+    }
+
+    #[test]
+    fn test_build_audit_never_negative_duration() {
+        let audit = build_audit(1_700_000_002_000, 1_700_000_001_000);
+
+        assert_eq!(audit.duration, 0);
     }
 }

@@ -1,19 +1,18 @@
 [workspace]
-members = ["cli", "core", "modules", "rules"]
+members = ["crates/cli", "crates/core", "crates/modules", "crates/rules"]
 resolver = "3"
 
 [workspace.package]
-version = "0.38.0"
+version = "0.40.1"
 edition = "2024"
 authors = ["deoktr"]
 license = "GPL-3.0-or-later"
-homepage = "https://github.com/deoktr/raudit"
 repository = "https://github.com/deoktr/raudit"
 
 [workspace.dependencies]
-raudit-core = { path = "core", version = "0.38.0" }
-raudit-modules = { path = "modules", version = "0.38.0" }
-raudit-rules = { path = "rules", version = "0.38.0" }
+raudit-core = { path = "crates/core" }
+raudit-modules = { path = "crates/modules" }
+raudit-rules = { path = "crates/rules" }
 
 clap = { version = "4.5.29", features = ["derive", "env"] }
 flate2 = "1.1.10"

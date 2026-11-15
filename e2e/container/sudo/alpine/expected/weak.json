@@ -8,6 +8,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_001",
         "title": "Ensure that sudo default config `noexec` is set",
@@ -22,7 +23,7 @@
       },
       "message": "`Defaults noexec` is not present",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -44,6 +45,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_002",
         "title": "Ensure that sudo default config `requiretty` is set",
@@ -58,7 +60,7 @@
       },
       "message": "`Defaults requiretty` is not present",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -80,6 +82,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_003",
         "title": "Ensure that sudo default config `use_pty` is set",
@@ -94,7 +97,7 @@
       },
       "message": "`Defaults use_pty` is not present",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -116,6 +119,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_004",
         "title": "Ensure that sudo default config `umask=0027` is set",
@@ -130,7 +134,7 @@
       },
       "message": "`Defaults umask=0027` is not present",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -152,6 +156,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_005",
         "title": "Ensure that sudo default config `ignore_dot` is set",
@@ -166,7 +171,7 @@
       },
       "message": "`Defaults ignore_dot` is not present",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -188,6 +193,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_006",
         "title": "Ensure that sudo default config `passwd_timeout=1` is set",
@@ -202,7 +208,7 @@
       },
       "message": "`Defaults passwd_timeout=1` is not present",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -224,6 +230,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_007",
         "title": "Ensure that sudo default config `env_reset` is set",
@@ -238,7 +245,7 @@
       },
       "message": "`Defaults env_reset` is not present",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -260,6 +267,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_008",
         "title": "Ensure that sudo default config `timestamp_timeout=0` is set",
@@ -274,7 +282,7 @@
       },
       "message": "`Defaults timestamp_timeout=0` is not present",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -296,6 +304,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_010",
         "title": "Ensure that sudo default config `mail_badpass` is set",
@@ -310,7 +319,7 @@
       },
       "message": "`Defaults mail_badpass` is not present",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -332,6 +341,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_011",
         "title": "Ensure that sudo default config `logfile=\"/var/log/sudo.log\"` is set",
@@ -346,7 +356,7 @@
       },
       "message": "`Defaults logfile=\"/var/log/sudo.log\"` is not present",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -368,6 +378,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_012",
         "title": "Ensure that sudo default config `secure_path` is set",
@@ -382,7 +393,7 @@
       },
       "message": "`Defaults secure_path` is not present",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -404,6 +415,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_013",
         "title": "Ensure that sudo default config `lecture=\"always\"` is set",
@@ -418,7 +430,7 @@
       },
       "message": "`Defaults lecture=\"always\"` is not present",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -440,6 +452,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_014",
         "title": "Ensure that sudo default config `lecture_file=\"/usr/share/doc/sudo_lecture.txt\"` is set",
@@ -454,7 +467,7 @@
       },
       "message": "`Defaults lecture_file=\"/usr/share/doc/sudo_lecture.txt\"` is not present",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -476,6 +489,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_015",
         "title": "Ensure that sudoers config does not contain `NOPASSWD`",
@@ -490,7 +504,7 @@
       },
       "message": "root ALL=(ALL) NOPASSWD: ALL",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -512,6 +526,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_016",
         "title": "Ensure that sudoers re authentication is not disabled",
@@ -526,7 +541,7 @@
       },
       "message": "Defaults !authenticate",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -548,6 +563,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_017",
         "title": "Ensure that sudo default config `!pwfeedback` is not set",
@@ -561,7 +577,7 @@
         "status": "Pass"
       },
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -583,6 +599,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_200",
         "title": "Ensure sudoers config file permissions are 440 or stricter",
@@ -597,7 +614,7 @@
       },
       "message": "wanted `440` or stricter got `644`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -619,6 +636,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_201",
         "title": "Ensure /etc/sudoers config file is owned by root",
@@ -633,7 +651,7 @@
       },
       "message": "wanted `0:0` got `65534:65533`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -655,6 +673,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_202",
         "title": "Ensure /etc/sudoers.d/ files permissions are 440 or stricter",
@@ -669,7 +688,7 @@
       },
       "message": "file `/etc/sudoers.d/99-weak`: wanted `440` or stricter got `666`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -691,6 +710,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_203",
         "title": "Ensure /etc/sudoers.d/ files are owned by root",
@@ -705,7 +725,7 @@
       },
       "message": "file `/etc/sudoers.d/99-weak`: wanted `0:0` got `65534:65533`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -727,6 +747,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_204",
         "title": "Ensure /etc/sudoers.d directory is owned by root",
@@ -741,7 +762,7 @@
       },
       "message": "wanted `0:0` got `65534:65533`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -763,6 +784,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_205",
         "title": "Ensure /etc/sudoers.d directory permissions are 750 or stricter",
@@ -777,7 +799,7 @@
       },
       "message": "wanted `750` or stricter got `777`",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -799,6 +821,7 @@
       "class_uid": 2003,
       "class_name": "Compliance Finding",
       "type_uid": 200301,
+      "type_name": "Compliance Finding: Create",
       "finding_info": {
         "uid": "SUD_900",
         "title": "Ensure audit rule for sudo log file is present",
@@ -813,7 +836,7 @@
       },
       "message": "audit rules: failed to run `auditctl -l`: No such file or directory (os error 2)",
       "metadata": {
-        "version": "1.7.0",
+        "version": "1.9.0",
         "product": {
           "name": "raudit",
           "version": ""
@@ -841,7 +864,7 @@
     "fail_informational": 3
   },
   "metadata": {
-    "version": "1.7.0",
+    "version": "1.9.0",
     "product": {
       "name": "raudit",
       "version": ""
