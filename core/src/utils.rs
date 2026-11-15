@@ -17,10 +17,90 @@
  */
 
 use std::fs;
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 /// Maximum length of an ANSI escape sequence.
 const MAX_ANSI_ESCAPE_LEN: usize = 16;
+
+/// Get the hostname of the running system.
+///
+/// Reads `/proc/sys/kernel/hostname`, which is what `hostname` reports on
+/// Linux, then falls back to the `HOSTNAME` environment variable used by some
+/// shells and containers, and finally to `unknown`.
+pub fn hostname() -> String {
+    if let Ok(hostname) = fs::read_to_string("/proc/sys/kernel/hostname") {
+        let hostname = hostname.trim();
+        if !hostname.is_empty() {
+            return hostname.to_string();
+        }
+    }
+
+    if let Ok(hostname) = std::env::var("HOSTNAME") {
+        let hostname = hostname.trim();
+        if !hostname.is_empty() {
+            return hostname.to_string();
+        }
+    }
+
+    "unknown".to_string()
+}
+
+/// Current time in milliseconds since the Unix epoch.
+pub fn now_millis() -> i64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|duration| duration.as_millis() as i64)
+        .unwrap_or(0)
+}
+
+/// Get the username that started the audit.
+///
+/// `SUDO_USER` comes first so that an audit started with `sudo` records the
+/// invoking user rather than `root`, then the usual `USER` and `LOGNAME`
+/// variables, and finally `unknown`.
+pub fn username() -> String {
+    for variable in ["SUDO_USER", "USER", "LOGNAME"] {
+        if let Ok(username) = std::env::var(variable) {
+            let username = username.trim();
+            if !username.is_empty() {
+                return username.to_string();
+            }
+        }
+    }
+
+    if let Some(uid) = current_uid()
+        && let Some(username) = name_from_id("/etc/passwd", uid)
+    {
+        return username;
+    }
+
+    "unknown".to_string()
+}
+
+/// Effective user ID of the current process, from `/proc/self/status`.
+fn current_uid() -> Option<u32> {
+    let status = fs::read_to_string("/proc/self/status").ok()?;
+    for line in status.lines() {
+        if let Some(uids) = line.strip_prefix("Uid:") {
+            return uids.split_whitespace().nth(1)?.parse().ok();
+        }
+    }
+    None
+}
+
+/// Resolve a username from a UID by reading a passwd-like database.
+fn name_from_id(path: &str, id: u32) -> Option<String> {
+    let content = fs::read_to_string(path).ok()?;
+    for line in content.lines() {
+        let mut fields = line.splitn(4, ':');
+        let name = fields.next()?;
+        fields.next()?;
+        if fields.next()?.parse::<u32>().ok() == Some(id) {
+            return Some(name.to_string());
+        }
+    }
+    None
+}
 
 fn id_from_name(path: &str, name: &str) -> Option<u32> {
     let content = fs::read_to_string(path).ok()?;

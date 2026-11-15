@@ -10,6 +10,18 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+## [0.40.0] - 2026-11-15
+
+### Added
+
+- Add HTML report generator written in Rust, with `--html` to output it directly
+- Add `--convert` to combine OCSF JSON reports from multiple hosts into one HTML report
+- Add audit `hostname`, `start_time`, `end_time`, `elapsed`, and `username` to report metadata and the HTML report
+
+### Removed
+
+- Remove the Python HTML report generator
+
 ## [0.39.0] - 2026-11-15
 
 ### Added

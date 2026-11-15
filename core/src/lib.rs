@@ -22,6 +22,7 @@
 pub mod check;
 pub mod config;
 pub mod consts;
+pub mod html;
 pub mod logger;
 pub mod ocsf;
 pub mod utils;

@@ -64,9 +64,10 @@ Expected JSON outputs are stored in `e2e/qemu/<distro>/expected/`. Each profile
 has a baseline file (`hardened.json`, `insecure.json`). Tests fail if the output
 differs from the baseline.
 
-Timestamps (`time` fields) are stripped and the raudit version
-(`metadata.product.version`) is blanked before saving, so baselines only change
-when check results actually change.
+Timestamps and audit metadata (`time`, `start_time`, `end_time`, `elapsed`,
+`username`) are stripped and the raudit version (`metadata.product.version`) is
+blanked before saving, so baselines only change when check results actually
+change.
 
 To generate or update baselines after intentional changes:
 

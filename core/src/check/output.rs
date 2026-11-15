@@ -17,7 +17,7 @@
  */
 
 use super::types::{Check, CheckState, REPORT, ReportStats, Severity};
-use crate::{config, consts, ocsf, utils};
+use crate::{config, consts, html, ocsf, utils};
 
 /// Maximum width of a printed line.
 const OUTPUT_WIDTH: usize = 100;
@@ -204,6 +204,14 @@ pub fn print_json(timestamp: i64) {
     let ocsf_report = ocsf::build_ocsf_report(&report.checks, stats, timestamp);
     let json = serde_json::to_string(&ocsf_report).expect("Failed to serialize OCSF report");
     println!("{}", json);
+}
+
+/// Build a self-contained HTML report from the registered checks.
+pub fn build_html(timestamp: i64, host: &str) -> String {
+    let mut report = REPORT.lock().expect("Checks not initialized");
+    let stats = std::mem::take(&mut report.stats);
+    let host_report = html::HtmlReport::from_checks(&report.checks, stats, host, timestamp);
+    html::render(&[host_report], timestamp)
 }
 
 pub fn calculate_stats() {

@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 SKIP_MESSAGE = ["UPT_001", "AAR_004", "AUD_001"]
 
-TIMESTAMP_KEYS = ["time"]
+VOLATILE_KEYS = ["time", "start_time", "end_time", "elapsed", "username"]
 
 
 def finding_uid(data) -> str | None:
@@ -24,18 +24,19 @@ def finding_uid(data) -> str | None:
 
 
 def strip_volatile(data):
-    """Recursively drop timestamps, volatile messages and the raudit version.
+    """Recursively drop timestamps, volatile metadata and the raudit version.
 
-    Timestamps, the raudit product version and the messages of findings listed
-    in SKIP_MESSAGE (pids, uptime, ...) change on every run or release, so they
-    are stripped to keep baselines stable in git.
+    Timestamps, audit metadata (elapsed, username, start and end time), the
+    raudit product version and the messages of findings listed in SKIP_MESSAGE
+    (pids, uptime, ...) change on every run or release, so they are stripped to
+    keep baselines stable in git.
     """
 
     if isinstance(data, dict):
         uid = finding_uid(data)
         out = {}
         for key, value in data.items():
-            if key in TIMESTAMP_KEYS:
+            if key in VOLATILE_KEYS:
                 continue
             if key == "message" and uid in SKIP_MESSAGE:
                 continue

@@ -17,9 +17,13 @@
  */
 
 use clap::Parser;
+use raudit_core::html::{self, HtmlReport};
 use raudit_core::{check, config, logger, utils};
 use raudit_rules as rules;
-use std::time::{Instant, SystemTime, UNIX_EPOCH};
+use std::fs;
+use std::io::Read;
+use std::path::{Path, PathBuf};
+use std::time::Instant;
 
 /// Extended help printed by `--help` after the list of options.
 const LONG_HELP: &str = r#"Selection:
@@ -88,6 +92,22 @@ Environment:
   Every flag has an env var counterpart accepting the same values:
 
     TAGS=sysctl+workstation SEVERITY=high raudit
+
+Output:
+
+  By default checks are printed to the terminal. --json emits OCSF Compliance
+  Finding JSON, --html emits a self-contained HTML report. Use --output to write
+  the HTML report to a file instead of stdout.
+
+  --convert reads one or more OCSF JSON reports, each from a different host, and
+  combines them into a single HTML report. Use - as a file name to read a report
+  from stdin. The HTML report embeds all of its styles and scripts, so it works
+  offline, with no network access.
+
+    raudit --html -o report.html
+    raudit --json > host1.json
+    raudit --convert host1.json host2.json -o report.html
+    raudit --convert - < host1.json > report.html
 
 Examples:
 
@@ -178,18 +198,60 @@ struct Cli {
     no_skip: bool,
 
     /// Generate JSON output
-    #[arg(long, action = clap::ArgAction::SetTrue, env = "JSON")]
+    #[arg(
+        long,
+        action = clap::ArgAction::SetTrue,
+        env = "JSON",
+        conflicts_with_all = ["html", "convert"]
+    )]
     json: bool,
+
+    /// Generate a self-contained HTML report
+    #[arg(
+        long,
+        action = clap::ArgAction::SetTrue,
+        env = "HTML",
+        conflicts_with_all = ["json", "convert"]
+    )]
+    html: bool,
+
+    /// Convert one or more OCSF JSON reports to a single HTML report
+    #[arg(
+        long,
+        value_name = "FILE",
+        num_args = 1..,
+        env = "CONVERT",
+        conflicts_with_all = ["json", "html"]
+    )]
+    convert: Option<Vec<PathBuf>>,
+
+    /// Write the HTML report to FILE instead of stdout
+    #[arg(short = 'o', long, value_name = "FILE", env = "OUTPUT")]
+    output: Option<PathBuf>,
 }
 
 pub fn cli() {
     let now = Instant::now();
-    let timestamp = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("System clock before UNIX epoch")
-        .as_millis() as i64;
+    let timestamp = utils::now_millis();
 
     let args = Cli::parse();
+
+    if args.output.is_some() && !args.html && args.convert.is_none() {
+        eprintln!("--output requires --html or --convert");
+        std::process::exit(2);
+    }
+
+    if let Some(ref inputs) = args.convert {
+        if let Err(err) = convert_reports(inputs, args.output.as_deref(), timestamp) {
+            eprintln!("error: {}", err);
+            std::process::exit(1);
+        }
+
+        if !args.no_time {
+            eprintln!("took: {}", utils::format_duration(now.elapsed()));
+        }
+        return;
+    }
 
     config::set_colored_output(!args.no_colors);
 
@@ -278,7 +340,19 @@ pub fn cli() {
     check::run_dependencies(!args.no_parallelization);
     check::run_checks(!args.no_parallelization);
 
-    if !args.json {
+    if args.html {
+        check::calculate_stats();
+
+        let document = check::build_html(timestamp, &utils::hostname());
+        if let Err(err) = write_output(&document, args.output.as_deref()) {
+            eprintln!("error: {}", err);
+            std::process::exit(1);
+        }
+    } else if args.json {
+        check::calculate_stats();
+
+        check::print_json(timestamp);
+    } else {
         if !args.no_print_checks {
             check::print_checks(
                 args.no_print_passed,
@@ -291,13 +365,82 @@ pub fn cli() {
             check::calculate_stats();
             check::print_stats();
         }
-    } else {
-        check::calculate_stats();
-
-        check::print_json(timestamp);
     }
 
     if !args.no_time {
         eprintln!("took: {}", utils::format_duration(now.elapsed()));
+    }
+}
+
+/// Convert one or more OCSF JSON files into a single HTML report.
+fn convert_reports(
+    inputs: &[PathBuf],
+    output: Option<&Path>,
+    timestamp: i64,
+) -> Result<(), String> {
+    let mut reports = Vec::with_capacity(inputs.len());
+
+    for input in inputs {
+        let content = read_input(input)?;
+        let mut report = HtmlReport::from_json(&content)
+            .map_err(|err| format!("{}: invalid OCSF report: {}", display_input(input), err))?;
+        report.ensure_host(&fallback_host(input));
+        report.source = Some(display_input(input));
+        reports.push(report);
+    }
+
+    let document = html::render(&reports, timestamp);
+    write_output(&document, output)
+}
+
+/// Read a report from a file, or from stdin when the path is `-`.
+fn read_input(path: &Path) -> Result<String, String> {
+    if path == Path::new("-") {
+        let mut input = String::new();
+        std::io::stdin()
+            .read_to_string(&mut input)
+            .map_err(|err| format!("failed to read stdin: {}", err))?;
+        Ok(input)
+    } else {
+        fs::read_to_string(path)
+            .map_err(|err| format!("failed to read `{}`: {}", path.display(), err))
+    }
+}
+
+/// Name to use when a report does not carry a hostname.
+fn fallback_host(path: &Path) -> String {
+    if path == Path::new("-") {
+        return "stdin".to_string();
+    }
+
+    path.file_stem()
+        .and_then(|name| name.to_str())
+        .filter(|name| !name.is_empty())
+        .unwrap_or("unknown")
+        .to_string()
+}
+
+/// Human-readable source name shown in the report.
+fn display_input(path: &Path) -> String {
+    if path == Path::new("-") {
+        "stdin".to_string()
+    } else {
+        path.display().to_string()
+    }
+}
+
+/// Write an HTML document to a file, or to stdout when no path is given.
+fn write_output(content: &str, output: Option<&Path>) -> Result<(), String> {
+    match output {
+        Some(path) if path == Path::new("-") => {
+            print!("{}", content);
+            Ok(())
+        }
+        Some(path) => fs::write(path, content)
+            .map_err(|err| format!("failed to write `{}`: {}", path.display(), err)),
+        None => {
+            print!("{}", content);
+            Ok(())
+        }
     }
 }

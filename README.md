@@ -9,9 +9,9 @@ Goals:
 - Easy to extend and create your own checks.
 - Easy to maintain.
 - Work for both servers and workstations.
-- Human readable or
+- Human readable,
   [OCSF Compliance Finding](https://schema.ocsf.io/1.7.0/classes/compliance_finding)
-  JSON output format.
+  JSON, or HTML output.
 
 ## Install
 
@@ -147,7 +147,8 @@ raudit --json --filters USR_001
         "product": {
           "name": "raudit",
           "version": "0.30.0"
-        }
+        },
+        "host": "workstation"
       },
       "severity_id": 5,
       "severity": "Critical",
@@ -173,12 +174,40 @@ raudit --json --filters USR_001
     "product": {
       "name": "raudit",
       "version": "0.30.0"
-    }
+    },
+    "host": "workstation",
+    "start_time": 1773777067012,
+    "end_time": 1773777068450,
+    "elapsed": 1438,
+    "username": "root"
   }
 }
 ```
 
+`start_time` and `end_time` are epoch milliseconds, `elapsed` is the audit
+duration in milliseconds, and `username` is the user that started the audit.
+
 </details>
+
+Generate a self-contained HTML report, with every style and script embedded so it
+works offline:
+
+```bash
+raudit --html -o report.html
+```
+
+The report can also be built from existing JSON, one file per host. This
+combines several hosts into a single document, with an overall summary and a
+detailed section per host:
+
+```bash
+raudit --convert host1.json host2.json -o report.html
+```
+
+The hostname collected by the audit is stored in the OCSF metadata of each
+report, and is used to label the sections and filter the findings. The same
+metadata records the audit start and end time, its duration, and the user that
+started it, which the HTML report shows for each host.
 
 Usage `raudit -h`:
 
@@ -222,6 +251,12 @@ Options:
           Disable automatic skipping of rules [env: NO_SKIP=]
       --json
           Generate JSON output [env: JSON=]
+      --html
+          Generate a self-contained HTML report [env: HTML=]
+      --convert <FILE>...
+          Convert one or more OCSF JSON reports to a single HTML report [env: CONVERT=]
+  -o, --output <FILE>
+          Write the HTML report to FILE instead of stdout [env: OUTPUT=]
   -h, --help
           Print help (see more with '--help')
   -V, --version
@@ -375,8 +410,6 @@ sudo aa-exec -p raudit -- ./target/release/raudit
 - Check permissions on startup (root or not) and warn user if needed
 - Use [OPA](https://www.openpolicyagent.org/) to define rules?
 - Work on performance, convert to String to &str
-- Add metadata to JSON report, like start/end time, elapsed, version, username,
-  hostname etc.
 - Add documentation, both user and dev
 - Add check timeout, if they take too long just stop them, maybe even with
   ctrl+c?
@@ -386,7 +419,6 @@ sudo aa-exec -p raudit -- ./target/release/raudit
 - Add check to avoid check name or ID collision
 - Fix all TODO and FIXME in code
 - Add flag to force printing the description and the fix for all checks
-- Re-write the report (convert from OCSF to HTML) in Rust and make it a CLI option to convert but also to directly output in HTML, the report should also support multiple hosts combined in one report, the report must work offline (everything embeded)
 
 Rules:
 

@@ -22,6 +22,7 @@
 //! check results into OCSF-compliant Compliance Finding events.
 
 use crate::check::{Check, CheckState, ReportStats, Severity};
+use crate::utils;
 use serde::Serialize;
 
 /// Known compliance framework tags and their OCSF standard names.
@@ -43,6 +44,25 @@ pub struct OcsfMetadata {
     pub version: &'static str,
     /// Product identification.
     pub product: OcsfProduct,
+    /// Hostname that produced the findings, omitted when unknown.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub host: String,
+}
+
+/// Report-level metadata, extending the event metadata with audit details.
+#[derive(Serialize)]
+pub struct OcsfReportMetadata {
+    /// Shared OCSF metadata.
+    #[serde(flatten)]
+    pub base: OcsfMetadata,
+    /// Audit start time in epoch milliseconds.
+    pub start_time: i64,
+    /// Audit end time in epoch milliseconds.
+    pub end_time: i64,
+    /// Audit duration in milliseconds.
+    pub elapsed: i64,
+    /// User that started the audit.
+    pub username: String,
 }
 
 /// OCSF finding identification details.
@@ -121,7 +141,7 @@ pub struct OcsfReport {
     /// Aggregate statistics.
     pub stats: ReportStats,
     /// Report-level metadata.
-    pub metadata: OcsfMetadata,
+    pub metadata: OcsfReportMetadata,
 }
 
 /// Map a CheckState to OCSF (status_id, status label).
@@ -154,12 +174,29 @@ pub fn severity(severity: &Severity) -> (u8, String) {
 
 /// Build OCSF metadata with schema version and product info.
 pub fn build_metadata() -> OcsfMetadata {
+    build_metadata_with_host(&utils::hostname())
+}
+
+/// Build OCSF metadata carrying an explicit hostname.
+pub fn build_metadata_with_host(host: &str) -> OcsfMetadata {
     OcsfMetadata {
         version: "1.7.0",
         product: OcsfProduct {
             name: "raudit",
             version: env!("CARGO_PKG_VERSION").to_string(),
         },
+        host: host.to_string(),
+    }
+}
+
+/// Build report metadata with the audit interval and the user that ran it.
+pub fn build_report_metadata(host: &str, start_time: i64, end_time: i64) -> OcsfReportMetadata {
+    OcsfReportMetadata {
+        base: build_metadata_with_host(host),
+        start_time,
+        end_time,
+        elapsed: end_time.saturating_sub(start_time).max(0),
+        username: utils::username(),
     }
 }
 
@@ -218,10 +255,22 @@ pub fn check_to_finding(
 
 /// Build the full OCSF report from checks and stats.
 pub fn build_ocsf_report(checks: &[Check], stats: ReportStats, timestamp: i64) -> OcsfReport {
-    let metadata = build_metadata();
+    build_ocsf_report_with_host(checks, stats, timestamp, &utils::hostname())
+}
+
+/// Build the full OCSF report with an explicit hostname.
+pub fn build_ocsf_report_with_host(
+    checks: &[Check],
+    stats: ReportStats,
+    timestamp: i64,
+    host: &str,
+) -> OcsfReport {
+    let end_time = utils::now_millis();
+    let metadata = build_report_metadata(host, timestamp, end_time);
+    let finding_metadata = build_metadata_with_host(host);
     let findings = checks
         .iter()
-        .map(|c| check_to_finding(c, timestamp, &metadata))
+        .map(|c| check_to_finding(c, timestamp, &finding_metadata))
         .collect();
     OcsfReport {
         findings,
@@ -257,9 +306,10 @@ mod tests {
         .with_fix("Apply the fix");
         check.run();
 
-        let metadata = build_metadata();
+        let metadata = build_metadata_with_host("test-host");
         let finding = check_to_finding(&check, 1700000000000, &metadata);
 
+        assert_eq!(finding.metadata.host, "test-host");
         assert_eq!(finding.severity_id, 4);
         assert_eq!(finding.severity, "High");
         assert_eq!(finding.status_id, 1);
@@ -297,7 +347,7 @@ mod tests {
         );
         check.run();
 
-        let metadata = build_metadata();
+        let metadata = build_metadata_with_host("test-host");
         let finding = check_to_finding(&check, 1700000000000, &metadata);
 
         assert_eq!(finding.status_id, 4);
@@ -327,5 +377,27 @@ mod tests {
         assert!(json.contains("\"stats\""));
         assert!(json.contains("\"metadata\""));
         assert!(json.contains("\"class_uid\":2003"));
+        assert!(json.contains("\"start_time\":1700000000000"));
+        assert!(json.contains("\"end_time\""));
+        assert!(json.contains("\"elapsed\""));
+        assert!(json.contains("\"username\""));
+    }
+
+    #[test]
+    fn test_build_report_metadata_audit_interval() {
+        let metadata = build_report_metadata("test-host", 1_700_000_000_000, 1_700_000_001_250);
+
+        assert_eq!(metadata.base.host, "test-host");
+        assert_eq!(metadata.start_time, 1_700_000_000_000);
+        assert_eq!(metadata.end_time, 1_700_000_001_250);
+        assert_eq!(metadata.elapsed, 1_250);
+        assert!(!metadata.username.is_empty());
+    }
+
+    #[test]
+    fn test_build_report_metadata_never_negative_elapsed() {
+        let metadata = build_report_metadata("test-host", 1_700_000_002_000, 1_700_000_001_000);
+
+        assert_eq!(metadata.elapsed, 0);
     }
 }
